@@ -75,6 +75,7 @@
 
 ## 7) Przyciski
 - Primary (złoty): gradient, `border var(--gold-line)`, tekst `rgba(237,235,230,.95)`, hover glow.
+- Secondary (neon): tło `rgba(43,227,139,.14)`, border `rgba(43,227,139,.45)`, glow `--glow-neon`.
 - Secondary (neon/filc): `rgba(43,227,139,.10)` + `--glow-neon`.
 - Danger (ruby): `rgba(226,58,75,.12)` + jaśniejszy tekst.
 - Zasady: font Panel, uppercase, `letter-spacing: 0.10em`, `border-radius var(--radius-sm)`, hover `translateY(-1px)`, active `brightness(1.08)`, disabled opacity .45.
@@ -92,6 +93,8 @@
 
 ## 10) Modale/toasty/tooltips
 - Modal: overlay `rgba(0,0,0,.72)`, karta `linear-gradient` noir, border `--border`, złota linia w top, cień 0 20px 60px.
+- Modal content: przewijalny blok, `white-space: pre-wrap`, font Tekst, tło `rgba(0,0,0,.35)`, border `--border2`.
+- Icon button (zamknięcie): okrągły przycisk `999px`, padding 6–10px, font 18px, neon hover.
 - Toasty: sukces neon, warning złoto, błąd ruby (bez pełnego red background).
 - Tooltip: tło `rgba(0,0,0,.75)`, border `rgba(255,255,255,.12)`, delikatny glow złoty.
 

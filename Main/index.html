@@ -64,6 +64,7 @@
             <button class="primary">Dodaj stół</button>
             <button>Dodaj gracza</button>
             <button>Ustaw stawkę wejściowego</button>
+            <button id="adminInstructionButton" class="secondary" type="button">Instrukcja</button>
             <button class="danger">Zakończ rundę</button>
           </div>
           <div class="admin-message">
@@ -102,6 +103,25 @@
           </ul>
         </section>
       </main>
+    </div>
+
+    <div id="instructionModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="instructionTitle">
+        <div class="modal-header">
+          <h3 id="instructionTitle">Instrukcja obsługi</h3>
+          <button id="instructionClose" class="icon-button" type="button" aria-label="Zamknij okno">
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <p id="instructionStatus" class="status-text">Kliknij „Odśwież”, aby pobrać treść.</p>
+          <div id="instructionContent" class="modal-content" aria-live="polite"></div>
+        </div>
+        <div class="modal-footer">
+          <button id="instructionRefresh" type="button">Odśwież</button>
+          <button id="instructionCloseFooter" class="primary" type="button">Zamknij</button>
+        </div>
+      </div>
     </div>
 
     <script src="../config/firebase-config.js"></script>

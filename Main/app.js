@@ -201,6 +201,98 @@ const initAdminMessaging = () => {
   });
 };
 
+const initInstructionModal = () => {
+  const openButton = document.querySelector("#adminInstructionButton");
+  const modal = document.querySelector("#instructionModal");
+  const closeButton = document.querySelector("#instructionClose");
+  const closeFooterButton = document.querySelector("#instructionCloseFooter");
+  const refreshButton = document.querySelector("#instructionRefresh");
+  const content = document.querySelector("#instructionContent");
+  const status = document.querySelector("#instructionStatus");
+
+  if (!openButton || !modal || !content || !status) {
+    return;
+  }
+
+  const instructionUrl = "https://cutelittlegoat.github.io/Karty/docs/README.md";
+  let cachedText = "";
+  let isLoading = false;
+
+  const setStatus = (message) => {
+    status.textContent = message;
+  };
+
+  const loadInstruction = async ({ force } = { force: false }) => {
+    if (isLoading) {
+      return;
+    }
+
+    if (cachedText && !force) {
+      return;
+    }
+
+    isLoading = true;
+    setStatus("Pobieranie instrukcji...");
+
+    try {
+      const response = await fetch(instructionUrl, { cache: force ? "no-store" : "default" });
+      if (!response.ok) {
+        throw new Error("Network response was not ok.");
+      }
+      cachedText = await response.text();
+      content.textContent = cachedText;
+      setStatus("Instrukcja została pobrana.");
+    } catch (error) {
+      setStatus("Nie udało się pobrać instrukcji. Spróbuj ponownie.");
+    } finally {
+      isLoading = false;
+    }
+  };
+
+  const openModal = () => {
+    modal.classList.add("is-visible");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    if (!cachedText) {
+      void loadInstruction();
+    }
+  };
+
+  const closeModal = () => {
+    modal.classList.remove("is-visible");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+
+  openButton.addEventListener("click", openModal);
+
+  if (closeButton) {
+    closeButton.addEventListener("click", closeModal);
+  }
+
+  if (closeFooterButton) {
+    closeFooterButton.addEventListener("click", closeModal);
+  }
+
+  if (refreshButton) {
+    refreshButton.addEventListener("click", () => {
+      void loadInstruction({ force: true });
+    });
+  }
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modal.classList.contains("is-visible")) {
+      closeModal();
+    }
+  });
+};
+
 const bootstrap = () => {
   const isAdmin = getAdminMode();
   document.body.classList.toggle("is-admin", isAdmin);
@@ -209,6 +301,7 @@ const bootstrap = () => {
   renderPlayers();
   renderPayments();
   initAdminMessaging();
+  initInstructionModal();
 };
 
 bootstrap();
