@@ -416,29 +416,6 @@ button.danger {
   border: 1px solid var(--border2);
 }
 
-.construction-note {
-  margin: 0;
-  padding: 10px 14px;
-  border-radius: var(--radius-sm);
-  background: rgba(212, 175, 55, 0.12);
-  border: 1px solid var(--gold-line);
-  color: var(--gold);
-  font-family: var(--font-panel);
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: var(--fs-small);
-  box-shadow: var(--glow-gold);
-  text-align: center;
-}
-
-.next-steps {
-  margin: 0;
-  padding-left: 18px;
-  color: var(--muted);
-  display: grid;
-  gap: 10px;
-}
-
 .admin-only {
   display: none;
 }
@@ -448,11 +425,52 @@ button.danger {
 }
 
 .is-admin .admin-only {
-  display: flex;
+  display: block;
 }
 
 .is-admin .user-only {
   display: none;
+}
+
+.is-admin .card.admin-only {
+  display: flex;
+}
+
+.user-placeholder {
+  grid-column: 1 / -1;
+  min-height: calc(100vh - 220px);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--gap-4);
+}
+
+.user-panel {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-3);
+  padding-bottom: var(--gap-3);
+  border-bottom: 1px solid var(--divider);
+}
+
+.user-view-label {
+  font-family: var(--font-panel);
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  font-size: var(--fs-panel);
+  color: var(--muted);
+}
+
+.user-construction {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: clamp(36px, 7vw, 96px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-shadow: var(--glow-gold);
 }
 
 .modal-overlay {

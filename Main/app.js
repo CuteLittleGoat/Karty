@@ -71,6 +71,27 @@ const updateViewBadge = (isAdmin) => {
   badge.textContent = isAdmin ? "Administrator" : "Użytkownik";
 };
 
+const toggleView = () => {
+  const url = new URL(window.location.href);
+  const isAdmin = url.searchParams.get("admin") === "1";
+  if (isAdmin) {
+    url.searchParams.delete("admin");
+  } else {
+    url.searchParams.set("admin", "1");
+  }
+  window.location.href = url.toString();
+};
+
+const initViewToggle = () => {
+  const buttons = document.querySelectorAll(".view-toggle");
+  if (!buttons.length) {
+    return;
+  }
+  buttons.forEach((button) => {
+    button.addEventListener("click", toggleView);
+  });
+};
+
 const renderTables = () => {
   const container = document.querySelector("#tablesContainer");
   container.innerHTML = "";
@@ -300,6 +321,7 @@ const bootstrap = () => {
   renderTables();
   renderPlayers();
   renderPayments();
+  initViewToggle();
   initAdminMessaging();
   initInstructionModal();
 };

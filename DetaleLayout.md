@@ -92,11 +92,13 @@
 - Checkbox/radio: `accent-color: var(--gold)`.
 - Pole wiadomości admina: textarea z `min-height ~86px`, label uppercase `letter-spacing 0.12em`.
 
-## 9) Komunikat „Strona w budowie”
-- Pasek informacyjny w widoku użytkownika.
-- Tło: `rgba(212,175,55,.12)` z obramowaniem `1px solid var(--gold-line)`.
-- Tekst: `--font-panel`, uppercase, `letter-spacing 0.14em`, rozmiar `--fs-small`.
-- Dodatkowo: `box-shadow: var(--glow-gold)`, wyśrodkowanie tekstu, `border-radius var(--radius-sm)`.
+## 9) Placeholder „STRONA W BUDOWIE”
+- Użytkownik widzi pełnoekranową kartę placeholdera (`.user-placeholder`) zamiast tabel.
+- Układ:
+  - **`.user-panel`**: górny pasek z etykietą widoku i przyciskiem przełączania.
+  - **`.user-view-label`**: `--font-panel`, uppercase, `letter-spacing 0.24em`, kolor `--muted`.
+  - **`.user-construction`**: duży napis w `--font-title`, złoty kolor `--gold`, `letter-spacing 0.18em`, `text-shadow: var(--glow-gold)`.
+- Wysokość: `min-height` oparta o viewport (dla efektu „na całą stronę”).
 
 ## 10) Badge/chipy statusów
 - Kształt: `border-radius: 999px`, obwódka 1px, półprzezroczyste tło, font Chip.
