@@ -86,3 +86,29 @@ Aby przycisk **„Wyślij”** w panelu administratora powodował wyświetlenie 
 ### 5.3. Wymagania po stronie Androida
 - Aplikacja Android musi subskrybować temat `karty-admin` (opis w `MigracjaAndroid/Migracja_Android.md`).
 - Po zapisaniu wiadomości w Firestore funkcja wyśle powiadomienie FCM do wszystkich urządzeń w tym temacie.
+
+## 6. Przechowywanie PIN do zakładki „Najbliższa gra”
+
+Aby PIN był trwały między sesjami i dostępny na wszystkich urządzeniach, należy zapisywać go w Firestore.
+
+### 6.1. Struktura danych
+1. W Firestore utwórz kolekcję `app_settings`.
+2. W kolekcji dodaj dokument `next_game`.
+3. Dodaj pole:
+   - `pin` (String) – kod PIN składający się z minimum 4 cyfr.
+
+### 6.2. Reguły bezpieczeństwa (przykład)
+Poniżej przykład reguł, które pozwalają administratorowi na zapis PIN-u, a użytkownikom tylko na odczyt:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /app_settings/next_game {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+  }
+}
+```
+
+> W produkcji pamiętaj o skonfigurowaniu odpowiednich tokenów lub konta administracyjnego, aby `request.auth.token.admin` było dostępne.
