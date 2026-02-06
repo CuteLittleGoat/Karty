@@ -157,11 +157,19 @@ h1 {
 }
 
 .view-badge {
-  margin: 0 0 6px;
+  margin: 0;
   font-weight: 700;
   font-size: 20px;
   color: var(--gold);
   font-family: var(--font-subtitle);
+}
+
+.view-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-2);
+  margin-bottom: 6px;
 }
 
 .view-hint {
@@ -401,6 +409,17 @@ button.secondary {
   box-shadow: var(--glow-neon);
 }
 
+button.view-toggle {
+  background: rgba(226, 58, 75, 0.22);
+  border-color: rgba(226, 58, 75, 0.6);
+  color: #ffd6da;
+  box-shadow: 0 0 18px rgba(226, 58, 75, 0.28);
+}
+
+button.view-toggle:hover {
+  box-shadow: 0 0 20px rgba(226, 58, 75, 0.38);
+}
+
 button.danger {
   background: rgba(226, 58, 75, 0.12);
   color: #ffd6da;
@@ -449,10 +468,17 @@ button.danger {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--gap-3);
   padding-bottom: var(--gap-3);
   border-bottom: 1px solid var(--divider);
+}
+
+.user-view {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-2);
 }
 
 .user-view-label {

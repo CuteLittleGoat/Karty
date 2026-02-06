@@ -24,7 +24,7 @@ Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, del
 ### 1. Nagłówek strony
 - `<header class="page-header">` zawiera:
   - **Blok intro** `.header-intro` z eyebrow „Nielegalny poker” (`.eyebrow`) oraz tytułem `Nielegalne kasyno` i opisem (`h1`, `.subtitle`). Blok jest widoczny tylko w trybie admina.
-  - **Karta widoku** (`.view-card`) z etykietą trybu (`.view-label`), badge trybu (`#viewBadge`) i podpowiedzią (`.view-hint`).
+- **Karta widoku** (`.view-card`) z etykietą trybu (`.view-label`), wierszem `.view-status` (badge trybu `#viewBadge` i czerwony przycisk `.view-toggle`) oraz podpowiedzią (`.view-hint`).
   - Podpowiedź `.view-hint` jest widoczna tylko w trybie admina.
 
 ### 2. Sekcje główne (`<main class="grid">`)
@@ -34,12 +34,11 @@ Układ korzysta z siatki CSS i składa się z kart:
 3. **Rozliczenia** – kontener `#paymentsContainer` (sekcja tylko dla admina).
 4. **Panel administratora** – sekcja `.admin-only` (przyciski akcji i notatka).
    - Wewnątrz panelu znajduje się blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus`.
-   - W siatce `.admin-actions` dodany jest przycisk `#dataUpdateButton` („Aktualizuj dane”) oraz `#adminInstructionButton`, który otwiera modal instrukcji.
-   - W `.admin-actions` znajduje się także tymczasowy przycisk `.view-toggle` („Przełącz widok”), który zmienia tryb na użytkownika.
-   - Poniżej przycisków znajduje się `.admin-data-hint` z informacją o wymaganej lokalizacji pliku `Turniej.xlsx`.
+  - W siatce `.admin-actions` dodany jest przycisk `#dataUpdateButton` („Aktualizuj dane”) oraz `#adminInstructionButton`, który otwiera modal instrukcji.
+  - Poniżej przycisków znajduje się `.admin-data-hint` z informacją o wymaganej lokalizacji pliku `Turniej.xlsx`.
 5. **Placeholder użytkownika** – sekcja `.user-only.user-placeholder`:
-   - `.user-panel` z etykietą `.user-view-label` („Widok Użytkownik”) i przyciskiem `.view-toggle`.
-   - `.user-construction` z dużym napisem „STRONA W BUDOWIE”.
+  - `.user-panel` z wierszem `.user-view`, który zawiera etykietę `.user-view-label` („Widok Użytkownik”) i czerwony przycisk `.view-toggle`.
+  - `.user-construction` z dużym napisem „STRONA W BUDOWIE”.
 
 ### 3. Modal instrukcji
 - Blok `#instructionModal` jest osadzony na końcu `body` i służy do pokazywania instrukcji obsługi.
@@ -102,11 +101,12 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `button` to styl „panelowy” (uppercase, `--font-panel`, złote i neonowe glowy).
 - `.primary` – złoty gradient, `--glow-gold`.
 - `.secondary` – neonowa zieleń, delikatny glow, używana przez przycisk „Instrukcja”.
+- `.view-toggle` – czerwony przycisk przełączania widoku (ruby tło, wzmocniony border i czerwony glow).
 - `.danger` – ruby, jaśniejszy tekst.
 
 ### 8. Placeholder „STRONA W BUDOWIE”
 - `.user-placeholder` to pełnoekranowa karta w trybie użytkownika (min-height zależne od viewportu).
-- `.user-panel` to górny pasek z etykietą trybu i przyciskiem przełączania widoku.
+- `.user-panel` to górny pasek z etykietą trybu i przyciskiem przełączania widoku ułożonym obok etykiety.
 - `.user-view-label` używa fontu panelowego, uppercase i zwiększonego letter-spacing.
 - `.user-construction` to duży napis w foncie tytułowym, złoty kolor z tekstowym glow.
 

@@ -4,7 +4,7 @@
 1. Otwórz plik `Main/index.html` w przeglądarce (aplikacja działa jako statyczny front-end).
 2. Zobaczysz widok uczestnika z krótką informacją **„Widok Użytkownik”** oraz dużym napisem **„STRONA W BUDOWIE”** na środku ekranu.
 3. Aby przełączyć się do trybu administratora:
-   - Kliknij przycisk **„Przełącz widok”** w panelu użytkownika.
+   - Kliknij czerwony przycisk **„Przełącz widok”** ustawiony obok etykiety **„Widok Użytkownik”** w górnym pasku karty użytkownika.
    - Alternatywnie dopisz do adresu parametr `?admin=1` (np. `Main/index.html?admin=1`).
 4. Po przełączeniu zmieni się etykieta w karcie **Widok** (z „Użytkownik” na „Administrator”).
 
@@ -24,9 +24,9 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
 3. Obecnie jest to przycisk prototypowy — kliknięcie nie zmienia danych, ale pokazuje miejsce na przyszłą logikę dodawania stołów.
 
 ### 3.1.1 Przełączanie widoku (przycisk „Przełącz widok”)
-1. W **Panelu administratora** znajdź przycisk **„Przełącz widok”** (tymczasowy).
-2. Kliknij go, aby przejść do widoku użytkownika.
-3. Przycisk jest tymczasowy i docelowo zostanie usunięty.
+1. W górnej części strony znajdź kartę **Widok**.
+2. Obok napisu **„Administrator”** kliknij czerwony przycisk **„Przełącz widok”**.
+3. Widok zostanie przełączony na wariant użytkownika, a etykieta w karcie **Widok** zmieni się na „Użytkownik”.
 
 ### 3.2 Dodawanie gracza (przycisk „Dodaj gracza”)
 1. Wejdź do **Panelu administratora**.
@@ -69,7 +69,7 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
 4. Jeśli Firebase nie jest skonfigurowany, zobaczysz komunikat o konieczności konfiguracji.
 
 ## 4. Widok uczestnika — co zobaczysz teraz
-1. U góry panelu widzisz informację **„Widok Użytkownik”** oraz przycisk **„Przełącz widok”**.
+1. U góry panelu widzisz informację **„Widok Użytkownik”** oraz czerwony przycisk **„Przełącz widok”** umieszczony tuż obok etykiety.
 2. Na środku ekranu znajduje się duży napis **„STRONA W BUDOWIE”**, który zajmuje całą stronę.
 3. W tym trybie nie są pokazywane tabele i karty z danymi — to placeholder do czasu wdrożenia właściwego widoku uczestnika.
 
