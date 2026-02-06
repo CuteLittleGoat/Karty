@@ -293,6 +293,70 @@ h1 {
   gap: var(--gap-2);
 }
 
+.admin-message {
+  margin-top: var(--gap-3);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.32);
+  display: grid;
+  gap: var(--gap-2);
+}
+
+.admin-message h3 {
+  margin: 0 0 6px;
+  font-family: var(--font-subtitle);
+  font-size: 18px;
+}
+
+.admin-message p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.admin-message-form {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-message-form label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-family: var(--font-panel);
+  color: rgba(237, 235, 230, 0.85);
+}
+
+.admin-message-form textarea {
+  resize: vertical;
+  min-height: 86px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+}
+
+.admin-message-form textarea:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.55);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18), 0 0 12px rgba(43, 227, 139, 0.18);
+}
+
+.admin-message-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-text {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
 button {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);

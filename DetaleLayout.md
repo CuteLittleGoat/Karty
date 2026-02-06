@@ -84,6 +84,7 @@
 - Focus: `border-color rgba(212,175,55,.55)`, `box-shadow` złoto + neon.
 - Select: ten sam chrome, strzałka `rgba(237,235,230,.65)`, option `#0C0D12`.
 - Checkbox/radio: `accent-color: var(--gold)`.
+- Pole wiadomości admina: textarea z `min-height ~86px`, label uppercase `letter-spacing 0.12em`.
 
 ## 9) Badge/chipy statusów
 - Kształt: `border-radius: 999px`, obwódka 1px, półprzezroczyste tło, font Chip.

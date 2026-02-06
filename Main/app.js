@@ -139,6 +139,68 @@ const renderPayments = () => {
   });
 };
 
+const getFirebaseApp = () => {
+  if (!window.firebase || !window.firebase.initializeApp) {
+    return null;
+  }
+
+  if (!window.firebaseConfig || !window.firebaseConfig.projectId) {
+    return null;
+  }
+
+  if (!window.firebase.apps.length) {
+    window.firebase.initializeApp(window.firebaseConfig);
+  }
+
+  return window.firebase;
+};
+
+const initAdminMessaging = () => {
+  const input = document.querySelector("#adminMessageInput");
+  const sendButton = document.querySelector("#adminMessageSend");
+  const status = document.querySelector("#adminMessageStatus");
+
+  if (!input || !sendButton || !status) {
+    return;
+  }
+
+  const firebaseApp = getFirebaseApp();
+
+  if (!firebaseApp) {
+    sendButton.disabled = true;
+    status.textContent = "Uzupełnij konfigurację Firebase, aby wysyłać wiadomości.";
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+
+  sendButton.addEventListener("click", async () => {
+    const message = input.value.trim();
+
+    if (!message) {
+      status.textContent = "Wpisz treść wiadomości przed wysłaniem.";
+      return;
+    }
+
+    sendButton.disabled = true;
+    status.textContent = "Wysyłanie wiadomości...";
+
+    try {
+      await db.collection("admin_messages").add({
+        message,
+        createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+        source: "web-admin"
+      });
+      input.value = "";
+      status.textContent = "Wiadomość wysłana do aplikacji Android.";
+    } catch (error) {
+      status.textContent = "Nie udało się wysłać wiadomości. Sprawdź konfigurację.";
+    } finally {
+      sendButton.disabled = false;
+    }
+  });
+};
+
 const bootstrap = () => {
   const isAdmin = getAdminMode();
   document.body.classList.toggle("is-admin", isAdmin);
@@ -146,6 +208,7 @@ const bootstrap = () => {
   renderTables();
   renderPlayers();
   renderPayments();
+  initAdminMessaging();
 };
 
 bootstrap();
