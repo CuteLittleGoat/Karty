@@ -2,7 +2,7 @@
 
 ## 1. Uruchomienie w przeglądarce (komputer)
 1. Otwórz plik `Main/index.html` w przeglądarce (aplikacja działa jako statyczny front-end).
-2. Zobaczysz widok uczestnika turnieju z trzema kartami: **Stoły i gracze**, **Lista graczy** oraz **Rozliczenia**.
+2. Zobaczysz widok uczestnika turnieju z nagłówkiem **Nielegalne kasyno** oraz trzema kartami: **Stoły i gracze**, **Lista graczy** oraz **Rozliczenia**.
 3. Jeśli chcesz przejść do trybu administratora, dopisz do adresu parametr `?admin=1`.
    - Przykład lokalny: `Main/index.html?admin=1`.
    - Po przełączeniu zmieni się etykieta w karcie **Widok** (z „Użytkownik” na „Administrator”).
