@@ -24,7 +24,7 @@ Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, del
 
 ### 1. Nagłówek strony
 - `<header class="page-header">` zawiera:
-  - **Blok intro** `.header-intro` z eyebrow „Nielegalny poker” (`.eyebrow`) oraz tytułem `Nielegalne kasyno` i opisem (`h1`, `.subtitle`). Blok jest widoczny tylko w trybie admina.
+  - **Blok intro** `.header-intro` z eyebrow „TO NIE JEST niekrgalny poker” (`.eyebrow`) oraz tytułem `TO NIE JEST nielegalne kasyno` i opisem (`h1`, `.subtitle`). Blok jest widoczny tylko w trybie admina.
 - **Karta widoku** (`.view-card`) z etykietą trybu (`.view-label`), wierszem `.view-status` (badge trybu `#viewBadge` i czerwony przycisk `.view-toggle`) oraz podpowiedzią (`.view-hint`).
   - Podpowiedź `.view-hint` jest widoczna tylko w trybie admina.
 

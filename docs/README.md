@@ -16,7 +16,7 @@
 5. W WebView widok admina jest blokowany — aplikacja mobilna zawsze pokazuje wariant użytkownika.
 
 ## 3. Widok administratora — szczegółowe kroki
-Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciskami akcji.
+Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciskami akcji oraz blok wstępny z tekstami **„TO NIE JEST niekrgalny poker”** i **„TO NIE JEST nielegalne kasyno”** w nagłówku strony.
 
 ### 3.1 Dodawanie stołu (przycisk „Dodaj stół”)
 1. Wejdź do **Panelu administratora**.

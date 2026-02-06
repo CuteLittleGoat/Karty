@@ -64,6 +64,7 @@
 - Topbar sticky: 64px, tytuł + akcje.
 - Responsywność: <980px jedna kolumna, <560px tabele w cards, przyciski full width.
 - Odstępy: `--gap-1 8px`, `--gap-2 12px`, `--gap-3 16px`, `--gap-4 24px`, `--gap-5 32px`.
+- Nagłówek admina (`.header-intro`) zawiera eyebrow z tekstem „TO NIE JEST niekrgalny poker” oraz tytuł „TO NIE JEST nielegalne kasyno”.
 
 ## 6) Tabele
 - Tło karty wyników, zebra wierszy, hover neon.
