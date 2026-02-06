@@ -1,12 +1,12 @@
 # Karty - instrukcje użytkownika
 
 ## 1. Uruchomienie
-- Otwórz plik `index.html` w przeglądarce (aplikacja działa jako statyczny front-end).
+- Otwórz plik `Main/index.html` w przeglądarce (aplikacja działa jako statyczny front-end).
 - Domyślnie zobaczysz widok uczestnika turnieju w stylu kasyna (ciemny noir, złoto, filcowa zieleń).
 
 ## 2. Widok administratora
 - Aby uruchomić wariant admina, dopisz do adresu: `?admin=1`.
-- Przykład: `index.html?admin=1`.
+- Przykład: `Main/index.html?admin=1`.
 
 ## 3. Co możesz zrobić na stronie
 - Podglądać przypisania graczy do stołów.
