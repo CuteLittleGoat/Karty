@@ -101,7 +101,11 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `.secondary` – neonowa zieleń, delikatny glow, używana przez przycisk „Instrukcja”.
 - `.danger` – ruby, jaśniejszy tekst.
 
-### 8. Formularz wiadomości administratora
+### 8. Komunikat „Strona w budowie”
+- `.construction-note` to wyróżniony pasek w widoku użytkownika.
+- Styl: złote tło o niskiej przezroczystości, obramowanie `--gold-line`, tekst uppercase w foncie `--font-panel`, wycentrowany i z lekkim glow `--glow-gold`.
+
+### 9. Formularz wiadomości administratora
 - `.admin-message` to karta pomocnicza z tłem noir i obramowaniem.
 - `textarea` ma styl formularza: tło `rgba(0,0,0,.35)`, obramowanie `--border`, font `--font-text`, focus w złocie + neonie.
 - `.status-text` pokazuje komunikaty o wysyłce wiadomości i ładowaniu instrukcji.

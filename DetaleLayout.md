@@ -92,21 +92,27 @@
 - Checkbox/radio: `accent-color: var(--gold)`.
 - Pole wiadomości admina: textarea z `min-height ~86px`, label uppercase `letter-spacing 0.12em`.
 
-## 9) Badge/chipy statusów
+## 9) Komunikat „Strona w budowie”
+- Pasek informacyjny w widoku użytkownika.
+- Tło: `rgba(212,175,55,.12)` z obramowaniem `1px solid var(--gold-line)`.
+- Tekst: `--font-panel`, uppercase, `letter-spacing 0.14em`, rozmiar `--fs-small`.
+- Dodatkowo: `box-shadow: var(--glow-gold)`, wyśrodkowanie tekstu, `border-radius var(--radius-sm)`.
+
+## 10) Badge/chipy statusów
 - Kształt: `border-radius: 999px`, obwódka 1px, półprzezroczyste tło, font Chip.
 - Statusy: BUST → ruby, ITM → gold, ACTIVE → neon, PAUSED → neutral, RE-ENTRY → gold+neon.
 
-## 10) Modale/toasty/tooltips
+## 11) Modale/toasty/tooltips
 - Modal: overlay `rgba(0,0,0,.72)`, karta `linear-gradient` noir, border `--border`, złota linia w top, cień 0 20px 60px.
 - Modal content: przewijalny blok, `white-space: pre-wrap`, font Tekst, tło `rgba(0,0,0,.35)`, border `--border2`.
 - Icon button (zamknięcie): okrągły przycisk `999px`, padding 6–10px, font 18px, neon hover.
 - Toasty: sukces neon, warning złoto, błąd ruby (bez pełnego red background).
 - Tooltip: tło `rgba(0,0,0,.75)`, border `rgba(255,255,255,.12)`, delikatny glow złoty.
 
-## 11) Ikony
+## 12) Ikony
 - Minimalistyczne stroke, kolor domyślny `rgba(237,235,230,.75)`, aktywne `--gold`.
 
-## 11.1) Android (WebView) — motyw i kolory
+## 12.1) Android (WebView) — motyw i kolory
 - Motyw aplikacji: `Theme.Karty` oparty o `Theme.Material3.DayNight.NoActionBar`.
 - Kolory motywu Android:
   - Primary: `#C8A96A` (złoto).
@@ -115,13 +121,13 @@
   - OnBackground: `#F5F1E6` (jasny tekst).
 - Ikona powiadomień: wektor `ic_notification.xml` w kolorze złotym `#C8A96A`.
 
-## 12) Dostępność
+## 13) Dostępność
 - Kontrast tekstu min ~4.5:1.
 - Widoczny focus ring (złoto + neon).
 - Klikalne elementy min 40px na mobile.
 
-## 13) Moduły aplikacji
+## 14) Moduły aplikacji
 - Dashboard, Gracze, Stoliki, Blind structure, Wypłaty, Log zdarzeń.
 
-## 14) Gotowe nazwy tokenów
+## 15) Gotowe nazwy tokenów
 - `--font-title`, `--font-subtitle`, `--font-panel`, `--font-text`, `--font-nazwisko`, `--font-stolik`, `--font-stawka`, `--font-chip`, `--font-log`.

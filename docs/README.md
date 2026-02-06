@@ -63,9 +63,10 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
 4. Jeśli Firebase nie jest skonfigurowany, zobaczysz komunikat o konieczności konfiguracji.
 
 ## 4. Widok uczestnika — co można sprawdzić
-1. **Stoły i gracze** — zobaczysz, do którego stołu należy każdy gracz i ile miejsc jest zajętych.
-2. **Lista graczy** — sprawdzisz, czy wpisowe zostało opłacone.
-3. **Rozliczenia** — widać wpisowe, wygrane oraz saldo na uczestnika.
+1. W karcie **Co dalej?** znajdziesz wyróżniony pasek **„Strona w budowie”**, który informuje, że widok uczestnika jest w fazie przygotowań.
+2. **Stoły i gracze** — zobaczysz, do którego stołu należy każdy gracz i ile miejsc jest zajętych.
+3. **Lista graczy** — sprawdzisz, czy wpisowe zostało opłacone.
+4. **Rozliczenia** — widać wpisowe, wygrane oraz saldo na uczestnika.
 
 ## 5. Responsywność i urządzenia mobilne
 - Aplikacja automatycznie dostosowuje układ do mniejszych ekranów.
