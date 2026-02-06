@@ -8,16 +8,16 @@ Aplikacja jest szablonem strony do organizacji turnieju karcianego. Udostępnia 
 Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, delikatny neon). Projekt korzysta z tokenów typografii i kolorów opisanych w `DetaleLayout.md`.
 
 ## Struktura plików
-- `index.html` – szkielet strony, kontenery dla danych i przyciski admina.
-- `styles.css` – kompletne style wizualne (tokeny kolorów, fonty, układ, komponenty).
-- `app.js` – logika przełączania widoków i renderowania danych przykładowych.
-- `config/firebase-config.js` – miejsce na konfigurację Firebase.
+- `Main/index.html` – szkielet strony, kontenery dla danych i przyciski admina.
+- `Main/styles.css` – kompletne style wizualne (tokeny kolorów, fonty, układ, komponenty).
+- `Main/app.js` – logika przełączania widoków i renderowania danych przykładowych.
+- `config/firebase-config.js` – miejsce na konfigurację Firebase (ładowane z poziomu `Main/index.html`).
 - `Firebase.md` – instrukcja konfiguracji Firebase.
 - `docs/README.md` – instrukcje obsługi dla użytkownika.
 - `DetaleLayout.md` – repozytorium stylów, fontów i wytycznych projektu.
 - `Pliki/` – katalog na zasoby graficzne.
 
-## Opis HTML (`index.html`)
+## Opis HTML (`Main/index.html`)
 
 ### 1. Nagłówek strony
 - `<header class="page-header">` zawiera:
@@ -34,10 +34,10 @@ Układ korzysta z siatki CSS i składa się z kart:
 5. **Co dalej?** – sekcja `.user-only` (lista kroków dla uczestnika).
 
 ### 3. Skrypty
-- `config/firebase-config.js` – wczytywany przed `app.js`, aby zapewnić dostęp do `window.firebaseConfig`.
-- `app.js` – logika przełączeń i renderowania danych przykładowych.
+- `../config/firebase-config.js` – wczytywany przed `app.js`, aby zapewnić dostęp do `window.firebaseConfig`.
+- `app.js` – logika przełączeń i renderowania danych przykładowych (plik w tym samym folderze co HTML).
 
-## Opis CSS (`styles.css`)
+## Opis CSS (`Main/styles.css`)
 
 ### 1. Tokeny kolorów i efektów
 Zdefiniowane w `:root`:
@@ -96,7 +96,7 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 ### 9. Responsywność
 - `<720px` wiersze tabel przechodzą do dwóch kolumn i resetują wyrównania liczbowych kolumn.
 
-## Opis JavaScript (`app.js`)
+## Opis JavaScript (`Main/app.js`)
 
 ### Dane przykładowe
 - `sampleTables` – lista stołów z nazwą, statusem, liczbą graczy i kapitanem.
@@ -139,10 +139,10 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - Po dodaniu SDK Firebase w przyszłości, dane z `window.firebaseConfig` będą przekazywane do inicjalizacji aplikacji.
 
 ## Jak odtworzyć aplikację na podstawie dokumentacji
-1. Utwórz `index.html` z nagłówkiem, kartami i kontenerami opisanymi wyżej.
-2. Dodaj `styles.css` z tokenami kasynowymi, gradientowym tłem noir, filcowymi kartami i tabelami.
-3. Dodaj `app.js` z funkcjami `getAdminMode`, `updateViewBadge`, `renderTables`, `renderPlayers`, `renderPayments`, `bootstrap`.
-4. Połącz pliki w HTML, pamiętając o wczytaniu `config/firebase-config.js` przed `app.js`.
+1. Utwórz `Main/index.html` z nagłówkiem, kartami i kontenerami opisanymi wyżej.
+2. Dodaj `Main/styles.css` z tokenami kasynowymi, gradientowym tłem noir, filcowymi kartami i tabelami.
+3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `updateViewBadge`, `renderTables`, `renderPlayers`, `renderPayments`, `bootstrap`.
+4. Połącz pliki w HTML, pamiętając o wczytaniu `../config/firebase-config.js` przed `app.js`.
 5. Dodaj `DetaleLayout.md` jako repozytorium stylów i `Firebase.md` z instrukcją konfiguracji.
 
 Dzięki temu można w pełni odtworzyć ten szablon aplikacji.
