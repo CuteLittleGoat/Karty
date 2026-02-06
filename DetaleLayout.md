@@ -80,6 +80,11 @@
 - Danger (ruby): `rgba(226,58,75,.12)` + jaśniejszy tekst.
 - Zasady: font Panel, uppercase, `letter-spacing: 0.10em`, `border-radius var(--radius-sm)`, hover `translateY(-1px)`, active `brightness(1.08)`, disabled opacity .45.
 
+## 7.1) Notatka o aktualizacji danych
+- `.admin-data-hint`: małe pudełko informacyjne pod przyciskami admina.
+- Tło `rgba(0,0,0,.25)`, obramowanie przerywane `1px dashed var(--border2)`, tekst `--muted`.
+- Padding 12–14px, font `--fs-small`, `line-height 1.4`.
+
 ## 8) Formularze
 - Tło `rgba(0,0,0,.35)`, border `--border`, tekst `--ink`.
 - Focus: `border-color rgba(212,175,55,.55)`, `box-shadow` złoto + neon.

@@ -34,8 +34,9 @@ Układ korzysta z siatki CSS i składa się z kart:
 3. **Rozliczenia** – kontener `#paymentsContainer`.
 4. **Panel administratora** – sekcja `.admin-only` (przyciski akcji i notatka).
    - Wewnątrz panelu znajduje się blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus`.
-   - W siatce `.admin-actions` dodany jest przycisk `#adminInstructionButton`, który otwiera modal instrukcji.
-5. **Co dalej?** – sekcja `.user-only` (lista kroków dla uczestnika) z wyróżnionym komunikatem „Strona w budowie” (`.construction-note`).
+   - W siatce `.admin-actions` dodany jest przycisk `#dataUpdateButton` („Aktualizuj dane”) oraz `#adminInstructionButton`, który otwiera modal instrukcji.
+   - Poniżej przycisków znajduje się `.admin-data-hint` z informacją o wymaganej lokalizacji pliku `Turniej.xlsx`.
+5. **Co dalej?** – sekcja `.user-only` (lista kroków dla uczestnika).
 
 ### 3. Modal instrukcji
 - Blok `#instructionModal` jest osadzony na końcu `body` i służy do pokazywania instrukcji obsługi.
@@ -108,6 +109,9 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `.admin-message` to karta pomocnicza z tłem noir i obramowaniem.
 - `textarea` ma styl formularza: tło `rgba(0,0,0,.35)`, obramowanie `--border`, font `--font-text`, focus w złocie + neonie.
 - `.status-text` pokazuje komunikaty o wysyłce wiadomości i ładowaniu instrukcji.
+
+### 9. Informacja o aktualizacji danych
+- `.admin-data-hint` to wyróżniona notatka pod przyciskami admina: tło `rgba(0,0,0,.25)`, obramowanie przerywane `var(--border2)` i tekst w kolorze `--muted`.
 
 ### 10. Modal instrukcji
 - `.modal-overlay` to warstwa tła `rgba(0,0,0,.72)` z centrowanym oknem.
@@ -234,7 +238,7 @@ W `MigracjaAndroid/AndroidApp/` znajduje się kompletny projekt Android Studio z
 4. Wiadomości FCM wyświetlane są jako lokalne powiadomienia.
 
 ## Jak odtworzyć aplikację na podstawie dokumentacji
-1. Utwórz `Main/index.html` z nagłówkiem, kartami, panelem admina i modalem instrukcji opisanymi wyżej.
+1. Utwórz `Main/index.html` z nagłówkiem, kartami, panelem admina (w tym przyciskiem „Aktualizuj dane” i notatką o pliku `Turniej.xlsx`) oraz modalem instrukcji opisanymi wyżej.
 2. Dodaj `Main/styles.css` z tokenami kasynowymi, gradientowym tłem noir, filcowymi kartami i stylami modala.
 3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `updateViewBadge`, `renderTables`, `renderPlayers`, `renderPayments`, `initInstructionModal`, `bootstrap`.
 4. Połącz pliki w HTML, pamiętając o wczytaniu `../config/firebase-config.js` oraz skryptów Firebase przed `app.js`.

@@ -32,12 +32,19 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
 2. Kliknij przycisk **Ustaw stawkę wejściowego**.
 3. To miejsce na przyszłą zmianę wpisowego — obecnie przycisk pełni funkcję informacyjną.
 
-### 3.4 Zakończenie rundy (przycisk „Zakończ rundę”)
+### 3.4 Aktualizacja danych z pliku Turniej.xlsx (przycisk „Aktualizuj dane”)
+1. Wejdź do **Panelu administratora**.
+2. Upewnij się, że plik `Turniej.xlsx` znajduje się w folderze `Main` (obok `index.html`).
+3. Kliknij przycisk **Aktualizuj dane**.
+4. Przy przycisku zobaczysz przypomnienie o wymaganej lokalizacji pliku — jest to docelowe miejsce, z którego dane będą konwertowane do `data.json`.
+5. Aktualnie przycisk jest przygotowany pod przyszłą logikę importu danych (po podpięciu skryptu generującego `data.json` z pliku XLSX).
+
+### 3.5 Zakończenie rundy (przycisk „Zakończ rundę”)
 1. Wejdź do **Panelu administratora**.
 2. Kliknij przycisk **Zakończ rundę**.
 3. Przygotowany do późniejszego podpięcia logiki zamykania rundy (np. zapis do bazy i reset list).
 
-### 3.5 Instrukcja obsługi (przycisk „Instrukcja”)
+### 3.6 Instrukcja obsługi (przycisk „Instrukcja”)
 1. Wejdź do **Panelu administratora**.
 2. Kliknij przycisk **Instrukcja**.
 3. Otworzy się okno modalne z treścią instrukcji pobieraną z adresu:
@@ -49,7 +56,7 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
    - albo kliknij tło modala,
    - albo wciśnij klawisz **Esc**.
 
-### 3.6 Wiadomości do aplikacji Android
+### 3.7 Wiadomości do aplikacji Android
 1. W panelu admina przewiń do sekcji **Wiadomość do aplikacji Android**.
 2. Wpisz treść w polu **Treść wiadomości**.
 3. Kliknij **Wyślij**.

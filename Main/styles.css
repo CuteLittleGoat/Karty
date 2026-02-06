@@ -293,6 +293,17 @@ h1 {
   gap: var(--gap-2);
 }
 
+.admin-data-hint {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border2);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--muted);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+}
+
 .admin-message {
   margin-top: var(--gap-3);
   padding: 16px;
