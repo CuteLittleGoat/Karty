@@ -61,6 +61,59 @@ const samplePayments = [
   }
 ];
 
+const nextGameInfo = [
+  { label: "Data", value: "Piątek, 21.02.2025" },
+  { label: "Start rejestracji", value: "18:00" },
+  { label: "Start gry", value: "18:30" },
+  { label: "Lokalizacja", value: "Kasyno Noir, sala VIP" },
+  { label: "Wpisowe", value: "80 zł" },
+  { label: "Stack", value: "20 000" },
+  { label: "Organizator", value: "Aneta ( +48 501 234 567 )" }
+];
+
+const nextGameSchedule = [
+  { time: "18:00", event: "Wejście i potwierdzanie miejsc" },
+  { time: "18:30", event: "Start gry i rozdanie numerów stołów" },
+  { time: "19:45", event: "Przerwa techniczna / serwis" },
+  { time: "21:00", event: "Faza finałowa i wypłaty" }
+];
+
+const nextGameTables = [
+  { table: "Stół A", limit: "6 osób", blind: "25 / 50" },
+  { table: "Stół B", limit: "6 osób", blind: "25 / 50" },
+  { table: "Stół C", limit: "4 osoby", blind: "50 / 100" }
+];
+
+const nextGamePlayers = [
+  "Aneta",
+  "Kuba",
+  "Ola",
+  "Michał",
+  "Patrycja",
+  "Bartek",
+  "Ewa",
+  "Marcin"
+];
+
+const nextGameUpdates = [
+  {
+    title: "Nowa lokalizacja",
+    description: "Wejście od strony parkingu podziemnego, hasło: VIP 21."
+  },
+  {
+    title: "Stawka wejściowa",
+    description: "Wpisowe pozostaje bez zmian, możliwa płatność gotówką lub BLIK."
+  },
+  {
+    title: "Regulamin",
+    description: "Przypominamy o zasadzie ciszy po godzinie 22:00."
+  }
+];
+
+const PIN_LENGTH = 5;
+const PIN_STORAGE_KEY = "nextGamePinVerified";
+let currentPin = "12345";
+
 const getAdminMode = () => {
   const params = new URLSearchParams(window.location.search);
   return params.get("admin") === "1";
@@ -160,6 +213,84 @@ const renderPayments = () => {
   });
 };
 
+const renderNextGameInfo = () => {
+  const list = document.querySelector("#nextGameInfo");
+  if (!list) {
+    return;
+  }
+  list.innerHTML = "";
+  nextGameInfo.forEach((item) => {
+    const entry = document.createElement("li");
+    entry.innerHTML = `<span>${item.label}</span><strong>${item.value}</strong>`;
+    list.appendChild(entry);
+  });
+};
+
+const renderNextGameSchedule = () => {
+  const list = document.querySelector("#nextGameSchedule");
+  if (!list) {
+    return;
+  }
+  list.innerHTML = "";
+  nextGameSchedule.forEach((item) => {
+    const entry = document.createElement("li");
+    entry.innerHTML = `<span class="timeline-time">${item.time}</span><span class="timeline-event">${item.event}</span>`;
+    list.appendChild(entry);
+  });
+};
+
+const renderNextGameTables = () => {
+  const container = document.querySelector("#nextGameTables");
+  if (!container) {
+    return;
+  }
+  container.innerHTML = "";
+  const header = document.createElement("div");
+  header.className = "row header row-3";
+  header.innerHTML = "<span>Stół</span><span>Limit</span><span>Blindy</span>";
+  container.appendChild(header);
+  nextGameTables.forEach((table) => {
+    const row = document.createElement("div");
+    row.className = "row row-3";
+    row.innerHTML = `<span>${table.table}</span><span>${table.limit}</span><span>${table.blind}</span>`;
+    container.appendChild(row);
+  });
+};
+
+const renderNextGamePlayers = () => {
+  const list = document.querySelector("#nextGamePlayers");
+  if (!list) {
+    return;
+  }
+  list.innerHTML = "";
+  nextGamePlayers.forEach((player) => {
+    const entry = document.createElement("li");
+    entry.textContent = player;
+    list.appendChild(entry);
+  });
+};
+
+const renderNextGameUpdates = () => {
+  const list = document.querySelector("#nextGameUpdates");
+  if (!list) {
+    return;
+  }
+  list.innerHTML = "";
+  nextGameUpdates.forEach((update) => {
+    const entry = document.createElement("li");
+    entry.innerHTML = `<strong>${update.title}</strong><span>${update.description}</span>`;
+    list.appendChild(entry);
+  });
+};
+
+const renderNextGame = () => {
+  renderNextGameInfo();
+  renderNextGameSchedule();
+  renderNextGameTables();
+  renderNextGamePlayers();
+  renderNextGameUpdates();
+};
+
 const getFirebaseApp = () => {
   if (!window.firebase || !window.firebase.initializeApp) {
     return null;
@@ -174,6 +305,153 @@ const getFirebaseApp = () => {
   }
 
   return window.firebase;
+};
+
+const sanitizePin = (value) => value.replace(/\D/g, "").slice(0, PIN_LENGTH);
+
+const getPinGateState = () => sessionStorage.getItem(PIN_STORAGE_KEY) === "1";
+
+const setPinGateState = (isVerified) => {
+  sessionStorage.setItem(PIN_STORAGE_KEY, isVerified ? "1" : "0");
+};
+
+const updatePinVisibility = ({ isAdmin }) => {
+  const gate = document.querySelector("#nextGamePinGate");
+  const content = document.querySelector("#nextGameContent");
+  if (!gate || !content) {
+    return;
+  }
+
+  const isVerified = isAdmin || getPinGateState();
+  gate.style.display = isVerified ? "none" : "block";
+  content.classList.toggle("is-visible", isVerified);
+};
+
+const loadPinFromFirestore = async () => {
+  const firebaseApp = getFirebaseApp();
+  if (!firebaseApp) {
+    return;
+  }
+
+  try {
+    const snapshot = await firebaseApp.firestore().collection("app_settings").doc("next_game").get();
+    const data = snapshot.data();
+    if (data && typeof data.pin === "string" && data.pin.trim()) {
+      currentPin = data.pin.trim();
+    }
+  } catch (error) {
+    // Silent fail: use fallback PIN.
+  }
+};
+
+const initAdminPin = () => {
+  const input = document.querySelector("#adminPinInput");
+  const saveButton = document.querySelector("#adminPinSave");
+  const status = document.querySelector("#adminPinStatus");
+
+  if (!input || !saveButton || !status) {
+    return;
+  }
+
+  input.value = currentPin;
+  input.addEventListener("input", () => {
+    input.value = sanitizePin(input.value);
+  });
+
+  const firebaseApp = getFirebaseApp();
+
+  if (!firebaseApp) {
+    saveButton.disabled = true;
+    status.textContent = "Uzupełnij konfigurację Firebase, aby zapisać PIN.";
+    return;
+  }
+
+  saveButton.addEventListener("click", async () => {
+    const pinValue = sanitizePin(input.value);
+
+    if (pinValue.length !== PIN_LENGTH) {
+      status.textContent = "PIN musi mieć dokładnie 5 cyfr.";
+      return;
+    }
+
+    saveButton.disabled = true;
+    status.textContent = "Zapisywanie PIN...";
+
+    try {
+      await firebaseApp.firestore().collection("app_settings").doc("next_game").set({ pin: pinValue });
+      currentPin = pinValue;
+      status.textContent = "PIN zapisany.";
+    } catch (error) {
+      status.textContent = "Nie udało się zapisać PIN. Sprawdź konfigurację.";
+    } finally {
+      saveButton.disabled = false;
+    }
+  });
+};
+
+const initPinGate = ({ isAdmin }) => {
+  const input = document.querySelector("#nextGamePinInput");
+  const submitButton = document.querySelector("#nextGamePinSubmit");
+  const status = document.querySelector("#nextGamePinStatus");
+
+  if (!input || !submitButton || !status) {
+    return;
+  }
+
+  input.addEventListener("input", () => {
+    input.value = sanitizePin(input.value);
+  });
+
+  const verifyPin = () => {
+    const pinValue = sanitizePin(input.value);
+    if (pinValue.length !== PIN_LENGTH) {
+      status.textContent = "Wpisz komplet 5 cyfr.";
+      return;
+    }
+
+    if (pinValue === currentPin) {
+      setPinGateState(true);
+      status.textContent = "PIN poprawny. Otwieranie...";
+      updatePinVisibility({ isAdmin });
+    } else {
+      status.textContent = "Niepoprawny PIN. Spróbuj ponownie.";
+    }
+  };
+
+  submitButton.addEventListener("click", verifyPin);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      verifyPin();
+    }
+  });
+
+  updatePinVisibility({ isAdmin });
+};
+
+const initUserTabs = () => {
+  const tabButtons = document.querySelectorAll(".tab-button");
+  const panels = document.querySelectorAll(".tab-panel");
+  if (!tabButtons.length) {
+    return;
+  }
+
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = button.getAttribute("data-target");
+      if (!target) {
+        return;
+      }
+
+      tabButtons.forEach((btn) => btn.classList.remove("is-active"));
+      panels.forEach((panel) => panel.classList.remove("is-active"));
+
+      button.classList.add("is-active");
+      const targetPanel = document.querySelector(`#${target}`);
+      if (targetPanel) {
+        targetPanel.classList.add("is-active");
+      }
+    });
+  });
 };
 
 const initAdminMessaging = () => {
@@ -314,16 +592,21 @@ const initInstructionModal = () => {
   });
 };
 
-const bootstrap = () => {
+const bootstrap = async () => {
   const isAdmin = getAdminMode();
   document.body.classList.toggle("is-admin", isAdmin);
   updateViewBadge(isAdmin);
   renderTables();
   renderPlayers();
   renderPayments();
+  renderNextGame();
   initViewToggle();
+  initUserTabs();
+  await loadPinFromFirestore();
   initAdminMessaging();
+  initAdminPin();
+  initPinGate({ isAdmin });
   initInstructionModal();
 };
 
-bootstrap();
+void bootstrap();

@@ -92,15 +92,27 @@
 - Select: ten sam chrome, strzałka `rgba(237,235,230,.65)`, option `#0C0D12`.
 - Checkbox/radio: `accent-color: var(--gold)`.
 - Pole wiadomości admina: textarea z `min-height ~86px`, label uppercase `letter-spacing 0.12em`.
+- Pole PIN (admin i użytkownik): input `max-width ~180px`, `letter-spacing 0.08em`, focus gold+neon.
 
-## 9) Placeholder „STRONA W BUDOWIE”
-- Użytkownik widzi pełnoekranową kartę placeholdera (`.user-placeholder`) zamiast tabel.
-- Układ:
-  - **`.user-panel`**: górny pasek z etykietą widoku i czerwonym przyciskiem przełączania ustawionym obok.
-  - **`.user-view`**: poziomy wrapper (flex) dla etykiety widoku i przycisku.
-  - **`.user-view-label`**: `--font-panel`, uppercase, `letter-spacing 0.24em`, kolor `--muted`.
-  - **`.user-construction`**: duży napis w `--font-title`, złoty kolor `--gold`, `letter-spacing 0.18em`, `text-shadow: var(--glow-gold)`.
-- Wysokość: `min-height` oparta o viewport (dla efektu „na całą stronę”).
+## 9) Strefa uczestnika, zakładki i PIN
+- **`.next-game-card`**: karta na pełną szerokość siatki (grid-column 1 / -1).
+- **`.user-panel`**: pasek narzędzi z etykietą, przyciskiem przełączania i zakładkami.
+- **`.user-tabs`**: zestaw pill buttons, wyrównany do prawej (flex + `margin-left: auto`).
+- **`.tab-button`**: małe przyciski z obrysem `--border2`, aktywny stan `.is-active` podbija złoty glow.
+- **`.tab-panel`**: ukrywane przez `display: none`, aktywne przez `.is-active`.
+- **PIN gate**:
+  - **`.pin-gate`**: ramka przerywana `--gold-line`, tło noir `rgba(0,0,0,.30)`.
+  - **`.pin-card`**: pionowy układ tekstu i formularza.
+  - **`.pin-inputs input`**: styl jak pola formularzy (tło noir, border `--border`, focus gold+neon).
+- **Treści „Najbliższa gra”**:
+  - **`.next-game-grid`**: responsywna siatka paneli informacyjnych.
+  - **`.next-game-panel`**: półprzezroczyste panele z własnym nagłówkiem.
+  - **`.data-list`**: etykieta uppercase + wartość wyrównana do prawej, tabular-nums.
+  - **`.timeline-list`**: lewa linia czasu, złoty czas, opis w `--muted`.
+  - **`.chip-list`**: pill-tag dla potwierdzonych graczy, neonowy akcent.
+  - **`.updates-list`**: noir cards z tytułem w złocie.
+  - **`.next-game-note`**: złota ramka + tło `rgba(212,175,55,.08)`.
+- **`.row-3`**: wariant wiersza tabeli z 3 kolumnami.
 
 ## 10) Badge/chipy statusów
 - Kształt: `border-radius: 999px`, obwódka 1px, półprzezroczyste tło, font Chip.

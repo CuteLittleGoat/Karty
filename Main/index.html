@@ -93,20 +93,104 @@
               </div>
             </div>
           </div>
+          <div class="admin-pin">
+            <div>
+              <h3>PIN do zakładki „Najbliższa gra”</h3>
+              <p>PIN składa się z 5 cyfr i zabezpiecza treści widoczne dla użytkowników.</p>
+            </div>
+            <div class="admin-pin-form">
+              <label for="adminPinInput">PIN (5 cyfr)</label>
+              <input
+                id="adminPinInput"
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                maxlength="5"
+                placeholder="Np. 12345"
+              />
+              <div class="admin-pin-actions">
+                <button id="adminPinSave" class="primary" type="button">Zapisz PIN</button>
+                <span id="adminPinStatus" class="status-text" aria-live="polite"></span>
+              </div>
+            </div>
+          </div>
           <div class="admin-note">
             <strong>Notatka:</strong> akcje będą podpinane do Firebase po uzupełnieniu
             konfiguracji w pliku <code>config/firebase-config.js</code>.
           </div>
         </section>
 
-        <section class="card user-only user-placeholder">
+        <section class="card next-game-card">
           <div class="user-panel">
             <div class="user-view">
-              <span class="user-view-label">Widok Użytkownik</span>
+              <span class="user-view-label">Strefa uczestnika</span>
               <button class="view-toggle" type="button">Przełącz widok</button>
             </div>
+            <div class="user-tabs" role="tablist" aria-label="Zakładki użytkownika">
+              <button class="tab-button is-active" type="button" data-target="nextGameTab">
+                Najbliższa gra
+              </button>
+              <button class="tab-button" type="button" data-target="updatesTab">
+                Aktualności
+              </button>
+            </div>
           </div>
-          <p class="user-construction">STRONA W BUDOWIE</p>
+          <div class="user-tab-content">
+            <div id="nextGameTab" class="tab-panel is-active" role="tabpanel">
+              <div id="nextGamePinGate" class="pin-gate" aria-live="polite">
+                <div class="pin-card">
+                  <p class="pin-title">Wpisz PIN, aby zobaczyć szczegóły najbliższej gry.</p>
+                  <div class="pin-inputs">
+                    <input
+                      id="nextGamePinInput"
+                      type="text"
+                      inputmode="numeric"
+                      autocomplete="one-time-code"
+                      maxlength="5"
+                      placeholder="PIN (5 cyfr)"
+                    />
+                    <button id="nextGamePinSubmit" class="primary" type="button">Otwórz</button>
+                  </div>
+                  <p id="nextGamePinStatus" class="status-text"></p>
+                </div>
+              </div>
+              <div id="nextGameContent" class="next-game-content">
+                <div class="card-header">
+                  <h2>Najbliższa gra</h2>
+                  <p>Podgląd harmonogramu, stołów i potwierdzonych uczestników.</p>
+                </div>
+                <div class="next-game-grid">
+                  <div class="next-game-panel">
+                    <h3>Informacje główne</h3>
+                    <ul id="nextGameInfo" class="data-list"></ul>
+                  </div>
+                  <div class="next-game-panel">
+                    <h3>Plan wieczoru</h3>
+                    <ul id="nextGameSchedule" class="timeline-list"></ul>
+                  </div>
+                  <div class="next-game-panel">
+                    <h3>Stoły i limity</h3>
+                    <div id="nextGameTables" class="table"></div>
+                  </div>
+                  <div class="next-game-panel">
+                    <h3>Potwierdzeni gracze</h3>
+                    <ul id="nextGamePlayers" class="chip-list"></ul>
+                  </div>
+                </div>
+                <div class="next-game-note">
+                  <strong>Wskazówka:</strong> Przyjdź 15 minut wcześniej, aby potwierdzić
+                  wejściówkę i odebrać miejsce przy stole.
+                </div>
+              </div>
+            </div>
+            <div id="updatesTab" class="tab-panel" role="tabpanel">
+              <div class="card-header">
+                <h2>Aktualności</h2>
+                <p>Ostatnie komunikaty od organizatorów.</p>
+              </div>
+              <ul id="nextGameUpdates" class="updates-list"></ul>
+            </div>
+          </div>
         </section>
       </main>
     </div>

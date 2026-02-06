@@ -2,9 +2,9 @@
 
 ## 1. Uruchomienie w przeglądarce (komputer)
 1. Otwórz plik `Main/index.html` w przeglądarce (aplikacja działa jako statyczny front-end).
-2. Zobaczysz widok uczestnika z krótką informacją **„Widok Użytkownik”** oraz dużym napisem **„STRONA W BUDOWIE”** na środku ekranu.
+2. Zobaczysz widok uczestnika z nagłówkiem **„Strefa uczestnika”**, zakładkami **Najbliższa gra** i **Aktualności** oraz formularzem do wpisania PIN-u.
 3. Aby przełączyć się do trybu administratora:
-   - Kliknij czerwony przycisk **„Przełącz widok”** ustawiony obok etykiety **„Widok Użytkownik”** w górnym pasku karty użytkownika.
+   - Kliknij czerwony przycisk **„Przełącz widok”** ustawiony obok etykiety **„Strefa uczestnika”** w górnym pasku karty użytkownika.
    - Alternatywnie dopisz do adresu parametr `?admin=1` (np. `Main/index.html?admin=1`).
 4. Po przełączeniu zmieni się etykieta w karcie **Widok** (z „Użytkownik” na „Administrator”).
 
@@ -68,10 +68,25 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
 3. Kliknij **Wyślij**.
 4. Jeśli Firebase nie jest skonfigurowany, zobaczysz komunikat o konieczności konfiguracji.
 
-## 4. Widok uczestnika — co zobaczysz teraz
-1. U góry panelu widzisz informację **„Widok Użytkownik”** oraz czerwony przycisk **„Przełącz widok”** umieszczony tuż obok etykiety.
-2. Na środku ekranu znajduje się duży napis **„STRONA W BUDOWIE”**, który zajmuje całą stronę.
-3. W tym trybie nie są pokazywane tabele i karty z danymi — to placeholder do czasu wdrożenia właściwego widoku uczestnika.
+### 3.8 Ustawianie PIN-u do zakładki „Najbliższa gra”
+1. W panelu administratora odszukaj sekcję **PIN do zakładki „Najbliższa gra”**.
+2. W polu **PIN (5 cyfr)** wpisz dokładnie pięć cyfr (np. `12345`).
+3. Kliknij przycisk **Zapisz PIN**.
+4. Pod polem pojawi się komunikat **„PIN zapisany.”** jeśli zapis się powiódł.
+5. Jeśli konfiguracja Firebase jest pusta, przycisk będzie wyszarzony, a obok zobaczysz informację o konieczności konfiguracji.
+
+## 4. Widok uczestnika — zakładka „Najbliższa gra”
+1. W górnym pasku karty widzisz etykietę **„Strefa uczestnika”** i czerwony przycisk **„Przełącz widok”**.
+2. Kliknij zakładkę **Najbliższa gra** (jest aktywna domyślnie).
+3. Zobaczysz formularz z polem **PIN (5 cyfr)**.
+4. Wpisz PIN przekazany przez administratora i kliknij **Otwórz**.
+5. Po poprawnym PIN-ie pojawią się:
+   - sekcja **Informacje główne** (data, lokalizacja, wpisowe),
+   - **Plan wieczoru** (godziny i etapy),
+   - **Stoły i limity**,
+   - **Potwierdzeni gracze**.
+6. Jeśli wpiszesz błędny PIN, pod polem pojawi się komunikat o błędzie.
+7. Zakładka **Aktualności** pokazuje ostatnie komunikaty od organizatorów.
 
 ## 5. Responsywność i urządzenia mobilne
 - Aplikacja automatycznie dostosowuje układ do mniejszych ekranów.
