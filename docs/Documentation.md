@@ -23,8 +23,8 @@ Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, del
 
 ### 1. Nagłówek strony
 - `<header class="page-header">` zawiera:
-  - **Eyebrow** „Turniej karciany” (`.eyebrow`).
-  - **Tytuł** `Panel organizacji` i opis działania wariantów (`h1`, `.subtitle`).
+  - **Eyebrow** „Nielegalny poker” (`.eyebrow`).
+  - **Tytuł** `Nielegalne kasyno` i opis działania wariantów (`h1`, `.subtitle`).
   - **Karta widoku** (`.view-card`) z etykietą trybu (`.view-label`), badge trybu (`#viewBadge`) i podpowiedzią (`.view-hint`).
 
 ### 2. Sekcje główne (`<main class="grid">`)
