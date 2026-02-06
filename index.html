@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Karty - Organizator Turnieju</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">Turniej karciany</p>
+          <h1>Panel organizacji</h1>
+          <p class="subtitle">
+            Szybki podgląd stołów, wpisów i finansów. Wariant administratora jest
+            aktywny pod adresem z parametrem <strong>?admin=1</strong>.
+          </p>
+        </div>
+        <div class="view-card">
+          <p class="view-label">Widok</p>
+          <p id="viewBadge" class="view-badge">Użytkownik</p>
+          <p class="view-hint">Tryb przełącza się automatycznie po parametrze URL.</p>
+        </div>
+      </header>
+
+      <main class="grid">
+        <section class="card">
+          <div class="card-header">
+            <h2>Stoły i gracze</h2>
+            <p>Przypisania uczestników do stołów w tej rundzie.</p>
+          </div>
+          <div class="table" id="tablesContainer"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <h2>Lista graczy</h2>
+            <p>Wpisy i status wpłat wejściowego.</p>
+          </div>
+          <div class="table" id="playersContainer"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <h2>Rozliczenia</h2>
+            <p>Podgląd wpłat oraz wygranych w aktualnej rundzie.</p>
+          </div>
+          <div class="table" id="paymentsContainer"></div>
+        </section>
+
+        <section class="card admin-only">
+          <div class="card-header">
+            <h2>Panel administratora</h2>
+            <p>Zarządzaj przebiegiem turnieju i dodawaj nowe stoły.</p>
+          </div>
+          <div class="admin-actions">
+            <button class="primary">Dodaj stół</button>
+            <button>Dodaj gracza</button>
+            <button>Ustaw stawkę wejściowego</button>
+            <button class="danger">Zakończ rundę</button>
+          </div>
+          <div class="admin-note">
+            <strong>Notatka:</strong> akcje będą podpinane do Firebase po uzupełnieniu
+            konfiguracji w pliku <code>config/firebase-config.js</code>.
+          </div>
+        </section>
+
+        <section class="card user-only">
+          <div class="card-header">
+            <h2>Co dalej?</h2>
+            <p>Widok dla uczestnika turnieju.</p>
+          </div>
+          <ul class="next-steps">
+            <li>Sprawdź przypisanie do stołu i godzinę startu.</li>
+            <li>Zweryfikuj wpisowe oraz saldo wygranych.</li>
+            <li>Kontaktuj się z organizatorem, gdy chcesz zgłosić zmianę.</li>
+          </ul>
+        </section>
+      </main>
+    </div>
+
+    <script src="config/firebase-config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
