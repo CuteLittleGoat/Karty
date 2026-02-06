@@ -13,6 +13,7 @@ Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, del
 - `Main/app.js` – logika przełączania widoków, renderowania danych, obsługa wiadomości admina i modala instrukcji.
 - `config/firebase-config.js` – miejsce na konfigurację Firebase (ładowane z poziomu `Main/index.html`).
 - `Firebase.md` – instrukcja konfiguracji Firebase.
+- `PIN.md` – analiza funkcjonalności zakładki „Najbliższa gra” oraz wymagań dla PIN.
 - `docs/README.md` – instrukcje obsługi dla użytkownika.
 - `DetaleLayout.md` – repozytorium stylów, fontów i wytycznych projektu.
 - `Pliki/` – katalog na zasoby graficzne.
@@ -197,6 +198,10 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 3. Interfejs jest przełączany na podstawie klasy `is-admin`.
 4. Dane przykładowe są renderowane do kontenerów.
 5. Dla admina aktywuje się wysyłka wiadomości i modal instrukcji.
+
+## Analiza planowanej funkcji „Najbliższa gra” (PIN)
+- W pliku `PIN.md` znajduje się pełna analiza wymaganej funkcji: nowa zakładka widoczna w obu trybach, zabezpieczenie PIN-em oraz zapis PIN-u w Firestore.
+- Dokument opisuje zmiany w HTML/CSS/JS, sugerowaną strukturę danych (`app_settings/next_game`) oraz wymagane reguły bezpieczeństwa.
 
 ## Firebase i konfiguracja
 - Plik `config/firebase-config.js` udostępnia globalny obiekt `window.firebaseConfig`.

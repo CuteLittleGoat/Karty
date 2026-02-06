@@ -85,3 +85,8 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
 
 ## 7. Zasoby graficzne
 - Folder `Pliki/` jest przeznaczony na grafiki i zasoby używane w aplikacji.
+
+## 8. Dokument analizy PIN (dla zespołu)
+1. W głównym folderze projektu znajduje się plik `PIN.md`.
+2. Plik zawiera analizę oraz plan wdrożenia zakładki **„Najbliższa gra”** z zabezpieczeniem PIN.
+3. Jest to dokument projektowy (nie wpływa na bieżące działanie aplikacji), przydatny dla osób wdrażających kolejne funkcje.
