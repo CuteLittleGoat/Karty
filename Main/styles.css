@@ -405,6 +405,21 @@ button.danger {
   border: 1px solid var(--border2);
 }
 
+.construction-note {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid var(--gold-line);
+  color: var(--gold);
+  font-family: var(--font-panel);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: var(--fs-small);
+  box-shadow: var(--glow-gold);
+  text-align: center;
+}
+
 .next-steps {
   margin: 0;
   padding-left: 18px;

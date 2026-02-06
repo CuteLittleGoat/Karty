@@ -35,7 +35,7 @@ Układ korzysta z siatki CSS i składa się z kart:
 4. **Panel administratora** – sekcja `.admin-only` (przyciski akcji i notatka).
    - Wewnątrz panelu znajduje się blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus`.
    - W siatce `.admin-actions` dodany jest przycisk `#adminInstructionButton`, który otwiera modal instrukcji.
-5. **Co dalej?** – sekcja `.user-only` (lista kroków dla uczestnika).
+5. **Co dalej?** – sekcja `.user-only` (lista kroków dla uczestnika) z wyróżnionym komunikatem „Strona w budowie” (`.construction-note`).
 
 ### 3. Modal instrukcji
 - Blok `#instructionModal` jest osadzony na końcu `body` i służy do pokazywania instrukcji obsługi.
@@ -100,24 +100,28 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `.secondary` – neonowa zieleń, delikatny glow, używana przez przycisk „Instrukcja”.
 - `.danger` – ruby, jaśniejszy tekst.
 
-### 8. Formularz wiadomości administratora
+### 8. Komunikat „Strona w budowie”
+- `.construction-note` to wyróżniony pasek w widoku użytkownika.
+- Styl: złote tło o niskiej przezroczystości, obramowanie `--gold-line`, tekst uppercase w foncie `--font-panel`, wycentrowany i z lekkim glow `--glow-gold`.
+
+### 9. Formularz wiadomości administratora
 - `.admin-message` to karta pomocnicza z tłem noir i obramowaniem.
 - `textarea` ma styl formularza: tło `rgba(0,0,0,.35)`, obramowanie `--border`, font `--font-text`, focus w złocie + neonie.
 - `.status-text` pokazuje komunikaty o wysyłce wiadomości i ładowaniu instrukcji.
 
-### 9. Modal instrukcji
+### 10. Modal instrukcji
 - `.modal-overlay` to warstwa tła `rgba(0,0,0,.72)` z centrowanym oknem.
 - `.modal-card` ma noir gradient, złotą linię w `::before`, cień 0 20px 60px i max-height 82vh.
 - `.modal-content` jest przewijalnym kontenerem z `white-space: pre-wrap`, aby zachować formatowanie Markdown.
 - `.icon-button` to kompaktowy przycisk „×”.
 - `body.modal-open` blokuje przewijanie tła podczas otwartego modala.
 
-### 10. Widoczność sekcji
+### 11. Widoczność sekcji
 - `.admin-only` domyślnie ukryta.
 - `.user-only` domyślnie widoczna.
 - Klasa `.is-admin` na `<body>` przełącza widoczność.
 
-### 11. Responsywność
+### 12. Responsywność
 - `<720px` wiersze tabel przechodzą do dwóch kolumn i resetują wyrównania liczbowych kolumn.
 - `<720px` przyciski w sekcji wiadomości układają się w kolumnie.
 - `<520px` karta widoku rozciąga się na pełną szerokość, a przyciski admina układają się w jednej kolumnie.
