@@ -64,7 +64,7 @@
 - Topbar sticky: 64px, tytuł + akcje.
 - Responsywność: <980px jedna kolumna, <560px tabele w cards, przyciski full width.
 - Odstępy: `--gap-1 8px`, `--gap-2 12px`, `--gap-3 16px`, `--gap-4 24px`, `--gap-5 32px`.
-- Nagłówek admina (`.header-intro`) zawiera eyebrow z tekstem „TO NIE JEST niekrgalny poker” oraz tytuł „TO NIE JEST nielegalne kasyno”.
+- Nagłówek admina (`.header-intro`) zawiera eyebrow z tekstem „TO NIE JEST nielegalny poker” oraz tytuł „TO NIE JEST nielegalne kasyno”.
 
 ## 6) Tabele
 - Tło karty wyników, zebra wierszy, hover neon.
@@ -94,6 +94,7 @@
 - Checkbox/radio: `accent-color: var(--gold)`.
 - Pole wiadomości admina: textarea z `min-height ~86px`, label uppercase `letter-spacing 0.12em`.
 - Pole PIN (admin i użytkownik): input `max-width ~180px`, `letter-spacing 0.08em`, focus gold+neon.
+- Akcje PIN w panelu admina: przyciski w jednym rzędzie (`.admin-pin-actions`), gdzie „Zapisz PIN” jest primary, a „Losuj PIN” secondary.
 
 ## 9) Strefa uczestnika, zakładki i PIN
 - **`.next-game-card`**: karta na pełną szerokość siatki (grid-column 1 / -1).

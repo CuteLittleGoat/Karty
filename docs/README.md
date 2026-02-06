@@ -16,7 +16,7 @@
 5. W WebView widok admina jest blokowany — aplikacja mobilna zawsze pokazuje wariant użytkownika.
 
 ## 3. Widok administratora — szczegółowe kroki
-Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciskami akcji oraz blok wstępny z tekstami **„TO NIE JEST niekrgalny poker”** i **„TO NIE JEST nielegalne kasyno”** w nagłówku strony.
+Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciskami akcji oraz blok wstępny z tekstami **„TO NIE JEST nielegalny poker”** i **„TO NIE JEST nielegalne kasyno”** w nagłówku strony.
 
 ### 3.1 Dodawanie stołu (przycisk „Dodaj stół”)
 1. Wejdź do **Panelu administratora**.
@@ -71,9 +71,12 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
 ### 3.8 Ustawianie PIN-u do zakładki „Najbliższa gra”
 1. W panelu administratora odszukaj sekcję **PIN do zakładki „Najbliższa gra”**.
 2. W polu **PIN (5 cyfr)** wpisz dokładnie pięć cyfr (np. `12345`).
-3. Kliknij przycisk **Zapisz PIN**.
-4. Pod polem pojawi się komunikat **„PIN zapisany.”** jeśli zapis się powiódł.
-5. Jeśli konfiguracja Firebase jest pusta, przycisk będzie wyszarzony, a obok zobaczysz informację o konieczności konfiguracji.
+3. Jeśli chcesz szybko wygenerować PIN:
+   - Kliknij przycisk **Losuj PIN**.
+   - W polu pojawi się losowy ciąg pięciu cyfr.
+4. Kliknij przycisk **Zapisz PIN**.
+5. Pod polem pojawi się komunikat **„PIN zapisany.”** jeśli zapis się powiódł.
+6. Jeśli konfiguracja Firebase jest pusta, przycisk będzie wyszarzony, a obok zobaczysz informację o konieczności konfiguracji.
 
 ## 4. Widok uczestnika — zakładka „Najbliższa gra”
 1. W górnym pasku karty widzisz etykietę **„Strefa uczestnika”** i czerwony przycisk **„Przełącz widok”**.

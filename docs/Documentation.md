@@ -24,7 +24,7 @@ Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, del
 
 ### 1. Nagłówek strony
 - `<header class="page-header">` zawiera:
-  - **Blok intro** `.header-intro` z eyebrow „TO NIE JEST niekrgalny poker” (`.eyebrow`) oraz tytułem `TO NIE JEST nielegalne kasyno` i opisem (`h1`, `.subtitle`). Blok jest widoczny tylko w trybie admina.
+  - **Blok intro** `.header-intro` z eyebrow „TO NIE JEST nielegalny poker” (`.eyebrow`) oraz tytułem `TO NIE JEST nielegalne kasyno` i opisem (`h1`, `.subtitle`). Blok jest widoczny tylko w trybie admina.
 - **Karta widoku** (`.view-card`) z etykietą trybu (`.view-label`), wierszem `.view-status` (badge trybu `#viewBadge` i czerwony przycisk `.view-toggle`) oraz podpowiedzią (`.view-hint`).
   - Podpowiedź `.view-hint` jest widoczna tylko w trybie admina.
 
@@ -37,7 +37,7 @@ Układ korzysta z siatki CSS i składa się z kart:
    - Wewnątrz panelu znajduje się blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus`.
   - W siatce `.admin-actions` dodany jest przycisk `#dataUpdateButton` („Aktualizuj dane”) oraz `#adminInstructionButton`, który otwiera modal instrukcji.
   - Poniżej przycisków znajduje się `.admin-data-hint` z informacją o wymaganej lokalizacji pliku `Turniej.xlsx`.
-  - Dodatkowo występuje blok `.admin-pin` z polem `#adminPinInput`, przyciskiem `#adminPinSave` i statusem `#adminPinStatus` do zapisu PIN-u w Firestore.
+  - Dodatkowo występuje blok `.admin-pin` z polem `#adminPinInput`, przyciskami `#adminPinSave` i `#adminPinRandom` oraz statusem `#adminPinStatus` do zapisu PIN-u w Firestore i losowania nowego kodu.
 5. **Strefa uczestnika / zakładka „Najbliższa gra”** – sekcja `.next-game-card` widoczna w obu trybach:
   - `.user-panel` zawiera etykietę `.user-view-label` („Strefa uczestnika”), czerwony przycisk `.view-toggle` i listę zakładek `.user-tabs`.
   - Zakładka **Najbliższa gra** (`#nextGameTab`) zawiera:
@@ -208,6 +208,7 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 11. **`initAdminPin()`**
    - Obsługuje pole `#adminPinInput` i zapis PIN-u do Firestore.
    - Waliduje długość 5 cyfr oraz informuje o błędach.
+   - Przycisk `#adminPinRandom` generuje losowy kod 5-cyfrowy i wpisuje go do pola.
 
 12. **`initPinGate()`**
    - Waliduje PIN wpisany przez użytkownika w `#nextGamePinInput`.

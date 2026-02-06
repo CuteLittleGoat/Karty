@@ -347,15 +347,27 @@ const loadPinFromFirestore = async () => {
 const initAdminPin = () => {
   const input = document.querySelector("#adminPinInput");
   const saveButton = document.querySelector("#adminPinSave");
+  const randomButton = document.querySelector("#adminPinRandom");
   const status = document.querySelector("#adminPinStatus");
 
-  if (!input || !saveButton || !status) {
+  if (!input || !saveButton || !randomButton || !status) {
     return;
   }
 
   input.value = currentPin;
   input.addEventListener("input", () => {
     input.value = sanitizePin(input.value);
+  });
+
+  const generateRandomPin = () =>
+    Math.floor(Math.random() * Math.pow(10, PIN_LENGTH))
+      .toString()
+      .padStart(PIN_LENGTH, "0");
+
+  randomButton.addEventListener("click", () => {
+    const generatedPin = generateRandomPin();
+    input.value = generatedPin;
+    status.textContent = "Wylosowano PIN. Kliknij „Zapisz PIN”, aby go utrwalić.";
   });
 
   const firebaseApp = getFirebaseApp();
