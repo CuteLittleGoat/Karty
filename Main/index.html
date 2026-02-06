@@ -25,7 +25,10 @@
         </div>
         <div class="view-card">
           <p class="view-label">Widok</p>
-          <p id="viewBadge" class="view-badge">Użytkownik</p>
+          <div class="view-status">
+            <p id="viewBadge" class="view-badge">Użytkownik</p>
+            <button class="view-toggle" type="button">Przełącz widok</button>
+          </div>
           <p class="view-hint admin-only">Tryb przełącza się automatycznie po parametrze URL.</p>
         </div>
       </header>
@@ -64,7 +67,6 @@
             <button class="primary">Dodaj stół</button>
             <button>Dodaj gracza</button>
             <button>Ustaw stawkę wejściowego</button>
-            <button class="secondary view-toggle" type="button">Przełącz widok</button>
             <button id="dataUpdateButton" class="secondary" type="button">Aktualizuj dane</button>
             <button id="adminInstructionButton" class="secondary" type="button">Instrukcja</button>
             <button class="danger">Zakończ rundę</button>
@@ -99,8 +101,10 @@
 
         <section class="card user-only user-placeholder">
           <div class="user-panel">
-            <span class="user-view-label">Widok Użytkownik</span>
-            <button class="secondary view-toggle" type="button">Przełącz widok</button>
+            <div class="user-view">
+              <span class="user-view-label">Widok Użytkownik</span>
+              <button class="view-toggle" type="button">Przełącz widok</button>
+            </div>
           </div>
           <p class="user-construction">STRONA W BUDOWIE</p>
         </section>

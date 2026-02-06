@@ -78,6 +78,7 @@
 - Secondary (neon): tło `rgba(43,227,139,.14)`, border `rgba(43,227,139,.45)`, glow `--glow-neon`.
 - Secondary (neon/filc): `rgba(43,227,139,.10)` + `--glow-neon`.
 - Danger (ruby): `rgba(226,58,75,.12)` + jaśniejszy tekst.
+- View toggle (czerwony): tło `rgba(226,58,75,.22)`, border `rgba(226,58,75,.60)`, tekst `#FFD6DA`, glow `rgba(226,58,75,.28)` z mocniejszym hover.
 - Zasady: font Panel, uppercase, `letter-spacing: 0.10em`, `border-radius var(--radius-sm)`, hover `translateY(-1px)`, active `brightness(1.08)`, disabled opacity .45.
 
 ## 7.1) Notatka o aktualizacji danych
@@ -95,7 +96,8 @@
 ## 9) Placeholder „STRONA W BUDOWIE”
 - Użytkownik widzi pełnoekranową kartę placeholdera (`.user-placeholder`) zamiast tabel.
 - Układ:
-  - **`.user-panel`**: górny pasek z etykietą widoku i przyciskiem przełączania.
+  - **`.user-panel`**: górny pasek z etykietą widoku i czerwonym przyciskiem przełączania ustawionym obok.
+  - **`.user-view`**: poziomy wrapper (flex) dla etykiety widoku i przycisku.
   - **`.user-view-label`**: `--font-panel`, uppercase, `letter-spacing 0.24em`, kolor `--muted`.
   - **`.user-construction`**: duży napis w `--font-title`, złoty kolor `--gold`, `letter-spacing 0.18em`, `text-shadow: var(--glow-gold)`.
 - Wysokość: `min-height` oparta o viewport (dla efektu „na całą stronę”).
