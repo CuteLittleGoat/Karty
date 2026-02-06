@@ -2,8 +2,8 @@
 
 ## Cel aplikacji
 Aplikacja jest szablonem strony do organizacji turnieju karcianego. Udostępnia dwa warianty interfejsu:
-- **Widok użytkownika** (domyślny) – uczestnik widzi przypisanie do stołu, wpisowe i saldo wygranych.
-- **Widok administratora** (po dodaniu `?admin=1` do URL) – rozszerzony o sekcję zarządzania stołami i graczami, moduł wiadomości do Androida oraz przycisk z instrukcją obsługi.
+- **Widok użytkownika** (domyślny) – uproszczony ekran z informacją „Widok Użytkownik” oraz pełnoekranowym napisem „STRONA W BUDOWIE”.
+- **Widok administratora** (po dodaniu `?admin=1` do URL lub użyciu przycisku „Przełącz widok”) – rozszerzony o sekcję zarządzania stołami i graczami, moduł wiadomości do Androida oraz przycisk z instrukcją obsługi.
 
 Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, delikatny neon). Projekt korzysta z tokenów typografii i kolorów opisanych w `DetaleLayout.md`.
 
@@ -23,20 +23,23 @@ Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, del
 
 ### 1. Nagłówek strony
 - `<header class="page-header">` zawiera:
-  - **Eyebrow** „Nielegalny poker” (`.eyebrow`).
-  - **Tytuł** `Nielegalne kasyno` i opis działania wariantów (`h1`, `.subtitle`).
+  - **Blok intro** `.header-intro` z eyebrow „Nielegalny poker” (`.eyebrow`) oraz tytułem `Nielegalne kasyno` i opisem (`h1`, `.subtitle`). Blok jest widoczny tylko w trybie admina.
   - **Karta widoku** (`.view-card`) z etykietą trybu (`.view-label`), badge trybu (`#viewBadge`) i podpowiedzią (`.view-hint`).
+  - Podpowiedź `.view-hint` jest widoczna tylko w trybie admina.
 
 ### 2. Sekcje główne (`<main class="grid">`)
 Układ korzysta z siatki CSS i składa się z kart:
-1. **Stoły i gracze** – kontener `#tablesContainer`.
-2. **Lista graczy** – kontener `#playersContainer`.
-3. **Rozliczenia** – kontener `#paymentsContainer`.
+1. **Stoły i gracze** – kontener `#tablesContainer` (sekcja tylko dla admina).
+2. **Lista graczy** – kontener `#playersContainer` (sekcja tylko dla admina).
+3. **Rozliczenia** – kontener `#paymentsContainer` (sekcja tylko dla admina).
 4. **Panel administratora** – sekcja `.admin-only` (przyciski akcji i notatka).
    - Wewnątrz panelu znajduje się blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus`.
    - W siatce `.admin-actions` dodany jest przycisk `#dataUpdateButton` („Aktualizuj dane”) oraz `#adminInstructionButton`, który otwiera modal instrukcji.
+   - W `.admin-actions` znajduje się także tymczasowy przycisk `.view-toggle` („Przełącz widok”), który zmienia tryb na użytkownika.
    - Poniżej przycisków znajduje się `.admin-data-hint` z informacją o wymaganej lokalizacji pliku `Turniej.xlsx`.
-5. **Co dalej?** – sekcja `.user-only` (lista kroków dla uczestnika).
+5. **Placeholder użytkownika** – sekcja `.user-only.user-placeholder`:
+   - `.user-panel` z etykietą `.user-view-label` („Widok Użytkownik”) i przyciskiem `.view-toggle`.
+   - `.user-construction` z dużym napisem „STRONA W BUDOWIE”.
 
 ### 3. Modal instrukcji
 - Blok `#instructionModal` jest osadzony na końcu `body` i służy do pokazywania instrukcji obsługi.
@@ -101,9 +104,11 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `.secondary` – neonowa zieleń, delikatny glow, używana przez przycisk „Instrukcja”.
 - `.danger` – ruby, jaśniejszy tekst.
 
-### 8. Komunikat „Strona w budowie”
-- `.construction-note` to wyróżniony pasek w widoku użytkownika.
-- Styl: złote tło o niskiej przezroczystości, obramowanie `--gold-line`, tekst uppercase w foncie `--font-panel`, wycentrowany i z lekkim glow `--glow-gold`.
+### 8. Placeholder „STRONA W BUDOWIE”
+- `.user-placeholder` to pełnoekranowa karta w trybie użytkownika (min-height zależne od viewportu).
+- `.user-panel` to górny pasek z etykietą trybu i przyciskiem przełączania widoku.
+- `.user-view-label` używa fontu panelowego, uppercase i zwiększonego letter-spacing.
+- `.user-construction` to duży napis w foncie tytułowym, złoty kolor z tekstowym glow.
 
 ### 9. Formularz wiadomości administratora
 - `.admin-message` to karta pomocnicza z tłem noir i obramowaniem.
@@ -123,7 +128,7 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 ### 11. Widoczność sekcji
 - `.admin-only` domyślnie ukryta.
 - `.user-only` domyślnie widoczna.
-- Klasa `.is-admin` na `<body>` przełącza widoczność.
+- Klasa `.is-admin` na `<body>` przełącza widoczność; dodatkowo `.card.admin-only` jest pokazywana jako flex.
 
 ### 12. Responsywność
 - `<720px` wiersze tabel przechodzą do dwóch kolumn i resetują wyrównania liczbowych kolumn.
@@ -146,35 +151,44 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 2. **`updateViewBadge(isAdmin)`**
    - Aktualizuje etykietę w karcie widoku (`#viewBadge`) na „Administrator” lub „Użytkownik”.
 
-3. **`renderTables()`**
+3. **`toggleView()`**
+   - Przełącza parametr `admin` w URL (usuwa go lub ustawia na `1`).
+   - Po zmianie wykonuje przekierowanie na nowy adres.
+
+4. **`initViewToggle()`**
+   - Wyszukuje wszystkie przyciski `.view-toggle`.
+   - Podpina `click`, aby przełączać widok.
+
+5. **`renderTables()`**
    - Czyści kontener `#tablesContainer`.
    - Dodaje nagłówek i wiersze na podstawie `sampleTables`.
 
-4. **`renderPlayers()`**
+6. **`renderPlayers()`**
    - Czyści kontener `#playersContainer`.
    - Dodaje nagłówek i wiersze na podstawie `samplePlayers`.
    - Dla statusu płatności tworzy badge (złoty lub ruby).
 
-5. **`renderPayments()`**
+7. **`renderPayments()`**
    - Czyści kontener `#paymentsContainer`.
    - Dodaje nagłówek i wiersze na podstawie `samplePayments`.
 
-6. **`getFirebaseApp()`**
+8. **`getFirebaseApp()`**
    - Sprawdza dostępność SDK Firebase i konfiguracji (`window.firebaseConfig`).
    - Inicjalizuje Firebase tylko raz i zwraca instancję.
 
-7. **`initAdminMessaging()`**
+9. **`initAdminMessaging()`**
    - Podpina przycisk `#adminMessageSend` do zapisu wiadomości w Firestore (`admin_messages`).
    - Obsługuje walidację pustej treści oraz statusy powodzenia/błędu.
 
-8. **`initInstructionModal()`**
+10. **`initInstructionModal()`**
    - Spina przycisk `#adminInstructionButton` z modalem `#instructionModal`.
    - Pobiera treść z `https://cutelittlegoat.github.io/Karty/docs/README.md` i wstawia do `#instructionContent`.
    - Obsługuje odświeżanie treści, zamykanie (przyciski, tło, Esc) i blokadę scrolla tła.
 
-9. **`bootstrap()`**
+11. **`bootstrap()`**
    - Funkcja startowa: sprawdza tryb admina, aktualizuje klasę `is-admin` na `<body>`.
    - Wywołuje funkcje renderujące.
+   - Inicjuje przyciski przełączania widoku.
    - Uruchamia logikę wysyłki wiadomości oraz modala instrukcji.
 
 ### Przepływ działania
@@ -240,7 +254,7 @@ W `MigracjaAndroid/AndroidApp/` znajduje się kompletny projekt Android Studio z
 ## Jak odtworzyć aplikację na podstawie dokumentacji
 1. Utwórz `Main/index.html` z nagłówkiem, kartami, panelem admina (w tym przyciskiem „Aktualizuj dane” i notatką o pliku `Turniej.xlsx`) oraz modalem instrukcji opisanymi wyżej.
 2. Dodaj `Main/styles.css` z tokenami kasynowymi, gradientowym tłem noir, filcowymi kartami i stylami modala.
-3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `updateViewBadge`, `renderTables`, `renderPlayers`, `renderPayments`, `initInstructionModal`, `bootstrap`.
+3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `updateViewBadge`, `toggleView`, `initViewToggle`, `renderTables`, `renderPlayers`, `renderPayments`, `initInstructionModal`, `bootstrap`.
 4. Połącz pliki w HTML, pamiętając o wczytaniu `../config/firebase-config.js` oraz skryptów Firebase przed `app.js`.
 5. Dodaj `DetaleLayout.md` jako repozytorium stylów i `Firebase.md` z instrukcją konfiguracji powiadomień.
 6. Jeśli chcesz wersję Android, utwórz projekt na bazie `MigracjaAndroid/AndroidApp` zgodnie z powyższą sekcją.
