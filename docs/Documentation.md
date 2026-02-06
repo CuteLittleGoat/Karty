@@ -3,14 +3,14 @@
 ## Cel aplikacji
 Aplikacja jest szablonem strony do organizacji turnieju karcianego. Udostępnia dwa warianty interfejsu:
 - **Widok użytkownika** (domyślny) – uczestnik widzi przypisanie do stołu, wpisowe i saldo wygranych.
-- **Widok administratora** (po dodaniu `?admin=1` do URL) – rozszerzony o sekcję zarządzania stołami i graczami.
+- **Widok administratora** (po dodaniu `?admin=1` do URL) – rozszerzony o sekcję zarządzania stołami i graczami, moduł wiadomości do Androida oraz przycisk z instrukcją obsługi.
 
 Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, delikatny neon). Projekt korzysta z tokenów typografii i kolorów opisanych w `DetaleLayout.md`.
 
 ## Struktura plików
-- `Main/index.html` – szkielet strony, kontenery dla danych i przyciski admina.
-- `Main/styles.css` – kompletne style wizualne (tokeny kolorów, fonty, układ, komponenty).
-- `Main/app.js` – logika przełączania widoków, renderowania danych i wysyłki wiadomości do Androida.
+- `Main/index.html` – szkielet strony, kontenery dla danych, panel admina oraz modal instrukcji.
+- `Main/styles.css` – kompletne style wizualne (tokeny kolorów, fonty, układ, komponenty, modal).
+- `Main/app.js` – logika przełączania widoków, renderowania danych, obsługa wiadomości admina i modala instrukcji.
 - `config/firebase-config.js` – miejsce na konfigurację Firebase (ładowane z poziomu `Main/index.html`).
 - `Firebase.md` – instrukcja konfiguracji Firebase.
 - `docs/README.md` – instrukcje obsługi dla użytkownika.
@@ -33,13 +33,19 @@ Układ korzysta z siatki CSS i składa się z kart:
 2. **Lista graczy** – kontener `#playersContainer`.
 3. **Rozliczenia** – kontener `#paymentsContainer`.
 4. **Panel administratora** – sekcja `.admin-only` (przyciski akcji i notatka).
-   - Wewnątrz panelu znajduje się blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus` do wysyłki powiadomień.
+   - Wewnątrz panelu znajduje się blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus`.
+   - W siatce `.admin-actions` dodany jest przycisk `#adminInstructionButton`, który otwiera modal instrukcji.
 5. **Co dalej?** – sekcja `.user-only` (lista kroków dla uczestnika).
 
-### 3. Skrypty
+### 3. Modal instrukcji
+- Blok `#instructionModal` jest osadzony na końcu `body` i służy do pokazywania instrukcji obsługi.
+- Zawiera nagłówek z tytułem `#instructionTitle`, treść w `#instructionContent`, status `#instructionStatus` i przyciski `#instructionRefresh` oraz `#instructionCloseFooter`.
+- Modal jest ukrywany/pokazywany poprzez klasę `.is-visible` i atrybut `aria-hidden`.
+
+### 4. Skrypty
 - `../config/firebase-config.js` – wczytywany przed `app.js`, aby zapewnić dostęp do `window.firebaseConfig`.
 - `firebase-app-compat.js` oraz `firebase-firestore-compat.js` – biblioteki Firebase wymagane do zapisu wiadomości w Firestore.
-- `app.js` – logika przełączeń i renderowania danych przykładowych (plik w tym samym folderze co HTML).
+- `app.js` – logika przełączeń i renderowania danych przykładowych.
 
 ## Opis CSS (`Main/styles.css`)
 
@@ -63,6 +69,7 @@ Wykorzystane fonty (Google Fonts) i tokeny:
 - `--font-nazwisko`: IBM Plex Sans – nazwiska w tabelach.
 - `--font-stawka`: Roboto Mono – liczby i stawki (tabular).
 - `--font-chip`: Sora – badge/chipy statusów.
+- `--font-log`: Fira Code – styl notatek/logów.
 
 Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothing: antialiased`, `font-kerning: normal`.
 
@@ -90,20 +97,31 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 ### 7. Przyciski
 - `button` to styl „panelowy” (uppercase, `--font-panel`, złote i neonowe glowy).
 - `.primary` – złoty gradient, `--glow-gold`.
+- `.secondary` – neonowa zieleń, delikatny glow, używana przez przycisk „Instrukcja”.
 - `.danger` – ruby, jaśniejszy tekst.
 
 ### 8. Formularz wiadomości administratora
 - `.admin-message` to karta pomocnicza z tłem noir i obramowaniem.
 - `textarea` ma styl formularza: tło `rgba(0,0,0,.35)`, obramowanie `--border`, font `--font-text`, focus w złocie + neonie.
-- `.status-text` pokazuje komunikaty o wysyłce wiadomości.
+- `.status-text` pokazuje komunikaty o wysyłce wiadomości i ładowaniu instrukcji.
 
-### 9. Widoczność sekcji
+### 9. Modal instrukcji
+- `.modal-overlay` to warstwa tła `rgba(0,0,0,.72)` z centrowanym oknem.
+- `.modal-card` ma noir gradient, złotą linię w `::before`, cień 0 20px 60px i max-height 82vh.
+- `.modal-content` jest przewijalnym kontenerem z `white-space: pre-wrap`, aby zachować formatowanie Markdown.
+- `.icon-button` to kompaktowy przycisk „×”.
+- `body.modal-open` blokuje przewijanie tła podczas otwartego modala.
+
+### 10. Widoczność sekcji
 - `.admin-only` domyślnie ukryta.
 - `.user-only` domyślnie widoczna.
 - Klasa `.is-admin` na `<body>` przełącza widoczność.
 
-### 10. Responsywność
+### 11. Responsywność
 - `<720px` wiersze tabel przechodzą do dwóch kolumn i resetują wyrównania liczbowych kolumn.
+- `<720px` przyciski w sekcji wiadomości układają się w kolumnie.
+- `<520px` karta widoku rozciąga się na pełną szerokość, a przyciski admina układają się w jednej kolumnie.
+- Modal na mniejszych ekranach zmniejsza padding i przechodzi w układ jednokolumnowy.
 
 ## Opis JavaScript (`Main/app.js`)
 
@@ -141,16 +159,22 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
    - Podpina przycisk `#adminMessageSend` do zapisu wiadomości w Firestore (`admin_messages`).
    - Obsługuje walidację pustej treści oraz statusy powodzenia/błędu.
 
-8. **`bootstrap()`**
+8. **`initInstructionModal()`**
+   - Spina przycisk `#adminInstructionButton` z modalem `#instructionModal`.
+   - Pobiera treść z `https://cutelittlegoat.github.io/Karty/docs/README.md` i wstawia do `#instructionContent`.
+   - Obsługuje odświeżanie treści, zamykanie (przyciski, tło, Esc) i blokadę scrolla tła.
+
+9. **`bootstrap()`**
    - Funkcja startowa: sprawdza tryb admina, aktualizuje klasę `is-admin` na `<body>`.
    - Wywołuje funkcje renderujące.
-   - Uruchamia logikę wysyłki wiadomości dla admina.
+   - Uruchamia logikę wysyłki wiadomości oraz modala instrukcji.
 
 ### Przepływ działania
 1. `bootstrap()` uruchamia się po załadowaniu skryptu.
 2. Odczytywany jest tryb admina.
 3. Interfejs jest przełączany na podstawie klasy `is-admin`.
 4. Dane przykładowe są renderowane do kontenerów.
+5. Dla admina aktywuje się wysyłka wiadomości i modal instrukcji.
 
 ## Firebase i konfiguracja
 - Plik `config/firebase-config.js` udostępnia globalny obiekt `window.firebaseConfig`.
@@ -206,9 +230,9 @@ W `MigracjaAndroid/AndroidApp/` znajduje się kompletny projekt Android Studio z
 4. Wiadomości FCM wyświetlane są jako lokalne powiadomienia.
 
 ## Jak odtworzyć aplikację na podstawie dokumentacji
-1. Utwórz `Main/index.html` z nagłówkiem, kartami i kontenerami opisanymi wyżej.
-2. Dodaj `Main/styles.css` z tokenami kasynowymi, gradientowym tłem noir, filcowymi kartami i tabelami.
-3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `updateViewBadge`, `renderTables`, `renderPlayers`, `renderPayments`, `bootstrap`.
+1. Utwórz `Main/index.html` z nagłówkiem, kartami, panelem admina i modalem instrukcji opisanymi wyżej.
+2. Dodaj `Main/styles.css` z tokenami kasynowymi, gradientowym tłem noir, filcowymi kartami i stylami modala.
+3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `updateViewBadge`, `renderTables`, `renderPlayers`, `renderPayments`, `initInstructionModal`, `bootstrap`.
 4. Połącz pliki w HTML, pamiętając o wczytaniu `../config/firebase-config.js` oraz skryptów Firebase przed `app.js`.
 5. Dodaj `DetaleLayout.md` jako repozytorium stylów i `Firebase.md` z instrukcją konfiguracji powiadomień.
 6. Jeśli chcesz wersję Android, utwórz projekt na bazie `MigracjaAndroid/AndroidApp` zgodnie z powyższą sekcją.
