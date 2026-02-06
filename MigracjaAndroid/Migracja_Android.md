@@ -13,9 +13,7 @@ Ten dokument zawiera kompletny zestaw informacji potrzebnych do przygotowania **
 ## 1. Adresy aplikacji web (widok użytkownika)
 
 ### 1.1. Start aplikacji (bez admina)
-- **Start (Main):** `https://<TWOJ_LOGIN>.github.io/Karty/Main/index.html`
-
-> Wstaw swój login GitHub w miejscu `<TWOJ_LOGIN>`.
+- **Start (Main):** `https://cutelittlegoat.github.io/Karty/Main/index.html`
 
 ### 1.2. Zasady widoku użytkownika (bez admina)
 - URL startowy **nie zawiera** `?admin=1`.
@@ -94,7 +92,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 
 object WebViewConfig {
-  const val USER_START_URL = "https://<TWOJ_LOGIN>.github.io/Karty/Main/index.html"
+  const val USER_START_URL = "https://cutelittlegoat.github.io/Karty/Main/index.html"
 
   fun applyDefaults(webView: WebView) {
     val settings: WebSettings = webView.settings

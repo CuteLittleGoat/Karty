@@ -97,6 +97,15 @@
 ## 11) Ikony
 - Minimalistyczne stroke, kolor domyślny `rgba(237,235,230,.75)`, aktywne `--gold`.
 
+## 11.1) Android (WebView) — motyw i kolory
+- Motyw aplikacji: `Theme.Karty` oparty o `Theme.Material3.DayNight.NoActionBar`.
+- Kolory motywu Android:
+  - Primary: `#C8A96A` (złoto).
+  - OnPrimary: `#1B1712` (ciemny kontrast).
+  - Background: `#12100E` (noir).
+  - OnBackground: `#F5F1E6` (jasny tekst).
+- Ikona powiadomień: wektor `ic_notification.xml` w kolorze złotym `#C8A96A`.
+
 ## 12) Dostępność
 - Kontrast tekstu min ~4.5:1.
 - Widoczny focus ring (złoto + neon).

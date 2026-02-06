@@ -16,6 +16,8 @@ Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, del
 - `docs/README.md` – instrukcje obsługi dla użytkownika.
 - `DetaleLayout.md` – repozytorium stylów, fontów i wytycznych projektu.
 - `Pliki/` – katalog na zasoby graficzne.
+- `MigracjaAndroid/Migracja_Android.md` – pełna instrukcja migracji na Android (WebView + FCM).
+- `MigracjaAndroid/AndroidApp/` – gotowy projekt Android Studio z WebView i FCM.
 
 ## Opis HTML (`Main/index.html`)
 
@@ -138,11 +140,59 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - Plik `config/firebase-config.js` udostępnia globalny obiekt `window.firebaseConfig`.
 - Po dodaniu SDK Firebase w przyszłości, dane z `window.firebaseConfig` będą przekazywane do inicjalizacji aplikacji.
 
+## Migracja Android (WebView + FCM)
+
+### Struktura projektu Android
+W `MigracjaAndroid/AndroidApp/` znajduje się kompletny projekt Android Studio z konfiguracją Gradle, manifestem oraz zasobami:
+- `settings.gradle`, `build.gradle`, `gradle.properties` – konfiguracja builda i repozytoriów.
+- `app/build.gradle` – konfiguracja aplikacji, wersje SDK, zależności Firebase/Material.
+- `app/google-services.json` – plik konfiguracyjny FCM dla kompilacji (może zostać podmieniony na produkcyjny).
+- `app/src/main/AndroidManifest.xml` – uprawnienia, deklaracja Activity i usługi FCM.
+- `app/src/main/java/com/karty/app/*.kt` – logika WebView i powiadomień.
+- `app/src/main/res/*` – layouty, kolory, motyw i ikona notyfikacji.
+
+### Opis plików Kotlin
+1. **`MainActivity.kt`**
+   - Tworzy UI na bazie `activity_main.xml`.
+   - Konfiguruje WebView przez `WebViewConfig`.
+   - Podpina `KartyWebViewClient`, aby blokować `?admin=1`.
+   - Wywołuje `NotificationHelper.ensureChannel` dla kanału notyfikacji.
+   - Otwiera adres startowy użytkownika (`USER_START_URL`).
+
+2. **`WebViewConfig.kt`**
+   - Przechowuje stałą `USER_START_URL` ustawioną na adres publicznej wersji web.
+   - Ustawia WebView: JS, DOM storage, tryb szerokiego widoku.
+
+3. **`KartyWebViewClient.kt`**
+   - Nadpisuje `shouldOverrideUrlLoading`.
+   - Wykrywa parametr `admin=1` i przekierowuje na bezpieczny URL bez tego parametru.
+
+4. **`NotificationHelper.kt`**
+   - Tworzy kanał powiadomień `karty_updates`.
+   - Buduje notyfikacje z ikoną `ic_notification`.
+
+5. **`KartyFirebaseMessagingService.kt`**
+   - Odbiera powiadomienia FCM.
+   - Przekazuje tytuł i treść do `NotificationHelper.showNotification`.
+
+### Zasoby Android (layout i motyw)
+- `activity_main.xml` zawiera pełnoekranowy WebView.
+- `colors.xml` definiuje podstawową paletę aplikacji nawiązującą do złota/noir.
+- `themes.xml` ustawia motyw `Theme.Karty` (Material 3, bez ActionBar).
+- `ic_notification.xml` to wektorowa ikona powiadomień w kolorze złotym.
+
+### Przepływ działania Android
+1. Uruchomienie aplikacji ładuje `MainActivity`.
+2. WebView otwiera `https://cutelittlegoat.github.io/Karty/Main/index.html`.
+3. Każda próba wejścia w `?admin=1` zostaje zablokowana i zastąpiona bezpiecznym URL.
+4. Wiadomości FCM wyświetlane są jako lokalne powiadomienia.
+
 ## Jak odtworzyć aplikację na podstawie dokumentacji
 1. Utwórz `Main/index.html` z nagłówkiem, kartami i kontenerami opisanymi wyżej.
 2. Dodaj `Main/styles.css` z tokenami kasynowymi, gradientowym tłem noir, filcowymi kartami i tabelami.
 3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `updateViewBadge`, `renderTables`, `renderPlayers`, `renderPayments`, `bootstrap`.
 4. Połącz pliki w HTML, pamiętając o wczytaniu `../config/firebase-config.js` przed `app.js`.
 5. Dodaj `DetaleLayout.md` jako repozytorium stylów i `Firebase.md` z instrukcją konfiguracji.
+6. Jeśli chcesz wersję Android, utwórz projekt na bazie `MigracjaAndroid/AndroidApp` zgodnie z powyższą sekcją.
 
 Dzięki temu można w pełni odtworzyć ten szablon aplikacji.
