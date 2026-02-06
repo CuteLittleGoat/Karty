@@ -66,6 +66,24 @@
             <button>Ustaw stawkę wejściowego</button>
             <button class="danger">Zakończ rundę</button>
           </div>
+          <div class="admin-message">
+            <div>
+              <h3>Wiadomość do aplikacji Android</h3>
+              <p>Wyślij krótkie powiadomienie do uczestników w aplikacji mobilnej.</p>
+            </div>
+            <div class="admin-message-form">
+              <label for="adminMessageInput">Treść wiadomości</label>
+              <textarea
+                id="adminMessageInput"
+                rows="3"
+                placeholder="Np. Runda startuje za 10 minut — przejdźcie do stołów."
+              ></textarea>
+              <div class="admin-message-actions">
+                <button id="adminMessageSend" class="primary" type="button">Wyślij</button>
+                <span id="adminMessageStatus" class="status-text" aria-live="polite"></span>
+              </div>
+            </div>
+          </div>
           <div class="admin-note">
             <strong>Notatka:</strong> akcje będą podpinane do Firebase po uzupełnieniu
             konfiguracji w pliku <code>config/firebase-config.js</code>.
@@ -87,6 +105,8 @@
     </div>
 
     <script src="../config/firebase-config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

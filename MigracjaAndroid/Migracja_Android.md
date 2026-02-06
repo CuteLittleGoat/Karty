@@ -65,6 +65,7 @@ package com.karty.app
 import android.os.Bundle
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
   private lateinit var webView: WebView
@@ -76,7 +77,9 @@ class MainActivity : AppCompatActivity() {
     webView = findViewById(R.id.webView)
 
     WebViewConfig.applyDefaults(webView)
-    webView.webViewClient = KartyWebViewClient(this)
+    webView.webViewClient = KartyWebViewClient()
+
+    FirebaseMessaging.getInstance().subscribeToTopic("karty-admin")
 
     // Start w trybie użytkownika (bez admin=1)
     webView.loadUrl(WebViewConfig.USER_START_URL)
@@ -114,7 +117,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 
-class KartyWebViewClient(private val context: Context) : WebViewClient() {
+class KartyWebViewClient : WebViewClient() {
   override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
     val url = request?.url ?: return false
 
@@ -267,19 +270,19 @@ dependencies {
 4. Włącz **Cloud Messaging** w Firebase.
 
 ### 6.1. Subskrypcja tematu (opcjonalne)
-Jeśli chcesz wysyłać do tematu (np. `karty`), dodaj w `MainActivity`:
+Jeśli chcesz wysyłać do tematu (np. `karty-admin`), dodaj w `MainActivity`:
 ```kotlin
-FirebaseMessaging.getInstance().subscribeToTopic("karty")
+FirebaseMessaging.getInstance().subscribeToTopic("karty-admin")
 ```
 
 ---
 
 ## 7. Backend PUSH (opcjonalny, ale rekomendowany)
 
-Jeżeli wiadomości mają przychodzić po zmianach w Firestore:
+Jeżeli wiadomości mają przychodzić po zmianach w Firestore (np. po kliknięciu **Wyślij** w panelu admina):
 1. Utwórz Firebase Functions (Node.js).
-2. Nasłuchuj dokumentu (np. `dataslate/current`) i wysyłaj FCM.
-3. Wysyłaj wiadomości na temat `karty`.
+2. Nasłuchuj kolekcji `admin_messages` i wysyłaj FCM.
+3. Wysyłaj wiadomości na temat `karty-admin`.
 
 > Wersja web **nie wymaga zmian** — to dodatkowe powiadomienia tylko dla Androida.
 

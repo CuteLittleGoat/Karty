@@ -10,7 +10,7 @@ Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, del
 ## Struktura plików
 - `Main/index.html` – szkielet strony, kontenery dla danych i przyciski admina.
 - `Main/styles.css` – kompletne style wizualne (tokeny kolorów, fonty, układ, komponenty).
-- `Main/app.js` – logika przełączania widoków i renderowania danych przykładowych.
+- `Main/app.js` – logika przełączania widoków, renderowania danych i wysyłki wiadomości do Androida.
 - `config/firebase-config.js` – miejsce na konfigurację Firebase (ładowane z poziomu `Main/index.html`).
 - `Firebase.md` – instrukcja konfiguracji Firebase.
 - `docs/README.md` – instrukcje obsługi dla użytkownika.
@@ -33,10 +33,12 @@ Układ korzysta z siatki CSS i składa się z kart:
 2. **Lista graczy** – kontener `#playersContainer`.
 3. **Rozliczenia** – kontener `#paymentsContainer`.
 4. **Panel administratora** – sekcja `.admin-only` (przyciski akcji i notatka).
+   - Wewnątrz panelu znajduje się blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus` do wysyłki powiadomień.
 5. **Co dalej?** – sekcja `.user-only` (lista kroków dla uczestnika).
 
 ### 3. Skrypty
 - `../config/firebase-config.js` – wczytywany przed `app.js`, aby zapewnić dostęp do `window.firebaseConfig`.
+- `firebase-app-compat.js` oraz `firebase-firestore-compat.js` – biblioteki Firebase wymagane do zapisu wiadomości w Firestore.
 - `app.js` – logika przełączeń i renderowania danych przykładowych (plik w tym samym folderze co HTML).
 
 ## Opis CSS (`Main/styles.css`)
@@ -90,12 +92,17 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `.primary` – złoty gradient, `--glow-gold`.
 - `.danger` – ruby, jaśniejszy tekst.
 
-### 8. Widoczność sekcji
+### 8. Formularz wiadomości administratora
+- `.admin-message` to karta pomocnicza z tłem noir i obramowaniem.
+- `textarea` ma styl formularza: tło `rgba(0,0,0,.35)`, obramowanie `--border`, font `--font-text`, focus w złocie + neonie.
+- `.status-text` pokazuje komunikaty o wysyłce wiadomości.
+
+### 9. Widoczność sekcji
 - `.admin-only` domyślnie ukryta.
 - `.user-only` domyślnie widoczna.
 - Klasa `.is-admin` na `<body>` przełącza widoczność.
 
-### 9. Responsywność
+### 10. Responsywność
 - `<720px` wiersze tabel przechodzą do dwóch kolumn i resetują wyrównania liczbowych kolumn.
 
 ## Opis JavaScript (`Main/app.js`)
@@ -126,9 +133,18 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
    - Czyści kontener `#paymentsContainer`.
    - Dodaje nagłówek i wiersze na podstawie `samplePayments`.
 
-6. **`bootstrap()`**
+6. **`getFirebaseApp()`**
+   - Sprawdza dostępność SDK Firebase i konfiguracji (`window.firebaseConfig`).
+   - Inicjalizuje Firebase tylko raz i zwraca instancję.
+
+7. **`initAdminMessaging()`**
+   - Podpina przycisk `#adminMessageSend` do zapisu wiadomości w Firestore (`admin_messages`).
+   - Obsługuje walidację pustej treści oraz statusy powodzenia/błędu.
+
+8. **`bootstrap()`**
    - Funkcja startowa: sprawdza tryb admina, aktualizuje klasę `is-admin` na `<body>`.
    - Wywołuje funkcje renderujące.
+   - Uruchamia logikę wysyłki wiadomości dla admina.
 
 ### Przepływ działania
 1. `bootstrap()` uruchamia się po załadowaniu skryptu.
@@ -138,7 +154,8 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 
 ## Firebase i konfiguracja
 - Plik `config/firebase-config.js` udostępnia globalny obiekt `window.firebaseConfig`.
-- Po dodaniu SDK Firebase w przyszłości, dane z `window.firebaseConfig` będą przekazywane do inicjalizacji aplikacji.
+- `app.js` inicjalizuje Firebase i zapisuje wiadomości w kolekcji `admin_messages`.
+- Kliknięcie **Wyślij** wymaga skonfigurowanych Cloud Functions, aby przesyłać powiadomienia FCM do Androida (opis w `Firebase.md`).
 
 ## Migracja Android (WebView + FCM)
 
@@ -157,6 +174,7 @@ W `MigracjaAndroid/AndroidApp/` znajduje się kompletny projekt Android Studio z
    - Konfiguruje WebView przez `WebViewConfig`.
    - Podpina `KartyWebViewClient`, aby blokować `?admin=1`.
    - Wywołuje `NotificationHelper.ensureChannel` dla kanału notyfikacji.
+   - Subskrybuje temat FCM `karty-admin` dla wiadomości z panelu admina.
    - Otwiera adres startowy użytkownika (`USER_START_URL`).
 
 2. **`WebViewConfig.kt`**
@@ -191,8 +209,8 @@ W `MigracjaAndroid/AndroidApp/` znajduje się kompletny projekt Android Studio z
 1. Utwórz `Main/index.html` z nagłówkiem, kartami i kontenerami opisanymi wyżej.
 2. Dodaj `Main/styles.css` z tokenami kasynowymi, gradientowym tłem noir, filcowymi kartami i tabelami.
 3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `updateViewBadge`, `renderTables`, `renderPlayers`, `renderPayments`, `bootstrap`.
-4. Połącz pliki w HTML, pamiętając o wczytaniu `../config/firebase-config.js` przed `app.js`.
-5. Dodaj `DetaleLayout.md` jako repozytorium stylów i `Firebase.md` z instrukcją konfiguracji.
+4. Połącz pliki w HTML, pamiętając o wczytaniu `../config/firebase-config.js` oraz skryptów Firebase przed `app.js`.
+5. Dodaj `DetaleLayout.md` jako repozytorium stylów i `Firebase.md` z instrukcją konfiguracji powiadomień.
 6. Jeśli chcesz wersję Android, utwórz projekt na bazie `MigracjaAndroid/AndroidApp` zgodnie z powyższą sekcją.
 
 Dzięki temu można w pełni odtworzyć ten szablon aplikacji.
