@@ -1,8 +1,9 @@
 {
   "project_info": {
     "project_number": "123456789012",
-    "project_id": "karty-android",
-    "storage_bucket": "karty-android.appspot.com"
+    "project_id": "karty-android-push",
+    "storage_bucket": "karty-android-push.appspot.com",
+    "firebase_url": "https://karty-android-push.firebaseio.com"
   },
   "client": [
     {

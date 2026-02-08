@@ -2,6 +2,7 @@
   <style name="Theme.Karty" parent="Theme.Material3.DayNight.NoActionBar">
     <item name="colorPrimary">@color/md_theme_light_primary</item>
     <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
+    <item name="colorSecondary">@color/notification_gold</item>
     <item name="android:colorBackground">@color/md_theme_light_background</item>
     <item name="colorOnBackground">@color/md_theme_light_onBackground</item>
   </style>

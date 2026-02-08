@@ -12,13 +12,13 @@ Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, del
 - `Main/styles.css` – kompletne style wizualne (tokeny kolorów, fonty, układ, komponenty, modal).
 - `Main/app.js` – logika przełączania widoków, renderowania danych, obsługa wiadomości admina i modala instrukcji.
 - `config/firebase-config.js` – miejsce na konfigurację Firebase (ładowane z poziomu `Main/index.html`).
-- `Firebase.md` – instrukcja konfiguracji Firebase.
+- `Firebase.md` – instrukcja konfiguracji Firebase (Firestore + PUSH).
 - `PIN.md` – analiza funkcjonalności zakładki „Najbliższa gra” oraz wymagań dla PIN.
 - `docs/README.md` – instrukcje obsługi dla użytkownika.
 - `DetaleLayout.md` – repozytorium stylów, fontów i wytycznych projektu.
 - `Pliki/` – katalog na zasoby graficzne.
-- `MigracjaAndroid/Migracja_Android.md` – pełna instrukcja migracji na Android (WebView + FCM).
-- `MigracjaAndroid/AndroidApp/` – gotowy projekt Android Studio z WebView i FCM.
+- `MigracjaAndroid/Migracja_Android.md` – pełna instrukcja migracji na Android (WebView + PUSH/Firestore).
+- `MigracjaAndroid/AndroidApp/` – gotowy projekt Android Studio z WebView i Firestore.
 
 ## Opis HTML (`Main/index.html`)
 
@@ -34,7 +34,7 @@ Układ korzysta z siatki CSS i składa się z kart:
 2. **Lista graczy** – kontener `#playersContainer` (sekcja tylko dla admina).
 3. **Rozliczenia** – kontener `#paymentsContainer` (sekcja tylko dla admina).
 4. **Panel administratora** – sekcja `.admin-only` (przyciski akcji i notatka).
-   - Wewnątrz panelu znajduje się blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus`.
+   - Wewnątrz panelu znajduje się blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus` (nagłówek „Wiadomość do graczy”).
   - W siatce `.admin-actions` dodany jest przycisk `#dataUpdateButton` („Aktualizuj dane”) oraz `#adminInstructionButton`, który otwiera modal instrukcji.
   - Poniżej przycisków znajduje się `.admin-data-hint` z informacją o wymaganej lokalizacji pliku `Turniej.xlsx`.
   - Dodatkowo występuje blok `.admin-pin` z polem `#adminPinInput`, przyciskami `#adminPinSave` i `#adminPinRandom` oraz statusem `#adminPinStatus` do zapisu PIN-u w Firestore i losowania nowego kodu.
@@ -43,7 +43,9 @@ Układ korzysta z siatki CSS i składa się z kart:
   - Zakładka **Najbliższa gra** (`#nextGameTab`) zawiera:
     - blok `#nextGamePinGate` z polem PIN-u `#nextGamePinInput`, przyciskiem `#nextGamePinSubmit` i statusem `#nextGamePinStatus`,
     - treści `#nextGameContent` z układem `.next-game-grid` (informacje, harmonogram, stoły, lista graczy) oraz notatką `.next-game-note`.
-  - Zakładka **Aktualności** (`#updatesTab`) zawiera listę `#nextGameUpdates`.
+  - Zakładka **Aktualności** (`#updatesTab`) zawiera:
+    - pole „Najnowsze” (`#latestMessageOutput`) z komunikatem admina,
+    - listę `#nextGameUpdates`.
 
 ### 3. Modal instrukcji
 - Blok `#instructionModal` jest osadzony na końcu `body` i służy do pokazywania instrukcji obsługi.
@@ -126,6 +128,10 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `.admin-message` to karta pomocnicza z tłem noir i obramowaniem.
 - `textarea` ma styl formularza: tło `rgba(0,0,0,.35)`, obramowanie `--border`, font `--font-text`, focus w złocie + neonie.
 - `.status-text` pokazuje komunikaty o wysyłce wiadomości i ładowaniu instrukcji.
+
+### 9.1 Pole „Najnowsze” w zakładce Aktualności
+- `.latest-message` to karta z tłem noir i obramowaniem `--border2`.
+- `textarea` jest tylko do odczytu, ma ten sam styl co formularze admina i wysokość ~86px.
 
 ### 10. Sekcja PIN w panelu admina
 - `.admin-pin` to dodatkowa karta z tłem noir i obramowaniem.
@@ -221,16 +227,20 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
    - Podpina przycisk `#adminMessageSend` do zapisu wiadomości w Firestore (`admin_messages`).
    - Obsługuje walidację pustej treści oraz statusy powodzenia/błędu.
 
-15. **`initInstructionModal()`**
+15. **`initLatestMessage()`**
+   - Nasłuchuje najnowszej wiadomości w kolekcji `admin_messages`.
+   - Aktualizuje pole `#latestMessageOutput` i status `#latestMessageStatus` w zakładce „Aktualności”.
+
+16. **`initInstructionModal()`**
    - Spina przycisk `#adminInstructionButton` z modalem `#instructionModal`.
    - Pobiera treść z `https://cutelittlegoat.github.io/Karty/docs/README.md` i wstawia do `#instructionContent`.
    - Obsługuje odświeżanie treści, zamykanie (przyciski, tło, Esc) i blokadę scrolla tła.
 
-16. **`bootstrap()`**
+17. **`bootstrap()`**
    - Funkcja startowa: sprawdza tryb admina, aktualizuje klasę `is-admin` na `<body>`.
    - Renderuje dane przykładowe i zakładki.
    - Ładuje PIN z Firestore i uruchamia gate.
-   - Uruchamia logikę wysyłki wiadomości oraz modala instrukcji.
+   - Uruchamia logikę wysyłki wiadomości, nasłuch „Najnowsze” oraz modala instrukcji.
 
 ### Przepływ działania
 1. `bootstrap()` uruchamia się po załadowaniu skryptu.
@@ -247,17 +257,18 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 ## Firebase i konfiguracja
 - Plik `config/firebase-config.js` udostępnia globalny obiekt `window.firebaseConfig`.
 - `app.js` inicjalizuje Firebase i zapisuje wiadomości w kolekcji `admin_messages`.
-- Kliknięcie **Wyślij** wymaga skonfigurowanych Cloud Functions, aby przesyłać powiadomienia FCM do Androida (opis w `Firebase.md`).
+- `app.js` nasłuchuje ostatniej wiadomości i pokazuje ją w polu „Najnowsze”.
+- Konfiguracja Firestore i reguł dostępu jest opisana w `Firebase.md`.
 
-## Migracja Android (WebView + FCM)
+## Migracja Android (WebView + PUSH/Firestore)
 
 ### Struktura projektu Android
 W `MigracjaAndroid/AndroidApp/` znajduje się kompletny projekt Android Studio z konfiguracją Gradle, manifestem oraz zasobami:
 - `settings.gradle`, `build.gradle`, `gradle.properties` – konfiguracja builda i repozytoriów.
-- `app/build.gradle` – konfiguracja aplikacji, wersje SDK, zależności Firebase/Material.
-- `app/google-services.json` – plik konfiguracyjny FCM dla kompilacji (może zostać podmieniony na produkcyjny).
-- `app/src/main/AndroidManifest.xml` – uprawnienia, deklaracja Activity i usługi FCM.
-- `app/src/main/java/com/karty/app/*.kt` – logika WebView i powiadomień.
+  - `app/build.gradle` – konfiguracja aplikacji, wersje SDK, zależności Firebase Firestore/Material.
+- `app/google-services.json` – plik konfiguracyjny Firebase (Firestore).
+- `app/src/main/AndroidManifest.xml` – uprawnienia i deklaracja Activity.
+  - `app/src/main/java/com/karty/app/*.kt` – logika WebView i PUSH (Firestore listener).
 - `app/src/main/res/*` – layouty, kolory, motyw i ikona notyfikacji.
 
 ### Opis plików Kotlin
@@ -265,8 +276,7 @@ W `MigracjaAndroid/AndroidApp/` znajduje się kompletny projekt Android Studio z
    - Tworzy UI na bazie `activity_main.xml`.
    - Konfiguruje WebView przez `WebViewConfig`.
    - Podpina `KartyWebViewClient`, aby blokować `?admin=1`.
-   - Wywołuje `NotificationHelper.ensureChannel` dla kanału notyfikacji.
-   - Subskrybuje temat FCM `karty-admin` dla wiadomości z panelu admina.
+   - Wywołuje `AdminMessageListener`, aby nasłuchiwać Firestore i pokazywać PUSH.
    - Otwiera adres startowy użytkownika (`USER_START_URL`).
 
 2. **`WebViewConfig.kt`**
@@ -281,9 +291,9 @@ W `MigracjaAndroid/AndroidApp/` znajduje się kompletny projekt Android Studio z
    - Tworzy kanał powiadomień `karty_updates`.
    - Buduje notyfikacje z ikoną `ic_notification`.
 
-5. **`KartyFirebaseMessagingService.kt`**
-   - Odbiera powiadomienia FCM.
-   - Przekazuje tytuł i treść do `NotificationHelper.showNotification`.
+5. **`AdminMessageListener.kt`**
+   - Nasłuchuje kolekcji `admin_messages`.
+   - Pokazuje lokalne powiadomienie przez `NotificationHelper.showNotification`.
 
 ### Zasoby Android (layout i motyw)
 - `activity_main.xml` zawiera pełnoekranowy WebView.
@@ -295,14 +305,14 @@ W `MigracjaAndroid/AndroidApp/` znajduje się kompletny projekt Android Studio z
 1. Uruchomienie aplikacji ładuje `MainActivity`.
 2. WebView otwiera `https://cutelittlegoat.github.io/Karty/Main/index.html`.
 3. Każda próba wejścia w `?admin=1` zostaje zablokowana i zastąpiona bezpiecznym URL.
-4. Wiadomości FCM wyświetlane są jako lokalne powiadomienia.
+4. Wiadomości z `admin_messages` wyświetlane są jako lokalne powiadomienia (PUSH).
 
 ## Jak odtworzyć aplikację na podstawie dokumentacji
 1. Utwórz `Main/index.html` z nagłówkiem, kartami, panelem admina (w tym przyciskiem „Aktualizuj dane” i notatką o pliku `Turniej.xlsx`) oraz modalem instrukcji opisanymi wyżej.
 2. Dodaj `Main/styles.css` z tokenami kasynowymi, gradientowym tłem noir, filcowymi kartami i stylami modala.
-3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `updateViewBadge`, `toggleView`, `initViewToggle`, `renderTables`, `renderPlayers`, `renderPayments`, `initInstructionModal`, `bootstrap`.
+3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `updateViewBadge`, `toggleView`, `initViewToggle`, `renderTables`, `renderPlayers`, `renderPayments`, `initLatestMessage`, `initInstructionModal`, `bootstrap`.
 4. Połącz pliki w HTML, pamiętając o wczytaniu `../config/firebase-config.js` oraz skryptów Firebase przed `app.js`.
-5. Dodaj `DetaleLayout.md` jako repozytorium stylów i `Firebase.md` z instrukcją konfiguracji powiadomień.
+5. Dodaj `DetaleLayout.md` jako repozytorium stylów i `Firebase.md` z instrukcją konfiguracji Firestore oraz PUSH.
 6. Jeśli chcesz wersję Android, utwórz projekt na bazie `MigracjaAndroid/AndroidApp` zgodnie z powyższą sekcją.
 
 Dzięki temu można w pełni odtworzyć ten szablon aplikacji.

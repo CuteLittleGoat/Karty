@@ -685,6 +685,36 @@ button.danger {
   letter-spacing: 0.1em;
 }
 
+.latest-message {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.latest-message label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-family: var(--font-panel);
+  color: rgba(237, 235, 230, 0.85);
+}
+
+.latest-message textarea {
+  resize: none;
+  min-height: 86px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+}
+
 .updates-list li {
   padding: 12px;
   border-radius: var(--radius-sm);

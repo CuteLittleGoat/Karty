@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 
 object NotificationHelper {
   private const val CHANNEL_ID = "karty_updates"
@@ -12,7 +13,7 @@ object NotificationHelper {
   fun ensureChannel(context: Context) {
     val channel = NotificationChannel(
       CHANNEL_ID,
-      "Karty — aktualizacje",
+      context.getString(R.string.notification_channel_name),
       NotificationManager.IMPORTANCE_DEFAULT
     )
     val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -26,6 +27,7 @@ object NotificationHelper {
       .setSmallIcon(R.drawable.ic_notification)
       .setContentTitle(title)
       .setContentText(body)
+      .setColor(ContextCompat.getColor(context, R.color.notification_gold))
       .setAutoCancel(true)
       .build()
 

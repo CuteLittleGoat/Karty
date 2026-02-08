@@ -1,9 +1,9 @@
-# Migracja aplikacji Karty na Android (WebView + powiadomienia FCM)
+# Migracja aplikacji Karty na Android (WebView + powiadomienia PUSH)
 
 Ten dokument zawiera kompletny zestaw informacji potrzebnych do przygotowania **wersji Android** (APK/AAB) w Android Studio:
 - konfigurację projektu i zależności,
 - gotowe pliki Kotlin (WebView + blokada trybu admina),
-- konfigurację powiadomień FCM,
+- konfigurację powiadomień PUSH opartych o Firestore,
 - checklistę budowy APK/AAB.
 
 > Wymaganie: aplikacja **ma wyświetlać tylko widok użytkownika**, więc w Androidzie **nie dopuszczamy parametru `?admin=1`**.
@@ -40,7 +40,7 @@ MigracjaAndroid/AndroidApp/
       │  ├─ WebViewConfig.kt
       │  ├─ KartyWebViewClient.kt
       │  ├─ NotificationHelper.kt
-      │  └─ KartyFirebaseMessagingService.kt
+      │  └─ AdminMessageListener.kt
       └─ res/
          ├─ layout/activity_main.xml
          ├─ values/strings.xml
@@ -56,7 +56,7 @@ MigracjaAndroid/AndroidApp/
 Poniżej masz **gotowy kod** do skopiowania (najważniejsze pliki). Dzięki temu:
 - WebView uruchamia `Main/index.html`,
 - `?admin=1` jest blokowane,
-- notyfikacje FCM działają w tle.
+- notyfikacje PUSH działają w tle dzięki nasłuchowi Firestore.
 
 ### 3.1. `MainActivity.kt`
 ```kotlin
@@ -65,10 +65,10 @@ package com.karty.app
 import android.os.Bundle
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
   private lateinit var webView: WebView
+  private val adminMessageListener = AdminMessageListener()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -79,10 +79,16 @@ class MainActivity : AppCompatActivity() {
     WebViewConfig.applyDefaults(webView)
     webView.webViewClient = KartyWebViewClient()
 
-    FirebaseMessaging.getInstance().subscribeToTopic("karty-admin")
-
     // Start w trybie użytkownika (bez admin=1)
     webView.loadUrl(WebViewConfig.USER_START_URL)
+
+    // Nasłuchuj wiadomości admina i pokazuj PUSH.
+    adminMessageListener.start(this)
+  }
+
+  override fun onDestroy() {
+    adminMessageListener.stop()
+    super.onDestroy()
   }
 }
 ```
@@ -147,6 +153,7 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 
 object NotificationHelper {
   private const val CHANNEL_ID = "karty_updates"
@@ -154,7 +161,7 @@ object NotificationHelper {
   fun ensureChannel(context: Context) {
     val channel = NotificationChannel(
       CHANNEL_ID,
-      "Karty — aktualizacje",
+      context.getString(R.string.notification_channel_name),
       NotificationManager.IMPORTANCE_DEFAULT
     )
     val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -168,6 +175,7 @@ object NotificationHelper {
       .setSmallIcon(R.drawable.ic_notification)
       .setContentTitle(title)
       .setContentText(body)
+      .setColor(ContextCompat.getColor(context, R.color.notification_gold))
       .setAutoCancel(true)
       .build()
 
@@ -176,26 +184,53 @@ object NotificationHelper {
 }
 ```
 
-### 3.5. `KartyFirebaseMessagingService.kt`
+### 3.5. `AdminMessageListener.kt` (PUSH z Firestore)
 ```kotlin
 package com.karty.app
 
-import com.google.firebase.messaging.FirebaseMessagingService
-import com.google.firebase.messaging.RemoteMessage
+import android.content.Context
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.Query
 
-class KartyFirebaseMessagingService : FirebaseMessagingService() {
-  override fun onMessageReceived(message: RemoteMessage) {
-    val title = message.notification?.title ?: "Nowa wiadomość"
-    val body = message.notification?.body ?: "Masz nowe powiadomienie z Karty"
+class AdminMessageListener {
+  private var registration: ListenerRegistration? = null
+  private var lastMessageId: String? = null
 
-    NotificationHelper.showNotification(this, title, body)
+  fun start(context: Context) {
+    val db = FirebaseFirestore.getInstance()
+    registration = db.collection("admin_messages")
+      .orderBy("createdAt", Query.Direction.DESCENDING)
+      .limit(1)
+      .addSnapshotListener { snapshots, error ->
+        if (error != null || snapshots == null || snapshots.isEmpty) {
+          return@addSnapshotListener
+        }
+
+        val doc = snapshots.documents.first()
+        val messageId = doc.id
+        val message = doc.getString("message") ?: return@addSnapshotListener
+
+        if (lastMessageId == messageId) {
+          return@addSnapshotListener
+        }
+
+        lastMessageId = messageId
+        val title = context.getString(R.string.notification_title_default)
+        NotificationHelper.showNotification(context, title, message)
+      }
+  }
+
+  fun stop() {
+    registration?.remove()
+    registration = null
   }
 }
 ```
 
 ---
 
-## 4. AndroidManifest.xml (uprawnienia i FCM)
+## 4. AndroidManifest.xml (uprawnienia i PUSH)
 
 ```xml
 <manifest package="com.karty.app" xmlns:android="http://schemas.android.com/apk/res/android">
@@ -216,13 +251,6 @@ class KartyFirebaseMessagingService : FirebaseMessagingService() {
       </intent-filter>
     </activity>
 
-    <service
-      android:name=".KartyFirebaseMessagingService"
-      android:exported="false">
-      <intent-filter>
-        <action android:name="com.google.firebase.MESSAGING_EVENT" />
-      </intent-filter>
-    </service>
   </application>
 </manifest>
 ```
@@ -253,7 +281,7 @@ android {
 
 dependencies {
   implementation platform('com.google.firebase:firebase-bom:33.2.0')
-  implementation 'com.google.firebase:firebase-messaging'
+  implementation 'com.google.firebase:firebase-firestore-ktx'
   implementation 'androidx.core:core-ktx:1.13.1'
   implementation 'androidx.appcompat:appcompat:1.7.0'
   implementation 'com.google.android.material:material:1.12.0'
@@ -262,29 +290,19 @@ dependencies {
 
 ---
 
-## 6. Konfiguracja Firebase (FCM)
+## 6. Konfiguracja Firebase (PUSH/Firestore)
 
 1. Firebase Console → **Dodaj aplikację Android**.
 2. Package name: `com.karty.app`.
 3. Pobierz `google-services.json` i wklej do: `AndroidApp/app/google-services.json`.
-4. Włącz **Cloud Messaging** w Firebase.
-
-### 6.1. Subskrypcja tematu (opcjonalne)
-Jeśli chcesz wysyłać do tematu (np. `karty-admin`), dodaj w `MainActivity`:
-```kotlin
-FirebaseMessaging.getInstance().subscribeToTopic("karty-admin")
-```
+4. Włącz **Cloud Firestore** w Firebase.
+5. Ustaw reguły Firestore tak, aby aplikacja mobilna mogła czytać `admin_messages`.
 
 ---
 
-## 7. Backend PUSH (opcjonalny, ale rekomendowany)
+## 7. PUSH z panelu admina (bez FCM)
 
-Jeżeli wiadomości mają przychodzić po zmianach w Firestore (np. po kliknięciu **Wyślij** w panelu admina):
-1. Utwórz Firebase Functions (Node.js).
-2. Nasłuchuj kolekcji `admin_messages` i wysyłaj FCM.
-3. Wysyłaj wiadomości na temat `karty-admin`.
-
-> Wersja web **nie wymaga zmian** — to dodatkowe powiadomienia tylko dla Androida.
+Wiadomość wysłana w panelu admina trafia do kolekcji `admin_messages`. Android nasłuchuje tej kolekcji i natychmiast pokazuje lokalne powiadomienie (PUSH) dzięki `AdminMessageListener`.
 
 ---
 
@@ -314,5 +332,5 @@ Pliki wynikowe:
 ## 9. Najważniejsze spełnione wymagania
 
 ✅ **Tylko widok użytkownika** — URL bez `?admin=1`, a WebView blokuje każdy link z adminem.  
-✅ **Powiadomienia Android** — FCM + `FirebaseMessagingService` + `NotificationHelper`.  
+✅ **Powiadomienia Android** — PUSH oparte o nasłuch Firestore + `NotificationHelper`.  
 ✅ **Możliwość budowy APK/AAB** — pełna instrukcja krok po kroku.

@@ -62,11 +62,14 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
    - albo kliknij tło modala,
    - albo wciśnij klawisz **Esc**.
 
-### 3.7 Wiadomości do aplikacji Android
-1. W panelu admina przewiń do sekcji **Wiadomość do aplikacji Android**.
+### 3.7 Wiadomość do graczy
+1. W panelu admina przewiń do sekcji **Wiadomość do graczy**.
 2. Wpisz treść w polu **Treść wiadomości**.
 3. Kliknij **Wyślij**.
-4. Jeśli Firebase nie jest skonfigurowany, zobaczysz komunikat o konieczności konfiguracji.
+4. Po wysłaniu:
+   - tekst pojawi się w polu **Najnowsze** w zakładce **Aktualności**,
+   - aplikacja Android wyświetli PUSH (lokalne powiadomienie).
+5. Jeśli Firebase nie jest skonfigurowany, zobaczysz komunikat o konieczności konfiguracji.
 
 ### 3.8 Ustawianie PIN-u do zakładki „Najbliższa gra”
 1. W panelu administratora odszukaj sekcję **PIN do zakładki „Najbliższa gra”**.
@@ -89,7 +92,9 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
    - **Stoły i limity**,
    - **Potwierdzeni gracze**.
 6. Jeśli wpiszesz błędny PIN, pod polem pojawi się komunikat o błędzie.
-7. Zakładka **Aktualności** pokazuje ostatnie komunikaty od organizatorów.
+7. Zakładka **Aktualności** pokazuje:
+   - pole **Najnowsze** z ostatnią wiadomością admina,
+   - listę pozostałych komunikatów od organizatorów.
 
 ## 5. Responsywność i urządzenia mobilne
 - Aplikacja automatycznie dostosowuje układ do mniejszych ekranów.
@@ -98,8 +103,8 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
 
 ## 6. Konfiguracja Firebase
 1. Uzupełnij dane w pliku `config/firebase-config.js`.
-2. Skonfiguruj Firestore i Cloud Functions, aby kliknięcie **Wyślij** uruchamiało powiadomienie FCM w Androidzie.
-3. Szczegółowa instrukcja znajduje się w pliku `Firebase.md`.
+2. Skonfiguruj Firestore tak, aby web i Android mogły czytać/zapisywać kolekcję `admin_messages`.
+3. Szczegółowa instrukcja krok po kroku znajduje się w pliku `Firebase.md`.
 
 ## 7. Zasoby graficzne
 - Folder `Pliki/` jest przeznaczony na grafiki i zasoby używane w aplikacji.
