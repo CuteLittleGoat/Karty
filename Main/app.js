@@ -503,13 +503,56 @@ const initAdminMessaging = () => {
         source: "web-admin"
       });
       input.value = "";
-      status.textContent = "Wiadomość wysłana do aplikacji Android.";
+      status.textContent = "Wiadomość wysłana do graczy.";
     } catch (error) {
       status.textContent = "Nie udało się wysłać wiadomości. Sprawdź konfigurację.";
     } finally {
       sendButton.disabled = false;
     }
   });
+};
+
+const initLatestMessage = () => {
+  const output = document.querySelector("#latestMessageOutput");
+  const status = document.querySelector("#latestMessageStatus");
+
+  if (!output || !status) {
+    return;
+  }
+
+  const firebaseApp = getFirebaseApp();
+
+  if (!firebaseApp) {
+    output.value = "Brak połączenia z Firebase.";
+    status.textContent = "Uzupełnij konfigurację Firebase, aby zobaczyć wiadomości.";
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+
+  db.collection("admin_messages")
+    .orderBy("createdAt", "desc")
+    .limit(1)
+    .onSnapshot(
+      (snapshot) => {
+        if (snapshot.empty) {
+          output.value = "Brak wiadomości od administratora.";
+          status.textContent = "Nie znaleziono jeszcze żadnych komunikatów.";
+          return;
+        }
+
+        const doc = snapshot.docs[0];
+        const data = doc.data();
+        const message = typeof data.message === "string" ? data.message : "";
+
+        output.value = message || "Brak wiadomości od administratora.";
+        status.textContent = "Pole jest aktualizowane po każdej nowej wiadomości.";
+      },
+      () => {
+        output.value = "Nie udało się pobrać wiadomości.";
+        status.textContent = "Sprawdź reguły Firestore i konfigurację projektu.";
+      }
+    );
 };
 
 const initInstructionModal = () => {
@@ -618,6 +661,7 @@ const bootstrap = async () => {
   initAdminMessaging();
   initAdminPin();
   initPinGate({ isAdmin });
+  initLatestMessage();
   initInstructionModal();
 };
 

@@ -77,8 +77,8 @@
           </p>
           <div class="admin-message">
             <div>
-              <h3>Wiadomość do aplikacji Android</h3>
-              <p>Wyślij krótkie powiadomienie do uczestników w aplikacji mobilnej.</p>
+              <h3>Wiadomość do graczy</h3>
+              <p>Informacja jaka będzie w polu &gt;Najnowsze&lt;</p>
             </div>
             <div class="admin-message-form">
               <label for="adminMessageInput">Treść wiadomości</label>
@@ -188,6 +188,16 @@
               <div class="card-header">
                 <h2>Aktualności</h2>
                 <p>Ostatnie komunikaty od organizatorów.</p>
+              </div>
+              <div class="latest-message">
+                <label for="latestMessageOutput">Najnowsze</label>
+                <textarea
+                  id="latestMessageOutput"
+                  rows="3"
+                  readonly
+                  placeholder="Brak wiadomości od administratora."
+                ></textarea>
+                <p id="latestMessageStatus" class="status-text" aria-live="polite"></p>
               </div>
               <ul id="nextGameUpdates" class="updates-list"></ul>
             </div>

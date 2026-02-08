@@ -6,6 +6,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 
 class KartyWebViewClient : WebViewClient() {
+  // Blokuje przejście do trybu admina w aplikacji mobilnej.
   override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
     val url = request?.url ?: return false
 

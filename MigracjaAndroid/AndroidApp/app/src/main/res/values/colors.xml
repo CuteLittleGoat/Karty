@@ -3,4 +3,5 @@
   <color name="md_theme_light_onPrimary">#1B1712</color>
   <color name="md_theme_light_background">#12100E</color>
   <color name="md_theme_light_onBackground">#F5F1E6</color>
+  <color name="notification_gold">#C8A96A</color>
 </resources>

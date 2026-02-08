@@ -1,3 +1,4 @@
+// Projekt korzysta z Firebase Firestore do wiadomości PUSH (bez FCM).
 pluginManagement {
   repositories {
     google()

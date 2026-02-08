@@ -93,6 +93,7 @@
 - Select: ten sam chrome, strzałka `rgba(237,235,230,.65)`, option `#0C0D12`.
 - Checkbox/radio: `accent-color: var(--gold)`.
 - Pole wiadomości admina: textarea z `min-height ~86px`, label uppercase `letter-spacing 0.12em`.
+- Pole „Najnowsze” (readonly) w zakładce Aktualności: textarea bez resize, `min-height ~86px`, tło noir, border `--border`, font Tekst.
 - Pole PIN (admin i użytkownik): input `max-width ~180px`, `letter-spacing 0.08em`, focus gold+neon.
 - Akcje PIN w panelu admina: przyciski w jednym rzędzie (`.admin-pin-actions`), gdzie „Zapisz PIN” jest primary, a „Losuj PIN” secondary.
 

@@ -4,6 +4,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 
 object WebViewConfig {
+  // Adres użytkownika używany w WebView (bez trybu admina).
   const val USER_START_URL = "https://cutelittlegoat.github.io/Karty/Main/index.html"
 
   fun applyDefaults(webView: WebView) {
