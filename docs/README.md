@@ -14,6 +14,10 @@
 3. Uruchom aplikację przyciskiem **Run ▶** na emulatorze lub urządzeniu.
 4. Aplikacja automatycznie otworzy wersję web pod adresem: `https://cutelittlegoat.github.io/Karty/Main/index.html`.
 5. W WebView widok admina jest blokowany — aplikacja mobilna zawsze pokazuje wariant użytkownika.
+6. Jeśli podczas builda zobaczysz błąd `@mipmap/ic_launcher`, upewnij się że:
+   - plik ikony istnieje w `app/src/main/res/drawable/ic_launcher.xml`,
+   - w `AndroidManifest.xml` atrybut `android:icon` wskazuje `@drawable/ic_launcher`,
+   - po zmianach wykonasz **Build > Clean Project** oraz ponownie **Run ▶**.
 
 ## 3. Widok administratora — szczegółowe kroki
 Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciskami akcji oraz blok wstępny z tekstami **„TO NIE JEST nielegalny poker”** i **„TO NIE JEST nielegalne kasyno”** w nagłówku strony.
