@@ -440,28 +440,40 @@ const initPinGate = ({ isAdmin }) => {
   updatePinVisibility({ isAdmin });
 };
 
-const initUserTabs = () => {
+const initUserTabs = ({ isAdmin }) => {
   const tabButtons = document.querySelectorAll(".tab-button");
   const panels = document.querySelectorAll(".tab-panel");
   if (!tabButtons.length) {
     return;
   }
 
+  const setActiveTab = (target) => {
+    if (!target) {
+      return;
+    }
+
+    tabButtons.forEach((btn) => btn.classList.remove("is-active"));
+    panels.forEach((panel) => panel.classList.remove("is-active"));
+
+    const targetButton = Array.from(tabButtons).find(
+      (button) => button.getAttribute("data-target") === target
+    );
+    const targetPanel = document.querySelector(`#${target}`);
+
+    if (targetButton) {
+      targetButton.classList.add("is-active");
+    }
+    if (targetPanel) {
+      targetPanel.classList.add("is-active");
+    }
+  };
+
+  const defaultTab = isAdmin ? "nextGameTab" : "updatesTab";
+  setActiveTab(defaultTab);
+
   tabButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      const target = button.getAttribute("data-target");
-      if (!target) {
-        return;
-      }
-
-      tabButtons.forEach((btn) => btn.classList.remove("is-active"));
-      panels.forEach((panel) => panel.classList.remove("is-active"));
-
-      button.classList.add("is-active");
-      const targetPanel = document.querySelector(`#${target}`);
-      if (targetPanel) {
-        targetPanel.classList.add("is-active");
-      }
+      setActiveTab(button.getAttribute("data-target"));
     });
   });
 };
@@ -656,7 +668,7 @@ const bootstrap = async () => {
   renderPayments();
   renderNextGame();
   initViewToggle();
-  initUserTabs();
+  initUserTabs({ isAdmin });
   await loadPinFromFirestore();
   initAdminMessaging();
   initAdminPin();

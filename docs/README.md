@@ -2,7 +2,7 @@
 
 ## 1. Uruchomienie w przeglądarce (komputer)
 1. Otwórz plik `Main/index.html` w przeglądarce (aplikacja działa jako statyczny front-end).
-2. Zobaczysz widok uczestnika z nagłówkiem **„Strefa uczestnika”**, zakładkami **Najbliższa gra** i **Aktualności** oraz formularzem do wpisania PIN-u.
+2. Zobaczysz widok uczestnika z nagłówkiem **„Strefa uczestnika”**, zakładkami **Najbliższa gra** i **Aktualności** oraz polem na PIN (zakładka **Aktualności** jest ustawiona jako domyślna).
 3. Aby przełączyć się do trybu administratora:
    - Kliknij czerwony przycisk **„Przełącz widok”** ustawiony obok etykiety **„Strefa uczestnika”** w górnym pasku karty użytkownika.
    - Alternatywnie dopisz do adresu parametr `?admin=1` (np. `Main/index.html?admin=1`).
@@ -83,7 +83,7 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
 
 ## 4. Widok uczestnika — zakładka „Najbliższa gra”
 1. W górnym pasku karty widzisz etykietę **„Strefa uczestnika”** i czerwony przycisk **„Przełącz widok”**.
-2. Kliknij zakładkę **Najbliższa gra** (jest aktywna domyślnie).
+2. Domyślnie widzisz zakładkę **Aktualności** — kliknij zakładkę **Najbliższa gra**, aby przejść do szczegółów gry.
 3. Zobaczysz formularz z polem **PIN (5 cyfr)**.
 4. Wpisz PIN przekazany przez administratora i kliknij **Otwórz**.
 5. Po poprawnym PIN-ie pojawią się:
