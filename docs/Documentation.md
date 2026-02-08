@@ -37,12 +37,12 @@ Układ korzysta z siatki CSS i składa się z kart:
    - Wewnątrz panelu znajduje się blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus` (nagłówek „Wiadomość do graczy”).
   - W siatce `.admin-actions` dodany jest przycisk `#dataUpdateButton` („Aktualizuj dane”) oraz `#adminInstructionButton`, który otwiera modal instrukcji.
   - Poniżej przycisków znajduje się `.admin-data-hint` z informacją o wymaganej lokalizacji pliku `Turniej.xlsx`.
-  - Dodatkowo występuje blok `.admin-pin` z polem `#adminPinInput`, przyciskami `#adminPinSave` i `#adminPinRandom` oraz statusem `#adminPinStatus` do zapisu PIN-u w Firestore i losowania nowego kodu.
+  - Dodatkowo występuje blok `.admin-pin` z polem `#adminPinInput` (typ `tel`, `inputmode="numeric"`, `pattern="[0-9]{5}"`, `minlength`/`maxlength` 5), przyciskami `#adminPinSave` i `#adminPinRandom` oraz statusem `#adminPinStatus` do zapisu PIN-u w Firestore i losowania nowego kodu.
 5. **Strefa uczestnika / zakładki użytkownika** – sekcja `.next-game-card` widoczna w obu trybach:
   - `.user-panel` zawiera etykietę `.user-view-label` („Strefa uczestnika”), czerwony przycisk `.view-toggle` i listę zakładek `.user-tabs`.
   - Domyślnie aktywna w trybie użytkownika jest zakładka **Aktualności**.
   - Zakładka **Najbliższa gra** (`#nextGameTab`) zawiera:
-    - blok `#nextGamePinGate` z polem PIN-u `#nextGamePinInput`, przyciskiem `#nextGamePinSubmit` i statusem `#nextGamePinStatus`,
+    - blok `#nextGamePinGate` z polem PIN-u `#nextGamePinInput` (typ `tel`, `inputmode="numeric"`, `pattern="[0-9]{5}"`, `minlength`/`maxlength` 5), przyciskiem `#nextGamePinSubmit` i statusem `#nextGamePinStatus`,
     - treści `#nextGameContent` z układem `.next-game-grid` (informacje, harmonogram, stoły, lista graczy) oraz notatką `.next-game-note`.
   - Zakładka **Aktualności** (`#updatesTab`) zawiera:
     - pole „Najnowsze” (`#latestMessageOutput`) z komunikatem admina,
@@ -209,31 +209,37 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
    - Sprawdza dostępność SDK Firebase i konfiguracji (`window.firebaseConfig`).
    - Inicjalizuje Firebase tylko raz i zwraca instancję.
 
-10. **`loadPinFromFirestore()`**
+10. **`sanitizePin(value)`**
+   - Usuwa znaki niebędące cyframi i przycina wartość do 5 znaków.
+
+11. **`isPinValid(value)`**
+   - Sprawdza, czy PIN składa się z dokładnie 5 cyfr (`/^\d{5}$/`).
+
+12. **`loadPinFromFirestore()`**
    - Pobiera dokument `app_settings/next_game` i aktualizuje `currentPin`.
 
-11. **`initAdminPin()`**
+13. **`initAdminPin()`**
    - Obsługuje pole `#adminPinInput` i zapis PIN-u do Firestore.
-   - Waliduje długość 5 cyfr oraz informuje o błędach.
+   - Waliduje format 5 cyfr i odrzuca wpisy tekstowe.
    - Przycisk `#adminPinRandom` generuje losowy kod 5-cyfrowy i wpisuje go do pola.
 
-12. **`initPinGate()`**
+14. **`initPinGate()`**
    - Waliduje PIN wpisany przez użytkownika w `#nextGamePinInput`.
    - Po poprawnym PIN-ie zapisuje stan w `sessionStorage` i pokazuje `#nextGameContent`.
 
-13. **`initUserTabs({ isAdmin })`**
+15. **`initUserTabs({ isAdmin })`**
    - Ustawia domyślną zakładkę w strefie uczestnika (w trybie użytkownika otwiera „Aktualności”, w trybie admina „Najbliższa gra”).
    - Przełącza aktywną zakładkę i panel treści po kliknięciu.
 
-14. **`initAdminMessaging()`**
+16. **`initAdminMessaging()`**
    - Podpina przycisk `#adminMessageSend` do zapisu wiadomości w Firestore (`admin_messages`).
    - Obsługuje walidację pustej treści oraz statusy powodzenia/błędu.
 
-15. **`initLatestMessage()`**
+17. **`initLatestMessage()`**
    - Nasłuchuje najnowszej wiadomości w kolekcji `admin_messages`.
    - Aktualizuje pole `#latestMessageOutput` i status `#latestMessageStatus` w zakładce „Aktualności”.
 
-16. **`initInstructionModal()`**
+18. **`initInstructionModal()`**
    - Spina przycisk `#adminInstructionButton` z modalem `#instructionModal`.
    - Pobiera treść z `https://cutelittlegoat.github.io/Karty/docs/README.md` i wstawia do `#instructionContent`.
    - Obsługuje odświeżanie treści, zamykanie (przyciski, tło, Esc) i blokadę scrolla tła.
