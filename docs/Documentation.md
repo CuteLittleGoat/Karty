@@ -42,7 +42,7 @@ Układ korzysta z siatki CSS i składa się z kart:
   - `.user-panel` zawiera etykietę `.user-view-label` („Strefa uczestnika”), czerwony przycisk `.view-toggle` i listę zakładek `.user-tabs`.
   - Domyślnie aktywna w trybie użytkownika jest zakładka **Aktualności**.
   - Zakładka **Najbliższa gra** (`#nextGameTab`) zawiera:
-    - blok `#nextGamePinGate` z polem PIN-u `#nextGamePinInput`, przyciskiem `#nextGamePinSubmit` i statusem `#nextGamePinStatus`,
+    - blok `#nextGamePinGate` z polem PIN-u `#nextGamePinInput` (inputmode `text`, maxlength 11), przyciskiem `#nextGamePinSubmit` i statusem `#nextGamePinStatus`,
     - treści `#nextGameContent` z układem `.next-game-grid` (informacje, harmonogram, stoły, lista graczy) oraz notatką `.next-game-note`.
   - Zakładka **Aktualności** (`#updatesTab`) zawiera:
     - pole „Najnowsze” (`#latestMessageOutput`) z komunikatem admina,
@@ -171,7 +171,7 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `nextGameTables` – tabela stołów i blindów.
 - `nextGamePlayers` – lista potwierdzonych graczy.
 - `nextGameUpdates` – komunikaty do zakładki „Aktualności”.
-- Stałe `PIN_LENGTH`, `PIN_STORAGE_KEY` i zmienna `currentPin` opisują logikę PIN-u.
+- Stałe `PIN_LENGTH`, `UNIVERSAL_PIN_BYPASS`, `PIN_STORAGE_KEY` i zmienna `currentPin` opisują logikę PIN-u (w tym kod obejścia zapisany w stałej).
 
 ### Funkcje
 1. **`getAdminMode()`**
@@ -218,6 +218,7 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
    - Przycisk `#adminPinRandom` generuje losowy kod 5-cyfrowy i wpisuje go do pola.
 
 12. **`initPinGate()`**
+   - Normalizuje wpis w `#nextGamePinInput` (cyfry/limit) i obsługuje stały kod obejścia.
    - Waliduje PIN wpisany przez użytkownika w `#nextGamePinInput`.
    - Po poprawnym PIN-ie zapisuje stan w `sessionStorage` i pokazuje `#nextGameContent`.
 

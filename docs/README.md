@@ -85,7 +85,7 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
 1. W górnym pasku karty widzisz etykietę **„Strefa uczestnika”** i czerwony przycisk **„Przełącz widok”**.
 2. Domyślnie widzisz zakładkę **Aktualności** — kliknij zakładkę **Najbliższa gra**, aby przejść do szczegółów gry.
 3. Zobaczysz formularz z polem **PIN (5 cyfr)**.
-4. Wpisz PIN przekazany przez administratora i kliknij **Otwórz**.
+4. Wpisz PIN przekazany przez administratora i kliknij **Otwórz** (lub naciśnij **Enter**).
 5. Po poprawnym PIN-ie pojawią się:
    - sekcja **Informacje główne** (data, lokalizacja, wpisowe),
    - **Plan wieczoru** (godziny i etapy),
