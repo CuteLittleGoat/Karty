@@ -308,6 +308,7 @@ const getFirebaseApp = () => {
 };
 
 const sanitizePin = (value) => value.replace(/\D/g, "").slice(0, PIN_LENGTH);
+const isPinValid = (value) => /^\d{5}$/.test(value);
 
 const getPinGateState = () => sessionStorage.getItem(PIN_STORAGE_KEY) === "1";
 
@@ -381,7 +382,7 @@ const initAdminPin = () => {
   saveButton.addEventListener("click", async () => {
     const pinValue = sanitizePin(input.value);
 
-    if (pinValue.length !== PIN_LENGTH) {
+    if (!isPinValid(pinValue)) {
       status.textContent = "PIN musi mieć dokładnie 5 cyfr.";
       return;
     }
@@ -416,7 +417,7 @@ const initPinGate = ({ isAdmin }) => {
 
   const verifyPin = () => {
     const pinValue = sanitizePin(input.value);
-    if (pinValue.length !== PIN_LENGTH) {
+    if (!isPinValid(pinValue)) {
       status.textContent = "Wpisz komplet 5 cyfr.";
       return;
     }

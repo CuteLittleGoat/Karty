@@ -73,7 +73,7 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
 
 ### 3.8 Ustawianie PIN-u do zakładki „Najbliższa gra”
 1. W panelu administratora odszukaj sekcję **PIN do zakładki „Najbliższa gra”**.
-2. W polu **PIN (5 cyfr)** wpisz dokładnie pięć cyfr (np. `12345`).
+2. W polu **PIN (5 cyfr)** wpisz dokładnie pięć cyfr (np. `12345`) — pole akceptuje wyłącznie cyfry i odrzuca litery.
 3. Jeśli chcesz szybko wygenerować PIN:
    - Kliknij przycisk **Losuj PIN**.
    - W polu pojawi się losowy ciąg pięciu cyfr.
@@ -85,7 +85,7 @@ Po wejściu na `?admin=1` zobaczysz sekcję **Panel administratora** z przyciska
 1. W górnym pasku karty widzisz etykietę **„Strefa uczestnika”** i czerwony przycisk **„Przełącz widok”**.
 2. Domyślnie widzisz zakładkę **Aktualności** — kliknij zakładkę **Najbliższa gra**, aby przejść do szczegółów gry.
 3. Zobaczysz formularz z polem **PIN (5 cyfr)**.
-4. Wpisz PIN przekazany przez administratora i kliknij **Otwórz**.
+4. Wpisz PIN przekazany przez administratora (tylko cyfry, 5 znaków) i kliknij **Otwórz**.
 5. Po poprawnym PIN-ie pojawią się:
    - sekcja **Informacje główne** (data, lokalizacja, wpisowe),
    - **Plan wieczoru** (godziny i etapy),

@@ -102,10 +102,12 @@
               <label for="adminPinInput">PIN (5 cyfr)</label>
               <input
                 id="adminPinInput"
-                type="text"
+                type="tel"
                 inputmode="numeric"
+                pattern="[0-9]{5}"
                 autocomplete="off"
                 maxlength="5"
+                minlength="5"
                 placeholder="Np. 12345"
               />
               <div class="admin-pin-actions">
@@ -144,10 +146,12 @@
                   <div class="pin-inputs">
                     <input
                       id="nextGamePinInput"
-                      type="text"
+                      type="tel"
                       inputmode="numeric"
+                      pattern="[0-9]{5}"
                       autocomplete="one-time-code"
                       maxlength="5"
+                      minlength="5"
                       placeholder="PIN (5 cyfr)"
                     />
                     <button id="nextGamePinSubmit" class="primary" type="button">Otwórz</button>
