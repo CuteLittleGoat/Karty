@@ -308,6 +308,7 @@ W `MigracjaAndroid/AndroidApp/` znajduje się kompletny projekt Android Studio z
 - `colors.xml` definiuje podstawową paletę aplikacji nawiązującą do złota/noir.
 - `themes.xml` ustawia motyw `Theme.Karty` (Material 3, bez ActionBar).
 - `ic_notification.xml` to wektorowa ikona powiadomień w kolorze złotym.
+- `ic_launcher.xml` to wektorowa ikona aplikacji (launcher) zapisana w `res/drawable`, używana przez `AndroidManifest.xml` jako `android:icon`.
 
 ### Przepływ działania Android
 1. Uruchomienie aplikacji ładuje `MainActivity`.

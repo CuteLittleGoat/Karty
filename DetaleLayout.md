@@ -139,6 +139,7 @@
   - Background: `#12100E` (noir).
   - OnBackground: `#F5F1E6` (jasny tekst).
 - Ikona powiadomień: wektor `ic_notification.xml` w kolorze złotym `#C8A96A`.
+- Ikona aplikacji (launcher): wektor `ic_launcher.xml` w `res/drawable`, 108dp, tło koła `#0B1F2E`, karta `#FFFFFF`, akcent `#D32F2F`.
 
 ## 13) Dostępność
 - Kontrast tekstu min ~4.5:1.
