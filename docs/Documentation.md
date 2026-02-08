@@ -2,7 +2,7 @@
 
 ## Cel aplikacji
 Aplikacja jest szablonem strony do organizacji turnieju karcianego. Udostępnia dwa warianty interfejsu:
-- **Widok użytkownika** (domyślny) – strefa uczestnika z zakładką „Najbliższa gra”, blokowaną PIN-em, oraz zakładką „Aktualności”.
+- **Widok użytkownika** (domyślny) – strefa uczestnika z domyślną zakładką „Aktualności” oraz zakładką „Najbliższa gra” zabezpieczoną PIN-em.
 - **Widok administratora** (po dodaniu `?admin=1` do URL lub użyciu przycisku „Przełącz widok”) – rozszerzony o sekcję zarządzania stołami i graczami, moduł wiadomości do Androida, ustawianie PIN-u oraz przycisk z instrukcją obsługi.
 
 Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, delikatny neon). Projekt korzysta z tokenów typografii i kolorów opisanych w `DetaleLayout.md`.
@@ -38,8 +38,9 @@ Układ korzysta z siatki CSS i składa się z kart:
   - W siatce `.admin-actions` dodany jest przycisk `#dataUpdateButton` („Aktualizuj dane”) oraz `#adminInstructionButton`, który otwiera modal instrukcji.
   - Poniżej przycisków znajduje się `.admin-data-hint` z informacją o wymaganej lokalizacji pliku `Turniej.xlsx`.
   - Dodatkowo występuje blok `.admin-pin` z polem `#adminPinInput`, przyciskami `#adminPinSave` i `#adminPinRandom` oraz statusem `#adminPinStatus` do zapisu PIN-u w Firestore i losowania nowego kodu.
-5. **Strefa uczestnika / zakładka „Najbliższa gra”** – sekcja `.next-game-card` widoczna w obu trybach:
+5. **Strefa uczestnika / zakładki użytkownika** – sekcja `.next-game-card` widoczna w obu trybach:
   - `.user-panel` zawiera etykietę `.user-view-label` („Strefa uczestnika”), czerwony przycisk `.view-toggle` i listę zakładek `.user-tabs`.
+  - Domyślnie aktywna w trybie użytkownika jest zakładka **Aktualności**.
   - Zakładka **Najbliższa gra** (`#nextGameTab`) zawiera:
     - blok `#nextGamePinGate` z polem PIN-u `#nextGamePinInput`, przyciskiem `#nextGamePinSubmit` i statusem `#nextGamePinStatus`,
     - treści `#nextGameContent` z układem `.next-game-grid` (informacje, harmonogram, stoły, lista graczy) oraz notatką `.next-game-note`.
@@ -220,8 +221,9 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
    - Waliduje PIN wpisany przez użytkownika w `#nextGamePinInput`.
    - Po poprawnym PIN-ie zapisuje stan w `sessionStorage` i pokazuje `#nextGameContent`.
 
-13. **`initUserTabs()`**
-   - Przełącza aktywną zakładkę i panel treści w strefie uczestnika.
+13. **`initUserTabs({ isAdmin })`**
+   - Ustawia domyślną zakładkę w strefie uczestnika (w trybie użytkownika otwiera „Aktualności”, w trybie admina „Najbliższa gra”).
+   - Przełącza aktywną zakładkę i panel treści po kliknięciu.
 
 14. **`initAdminMessaging()`**
    - Podpina przycisk `#adminMessageSend` do zapisu wiadomości w Firestore (`admin_messages`).
