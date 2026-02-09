@@ -41,6 +41,12 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
    - jeśli nie ma żadnej nazwy „Gra X”, numeracja wraca do **„Gra 1”**.
 6. Aby usunąć tabelę, kliknij przycisk **Usuń** obok jej nazwy.
 7. Tabele pojawiają się jedna pod drugą w kolejności utworzenia.
+8. Jeśli po kliknięciu **Dodaj** pojawia się komunikat o błędzie:
+   - Otwórz plik `config/firebase-config.js`.
+   - Dodaj opcjonalne pole `tablesCollection`, np.:
+     - `tablesCollection: "Tables"` (domyślna nazwa),
+     - `tablesCollection: "tables"` (gdy Twoje reguły używają małych liter).
+   - Zapisz plik i odśwież stronę.
 
 ### 3.3 Stoły — edycja pól nad nazwą
 1. Nad nazwą każdej tabeli są dwa pola edytowalne:
@@ -108,4 +114,3 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
 - Aplikacja automatycznie dostosowuje układ do mniejszych ekranów.
 - Na telefonach przyciski w sekcji wiadomości układają się w kolumnie.
 - Okno instrukcji ma własny przewijalny obszar treści, co ułatwia czytanie na mobile.
-

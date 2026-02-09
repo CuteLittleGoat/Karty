@@ -3,6 +3,7 @@ const PIN_STORAGE_KEY = "nextGamePinVerified";
 let currentPin = "12345";
 
 const TABLES_COLLECTION = "Tables";
+const TABLES_COLLECTION_CONFIG_KEY = "tablesCollection";
 const TABLE_ROWS_COLLECTION = "rows";
 const DEFAULT_TABLE_META = {
   gameType: "rodzaj gry",
@@ -95,6 +96,28 @@ const formatNumber = (value) => {
     return "0";
   }
   return value.toLocaleString("pl-PL", { maximumFractionDigits: 2 });
+};
+
+const getTablesCollectionName = () => {
+  const configured =
+    window.firebaseConfig && typeof window.firebaseConfig[TABLES_COLLECTION_CONFIG_KEY] === "string"
+      ? window.firebaseConfig[TABLES_COLLECTION_CONFIG_KEY].trim()
+      : "";
+  return configured || TABLES_COLLECTION;
+};
+
+const formatFirestoreError = (error) => {
+  if (!error) {
+    return "";
+  }
+  const parts = [];
+  if (error.code) {
+    parts.push(`kod: ${error.code}`);
+  }
+  if (error.message) {
+    parts.push(`opis: ${error.message}`);
+  }
+  return parts.length ? `(${parts.join(", ")})` : "";
 };
 
 const scheduleDebouncedUpdate = (key, callback, delay = 400) => {
@@ -346,6 +369,7 @@ const initAdminTables = () => {
   }
 
   const db = firebaseApp.firestore();
+  const tablesCollectionName = getTablesCollectionName();
 
   const updateSummary = () => {
     const totalTables = adminTablesState.tableList.length;
@@ -363,7 +387,7 @@ const initAdminTables = () => {
   const deleteTable = async (tableId) => {
     status.textContent = "Usuwanie stołu...";
     try {
-      const tableRef = db.collection(TABLES_COLLECTION).doc(tableId);
+      const tableRef = db.collection(tablesCollectionName).doc(tableId);
       const rowsSnapshot = await tableRef.collection(TABLE_ROWS_COLLECTION).get();
       const batch = db.batch();
       rowsSnapshot.forEach((rowDoc) => {
@@ -395,7 +419,7 @@ const initAdminTables = () => {
       gameTypeInput.addEventListener("input", () => {
         const value = gameTypeInput.value;
         scheduleDebouncedUpdate(`${table.id}:gameType`, () => {
-          db.collection(TABLES_COLLECTION).doc(table.id).update({ gameType: value });
+          db.collection(tablesCollectionName).doc(table.id).update({ gameType: value });
         });
       });
 
@@ -407,7 +431,7 @@ const initAdminTables = () => {
       gameDateInput.addEventListener("input", () => {
         const value = gameDateInput.value;
         scheduleDebouncedUpdate(`${table.id}:gameDate`, () => {
-          db.collection(TABLES_COLLECTION).doc(table.id).update({ gameDate: value });
+          db.collection(tablesCollectionName).doc(table.id).update({ gameDate: value });
         });
       });
 
@@ -425,7 +449,7 @@ const initAdminTables = () => {
       nameInput.addEventListener("input", () => {
         const value = nameInput.value;
         scheduleDebouncedUpdate(`${table.id}:name`, () => {
-          db.collection(TABLES_COLLECTION).doc(table.id).update({ name: value });
+          db.collection(tablesCollectionName).doc(table.id).update({ name: value });
         });
       });
 
@@ -472,7 +496,7 @@ const initAdminTables = () => {
           input.addEventListener("input", () => {
             const value = input.value;
             scheduleDebouncedUpdate(`${table.id}:${row.id}:${column.key}`, () => {
-              db.collection(TABLES_COLLECTION)
+              db.collection(tablesCollectionName)
                 .doc(table.id)
                 .collection(TABLE_ROWS_COLLECTION)
                 .doc(row.id)
@@ -489,7 +513,7 @@ const initAdminTables = () => {
         rowDeleteButton.className = "secondary admin-row-delete";
         rowDeleteButton.textContent = "Usuń";
         rowDeleteButton.addEventListener("click", () => {
-          db.collection(TABLES_COLLECTION)
+          db.collection(tablesCollectionName)
             .doc(table.id)
             .collection(TABLE_ROWS_COLLECTION)
             .doc(row.id)
@@ -510,7 +534,11 @@ const initAdminTables = () => {
       addRowButton.className = "secondary";
       addRowButton.textContent = "Dodaj";
       addRowButton.addEventListener("click", async () => {
-        await db.collection(TABLES_COLLECTION).doc(table.id).collection(TABLE_ROWS_COLLECTION).add({
+        await db
+          .collection(tablesCollectionName)
+          .doc(table.id)
+          .collection(TABLE_ROWS_COLLECTION)
+          .add({
           playerName: "",
           percentAllGames: "",
           percentPlayedGames: "",
@@ -537,7 +565,7 @@ const initAdminTables = () => {
     updateSummary();
   };
 
-  db.collection(TABLES_COLLECTION)
+  db.collection(tablesCollectionName)
     .orderBy("createdAt", "asc")
     .onSnapshot(
       (snapshot) => {
@@ -559,7 +587,7 @@ const initAdminTables = () => {
             return;
           }
           const unsubscribe = db
-            .collection(TABLES_COLLECTION)
+            .collection(tablesCollectionName)
             .doc(table.id)
             .collection(TABLE_ROWS_COLLECTION)
             .orderBy("createdAt", "asc")
@@ -577,7 +605,7 @@ const initAdminTables = () => {
         const errorCode = error?.code;
         if (errorCode === "permission-denied") {
           status.textContent =
-            "Brak dostępu do kolekcji Tables. Sprawdź reguły Firestore i wielkość liter.";
+            `Brak dostępu do kolekcji ${tablesCollectionName}. Sprawdź reguły Firestore i wielkość liter.`;
         } else {
           status.textContent = "Nie udało się pobrać listy stołów.";
         }
@@ -590,7 +618,7 @@ const initAdminTables = () => {
 
     try {
       const nextName = getNextTableName(adminTablesState.tableList);
-      await db.collection(TABLES_COLLECTION).add({
+      await db.collection(tablesCollectionName).add({
         name: nextName,
         gameType: DEFAULT_TABLE_META.gameType,
         gameDate: DEFAULT_TABLE_META.gameDate,
@@ -601,9 +629,12 @@ const initAdminTables = () => {
       const errorCode = error?.code;
       if (errorCode === "permission-denied") {
         status.textContent =
-          "Brak uprawnień do zapisu w kolekcji Tables. Sprawdź reguły Firestore i wielkość liter.";
+          `Brak uprawnień do zapisu w kolekcji ${tablesCollectionName}. Sprawdź reguły Firestore i wielkość liter.`;
       } else {
-        status.textContent = "Nie udało się dodać stołu.";
+        const details = formatFirestoreError(error);
+        status.textContent = details
+          ? `Nie udało się dodać stołu. ${details}`
+          : "Nie udało się dodać stołu.";
       }
     } finally {
       addButton.disabled = false;
