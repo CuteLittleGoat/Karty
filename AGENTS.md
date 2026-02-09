@@ -7,3 +7,4 @@
 7. Plik DetaleLayout.md to repozytorium użytych fontów, styli, kolorów itp.
 Jeżeli polecenie użytkownika nie dotyczy zmiany kodu a tylko analizy to wnioski zapisz w folderze Analizy w nowoutworzonym pliku o odekwatnej nazwie do przeprowadzanej analizy
 Folderu Analizy nie uwzględniaj w żadnych dokumentacjach i instrukcjach
+Ignoruj zawartość folderu MigracjaAndroid
