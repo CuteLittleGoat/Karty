@@ -71,7 +71,25 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Panel administr
 ## 6. Konfiguracja Firebase
 1. Uzupełnij dane w pliku `config/firebase-config.js`.
 2. Skonfiguruj Firestore tak, aby web i Android mogły czytać/zapisywać kolekcję `admin_messages` oraz dokument `app_settings/next_game`.
-3. Szczegółowa instrukcja krok po kroku znajduje się w pliku `Firebase.md`.
+3. Dodaj kolekcję `players` (przygotowanie do edytowalnych tabel graczy):
+   - W panelu Firebase przejdź do **Firestore Database**.
+   - Kliknij **Start collection** i wpisz nazwę `players`.
+   - W pierwszym dokumencie kliknij **Add field** i dodaj pola:
+     - `Name` (string) – nazwa gracza,
+     - `Cash` (number lub string) – aktualny stan gotówki,
+     - `GamesPlayed` (number lub string) – liczba rozegranych gier,
+     - `GamesWon` (number lub string) – liczba wygranych gier,
+     - `MoneySpend` (number lub string) – suma wydatków,
+     - `MoneyWon` (number lub string) – suma wygranych.
+4. Dodaj kolekcję `Tables` (przygotowanie do edytowalnych tabel stołów):
+   - Kliknij **Start collection** i wpisz nazwę `Tables`.
+   - W pierwszym dokumencie kliknij **Add field** i dodaj pola:
+     - `TableNumber` (number lub string) – numer stołu,
+     - `Date` (string) – data rozgrywki,
+     - `PlayersInvited` (string) – lista zaproszonych graczy (format do ustalenia później),
+     - `Stakes` (number lub string) – stawka,
+     - `Winner` (string) – zwycięzca.
+5. Szczegółowa instrukcja krok po kroku znajduje się w pliku `Firebase.md`.
 
 ## 7. Zasoby graficzne
 - Folder `Pliki/` jest przeznaczony na grafiki i zasoby używane w aplikacji.

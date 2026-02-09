@@ -198,6 +198,20 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 ## Firebase i konfiguracja
 - Plik `config/firebase-config.js` udostępnia globalny obiekt `window.firebaseConfig`.
 - `app.js` inicjalizuje Firebase i zapisuje wiadomości w kolekcji `admin_messages`.
+- W Firestore istnieją dodatkowe kolekcje przygotowane pod przyszłe widoki admina i tabel edytowalnych:
+  - `players` – kolekcja graczy. Każdy dokument zawiera pola:
+    - `Name` (string) – nazwa/gracz,
+    - `Cash` (string lub number) – aktualny stan gotówki gracza,
+    - `GamesPlayed` (string lub number) – liczba rozegranych gier,
+    - `GamesWon` (string lub number) – liczba wygranych gier,
+    - `MoneySpend` (string lub number) – suma wydatków,
+    - `MoneyWon` (string lub number) – suma wygranych.
+  - `Tables` – kolekcja stołów (rozgrywek). Każdy dokument zawiera pola:
+    - `TableNumber` (string lub number) – numer stołu,
+    - `Date` (string) – data rozgrywki,
+    - `PlayersInvited` (string) – lista zaproszonych graczy (format do ustalenia w przyszłych ekranach),
+    - `Stakes` (string lub number) – stawka,
+    - `Winner` (string) – zwycięzca.
 - `app.js` nasłuchuje ostatniej wiadomości i pokazuje ją w polu „Najnowsze”.
 - Konfiguracja Firestore i reguł dostępu jest opisana w `Firebase.md`.
 
