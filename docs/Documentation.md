@@ -240,7 +240,7 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 
 ## Firebase i konfiguracja
 - Plik `config/firebase-config.js` udostępnia globalny obiekt `window.firebaseConfig`.
-- Możesz dodać opcjonalne pole `tablesCollection`, aby dopasować nazwę kolekcji stołów do reguł Firestore (np. `"Tables"` lub `"tables"`).
+- W konfiguracji znajduje się pole `tablesCollection`, które pozwala dopasować nazwę kolekcji stołów do reguł Firestore (np. `"Tables"` lub `"tables"`).
 - `app.js` inicjalizuje Firebase i zapisuje wiadomości w kolekcji `admin_messages`.
 - W Firestore wykorzystywane są kolekcje:
   - `Tables` (domyślnie, lub wartość z `tablesCollection`) – kolekcja stołów (rozgrywek). Każdy dokument zawiera pola:

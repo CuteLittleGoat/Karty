@@ -43,7 +43,7 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
 7. Tabele pojawiają się jedna pod drugą w kolejności utworzenia.
 8. Jeśli po kliknięciu **Dodaj** pojawia się komunikat o błędzie:
    - Otwórz plik `config/firebase-config.js`.
-   - Dodaj opcjonalne pole `tablesCollection`, np.:
+   - Upewnij się, że pole `tablesCollection` jest zgodne z nazwą kolekcji w regułach Firestore, np.:
      - `tablesCollection: "Tables"` (domyślna nazwa),
      - `tablesCollection: "tables"` (gdy Twoje reguły używają małych liter).
    - Zapisz plik i odśwież stronę.
