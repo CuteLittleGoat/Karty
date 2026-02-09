@@ -215,6 +215,7 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
    - Umożliwia edycję nazwy stołu, pól „rodzaj gry” i „data”.
    - Dodaje/usuwa wiersze z tabeli i zapisuje je w Firestore (subkolekcja `rows`).
    - Oblicza podsumowanie: liczba stołów oraz suma „wpłaty”.
+   - Obsługuje błędy uprawnień Firestore (np. `permission-denied`) i pokazuje komunikat o braku dostępu do kolekcji `Tables`.
 
 19. **`bootstrap()`**
    - Funkcja startowa: sprawdza tryb admina, aktualizuje klasę `is-admin` na `<body>`.
@@ -260,6 +261,7 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
   - `admin_messages` oraz `app_settings` – dane dla wiadomości i PIN-u.
 - `app.js` nasłuchuje ostatniej wiadomości i pokazuje ją w polu „Najnowsze”.
 - Konfiguracja Firestore i reguł dostępu jest opisana w `Firebase.md`.
+- Jeśli reguły Firestore nie pozwalają na zapis do `Tables`, interfejs admina pokaże komunikat o braku uprawnień i podpowie sprawdzenie wielkości liter w nazwie kolekcji.
 
 ## Migracja Android (WebView + PUSH/Firestore)
 
