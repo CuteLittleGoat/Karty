@@ -207,17 +207,24 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 16. **`normalizeNumber(value)` / `formatNumber(value)`**
    - Normalizują wartości „wpłaty” do liczb i formatują je do wyświetlania.
 
-17. **`scheduleDebouncedUpdate(key, callback)`**
+17. **`getTablesCollectionName()`**
+   - Odczytuje nazwę kolekcji stołów z `window.firebaseConfig.tablesCollection`.
+   - Jeśli brak konfiguracji, używa domyślnej nazwy `Tables`.
+
+18. **`formatFirestoreError(error)`**
+   - Tworzy opis błędu Firestore z kodem i wiadomością, aby komunikaty w UI były czytelne.
+
+19. **`scheduleDebouncedUpdate(key, callback)`**
    - Debounce zapisów do Firestore, aby nie wysyłać zapytań przy każdym znaku.
 
-18. **`initAdminTables()`**
+20. **`initAdminTables()`**
    - Renderuje listę stołów admina, podpina przycisk **Dodaj** i obsługuje usuwanie stołów.
    - Umożliwia edycję nazwy stołu, pól „rodzaj gry” i „data”.
    - Dodaje/usuwa wiersze z tabeli i zapisuje je w Firestore (subkolekcja `rows`).
    - Oblicza podsumowanie: liczba stołów oraz suma „wpłaty”.
-   - Obsługuje błędy uprawnień Firestore (np. `permission-denied`) i pokazuje komunikat o braku dostępu do kolekcji `Tables`.
+   - Obsługuje błędy uprawnień Firestore (np. `permission-denied`) i pokazuje komunikat o braku dostępu do kolekcji skonfigurowanej w `tablesCollection`.
 
-19. **`bootstrap()`**
+21. **`bootstrap()`**
    - Funkcja startowa: sprawdza tryb admina, aktualizuje klasę `is-admin` na `<body>`.
    - Uruchamia zakładki, ładuje PIN z Firestore, inicjuje gate PIN-u oraz moduły wiadomości i modala.
 
@@ -233,9 +240,10 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 
 ## Firebase i konfiguracja
 - Plik `config/firebase-config.js` udostępnia globalny obiekt `window.firebaseConfig`.
+- Możesz dodać opcjonalne pole `tablesCollection`, aby dopasować nazwę kolekcji stołów do reguł Firestore (np. `"Tables"` lub `"tables"`).
 - `app.js` inicjalizuje Firebase i zapisuje wiadomości w kolekcji `admin_messages`.
 - W Firestore wykorzystywane są kolekcje:
-  - `Tables` – kolekcja stołów (rozgrywek). Każdy dokument zawiera pola:
+  - `Tables` (domyślnie, lub wartość z `tablesCollection`) – kolekcja stołów (rozgrywek). Każdy dokument zawiera pola:
     - `name` (string) – nazwa stołu, np. „Gra 1” lub „Turniej A”,
     - `gameType` (string) – wartość pola „rodzaj gry”,
     - `gameDate` (string) – wartość pola „data”,
