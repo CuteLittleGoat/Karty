@@ -51,7 +51,7 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
 ### 3.4 Stoły — edycja nazwy
 1. Kliknij w pole z nazwą stołu (np. „Gra 1”).
 2. Wpisz własną nazwę (np. „Turniej A”).
-3. Po chwili zmiana zapisze się automatycznie w Firebase.
+3. Po chwili zmiana zapisze się automatycznie.
 
 ### 3.5 Stoły — dodawanie i usuwanie wierszy
 1. Pod każdą tabelą znajduje się przycisk **Dodaj** (z lewej strony).
@@ -67,7 +67,7 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
    - ilość spotkań,
    - punkty,
    - suma rebuy.
-4. Wpisuj wartości w pola — każda zmiana zapisuje się automatycznie w Firebase.
+4. Wpisuj wartości w pola — każda zmiana zapisuje się automatycznie.
 5. Aby usunąć pojedynczy wiersz, kliknij **Usuń** po prawej stronie wiersza.
 
 ### 3.6 Podsumowanie
@@ -80,9 +80,7 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
 2. Wpisz komunikat, który ma być widoczny w zakładce **Aktualności** po stronie użytkownika.
 3. Kliknij przycisk **Wyślij**.
 4. Po poprawnym wysłaniu:
-   - w zakładce **Aktualności** u użytkowników pojawi się treść w polu **Najnowsze**,
-   - aplikacja Android wyświetli powiadomienie PUSH (lokalne).
-5. Jeśli Firebase nie jest skonfigurowany, obok przycisku pojawi się informacja o konieczności konfiguracji.
+   - w zakładce **Aktualności** u użytkowników pojawi się treść w polu **Najnowsze**.
 
 ### 3.8 Ustawianie PIN-u do zakładki „Najbliższa gra”
 1. W sekcji **PIN do zakładki „Najbliższa gra”** kliknij pole **PIN (5 cyfr)**.
@@ -91,14 +89,13 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
    - Kliknij przycisk **Losuj PIN**.
 4. Kliknij przycisk **Zapisz PIN**.
 5. Pod polem pojawi się komunikat **„PIN zapisany.”** jeśli zapis się powiódł.
-6. Jeśli konfiguracja Firebase jest pusta, przycisk zapisu będzie wyszarzony, a obok pojawi się informacja o konieczności konfiguracji.
 
 ## 4. Widok użytkownika — zakładki „Najbliższa gra” i „Aktualności”
 
 ### 4.1 Zakładka „Aktualności”
 1. W górnym pasku karty kliknij zakładkę **Aktualności** (jest domyślna po starcie).
 2. Zobaczysz pole **Najnowsze** z ostatnią wiadomością od administratora.
-3. Jeśli Firebase nie jest skonfigurowany lub brak komunikatów, zobaczysz odpowiedni komunikat w polu.
+3. Jeśli brak komunikatów, zobaczysz odpowiedni komunikat w polu.
 
 ### 4.2 Zakładka „Najbliższa gra”
 1. Kliknij zakładkę **Najbliższa gra**.
@@ -112,38 +109,3 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
 - Na telefonach przyciski w sekcji wiadomości układają się w kolumnie.
 - Okno instrukcji ma własny przewijalny obszar treści, co ułatwia czytanie na mobile.
 
-## 6. Konfiguracja Firebase
-1. Uzupełnij dane w pliku `config/firebase-config.js`.
-2. Skonfiguruj Firestore tak, aby web i Android mogły czytać/zapisywać kolekcję `admin_messages` oraz dokument `app_settings/next_game`.
-3. Dodaj reguły Firestore dla stołów (pamiętaj o wielkości liter w nazwie `Tables`):
-   - kolekcja `Tables` i jej subkolekcja `rows` muszą mieć możliwość zapisu z poziomu panelu admina,
-   - w przeciwnym razie aplikacja pokaże komunikat o braku dostępu do kolekcji `Tables`.
-4. Kolekcja `Tables` (stoły) jest używana przez panel admina:
-   - Kliknij **Start collection** i wpisz nazwę `Tables` (jeśli jeszcze nie istnieje).
-   - Dokumenty w tej kolekcji tworzą się automatycznie po kliknięciu **Dodaj** w panelu admina.
-   - Każdy dokument zawiera pola:
-     - `name` (string) – nazwa stołu („Gra 1”, „Turniej A” itd.),
-     - `gameType` (string) – rodzaj gry,
-     - `gameDate` (string) – data,
-     - `createdAt` (timestamp),
-     - `Date`, `PlayersInvited`, `Stakes`, `TableNumber`, `Winner` (string) – pola opcjonalne,
-     - `Placeholder1`-`Placeholder9` (string) – pola rezerwowe na przyszłe dane.
-   - W każdym dokumencie powstaje subkolekcja `rows`, w której każdy wiersz ma pola:
-     - `playerName`, `percentAllGames`, `percentPlayedGames`, `payouts`, `totalGames`,
-       `summary`, `deposits`, `meetings`, `points`, `rebuyTotal` (string/number),
-     - `createdAt` (timestamp).
-5. Kolekcja `players` (gracze) w Firebase Console:
-   - Kliknij **Start collection** i wpisz nazwę `players`.
-   - Każdy dokument w tej kolekcji powinien zawierać pola:
-     - `Name` (string) – nazwa gracza,
-     - `Cash`, `GamesPlayed`, `GamesWon`, `MoneySpend`, `MoneyWon` (string/number),
-     - `Placeholder1`-`Placeholder9` (string) – pola rezerwowe na przyszłe dane.
-6. Szczegółowa instrukcja krok po kroku znajduje się w pliku `Firebase.md`.
-
-## 7. Zasoby graficzne
-- Folder `Pliki/` jest przeznaczony na grafiki i zasoby używane w aplikacji.
-
-## 8. Dokument analizy PIN (dla zespołu)
-1. W głównym folderze projektu znajduje się plik `PIN.md`.
-2. Plik zawiera analizę oraz plan wdrożenia zakładki **„Najbliższa gra”** z zabezpieczeniem PIN.
-3. Jest to dokument projektowy (nie wpływa na bieżące działanie aplikacji), przydatny dla osób wdrażających kolejne funkcje.

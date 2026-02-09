@@ -263,6 +263,37 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - Konfiguracja Firestore i reguł dostępu jest opisana w `Firebase.md`.
 - Jeśli reguły Firestore nie pozwalają na zapis do `Tables`, interfejs admina pokaże komunikat o braku uprawnień i podpowie sprawdzenie wielkości liter w nazwie kolekcji.
 
+### Konfiguracja Firebase (szczegóły techniczne)
+1. Uzupełnij dane w pliku `config/firebase-config.js`.
+2. Skonfiguruj Firestore tak, aby web i Android mogły czytać/zapisywać kolekcję `admin_messages` oraz dokument `app_settings/next_game`.
+3. Dodaj reguły Firestore dla stołów (pamiętaj o wielkości liter w nazwie `Tables`):
+   - kolekcja `Tables` i jej subkolekcja `rows` muszą mieć możliwość zapisu z poziomu panelu admina,
+   - w przeciwnym razie aplikacja pokaże komunikat o braku dostępu do kolekcji `Tables`.
+4. Kolekcja `Tables` (stoły) jest używana przez panel admina:
+   - Kliknij **Start collection** i wpisz nazwę `Tables` (jeśli jeszcze nie istnieje).
+   - Dokumenty w tej kolekcji tworzą się automatycznie po kliknięciu **Dodaj** w panelu admina.
+   - Każdy dokument zawiera pola:
+     - `name` (string) – nazwa stołu („Gra 1”, „Turniej A” itd.),
+     - `gameType` (string) – rodzaj gry,
+     - `gameDate` (string) – data,
+     - `createdAt` (timestamp),
+     - `Date`, `PlayersInvited`, `Stakes`, `TableNumber`, `Winner` (string) – pola opcjonalne,
+     - `Placeholder1`-`Placeholder9` (string) – pola rezerwowe na przyszłe dane.
+   - W każdym dokumencie powstaje subkolekcja `rows`, w której każdy wiersz ma pola:
+     - `playerName`, `percentAllGames`, `percentPlayedGames`, `payouts`, `totalGames`,
+       `summary`, `deposits`, `meetings`, `points`, `rebuyTotal` (string/number),
+     - `createdAt` (timestamp).
+5. Kolekcja `players` (gracze) w Firebase Console:
+   - Kliknij **Start collection** i wpisz nazwę `players`.
+   - Każdy dokument w tej kolekcji powinien zawierać pola:
+     - `Name` (string) – nazwa gracza,
+     - `Cash`, `GamesPlayed`, `GamesWon`, `MoneySpend`, `MoneyWon` (string/number),
+     - `Placeholder1`-`Placeholder9` (string) – pola rezerwowe na przyszłe dane.
+6. Szczegółowa instrukcja krok po kroku znajduje się w pliku `Firebase.md`.
+
+### Zasoby graficzne
+- Folder `Pliki/` jest przeznaczony na grafiki i zasoby używane w aplikacji.
+
 ## Migracja Android (WebView + PUSH/Firestore)
 
 ### Struktura projektu Android
