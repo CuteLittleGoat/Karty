@@ -39,7 +39,7 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
 5. Gdy dodasz kolejną tabelę po zmianie nazwy:
    - jeśli istnieje tylko „Gra 1”, nowa tabela dostanie nazwę **„Gra 2”**,
    - jeśli nie ma żadnej nazwy „Gra X”, numeracja wraca do **„Gra 1”**.
-6. Aby usunąć tabelę, kliknij przycisk **Usuń** obok jej nazwy.
+6. Aby usunąć tabelę, kliknij czerwony przycisk **Usuń** obok jej nazwy.
 7. Tabele pojawiają się jedna pod drugą w kolejności utworzenia.
 8. Jeśli po kliknięciu **Dodaj** pojawia się komunikat o błędzie:
    - Otwórz plik `config/firebase-config.js`.
@@ -74,7 +74,7 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
    - punkty,
    - suma rebuy.
 4. Wpisuj wartości w pola — każda zmiana zapisuje się automatycznie.
-5. Aby usunąć pojedynczy wiersz, kliknij **Usuń** po prawej stronie wiersza.
+5. Aby usunąć pojedynczy wiersz, kliknij czerwony **Usuń** po prawej stronie wiersza.
 
 ### 3.6 Podsumowanie
 1. Pod listą stołów znajduje się tabela **Podsumowanie**.

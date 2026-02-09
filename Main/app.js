@@ -455,7 +455,7 @@ const initAdminTables = () => {
 
       const deleteButton = document.createElement("button");
       deleteButton.type = "button";
-      deleteButton.className = "secondary";
+      deleteButton.className = "danger";
       deleteButton.textContent = "Usuń";
       deleteButton.addEventListener("click", () => {
         void deleteTable(table.id);
@@ -510,7 +510,7 @@ const initAdminTables = () => {
         const actionTd = document.createElement("td");
         const rowDeleteButton = document.createElement("button");
         rowDeleteButton.type = "button";
-        rowDeleteButton.className = "secondary admin-row-delete";
+        rowDeleteButton.className = "danger admin-row-delete";
         rowDeleteButton.textContent = "Usuń";
         rowDeleteButton.addEventListener("click", () => {
           db.collection(tablesCollectionName)
