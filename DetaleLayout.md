@@ -60,6 +60,7 @@
 - `button`: uppercase, `--font-panel`, `letter-spacing: 0.10em`, `border-radius: var(--radius-sm)`, hover `translateY(-1px)`.
 - **Primary (złoty):** gradient, `border var(--gold-line)`, `--glow-gold`.
 - **Secondary (neon):** tło `rgba(43,227,139,.14)`, `border rgba(43,227,139,.45)`, `--glow-neon`.
+- **Danger (czerwony/Usuń):** tło `rgba(226,58,75,.18)`, `border rgba(226,58,75,.60)`, glow `0 0 18px rgba(226,58,75,.25)`.
 
 ## 7) Formularze
 - Tło `rgba(0,0,0,.35)`, border `--border`, tekst `--ink`.

@@ -395,6 +395,13 @@ button.secondary {
   box-shadow: var(--glow-neon);
 }
 
+button.danger {
+  background: rgba(226, 58, 75, 0.18);
+  border-color: rgba(226, 58, 75, 0.6);
+  color: rgba(237, 235, 230, 0.95);
+  box-shadow: 0 0 18px rgba(226, 58, 75, 0.25);
+}
+
 
 .admin-only {
   display: none;

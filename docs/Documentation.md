@@ -90,6 +90,7 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `button` to styl „panelowy” (uppercase, `--font-panel`, delikatny glow).
 - `.primary` – złoty gradient, `--glow-gold`.
 - `.secondary` – neonowa zieleń, `--glow-neon`.
+- `.danger` – czerwony wariant dla akcji usuwania (tło ruby, czerwony border, czerwony glow).
 
 ### 6. Strefa gracza, zakładki i PIN
 - `.next-game-card` zajmuje całą szerokość siatki (`grid-column: 1 / -1`).
@@ -115,6 +116,7 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `.admin-input` wspólny styl dla wszystkich pól edycji w tabelach (złoty fokus + neon).
 - `.admin-data-table` to tabela z nagłówkami uppercase i przewijaniem poziomym w `.admin-table-scroll`.
 - `.admin-summary` podkreśla blok **Podsumowanie** ze spójnym tłem noir.
+- Przyciski **Usuń** dla tabel i wierszy korzystają z klasy `.danger`, aby wizualnie akcentować akcje destrukcyjne.
 
 ### 10. Sekcja PIN w panelu admina
 - `.admin-pin` to karta z tłem noir i obramowaniem.
@@ -270,6 +272,28 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `app.js` nasłuchuje ostatniej wiadomości i pokazuje ją w polu „Najnowsze”.
 - Konfiguracja Firestore i reguł dostępu jest opisana w `Firebase.md`.
 - Jeśli reguły Firestore nie pozwalają na zapis do `Tables`, interfejs admina pokaże komunikat o braku uprawnień i podpowie sprawdzenie wielkości liter w nazwie kolekcji.
+
+### Aktualne reguły Firestore (zapisane konfiguracje)
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /admin_messages/{docId} {
+      allow read, write: if true;
+    }
+    match /app_settings/{docId} {
+      allow read, write: if true;
+    }
+    match /Tables/{tableId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+    }
+  }
+}
+```
 
 ### Konfiguracja Firebase (szczegóły techniczne)
 1. Uzupełnij dane w pliku `config/firebase-config.js`.
