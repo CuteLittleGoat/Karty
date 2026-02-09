@@ -243,6 +243,7 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 ## Firebase i konfiguracja
 - Plik `config/firebase-config.js` udostępnia globalny obiekt `window.firebaseConfig`.
 - W konfiguracji znajduje się pole `tablesCollection`, które pozwala dopasować nazwę kolekcji stołów do reguł Firestore (np. `"Tables"` lub `"tables"`).
+- Pole `collection1Name` przechowuje nazwę kolekcji rezerwowej (domyślnie `"Collection1"`), aby łatwo dopasować ją do reguł Firestore w przyszłości.
 - `app.js` inicjalizuje Firebase i zapisuje wiadomości w kolekcji `admin_messages`.
 - W Firestore wykorzystywane są kolekcje:
   - `Tables` (domyślnie, lub wartość z `tablesCollection`) – kolekcja stołów (rozgrywek). Każdy dokument zawiera pola:
@@ -269,6 +270,11 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
     - `MoneyWon` (string/number) – suma wygranych środków,
     - `Placeholder1`-`Placeholder9` (string) – pola rezerwowe na przyszłe dane.
   - `admin_messages` oraz `app_settings` – dane dla wiadomości i PIN-u.
+    - `admin_messages`: pole `content` (string) przechowuje treść wysłanej wiadomości, `createdAt` (timestamp) pozwala sortować najnowszy wpis.
+    - `app_settings/next_game`: pole `pin` (string) zawiera 5-cyfrowy PIN do zakładki „Najbliższa gra”, `updatedAt` (timestamp) sygnalizuje zmianę.
+  - `Collection1` – rezerwowa kolekcja pod przyszłe pola administratora.
+    - Dokument `document1` zawiera pola `field1`-`field20` (string).
+    - **Aktualnie żadne z pól `field1`-`field20` nie jest używane przez aplikację** – są przygotowane do przyszłego mapowania danych wpisywanych w panelu admina.
 - `app.js` nasłuchuje ostatniej wiadomości i pokazuje ją w polu „Najnowsze”.
 - Konfiguracja Firestore i reguł dostępu jest opisana w `Firebase.md`.
 - Jeśli reguły Firestore nie pozwalają na zapis do `Tables`, interfejs admina pokaże komunikat o braku uprawnień i podpowie sprawdzenie wielkości liter w nazwie kolekcji.
@@ -321,7 +327,12 @@ service cloud.firestore {
      - `Name` (string) – nazwa gracza,
      - `Cash`, `GamesPlayed`, `GamesWon`, `MoneySpend`, `MoneyWon` (string/number),
      - `Placeholder1`-`Placeholder9` (string) – pola rezerwowe na przyszłe dane.
-6. Szczegółowa instrukcja krok po kroku znajduje się w pliku `Firebase.md`.
+6. Kolekcja `Collection1` (pola admina na przyszłość):
+   - Kliknij **Start collection** i wpisz nazwę `Collection1`.
+   - Dodaj dokument `document1`.
+   - Dodaj pola `field1`-`field20` (string).
+   - Pola są przygotowane do późniejszego mapowania danych wpisywanych w panelu admina (obecnie nie są jeszcze używane w aplikacji).
+7. Szczegółowa instrukcja krok po kroku znajduje się w pliku `Firebase.md`.
 
 ### Zasoby graficzne
 - Folder `Pliki/` jest przeznaczony na grafiki i zasoby używane w aplikacji.

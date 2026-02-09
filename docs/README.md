@@ -96,6 +96,16 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
 4. Kliknij przycisk **Zapisz PIN**.
 5. Pod polem pojawi się komunikat **„PIN zapisany.”** jeśli zapis się powiódł.
 
+### 3.9 Firebase — przygotowanie Collection1 (pola admina na przyszłość)
+1. Wejdź do **Firebase Console** → **Firestore Database**.
+2. W lewym panelu kliknij **Start collection**.
+3. W polu nazwy wpisz dokładnie `Collection1` i kliknij **Next**.
+4. Jako **Document ID** wpisz `document1`.
+5. Dodaj pola:
+   - `field1` do `field20` (typ **string**, wartość może być pusta).
+6. Zapisz dokument przyciskiem **Save**.
+7. Te pola są przygotowane do przyszłego zapisu danych z panelu administratora (obecnie nie są jeszcze używane w aplikacji).
+
 ## 4. Widok użytkownika — zakładki „Najbliższa gra” i „Aktualności”
 
 ### 4.1 Zakładka „Aktualności”
