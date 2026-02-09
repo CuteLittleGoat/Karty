@@ -28,10 +28,16 @@ Interfejs utrzymuje styl noir/casino z akcentami złota i zieleni. Tokeny typogr
 
 ### 2. Sekcje główne (`<main class="grid">`)
 Układ korzysta z siatki CSS i zawiera:
-1. **Panel administratora** (`.card.admin-only`):
+1. **Sekcja stołów administratora** (`.card.admin-only.admin-tables`):
+   - nagłówek z tytułem **Stoły** i przyciskiem `#adminAddTable` (dodawanie kolejnych tabel),
+   - kontener `#adminTablesList`, w którym renderowane są karty stołów,
+   - tabela **Podsumowanie** z polami `#summaryGameCount` i `#summaryTotalPool`.
+   - Każda karta stołu zawiera kolumny: „nazwa gracza”, „% z wszystkich gier”, „% procent z rozegranych gier”,
+     „wypłaty”, „suma rozegranych gier”, „podsumowanie (+/-)”, „wpłaty”, „ilość spotkań”, „punkty”, „suma rebuy”.
+2. **Panel administratora** (`.card.admin-only`):
    - blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus`,
    - blok `.admin-pin` z polem `#adminPinInput`, przyciskami `#adminPinSave` i `#adminPinRandom` oraz statusem `#adminPinStatus`.
-2. **Strefa gracza** (`.next-game-card`) widoczna w obu trybach:
+3. **Strefa gracza** (`.next-game-card`) widoczna w obu trybach:
    - `.user-panel` z etykietą „Strefa gracza” i zakładkami `.user-tabs`,
    - zakładka **Najbliższa gra** (`#nextGameTab`) zawiera:
      - blok `#nextGamePinGate` z polem `#nextGamePinInput`, przyciskiem `#nextGamePinSubmit` i statusem `#nextGamePinStatus`,
@@ -102,24 +108,32 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `.latest-message` to karta z tłem noir i obramowaniem `--border2`.
 - `textarea` jest tylko do odczytu, bez możliwości resize, z wysokością ~86px.
 
-### 9. Sekcja PIN w panelu admina
+### 9. Sekcja stołów admina
+- `.admin-tables` zajmuje pełną szerokość siatki i zawiera listę kart stołów.
+- `.admin-tables-header` układa tytuł oraz przycisk **Dodaj** w jednym wierszu.
+- `.admin-table-card` to pojedyncza karta stołu z polami edycyjnymi, tabelą danych i przyciskami akcji.
+- `.admin-input` wspólny styl dla wszystkich pól edycji w tabelach (złoty fokus + neon).
+- `.admin-data-table` to tabela z nagłówkami uppercase i przewijaniem poziomym w `.admin-table-scroll`.
+- `.admin-summary` podkreśla blok **Podsumowanie** ze spójnym tłem noir.
+
+### 10. Sekcja PIN w panelu admina
 - `.admin-pin` to karta z tłem noir i obramowaniem.
 - `.admin-pin-form` używa labeli uppercase, a input ma styl identyczny z polami w PIN gate.
 - `.admin-pin-actions` układa przyciski i status w jednym wierszu.
 
-### 10. Modal instrukcji
+### 11. Modal instrukcji
 - `.modal-overlay` to warstwa tła `rgba(0,0,0,.72)` z centrowanym oknem.
 - `.modal-card` ma noir gradient, złotą linię w `::before`, cień 0 20px 60px i max-height 82vh.
 - `.modal-content` jest przewijalnym kontenerem z `white-space: pre-wrap`.
 - `.icon-button` to kompaktowy przycisk „×”.
 - `body.modal-open` blokuje przewijanie tła podczas otwartego modala.
 
-### 11. Widoczność sekcji
+### 12. Widoczność sekcji
 - `.admin-only` domyślnie ukryta.
 - `.user-only` domyślnie widoczna.
 - Klasa `.is-admin` na `<body>` przełącza widoczność; dodatkowo `.card.admin-only` jest pokazywana jako flex.
 
-### 12. Responsywność
+### 13. Responsywność
 - `<720px` przyciski w sekcji wiadomości układają się w kolumnie.
 - `<720px` modal przechodzi w układ jednokolumnowy.
 - `<520px` modal zmniejsza padding.
@@ -130,6 +144,9 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `PIN_LENGTH` – długość PIN-u (5).
 - `PIN_STORAGE_KEY` – klucz w `sessionStorage` przechowujący informację o weryfikacji PIN-u.
 - `currentPin` – domyślny PIN (nadpisywany po pobraniu z Firestore).
+- `TABLES_COLLECTION` / `TABLE_ROWS_COLLECTION` – nazwy kolekcji Firestore dla stołów i wierszy.
+- `DEFAULT_TABLE_META` – domyślne wartości pól „rodzaj gry” i „data”.
+- `TABLE_COLUMNS` – definicja kolumn tabel (klucze i etykiety).
 
 ### Funkcje
 1. **`getAdminMode()`**
@@ -181,7 +198,25 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
    - Pobiera treść z `https://cutelittlegoat.github.io/Karty/docs/README.md` i wstawia do `#instructionContent`.
    - Obsługuje odświeżanie treści, zamykanie (przyciski, tło, Esc) i blokadę scrolla tła.
 
-14. **`bootstrap()`**
+14. **`parseDefaultTableNumber(name)`**
+   - Rozpoznaje domyślne nazwy w formacie „Gra X” i zwraca numer.
+
+15. **`getNextTableName(tables)`**
+   - Wylicza brakujący numer dla nazwy „Gra X” na podstawie istniejących stołów.
+
+16. **`normalizeNumber(value)` / `formatNumber(value)`**
+   - Normalizują wartości „wpłaty” do liczb i formatują je do wyświetlania.
+
+17. **`scheduleDebouncedUpdate(key, callback)`**
+   - Debounce zapisów do Firestore, aby nie wysyłać zapytań przy każdym znaku.
+
+18. **`initAdminTables()`**
+   - Renderuje listę stołów admina, podpina przycisk **Dodaj** i obsługuje usuwanie stołów.
+   - Umożliwia edycję nazwy stołu, pól „rodzaj gry” i „data”.
+   - Dodaje/usuwa wiersze z tabeli i zapisuje je w Firestore (subkolekcja `rows`).
+   - Oblicza podsumowanie: liczba stołów oraz suma „wpłaty”.
+
+19. **`bootstrap()`**
    - Funkcja startowa: sprawdza tryb admina, aktualizuje klasę `is-admin` na `<body>`.
    - Uruchamia zakładki, ładuje PIN z Firestore, inicjuje gate PIN-u oraz moduły wiadomości i modala.
 
@@ -190,7 +225,7 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 2. Odczytywany jest tryb admina i ustawiana jest klasa `is-admin`.
 3. Zakładki w strefie gracza inicjują się z domyślną zakładką „Aktualności”.
 4. Aplikacja próbuje pobrać PIN z Firestore i inicjuje gate PIN-u.
-5. Dla admina aktywuje się wysyłka wiadomości, zapis PIN-u oraz modal instrukcji.
+5. Dla admina aktywują się: moduł stołów (dodawanie, edycja, wiersze), wysyłka wiadomości, zapis PIN-u oraz modal instrukcji.
 
 ## Analiza funkcji „Najbliższa gra” (PIN)
 - W pliku `PIN.md` znajduje się pełna analiza wymaganej funkcji: zakładka „Najbliższa gra”, zabezpieczenie PIN-em oraz zapis PIN-u w Firestore.
@@ -198,20 +233,17 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 ## Firebase i konfiguracja
 - Plik `config/firebase-config.js` udostępnia globalny obiekt `window.firebaseConfig`.
 - `app.js` inicjalizuje Firebase i zapisuje wiadomości w kolekcji `admin_messages`.
-- W Firestore istnieją dodatkowe kolekcje przygotowane pod przyszłe widoki admina i tabel edytowalnych:
-  - `players` – kolekcja graczy. Każdy dokument zawiera pola:
-    - `Name` (string) – nazwa/gracz,
-    - `Cash` (string lub number) – aktualny stan gotówki gracza,
-    - `GamesPlayed` (string lub number) – liczba rozegranych gier,
-    - `GamesWon` (string lub number) – liczba wygranych gier,
-    - `MoneySpend` (string lub number) – suma wydatków,
-    - `MoneyWon` (string lub number) – suma wygranych.
+- W Firestore wykorzystywane są kolekcje:
   - `Tables` – kolekcja stołów (rozgrywek). Każdy dokument zawiera pola:
-    - `TableNumber` (string lub number) – numer stołu,
-    - `Date` (string) – data rozgrywki,
-    - `PlayersInvited` (string) – lista zaproszonych graczy (format do ustalenia w przyszłych ekranach),
-    - `Stakes` (string lub number) – stawka,
-    - `Winner` (string) – zwycięzca.
+    - `name` (string) – nazwa stołu, np. „Gra 1” lub „Turniej A”,
+    - `gameType` (string) – wartość pola „rodzaj gry”,
+    - `gameDate` (string) – wartość pola „data”,
+    - `createdAt` (timestamp) – czas utworzenia (do sortowania).
+    - Subkolekcja `rows` przechowuje wiersze tabeli z polami:
+      - `playerName`, `percentAllGames`, `percentPlayedGames`, `payouts`, `totalGames`,
+        `summary`, `deposits`, `meetings`, `points`, `rebuyTotal` (string/number),
+      - `createdAt` (timestamp) – czas utworzenia wiersza.
+  - `admin_messages` oraz `app_settings` – dane dla wiadomości i PIN-u.
 - `app.js` nasłuchuje ostatniej wiadomości i pokazuje ją w polu „Najnowsze”.
 - Konfiguracja Firestore i reguł dostępu jest opisana w `Firebase.md`.
 
@@ -264,9 +296,9 @@ W `MigracjaAndroid/AndroidApp/` znajduje się kompletny projekt Android Studio z
 4. Wiadomości z `admin_messages` wyświetlane są jako lokalne powiadomienia (PUSH).
 
 ## Jak odtworzyć aplikację na podstawie dokumentacji
-1. Utwórz `Main/index.html` z nagłówkiem, przyciskiem **Instrukcja** w prawym górnym rogu admina, panelem admina (wiadomość + PIN) oraz strefą gracza z zakładkami i PIN gate.
-2. Dodaj `Main/styles.css` z tokenami kasynowymi, gradientowym tłem noir, filcowymi kartami, stylami zakładek, PIN gate i modala.
-3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `getFirebaseApp`, `initUserTabs`, `initPinGate`, `initAdminPin`, `initAdminMessaging`, `initLatestMessage`, `initInstructionModal`, `bootstrap`.
+1. Utwórz `Main/index.html` z nagłówkiem, przyciskiem **Instrukcja** w prawym górnym rogu admina, sekcją stołów (przycisk **Dodaj**, lista tabel, blok **Podsumowanie**), panelem admina (wiadomość + PIN) oraz strefą gracza z zakładkami i PIN gate.
+2. Dodaj `Main/styles.css` z tokenami kasynowymi, gradientowym tłem noir, filcowymi kartami, stylami zakładek, PIN gate, modala oraz bloków `.admin-tables`, `.admin-table-card`, `.admin-input`, `.admin-data-table`.
+3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `getFirebaseApp`, `initUserTabs`, `initPinGate`, `initAdminPin`, `initAdminMessaging`, `initLatestMessage`, `initInstructionModal`, `initAdminTables`, `bootstrap` oraz logiką numeracji „Gra X”.
 4. Połącz pliki w HTML, pamiętając o wczytaniu `../config/firebase-config.js` oraz skryptów Firebase przed `app.js`.
 5. Dodaj `DetaleLayout.md` jako repozytorium stylów i `Firebase.md` z instrukcją konfiguracji Firestore oraz PUSH.
 6. Jeśli chcesz wersję Android, utwórz projekt na bazie `MigracjaAndroid/AndroidApp` zgodnie z powyższą sekcją.

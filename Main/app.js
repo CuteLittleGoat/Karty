@@ -2,6 +2,33 @@ const PIN_LENGTH = 5;
 const PIN_STORAGE_KEY = "nextGamePinVerified";
 let currentPin = "12345";
 
+const TABLES_COLLECTION = "Tables";
+const TABLE_ROWS_COLLECTION = "rows";
+const DEFAULT_TABLE_META = {
+  gameType: "rodzaj gry",
+  gameDate: "data"
+};
+const TABLE_COLUMNS = [
+  { key: "playerName", label: "nazwa gracza" },
+  { key: "percentAllGames", label: "% z wszystkich gier" },
+  { key: "percentPlayedGames", label: "% procent z rozegranych gier" },
+  { key: "payouts", label: "wypłaty" },
+  { key: "totalGames", label: "suma rozegranych gier" },
+  { key: "summary", label: "podsumowanie (+/-)" },
+  { key: "deposits", label: "wpłaty" },
+  { key: "meetings", label: "ilość spotkań" },
+  { key: "points", label: "punkty" },
+  { key: "rebuyTotal", label: "suma rebuy" }
+];
+
+const adminTablesState = {
+  tables: new Map(),
+  rows: new Map(),
+  rowUnsubscribers: new Map(),
+  tableList: []
+};
+const debounceTimers = new Map();
+
 const getAdminMode = () => {
   const params = new URLSearchParams(window.location.search);
   return params.get("admin") === "1";
@@ -21,6 +48,65 @@ const getFirebaseApp = () => {
   }
 
   return window.firebase;
+};
+
+const parseDefaultTableNumber = (name) => {
+  if (!name || typeof name !== "string") {
+    return null;
+  }
+  const match = name.trim().match(/^Gra\s+(\d+)$/i);
+  if (!match) {
+    return null;
+  }
+  const numberValue = Number(match[1]);
+  return Number.isInteger(numberValue) ? numberValue : null;
+};
+
+const getNextTableName = (tables) => {
+  const usedNumbers = new Set();
+  tables.forEach((table) => {
+    const numberValue = parseDefaultTableNumber(table.name);
+    if (numberValue) {
+      usedNumbers.add(numberValue);
+    }
+  });
+
+  let candidate = 1;
+  while (usedNumbers.has(candidate)) {
+    candidate += 1;
+  }
+  return `Gra ${candidate}`;
+};
+
+const normalizeNumber = (value) => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+  if (value === null || value === undefined) {
+    return 0;
+  }
+  const normalized = value.toString().replace(/\s/g, "").replace(",", ".");
+  const parsed = Number.parseFloat(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const formatNumber = (value) => {
+  if (!Number.isFinite(value)) {
+    return "0";
+  }
+  return value.toLocaleString("pl-PL", { maximumFractionDigits: 2 });
+};
+
+const scheduleDebouncedUpdate = (key, callback, delay = 400) => {
+  const existing = debounceTimers.get(key);
+  if (existing) {
+    clearTimeout(existing);
+  }
+  const timeoutId = setTimeout(() => {
+    debounceTimers.delete(key);
+    callback();
+  }, delay);
+  debounceTimers.set(key, timeoutId);
 };
 
 const sanitizePin = (value) => value.replace(/\D/g, "").slice(0, PIN_LENGTH);
@@ -240,6 +326,274 @@ const initAdminMessaging = () => {
   });
 };
 
+const initAdminTables = () => {
+  const list = document.querySelector("#adminTablesList");
+  const addButton = document.querySelector("#adminAddTable");
+  const status = document.querySelector("#adminTablesStatus");
+  const summaryGameCount = document.querySelector("#summaryGameCount");
+  const summaryTotalPool = document.querySelector("#summaryTotalPool");
+
+  if (!list || !addButton || !status || !summaryGameCount || !summaryTotalPool) {
+    return;
+  }
+
+  const firebaseApp = getFirebaseApp();
+
+  if (!firebaseApp) {
+    addButton.disabled = true;
+    status.textContent = "Uzupełnij konfigurację Firebase, aby zapisywać stoły.";
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+
+  const updateSummary = () => {
+    const totalTables = adminTablesState.tableList.length;
+    let totalPool = 0;
+    adminTablesState.rows.forEach((rows) => {
+      rows.forEach((row) => {
+        totalPool += normalizeNumber(row.deposits);
+      });
+    });
+
+    summaryGameCount.value = totalTables.toString();
+    summaryTotalPool.value = formatNumber(totalPool);
+  };
+
+  const deleteTable = async (tableId) => {
+    status.textContent = "Usuwanie stołu...";
+    try {
+      const tableRef = db.collection(TABLES_COLLECTION).doc(tableId);
+      const rowsSnapshot = await tableRef.collection(TABLE_ROWS_COLLECTION).get();
+      const batch = db.batch();
+      rowsSnapshot.forEach((rowDoc) => {
+        batch.delete(rowDoc.ref);
+      });
+      batch.delete(tableRef);
+      await batch.commit();
+      status.textContent = "Stół usunięty.";
+    } catch (error) {
+      status.textContent = "Nie udało się usunąć stołu.";
+    }
+  };
+
+  const renderTables = () => {
+    list.innerHTML = "";
+
+    adminTablesState.tableList.forEach((table) => {
+      const tableCard = document.createElement("div");
+      tableCard.className = "admin-table-card";
+
+      const metaRow = document.createElement("div");
+      metaRow.className = "admin-table-meta";
+
+      const gameTypeInput = document.createElement("input");
+      gameTypeInput.type = "text";
+      gameTypeInput.className = "admin-input";
+      gameTypeInput.value = table.gameType ?? DEFAULT_TABLE_META.gameType;
+      gameTypeInput.placeholder = DEFAULT_TABLE_META.gameType;
+      gameTypeInput.addEventListener("input", () => {
+        const value = gameTypeInput.value;
+        scheduleDebouncedUpdate(`${table.id}:gameType`, () => {
+          db.collection(TABLES_COLLECTION).doc(table.id).update({ gameType: value });
+        });
+      });
+
+      const gameDateInput = document.createElement("input");
+      gameDateInput.type = "text";
+      gameDateInput.className = "admin-input";
+      gameDateInput.value = table.gameDate ?? DEFAULT_TABLE_META.gameDate;
+      gameDateInput.placeholder = DEFAULT_TABLE_META.gameDate;
+      gameDateInput.addEventListener("input", () => {
+        const value = gameDateInput.value;
+        scheduleDebouncedUpdate(`${table.id}:gameDate`, () => {
+          db.collection(TABLES_COLLECTION).doc(table.id).update({ gameDate: value });
+        });
+      });
+
+      metaRow.appendChild(gameTypeInput);
+      metaRow.appendChild(gameDateInput);
+
+      const headerRow = document.createElement("div");
+      headerRow.className = "admin-table-header";
+
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.className = "admin-input";
+      nameInput.value = table.name ?? getNextTableName([]);
+      nameInput.placeholder = "Nazwa stołu";
+      nameInput.addEventListener("input", () => {
+        const value = nameInput.value;
+        scheduleDebouncedUpdate(`${table.id}:name`, () => {
+          db.collection(TABLES_COLLECTION).doc(table.id).update({ name: value });
+        });
+      });
+
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "secondary";
+      deleteButton.textContent = "Usuń";
+      deleteButton.addEventListener("click", () => {
+        void deleteTable(table.id);
+      });
+
+      headerRow.appendChild(nameInput);
+      headerRow.appendChild(deleteButton);
+
+      const tableScroll = document.createElement("div");
+      tableScroll.className = "admin-table-scroll";
+
+      const dataTable = document.createElement("table");
+      dataTable.className = "admin-data-table";
+
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      TABLE_COLUMNS.forEach((column) => {
+        const th = document.createElement("th");
+        th.textContent = column.label;
+        headRow.appendChild(th);
+      });
+      const actionsTh = document.createElement("th");
+      actionsTh.textContent = "";
+      headRow.appendChild(actionsTh);
+      thead.appendChild(headRow);
+      dataTable.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+      const rows = adminTablesState.rows.get(table.id) ?? [];
+      rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        TABLE_COLUMNS.forEach((column) => {
+          const td = document.createElement("td");
+          const input = document.createElement("input");
+          input.type = "text";
+          input.className = "admin-input";
+          input.value = row[column.key] ?? "";
+          input.addEventListener("input", () => {
+            const value = input.value;
+            scheduleDebouncedUpdate(`${table.id}:${row.id}:${column.key}`, () => {
+              db.collection(TABLES_COLLECTION)
+                .doc(table.id)
+                .collection(TABLE_ROWS_COLLECTION)
+                .doc(row.id)
+                .update({ [column.key]: value });
+            });
+          });
+          td.appendChild(input);
+          tr.appendChild(td);
+        });
+
+        const actionTd = document.createElement("td");
+        const rowDeleteButton = document.createElement("button");
+        rowDeleteButton.type = "button";
+        rowDeleteButton.className = "secondary admin-row-delete";
+        rowDeleteButton.textContent = "Usuń";
+        rowDeleteButton.addEventListener("click", () => {
+          db.collection(TABLES_COLLECTION)
+            .doc(table.id)
+            .collection(TABLE_ROWS_COLLECTION)
+            .doc(row.id)
+            .delete();
+        });
+        actionTd.appendChild(rowDeleteButton);
+        tr.appendChild(actionTd);
+
+        tbody.appendChild(tr);
+      });
+      dataTable.appendChild(tbody);
+      tableScroll.appendChild(dataTable);
+
+      const actionsRow = document.createElement("div");
+      actionsRow.className = "admin-table-actions";
+      const addRowButton = document.createElement("button");
+      addRowButton.type = "button";
+      addRowButton.className = "secondary";
+      addRowButton.textContent = "Dodaj";
+      addRowButton.addEventListener("click", async () => {
+        await db.collection(TABLES_COLLECTION).doc(table.id).collection(TABLE_ROWS_COLLECTION).add({
+          playerName: "",
+          percentAllGames: "",
+          percentPlayedGames: "",
+          payouts: "",
+          totalGames: "",
+          summary: "",
+          deposits: "",
+          meetings: "",
+          points: "",
+          rebuyTotal: "",
+          createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+        });
+      });
+      actionsRow.appendChild(addRowButton);
+
+      tableCard.appendChild(metaRow);
+      tableCard.appendChild(headerRow);
+      tableCard.appendChild(tableScroll);
+      tableCard.appendChild(actionsRow);
+
+      list.appendChild(tableCard);
+    });
+
+    updateSummary();
+  };
+
+  db.collection(TABLES_COLLECTION)
+    .orderBy("createdAt", "asc")
+    .onSnapshot((snapshot) => {
+      const tables = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      adminTablesState.tableList = tables;
+      adminTablesState.tables = new Map(tables.map((table) => [table.id, table]));
+
+      const activeIds = new Set(tables.map((table) => table.id));
+      adminTablesState.rowUnsubscribers.forEach((unsubscribe, tableId) => {
+        if (!activeIds.has(tableId)) {
+          unsubscribe();
+          adminTablesState.rowUnsubscribers.delete(tableId);
+          adminTablesState.rows.delete(tableId);
+        }
+      });
+
+      tables.forEach((table) => {
+        if (adminTablesState.rowUnsubscribers.has(table.id)) {
+          return;
+        }
+        const unsubscribe = db
+          .collection(TABLES_COLLECTION)
+          .doc(table.id)
+          .collection(TABLE_ROWS_COLLECTION)
+          .orderBy("createdAt", "asc")
+          .onSnapshot((rowSnapshot) => {
+            const rows = rowSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            adminTablesState.rows.set(table.id, rows);
+            renderTables();
+          });
+        adminTablesState.rowUnsubscribers.set(table.id, unsubscribe);
+      });
+
+      renderTables();
+    });
+
+  addButton.addEventListener("click", async () => {
+    addButton.disabled = true;
+    status.textContent = "Dodawanie stołu...";
+
+    try {
+      const nextName = getNextTableName(adminTablesState.tableList);
+      await db.collection(TABLES_COLLECTION).add({
+        name: nextName,
+        gameType: DEFAULT_TABLE_META.gameType,
+        gameDate: DEFAULT_TABLE_META.gameDate,
+        createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+      });
+      status.textContent = "Stół dodany.";
+    } catch (error) {
+      status.textContent = "Nie udało się dodać stołu.";
+    } finally {
+      addButton.disabled = false;
+    }
+  });
+};
+
 const initLatestMessage = () => {
   const output = document.querySelector("#latestMessageOutput");
   const status = document.querySelector("#latestMessageStatus");
@@ -382,6 +736,7 @@ const bootstrap = async () => {
   await loadPinFromFirestore();
   initAdminMessaging();
   initAdminPin();
+  initAdminTables();
   initPinGate({ isAdmin });
   initLatestMessage();
   initInstructionModal();
