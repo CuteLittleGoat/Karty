@@ -85,17 +85,26 @@
 - `.admin-pin` to analogiczna karta dla PIN-u.
 - `.admin-pin-actions` układa przyciski i status w jednym wierszu.
 
-## 10) Modal instrukcji
+## 10) Stoły administratora
+- `.admin-tables` zajmuje pełną szerokość siatki i pokazuje listę stołów jedna pod drugą.
+- `.admin-tables-header` układa tytuł i przycisk **Dodaj** w jednej linii.
+- `.admin-table-card` ma tło noir (`rgba(0,0,0,.30)`), obramowanie `--border2` i odstępy `16px`.
+- `.admin-input` to wspólny styl pól w tabelach: tło `rgba(0,0,0,.35)`, obramowanie `--border`, złoty fokus + neon.
+- `.admin-data-table` to tabela z nagłówkami uppercase (`--font-panel`, `letter-spacing 0.12em`) i separatorami `--border2`.
+- `.admin-table-scroll` zapewnia przewijanie poziome tabel na mniejszych ekranach.
+- `.admin-summary` to blok „Podsumowanie” z tym samym noir tłem i zaokrągleniem `--radius-md`.
+
+## 11) Modal instrukcji
 - Overlay `rgba(0,0,0,.72)`, karta `linear-gradient` noir.
 - `.modal-content` przewijalny, `white-space: pre-wrap`.
 - `.icon-button` to okrągły przycisk „×”.
 
-## 11) Responsywność
+## 12) Responsywność
 - `<720px` przyciski w sekcji wiadomości układają się w kolumnie.
 - `<720px` modal przechodzi w układ jednokolumnowy.
 - `<520px` modal ma mniejszy padding.
 
-## 12) Dostępność
+## 13) Dostępność
 - Kontrast tekstu min ~4.5:1.
 - Widoczny focus ring (złoto + neon).
 - Klikalne elementy min 40px na mobile.
