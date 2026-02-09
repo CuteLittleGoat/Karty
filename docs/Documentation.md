@@ -1,62 +1,52 @@
 # Dokumentacja techniczna - Karty
 
 ## Cel aplikacji
-Aplikacja jest szablonem strony do organizacji turnieju karcianego. Udostępnia dwa warianty interfejsu:
-- **Widok użytkownika** (domyślny) – strefa uczestnika z domyślną zakładką „Aktualności” oraz zakładką „Najbliższa gra” zabezpieczoną PIN-em.
-- **Widok administratora** (po dodaniu `?admin=1` do URL lub użyciu przycisku „Przełącz widok”) – rozszerzony o sekcję zarządzania stołami i graczami, moduł wiadomości do Androida, ustawianie PIN-u oraz przycisk z instrukcją obsługi.
+Aplikacja prezentuje uproszczony panel turnieju karcianego z dwoma wariantami interfejsu:
+- **Widok użytkownika** (domyślny) – „Strefa gracza” z zakładkami **Aktualności** i **Najbliższa gra**. Zakładka „Najbliższa gra” jest chroniona PIN-em i po poprawnym wpisie pokazuje komunikat „Strona w budowie”.
+- **Widok administratora** (po dodaniu `?admin=1` do URL) – dostęp do sekcji wysyłania wiadomości do graczy oraz ustawiania PIN-u, plus przycisk **Instrukcja** w prawym górnym rogu.
 
-Interfejs jest utrzymany w stylistyce kasyna (noir, złoto, filcowa zieleń, delikatny neon). Projekt korzysta z tokenów typografii i kolorów opisanych w `DetaleLayout.md`.
+Interfejs utrzymuje styl noir/casino z akcentami złota i zieleni. Tokeny typografii i kolorów są opisane w `DetaleLayout.md`.
 
 ## Struktura plików
-- `Main/index.html` – szkielet strony, kontenery dla danych, panel admina oraz modal instrukcji.
-- `Main/styles.css` – kompletne style wizualne (tokeny kolorów, fonty, układ, komponenty, modal).
-- `Main/app.js` – logika przełączania widoków, renderowania danych, obsługa wiadomości admina i modala instrukcji.
-- `config/firebase-config.js` – miejsce na konfigurację Firebase (ładowane z poziomu `Main/index.html`).
+- `Main/index.html` – szkielet strony, panel admina, strefa użytkownika i modal instrukcji.
+- `Main/styles.css` – style wizualne (kolory, fonty, układ, komponenty, modal).
+- `Main/app.js` – logika PIN-u, zakładek, wiadomości admina i modala instrukcji.
+- `config/firebase-config.js` – konfiguracja Firebase (ładowana z poziomu `Main/index.html`).
 - `Firebase.md` – instrukcja konfiguracji Firebase (Firestore + PUSH).
-- `PIN.md` – analiza funkcjonalności zakładki „Najbliższa gra” oraz wymagań dla PIN.
+- `PIN.md` – analiza funkcjonalności zakładki „Najbliższa gra” i wymagania PIN.
 - `docs/README.md` – instrukcje obsługi dla użytkownika.
 - `DetaleLayout.md` – repozytorium stylów, fontów i wytycznych projektu.
 - `Pliki/` – katalog na zasoby graficzne.
-- `MigracjaAndroid/Migracja_Android.md` – pełna instrukcja migracji na Android (WebView + PUSH/Firestore).
-- `MigracjaAndroid/AndroidApp/` – gotowy projekt Android Studio z WebView i Firestore.
+- `MigracjaAndroid/` – instrukcje i projekt Android (WebView + Firestore).
 
 ## Opis HTML (`Main/index.html`)
 
 ### 1. Nagłówek strony
 - `<header class="page-header">` zawiera:
-  - **Blok intro** `.header-intro` z eyebrow „TO NIE JEST nielegalny poker” (`.eyebrow`) oraz tytułem `TO NIE JEST nielegalne kasyno` i opisem (`h1`, `.subtitle`). Blok jest widoczny tylko w trybie admina.
-- **Karta widoku** (`.view-card`) z etykietą trybu (`.view-label`), wierszem `.view-status` (badge trybu `#viewBadge` i czerwony przycisk `.view-toggle`) oraz podpowiedzią (`.view-hint`).
-  - Podpowiedź `.view-hint` jest widoczna tylko w trybie admina.
+  - **Blok intro** `.header-intro` z tekstami „TO NIE JEST nielegalny poker” oraz „TO NIE JEST nielegalne kasyno”. Blok jest widoczny tylko w trybie admina.
+  - **Przycisk instrukcji** w `.admin-toolbar` (widoczny tylko dla admina). Przycisk posiada `id="adminInstructionButton"` i otwiera modal instrukcji.
 
 ### 2. Sekcje główne (`<main class="grid">`)
-Układ korzysta z siatki CSS i składa się z kart:
-1. **Stoły i gracze** – kontener `#tablesContainer` (sekcja tylko dla admina).
-2. **Lista graczy** – kontener `#playersContainer` (sekcja tylko dla admina).
-3. **Rozliczenia** – kontener `#paymentsContainer` (sekcja tylko dla admina).
-4. **Panel administratora** – sekcja `.admin-only` (przyciski akcji i notatka).
-   - Wewnątrz panelu znajduje się blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus` (nagłówek „Wiadomość do graczy”).
-  - W siatce `.admin-actions` dodany jest przycisk `#dataUpdateButton` („Aktualizuj dane”) oraz `#adminInstructionButton`, który otwiera modal instrukcji.
-  - Poniżej przycisków znajduje się `.admin-data-hint` z informacją o wymaganej lokalizacji pliku `Turniej.xlsx`.
-  - Dodatkowo występuje blok `.admin-pin` z polem `#adminPinInput` (typ `tel`, `inputmode="numeric"`, `pattern="[0-9]{5}"`, `minlength`/`maxlength` 5), przyciskami `#adminPinSave` i `#adminPinRandom` oraz statusem `#adminPinStatus` do zapisu PIN-u w Firestore i losowania nowego kodu.
-5. **Strefa uczestnika / zakładki użytkownika** – sekcja `.next-game-card` widoczna w obu trybach:
-  - `.user-panel` zawiera etykietę `.user-view-label` („Strefa uczestnika”), czerwony przycisk `.view-toggle` i listę zakładek `.user-tabs`.
-  - Domyślnie aktywna w trybie użytkownika jest zakładka **Aktualności**.
-  - Zakładka **Najbliższa gra** (`#nextGameTab`) zawiera:
-    - blok `#nextGamePinGate` z polem PIN-u `#nextGamePinInput` (typ `tel`, `inputmode="numeric"`, `pattern="[0-9]{5}"`, `minlength`/`maxlength` 5), przyciskiem `#nextGamePinSubmit` i statusem `#nextGamePinStatus`,
-    - treści `#nextGameContent` z układem `.next-game-grid` (informacje, harmonogram, stoły, lista graczy) oraz notatką `.next-game-note`.
-  - Zakładka **Aktualności** (`#updatesTab`) zawiera:
-    - pole „Najnowsze” (`#latestMessageOutput`) z komunikatem admina,
-    - listę `#nextGameUpdates`.
+Układ korzysta z siatki CSS i zawiera:
+1. **Panel administratora** (`.card.admin-only`):
+   - blok `.admin-message` z polem `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus`,
+   - blok `.admin-pin` z polem `#adminPinInput`, przyciskami `#adminPinSave` i `#adminPinRandom` oraz statusem `#adminPinStatus`.
+2. **Strefa gracza** (`.next-game-card`) widoczna w obu trybach:
+   - `.user-panel` z etykietą „Strefa gracza” i zakładkami `.user-tabs`,
+   - zakładka **Najbliższa gra** (`#nextGameTab`) zawiera:
+     - blok `#nextGamePinGate` z polem `#nextGamePinInput`, przyciskiem `#nextGamePinSubmit` i statusem `#nextGamePinStatus`,
+     - treści `#nextGameContent` z komunikatem „Strona w budowie”, widoczne po poprawnym PIN-ie,
+   - zakładka **Aktualności** (`#updatesTab`) zawiera pole „Najnowsze” (`#latestMessageOutput`) oraz status `#latestMessageStatus`.
 
 ### 3. Modal instrukcji
-- Blok `#instructionModal` jest osadzony na końcu `body` i służy do pokazywania instrukcji obsługi.
-- Zawiera nagłówek z tytułem `#instructionTitle`, treść w `#instructionContent`, status `#instructionStatus` i przyciski `#instructionRefresh` oraz `#instructionCloseFooter`.
-- Modal jest ukrywany/pokazywany poprzez klasę `.is-visible` i atrybut `aria-hidden`.
+- `#instructionModal` to modal z treścią instrukcji.
+- Zawiera nagłówek `#instructionTitle`, treść `#instructionContent`, status `#instructionStatus` oraz przyciski `#instructionRefresh` i `#instructionCloseFooter`.
+- Widoczność sterowana jest przez klasę `.is-visible` i atrybut `aria-hidden`.
 
 ### 4. Skrypty
-- `../config/firebase-config.js` – wczytywany przed `app.js`, aby zapewnić dostęp do `window.firebaseConfig`.
-- `firebase-app-compat.js` oraz `firebase-firestore-compat.js` – biblioteki Firebase wymagane do zapisu wiadomości w Firestore.
-- `app.js` – logika przełączeń i renderowania danych przykładowych.
+- `../config/firebase-config.js` – udostępnia `window.firebaseConfig`.
+- `firebase-app-compat.js` oraz `firebase-firestore-compat.js` – biblioteki Firebase.
+- `app.js` – logika PIN-u, zakładek, wiadomości i modala.
 
 ## Opis CSS (`Main/styles.css`)
 
@@ -75,12 +65,8 @@ Zdefiniowane w `:root`:
 Wykorzystane fonty (Google Fonts) i tokeny:
 - `--font-title`: Cinzel – nagłówek główny (uppercase, 0.12em).
 - `--font-subtitle`: Cormorant Garamond – nagłówki sekcji.
-- `--font-panel`: Rajdhani – etykiety i elementy UI uppercase.
+- `--font-panel`: Rajdhani – etykiety i przyciski uppercase.
 - `--font-text`: Inter – tekst bazowy.
-- `--font-nazwisko`: IBM Plex Sans – nazwiska w tabelach.
-- `--font-stawka`: Roboto Mono – liczby i stawki (tabular).
-- `--font-chip`: Sora – badge/chipy statusów.
-- `--font-log`: Fira Code – styl notatek/logów.
 
 Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothing: antialiased`, `font-kerning: normal`.
 
@@ -92,175 +78,122 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
 - `.page` ogranicza szerokość i ustawia marginesy.
 - `.grid` tworzy responsywną siatkę kart.
 - `.card` ma filcowy gradient, złotą linię w `::before`, cień `--shadow` i promień `--radius-lg`.
-- `.view-card` stylizowana jak mini-karta z złotą ramką.
+- `.admin-toolbar` wyrównuje przycisk **Instrukcja** do prawej strony nagłówka.
 
-### 5. Tabele
-- `.table` jest kolumnowym kontenerem dla wierszy.
-- `.row` ma tło `--table-bg`, obramowanie `--border2`, tabular-nums.
-- `.row.header` ma gradient, uppercase i złotą linię dolną.
-- Zastosowano zebra rows (`.row:nth-child(even)`) i hover neon (`.row:hover`).
-- Wyrównania: 1 kolumna (nazwisko) z `--font-nazwisko`, 3-4 kolumna right-align z `--font-stawka`.
-
-### 6. Badge/chipy
-- `.badge` to chipy z fontem `--font-chip`, uppercase i złotym obramowaniem.
-- `.badge.pending` używa palety ruby (stan do zapłaty).
-
-### 7. Przyciski
-- `button` to styl „panelowy” (uppercase, `--font-panel`, złote i neonowe glowy).
+### 5. Przyciski
+- `button` to styl „panelowy” (uppercase, `--font-panel`, delikatny glow).
 - `.primary` – złoty gradient, `--glow-gold`.
-- `.secondary` – neonowa zieleń, delikatny glow, używana przez przycisk „Instrukcja”.
-- `.view-toggle` – czerwony przycisk przełączania widoku (ruby tło, wzmocniony border i czerwony glow).
-- `.danger` – ruby, jaśniejszy tekst.
+- `.secondary` – neonowa zieleń, `--glow-neon`.
 
-### 8. Strefa uczestnika i zakładki
+### 6. Strefa gracza, zakładki i PIN
 - `.next-game-card` zajmuje całą szerokość siatki (`grid-column: 1 / -1`).
-- `.user-panel` stał się paskiem narzędzi z etykietą `Strefa uczestnika`, przyciskiem `.view-toggle` i zestawem zakładek `.user-tabs`.
+- `.user-panel` to pasek z etykietą i zakładkami `.user-tabs`.
 - `.tab-button` jest stylizowany na pill, a stan aktywny `.is-active` podbija złoty glow.
-- `.tab-panel` przełącza się przez `.is-active`.
+- `.tab-panel` przełącza się przez klasę `.is-active`.
 - `#nextGamePinGate` używa ramki przerywanej i tła noir, a formularz PIN (`.pin-inputs`) ma spójny styl z innymi polami formularzy.
-- `#nextGameContent` jest pokazywany po dodaniu klasy `.is-visible`.
-- `.next-game-grid` układa karty informacyjne w responsywną siatkę.
-- `.next-game-panel` to półprzezroczyste panele z własnymi nagłówkami.
-- `.data-list`, `.timeline-list`, `.chip-list`, `.updates-list` to listy danych prezentujące informacje, harmonogram i komunikaty.
-- `.next-game-note` podbija wskazówkę złotą obwódką.
-- `.row-3` zmienia układ tabel na 3 kolumny.
+- `#nextGameContent` jest pokazywany po dodaniu klasy `.is-visible` i centruje komunikat „Strona w budowie”.
 
-### 9. Formularz wiadomości administratora
+### 7. Formularz wiadomości administratora
 - `.admin-message` to karta pomocnicza z tłem noir i obramowaniem.
-- `textarea` ma styl formularza: tło `rgba(0,0,0,.35)`, obramowanie `--border`, font `--font-text`, focus w złocie + neonie.
+- `textarea` ma styl formularza: tło `rgba(0,0,0,.35)`, obramowanie `--border`, focus w złocie + neonie.
 - `.status-text` pokazuje komunikaty o wysyłce wiadomości i ładowaniu instrukcji.
 
-### 9.1 Pole „Najnowsze” w zakładce Aktualności
+### 8. Pole „Najnowsze” w zakładce Aktualności
 - `.latest-message` to karta z tłem noir i obramowaniem `--border2`.
-- `textarea` jest tylko do odczytu, ma ten sam styl co formularze admina i wysokość ~86px.
+- `textarea` jest tylko do odczytu, bez możliwości resize, z wysokością ~86px.
 
-### 10. Sekcja PIN w panelu admina
-- `.admin-pin` to dodatkowa karta z tłem noir i obramowaniem.
+### 9. Sekcja PIN w panelu admina
+- `.admin-pin` to karta z tłem noir i obramowaniem.
 - `.admin-pin-form` używa labeli uppercase, a input ma styl identyczny z polami w PIN gate.
-- `.admin-pin-actions` układa przycisk i status w jednym wierszu.
+- `.admin-pin-actions` układa przyciski i status w jednym wierszu.
 
-### 11. Informacja o aktualizacji danych
-- `.admin-data-hint` to wyróżniona notatka pod przyciskami admina: tło `rgba(0,0,0,.25)`, obramowanie przerywane `var(--border2)` i tekst w kolorze `--muted`.
-
-### 12. Modal instrukcji
+### 10. Modal instrukcji
 - `.modal-overlay` to warstwa tła `rgba(0,0,0,.72)` z centrowanym oknem.
 - `.modal-card` ma noir gradient, złotą linię w `::before`, cień 0 20px 60px i max-height 82vh.
-- `.modal-content` jest przewijalnym kontenerem z `white-space: pre-wrap`, aby zachować formatowanie Markdown.
+- `.modal-content` jest przewijalnym kontenerem z `white-space: pre-wrap`.
 - `.icon-button` to kompaktowy przycisk „×”.
 - `body.modal-open` blokuje przewijanie tła podczas otwartego modala.
 
-### 13. Widoczność sekcji
+### 11. Widoczność sekcji
 - `.admin-only` domyślnie ukryta.
 - `.user-only` domyślnie widoczna.
 - Klasa `.is-admin` na `<body>` przełącza widoczność; dodatkowo `.card.admin-only` jest pokazywana jako flex.
 
-### 14. Responsywność
-- `<720px` wiersze tabel przechodzą do dwóch kolumn i resetują wyrównania liczbowych kolumn.
+### 12. Responsywność
 - `<720px` przyciski w sekcji wiadomości układają się w kolumnie.
-- `<520px` karta widoku rozciąga się na pełną szerokość, a przyciski admina układają się w jednej kolumnie.
-- Modal na mniejszych ekranach zmniejsza padding i przechodzi w układ jednokolumnowy.
+- `<720px` modal przechodzi w układ jednokolumnowy.
+- `<520px` modal zmniejsza padding.
 
 ## Opis JavaScript (`Main/app.js`)
 
-### Dane przykładowe
-- `sampleTables` – lista stołów z nazwą, statusem, liczbą graczy i kapitanem.
-- `samplePlayers` – lista graczy z przypisanym stołem, wpisowym i statusem płatności.
-- `samplePayments` – lista rozliczeń z wygranymi i saldem.
-- `nextGameInfo` – kluczowe informacje o najbliższej grze (data, lokalizacja, wpisowe).
-- `nextGameSchedule` – harmonogram wieczoru (godzina + wydarzenie).
-- `nextGameTables` – tabela stołów i blindów.
-- `nextGamePlayers` – lista potwierdzonych graczy.
-- `nextGameUpdates` – komunikaty do zakładki „Aktualności”.
-- Stałe `PIN_LENGTH`, `PIN_STORAGE_KEY` i zmienna `currentPin` opisują logikę PIN-u.
+### Stałe i konfiguracja
+- `PIN_LENGTH` – długość PIN-u (5).
+- `PIN_STORAGE_KEY` – klucz w `sessionStorage` przechowujący informację o weryfikacji PIN-u.
+- `currentPin` – domyślny PIN (nadpisywany po pobraniu z Firestore).
 
 ### Funkcje
 1. **`getAdminMode()`**
    - Odczytuje parametr `admin` z URL.
-   - Zwraca `true` tylko, gdy parametr ma wartość `1`.
+   - Zwraca `true`, gdy parametr ma wartość `1`.
 
-2. **`updateViewBadge(isAdmin)`**
-   - Aktualizuje etykietę w karcie widoku (`#viewBadge`) na „Administrator” lub „Użytkownik”.
-
-3. **`toggleView()`**
-   - Przełącza parametr `admin` w URL (usuwa go lub ustawia na `1`).
-   - Po zmianie wykonuje przekierowanie na nowy adres.
-
-4. **`initViewToggle()`**
-   - Wyszukuje wszystkie przyciski `.view-toggle`.
-   - Podpina `click`, aby przełączać widok.
-
-5. **`renderTables()`**
-   - Czyści kontener `#tablesContainer`.
-   - Dodaje nagłówek i wiersze na podstawie `sampleTables`.
-
-6. **`renderPlayers()`**
-   - Czyści kontener `#playersContainer`.
-   - Dodaje nagłówek i wiersze na podstawie `samplePlayers`.
-   - Dla statusu płatności tworzy badge (złoty lub ruby).
-
-7. **`renderPayments()`**
-   - Czyści kontener `#paymentsContainer`.
-   - Dodaje nagłówek i wiersze na podstawie `samplePayments`.
-
-8. **`renderNextGame()` + helpery**
-   - `renderNextGameInfo()`, `renderNextGameSchedule()`, `renderNextGameTables()`, `renderNextGamePlayers()`, `renderNextGameUpdates()` wypełniają sekcję „Najbliższa gra”.
-
-9. **`getFirebaseApp()`**
+2. **`getFirebaseApp()`**
    - Sprawdza dostępność SDK Firebase i konfiguracji (`window.firebaseConfig`).
    - Inicjalizuje Firebase tylko raz i zwraca instancję.
 
-10. **`sanitizePin(value)`**
+3. **`sanitizePin(value)`**
    - Usuwa znaki niebędące cyframi i przycina wartość do 5 znaków.
 
-11. **`isPinValid(value)`**
+4. **`isPinValid(value)`**
    - Sprawdza, czy PIN składa się z dokładnie 5 cyfr (`/^\d{5}$/`).
 
-12. **`loadPinFromFirestore()`**
+5. **`getPinGateState()` / `setPinGateState(isVerified)`**
+   - Odczytuje i zapisuje stan weryfikacji PIN-u w `sessionStorage`.
+
+6. **`updatePinVisibility({ isAdmin })`**
+   - Ukrywa blok PIN gate i pokazuje `#nextGameContent`, jeśli PIN jest poprawny lub użytkownik jest adminem.
+
+7. **`loadPinFromFirestore()`**
    - Pobiera dokument `app_settings/next_game` i aktualizuje `currentPin`.
 
-13. **`initAdminPin()`**
+8. **`initAdminPin()`**
    - Obsługuje pole `#adminPinInput` i zapis PIN-u do Firestore.
    - Waliduje format 5 cyfr i odrzuca wpisy tekstowe.
-   - Przycisk `#adminPinRandom` generuje losowy kod 5-cyfrowy i wpisuje go do pola.
+   - Przycisk `#adminPinRandom` generuje losowy kod 5-cyfrowy.
 
-14. **`initPinGate()`**
+9. **`initPinGate({ isAdmin })`**
    - Waliduje PIN wpisany przez użytkownika w `#nextGamePinInput`.
    - Po poprawnym PIN-ie zapisuje stan w `sessionStorage` i pokazuje `#nextGameContent`.
 
-15. **`initUserTabs({ isAdmin })`**
-   - Ustawia domyślną zakładkę w strefie uczestnika (w trybie użytkownika otwiera „Aktualności”, w trybie admina „Najbliższa gra”).
+10. **`initUserTabs()`**
+   - Ustawia domyślną zakładkę „Aktualności”.
    - Przełącza aktywną zakładkę i panel treści po kliknięciu.
 
-16. **`initAdminMessaging()`**
+11. **`initAdminMessaging()`**
    - Podpina przycisk `#adminMessageSend` do zapisu wiadomości w Firestore (`admin_messages`).
    - Obsługuje walidację pustej treści oraz statusy powodzenia/błędu.
 
-17. **`initLatestMessage()`**
+12. **`initLatestMessage()`**
    - Nasłuchuje najnowszej wiadomości w kolekcji `admin_messages`.
-   - Aktualizuje pole `#latestMessageOutput` i status `#latestMessageStatus` w zakładce „Aktualności”.
+   - Aktualizuje pole `#latestMessageOutput` i `#latestMessageStatus` w zakładce „Aktualności”.
 
-18. **`initInstructionModal()`**
+13. **`initInstructionModal()`**
    - Spina przycisk `#adminInstructionButton` z modalem `#instructionModal`.
    - Pobiera treść z `https://cutelittlegoat.github.io/Karty/docs/README.md` i wstawia do `#instructionContent`.
    - Obsługuje odświeżanie treści, zamykanie (przyciski, tło, Esc) i blokadę scrolla tła.
 
-17. **`bootstrap()`**
+14. **`bootstrap()`**
    - Funkcja startowa: sprawdza tryb admina, aktualizuje klasę `is-admin` na `<body>`.
-   - Renderuje dane przykładowe i zakładki.
-   - Ładuje PIN z Firestore i uruchamia gate.
-   - Uruchamia logikę wysyłki wiadomości, nasłuch „Najnowsze” oraz modala instrukcji.
+   - Uruchamia zakładki, ładuje PIN z Firestore, inicjuje gate PIN-u oraz moduły wiadomości i modala.
 
 ### Przepływ działania
 1. `bootstrap()` uruchamia się po załadowaniu skryptu.
-2. Odczytywany jest tryb admina.
-3. Interfejs jest przełączany na podstawie klasy `is-admin`.
-4. Dane przykładowe są renderowane do kontenerów tabel oraz sekcji „Najbliższa gra”.
-5. Aplikacja próbuje pobrać PIN z Firestore i inicjuje gate PIN-u.
-6. Dla admina aktywuje się wysyłka wiadomości, zapis PIN-u oraz modal instrukcji.
+2. Odczytywany jest tryb admina i ustawiana jest klasa `is-admin`.
+3. Zakładki w strefie gracza inicjują się z domyślną zakładką „Aktualności”.
+4. Aplikacja próbuje pobrać PIN z Firestore i inicjuje gate PIN-u.
+5. Dla admina aktywuje się wysyłka wiadomości, zapis PIN-u oraz modal instrukcji.
 
-## Analiza planowanej funkcji „Najbliższa gra” (PIN)
-- W pliku `PIN.md` znajduje się pełna analiza wymaganej funkcji: nowa zakładka widoczna w obu trybach, zabezpieczenie PIN-em oraz zapis PIN-u w Firestore.
-- Dokument opisuje zmiany w HTML/CSS/JS, sugerowaną strukturę danych (`app_settings/next_game`) oraz wymagane reguły bezpieczeństwa.
+## Analiza funkcji „Najbliższa gra” (PIN)
+- W pliku `PIN.md` znajduje się pełna analiza wymaganej funkcji: zakładka „Najbliższa gra”, zabezpieczenie PIN-em oraz zapis PIN-u w Firestore.
 
 ## Firebase i konfiguracja
 - Plik `config/firebase-config.js` udostępnia globalny obiekt `window.firebaseConfig`.
@@ -317,9 +250,9 @@ W `MigracjaAndroid/AndroidApp/` znajduje się kompletny projekt Android Studio z
 4. Wiadomości z `admin_messages` wyświetlane są jako lokalne powiadomienia (PUSH).
 
 ## Jak odtworzyć aplikację na podstawie dokumentacji
-1. Utwórz `Main/index.html` z nagłówkiem, kartami, panelem admina (w tym przyciskiem „Aktualizuj dane” i notatką o pliku `Turniej.xlsx`) oraz modalem instrukcji opisanymi wyżej.
-2. Dodaj `Main/styles.css` z tokenami kasynowymi, gradientowym tłem noir, filcowymi kartami i stylami modala.
-3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `updateViewBadge`, `toggleView`, `initViewToggle`, `renderTables`, `renderPlayers`, `renderPayments`, `initLatestMessage`, `initInstructionModal`, `bootstrap`.
+1. Utwórz `Main/index.html` z nagłówkiem, przyciskiem **Instrukcja** w prawym górnym rogu admina, panelem admina (wiadomość + PIN) oraz strefą gracza z zakładkami i PIN gate.
+2. Dodaj `Main/styles.css` z tokenami kasynowymi, gradientowym tłem noir, filcowymi kartami, stylami zakładek, PIN gate i modala.
+3. Dodaj `Main/app.js` z funkcjami `getAdminMode`, `getFirebaseApp`, `initUserTabs`, `initPinGate`, `initAdminPin`, `initAdminMessaging`, `initLatestMessage`, `initInstructionModal`, `bootstrap`.
 4. Połącz pliki w HTML, pamiętając o wczytaniu `../config/firebase-config.js` oraz skryptów Firebase przed `app.js`.
 5. Dodaj `DetaleLayout.md` jako repozytorium stylów i `Firebase.md` z instrukcją konfiguracji Firestore oraz PUSH.
 6. Jeśli chcesz wersję Android, utwórz projekt na bazie `MigracjaAndroid/AndroidApp` zgodnie z powyższą sekcją.

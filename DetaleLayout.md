@@ -13,35 +13,26 @@
 - Unikaj fontów display bez latin-ext jako jedynych — zawsze dawaj fallback.
 
 ## 1) Kierunek artystyczny
-- Noir + złoto + aksamitna zieleń + neon.
+- Noir + złoto + aksamitna zieleń + delikatny neon.
 - Ciemne tło jak sala kasyna, złote akcenty jak mosiężne listwy, zielone „filcowe” panele.
-- Delikatny glow jak od neonów, bez cyberpunkowego przesytu.
+- Glow subtelny, bez agresywnego cyberpunku.
 
 ## 2) Fonty i typografia
 ### 2.1 Zasady ogólne
-- Trzy warstwy typografii: nagłówki (premium), tekst użytkowy (czytelny), dane tabelaryczne (mono/tabular).
-- Cyfry równej szerokości: `font-variant-numeric: tabular-nums;`
-- Tytuły: `letter-spacing: 0.06–0.12em`.
-- Tabele/stawki: `letter-spacing: 0.02em`.
+- Trzy warstwy typografii: nagłówki premium, tekst użytkowy, etykiety/panele.
+- Tytuły: `letter-spacing: 0.06–0.12em`, uppercase.
 
 ### 2.2 Stosy fontów (tokeny)
 - **Tytuł:** `"Cinzel", "Trajan Pro", "Times New Roman", serif` (600–700, uppercase, 0.12em, lh 1.05)
-- **Podtytuł:** `"Cormorant Garamond", "Georgia", serif` (600, 0.06em, lh 1.15)
-- **Panel:** `"Rajdhani", "Segoe UI", "Roboto", "Noto Sans", sans-serif` (600, uppercase, 0.08em)
-- **Tekst:** `"Inter", "Segoe UI", "Roboto", "Noto Sans", "Arial", sans-serif` (400–500, 0.01em, lh 1.55)
-- **Nazwisko:** `"IBM Plex Sans", "Inter", "Segoe UI", "Noto Sans", sans-serif` (600, 0.02em)
-- **Stolik:** `"Oswald", "Rajdhani", "Segoe UI", sans-serif` (600–700, uppercase, 0.10em)
-- **Stawka:** `"Roboto Mono", "JetBrains Mono", "Consolas", "Courier New", monospace` (600, tabular, 0.02em)
-- **Chip:** `"Sora", "Inter", "Segoe UI", sans-serif` (700, uppercase, 0.10em, 11–12px)
-- **Log:** `"Fira Code", "JetBrains Mono", "Consolas", monospace` (400–500, 12–13px)
+- **Podtytuł:** `"Cormorant Garamond", "Georgia", serif` (600, 0.06em)
+- **Panel:** `"Rajdhani", "Segoe UI", "Noto Sans", sans-serif` (600, uppercase, 0.08–0.12em)
+- **Tekst:** `"Inter", "Segoe UI", "Noto Sans", Arial, sans-serif` (400–600, lh 1.55)
 
 ### 2.3 Skala rozmiarów
 - `--fs-title: clamp(26px, 3.2vw, 40px)`
 - `--fs-subtitle: clamp(16px, 1.8vw, 22px)`
 - `--fs-panel: 13px`
 - `--fs-body: 14.5px`
-- `--fs-table: 13px`
-- `--fs-chip: 11px`
 - `--fs-small: 12px`
 
 ## 3) Paleta kolorów
@@ -56,98 +47,55 @@
 - Zaokrąglenia: `--radius-sm 10px`, `--radius-md 14px`, `--radius-lg 18px`
 
 ## 4) Tła i tekstury
-- Body: gradient noir + delikatny spotlight + lekka ziarnistość (opcjonalnie pseudo-element z opacity ~.035).
+- Body: gradient noir + delikatny spotlight.
 - Panele: gradient `--felt2 → --felt`, border `--border` + złota „żyłka” w `::before`, cień `--shadow`.
 
 ## 5) Layout globalny
-- Desktop: lewy panel 320–380px, prawa część 1fr.
-- Topbar sticky: 64px, tytuł + akcje.
-- Responsywność: <980px jedna kolumna, <560px tabele w cards, przyciski full width.
-- Odstępy: `--gap-1 8px`, `--gap-2 12px`, `--gap-3 16px`, `--gap-4 24px`, `--gap-5 32px`.
+- `.page`: max-width 1200px, padding 40px/24px.
+- `.page-header`: układ flex, intro admina po lewej, przycisk **Instrukcja** po prawej (`.admin-toolbar`).
+- `.grid`: responsywna siatka kart.
 - Nagłówek admina (`.header-intro`) zawiera eyebrow z tekstem „TO NIE JEST nielegalny poker” oraz tytuł „TO NIE JEST nielegalne kasyno”.
 
-## 6) Tabele
-- Tło karty wyników, zebra wierszy, hover neon.
-- Tokeny: `--table-bg`, `--table-head`, `--table-zebra`, `--table-hover`, `--table-selected`.
-- Ramka: `border 1px solid var(--border)` + `box-shadow: var(--shadow-inset), var(--glow-gold)`.
-- `th`: font Panel, 12px, uppercase, 0.10em, tło gradient, złota linia.
-- `td`: font Tekst/Stawka, 10px 12px, lh 1.35.
-- Wyrównania: nazwiska lewo, stolik środek, liczby prawo.
+## 6) Przyciski
+- `button`: uppercase, `--font-panel`, `letter-spacing: 0.10em`, `border-radius: var(--radius-sm)`, hover `translateY(-1px)`.
+- **Primary (złoty):** gradient, `border var(--gold-line)`, `--glow-gold`.
+- **Secondary (neon):** tło `rgba(43,227,139,.14)`, `border rgba(43,227,139,.45)`, `--glow-neon`.
 
-## 7) Przyciski
-- Primary (złoty): gradient, `border var(--gold-line)`, tekst `rgba(237,235,230,.95)`, hover glow.
-- Secondary (neon): tło `rgba(43,227,139,.14)`, border `rgba(43,227,139,.45)`, glow `--glow-neon`.
-- Secondary (neon/filc): `rgba(43,227,139,.10)` + `--glow-neon`.
-- Danger (ruby): `rgba(226,58,75,.12)` + jaśniejszy tekst.
-- View toggle (czerwony): tło `rgba(226,58,75,.22)`, border `rgba(226,58,75,.60)`, tekst `#FFD6DA`, glow `rgba(226,58,75,.28)` z mocniejszym hover.
-- Zasady: font Panel, uppercase, `letter-spacing: 0.10em`, `border-radius var(--radius-sm)`, hover `translateY(-1px)`, active `brightness(1.08)`, disabled opacity .45.
-
-## 7.1) Notatka o aktualizacji danych
-- `.admin-data-hint`: małe pudełko informacyjne pod przyciskami admina.
-- Tło `rgba(0,0,0,.25)`, obramowanie przerywane `1px dashed var(--border2)`, tekst `--muted`.
-- Padding 12–14px, font `--fs-small`, `line-height 1.4`.
-
-## 8) Formularze
+## 7) Formularze
 - Tło `rgba(0,0,0,.35)`, border `--border`, tekst `--ink`.
 - Focus: `border-color rgba(212,175,55,.55)`, `box-shadow` złoto + neon.
-- Select: ten sam chrome, strzałka `rgba(237,235,230,.65)`, option `#0C0D12`.
-- Checkbox/radio: `accent-color: var(--gold)`.
 - Pole wiadomości admina: textarea z `min-height ~86px`, label uppercase `letter-spacing 0.12em`.
-- Pole „Najnowsze” (readonly) w zakładce Aktualności: textarea bez resize, `min-height ~86px`, tło noir, border `--border`, font Tekst.
-- Pole PIN (admin i użytkownik): input `max-width ~180px`, `letter-spacing 0.08em`, focus gold+neon.
-- Akcje PIN w panelu admina: przyciski w jednym rzędzie (`.admin-pin-actions`), gdzie „Zapisz PIN” jest primary, a „Losuj PIN” secondary.
+- Pole „Najnowsze” (readonly) w zakładce Aktualności: textarea bez resize, `min-height ~86px`.
+- Pole PIN (admin i użytkownik): input `max-width ~180px`, `letter-spacing 0.08em`.
 
-## 9) Strefa uczestnika, zakładki i PIN
-- **`.next-game-card`**: karta na pełną szerokość siatki (grid-column 1 / -1).
-- **`.user-panel`**: pasek narzędzi z etykietą, przyciskiem przełączania i zakładkami.
-- **`.user-tabs`**: zestaw pill buttons, wyrównany do prawej (flex + `margin-left: auto`).
-- **`.tab-button`**: małe przyciski z obrysem `--border2`, aktywny stan `.is-active` podbija złoty glow.
-- **`.tab-panel`**: ukrywane przez `display: none`, aktywne przez `.is-active`.
+## 8) Strefa gracza, zakładki i PIN
+- **`.next-game-card`**: karta na pełną szerokość siatki.
+- **`.user-panel`**: pasek z etykietą „Strefa gracza” i zakładkami.
+- **`.user-tabs`**: pill buttons, wyrównane do prawej (`margin-left: auto`).
+- **`.tab-button`**: obrys `--border2`, aktywny stan `.is-active` podbija złoty glow.
 - **PIN gate**:
   - **`.pin-gate`**: ramka przerywana `--gold-line`, tło noir `rgba(0,0,0,.30)`.
   - **`.pin-card`**: pionowy układ tekstu i formularza.
-  - **`.pin-inputs input`**: styl jak pola formularzy (tło noir, border `--border`, focus gold+neon).
 - **Treści „Najbliższa gra”**:
-  - **`.next-game-grid`**: responsywna siatka paneli informacyjnych.
-  - **`.next-game-panel`**: półprzezroczyste panele z własnym nagłówkiem.
-  - **`.data-list`**: etykieta uppercase + wartość wyrównana do prawej, tabular-nums.
-  - **`.timeline-list`**: lewa linia czasu, złoty czas, opis w `--muted`.
-  - **`.chip-list`**: pill-tag dla potwierdzonych graczy, neonowy akcent.
-  - **`.updates-list`**: noir cards z tytułem w złocie.
-  - **`.next-game-note`**: złota ramka + tło `rgba(212,175,55,.08)`.
-- **`.row-3`**: wariant wiersza tabeli z 3 kolumnami.
+  - `#nextGameContent` po poprawnym PIN-ie pokazuje wyśrodkowany napis **„Strona w budowie”**.
+  - `.user-construction` korzysta z fontu tytułowego i złotego glow.
 
-## 10) Badge/chipy statusów
-- Kształt: `border-radius: 999px`, obwódka 1px, półprzezroczyste tło, font Chip.
-- Statusy: BUST → ruby, ITM → gold, ACTIVE → neon, PAUSED → neutral, RE-ENTRY → gold+neon.
+## 9) Panel administratora
+- `.admin-message` to karta pomocnicza z tłem noir i obramowaniem.
+- `.admin-pin` to analogiczna karta dla PIN-u.
+- `.admin-pin-actions` układa przyciski i status w jednym wierszu.
 
-## 11) Modale/toasty/tooltips
-- Modal: overlay `rgba(0,0,0,.72)`, karta `linear-gradient` noir, border `--border`, złota linia w top, cień 0 20px 60px.
-- Modal content: przewijalny blok, `white-space: pre-wrap`, font Tekst, tło `rgba(0,0,0,.35)`, border `--border2`.
-- Icon button (zamknięcie): okrągły przycisk `999px`, padding 6–10px, font 18px, neon hover.
-- Toasty: sukces neon, warning złoto, błąd ruby (bez pełnego red background).
-- Tooltip: tło `rgba(0,0,0,.75)`, border `rgba(255,255,255,.12)`, delikatny glow złoty.
+## 10) Modal instrukcji
+- Overlay `rgba(0,0,0,.72)`, karta `linear-gradient` noir.
+- `.modal-content` przewijalny, `white-space: pre-wrap`.
+- `.icon-button` to okrągły przycisk „×”.
 
-## 12) Ikony
-- Minimalistyczne stroke, kolor domyślny `rgba(237,235,230,.75)`, aktywne `--gold`.
+## 11) Responsywność
+- `<720px` przyciski w sekcji wiadomości układają się w kolumnie.
+- `<720px` modal przechodzi w układ jednokolumnowy.
+- `<520px` modal ma mniejszy padding.
 
-## 12.1) Android (WebView) — motyw i kolory
-- Motyw aplikacji: `Theme.Karty` oparty o `Theme.Material3.DayNight.NoActionBar`.
-- Kolory motywu Android:
-  - Primary: `#C8A96A` (złoto).
-  - OnPrimary: `#1B1712` (ciemny kontrast).
-  - Background: `#12100E` (noir).
-  - OnBackground: `#F5F1E6` (jasny tekst).
-- Ikona powiadomień: wektor `ic_notification.xml` w kolorze złotym `#C8A96A`.
-- Ikona aplikacji (launcher): wektor `ic_launcher.xml` w `res/drawable`, 108dp, tło koła `#0B1F2E`, karta `#FFFFFF`, akcent `#D32F2F`.
-
-## 13) Dostępność
+## 12) Dostępność
 - Kontrast tekstu min ~4.5:1.
 - Widoczny focus ring (złoto + neon).
 - Klikalne elementy min 40px na mobile.
-
-## 14) Moduły aplikacji
-- Dashboard, Gracze, Stoliki, Blind structure, Wypłaty, Log zdarzeń.
-
-## 15) Gotowe nazwy tokenów
-- `--font-title`, `--font-subtitle`, `--font-panel`, `--font-text`, `--font-nazwisko`, `--font-stolik`, `--font-stawka`, `--font-chip`, `--font-log`.

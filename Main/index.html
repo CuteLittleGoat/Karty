@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:wght@600&family=Fira+Code:wght@400;500&family=IBM+Plex+Sans:wght@600&family=Inter:wght@400;500;600;700&family=Oswald:wght@600;700&family=Rajdhani:wght@600&family=Roboto+Mono:wght@600&family=Sora:wght@700&display=swap&subset=latin-ext"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600&display=swap&subset=latin-ext"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
@@ -18,63 +18,17 @@
         <div class="header-intro admin-only">
           <p class="eyebrow">TO NIE JEST nielegalny poker</p>
           <h1>TO NIE JEST nielegalne kasyno</h1>
-          <p class="subtitle">
-            Szybki podgląd stołów, wpisów i finansów. Wariant administratora jest
-            aktywny pod adresem z parametrem <strong>?admin=1</strong>.
-          </p>
         </div>
-        <div class="view-card">
-          <p class="view-label">Widok</p>
-          <div class="view-status">
-            <p id="viewBadge" class="view-badge">Użytkownik</p>
-            <button class="view-toggle" type="button">Przełącz widok</button>
-          </div>
-          <p class="view-hint admin-only">Tryb przełącza się automatycznie po parametrze URL.</p>
+        <div class="admin-toolbar admin-only">
+          <button id="adminInstructionButton" class="secondary" type="button">Instrukcja</button>
         </div>
       </header>
 
       <main class="grid">
         <section class="card admin-only">
           <div class="card-header">
-            <h2>Stoły i gracze</h2>
-            <p>Przypisania uczestników do stołów w tej rundzie.</p>
-          </div>
-          <div class="table" id="tablesContainer"></div>
-        </section>
-
-        <section class="card admin-only">
-          <div class="card-header">
-            <h2>Lista graczy</h2>
-            <p>Wpisy i status wpłat wejściowego.</p>
-          </div>
-          <div class="table" id="playersContainer"></div>
-        </section>
-
-        <section class="card admin-only">
-          <div class="card-header">
-            <h2>Rozliczenia</h2>
-            <p>Podgląd wpłat oraz wygranych w aktualnej rundzie.</p>
-          </div>
-          <div class="table" id="paymentsContainer"></div>
-        </section>
-
-        <section class="card admin-only">
-          <div class="card-header">
             <h2>Panel administratora</h2>
-            <p>Zarządzaj przebiegiem turnieju i dodawaj nowe stoły.</p>
           </div>
-          <div class="admin-actions">
-            <button class="primary">Dodaj stół</button>
-            <button>Dodaj gracza</button>
-            <button>Ustaw stawkę wejściowego</button>
-            <button id="dataUpdateButton" class="secondary" type="button">Aktualizuj dane</button>
-            <button id="adminInstructionButton" class="secondary" type="button">Instrukcja</button>
-            <button class="danger">Zakończ rundę</button>
-          </div>
-          <p class="admin-data-hint">
-            Plik Turniej.xlsx musi znajdować się w folderze Main (obok index.html), aby
-            aktualizacja zadziałała.
-          </p>
           <div class="admin-message">
             <div>
               <h3>Wiadomość do graczy</h3>
@@ -117,17 +71,12 @@
               </div>
             </div>
           </div>
-          <div class="admin-note">
-            <strong>Notatka:</strong> akcje będą podpinane do Firebase po uzupełnieniu
-            konfiguracji w pliku <code>config/firebase-config.js</code>.
-          </div>
         </section>
 
         <section class="card next-game-card">
           <div class="user-panel">
             <div class="user-view">
-              <span class="user-view-label">Strefa uczestnika</span>
-              <button class="view-toggle" type="button">Przełącz widok</button>
+              <span class="user-view-label">Strefa gracza</span>
             </div>
             <div class="user-tabs" role="tablist" aria-label="Zakładki użytkownika">
               <button class="tab-button is-active" type="button" data-target="nextGameTab">
@@ -160,38 +109,12 @@
                 </div>
               </div>
               <div id="nextGameContent" class="next-game-content">
-                <div class="card-header">
-                  <h2>Najbliższa gra</h2>
-                  <p>Podgląd harmonogramu, stołów i potwierdzonych uczestników.</p>
-                </div>
-                <div class="next-game-grid">
-                  <div class="next-game-panel">
-                    <h3>Informacje główne</h3>
-                    <ul id="nextGameInfo" class="data-list"></ul>
-                  </div>
-                  <div class="next-game-panel">
-                    <h3>Plan wieczoru</h3>
-                    <ul id="nextGameSchedule" class="timeline-list"></ul>
-                  </div>
-                  <div class="next-game-panel">
-                    <h3>Stoły i limity</h3>
-                    <div id="nextGameTables" class="table"></div>
-                  </div>
-                  <div class="next-game-panel">
-                    <h3>Potwierdzeni gracze</h3>
-                    <ul id="nextGamePlayers" class="chip-list"></ul>
-                  </div>
-                </div>
-                <div class="next-game-note">
-                  <strong>Wskazówka:</strong> Przyjdź 15 minut wcześniej, aby potwierdzić
-                  wejściówkę i odebrać miejsce przy stole.
-                </div>
+                <p class="user-construction">Strona w budowie</p>
               </div>
             </div>
             <div id="updatesTab" class="tab-panel" role="tabpanel">
               <div class="card-header">
                 <h2>Aktualności</h2>
-                <p>Ostatnie komunikaty od organizatorów.</p>
               </div>
               <div class="latest-message">
                 <label for="latestMessageOutput">Najnowsze</label>
@@ -203,7 +126,6 @@
                 ></textarea>
                 <p id="latestMessageStatus" class="status-text" aria-live="polite"></p>
               </div>
-              <ul id="nextGameUpdates" class="updates-list"></ul>
             </div>
           </div>
         </section>
