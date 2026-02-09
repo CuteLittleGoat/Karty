@@ -297,6 +297,9 @@ service cloud.firestore {
         allow read, write: if true;
       }
     }
+    match /Collection1/{docId} {
+      allow read, write: if true;
+    }
   }
 }
 ```

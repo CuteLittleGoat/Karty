@@ -106,6 +106,34 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
 6. Zapisz dokument przyciskiem **Save**.
 7. Te pola są przygotowane do przyszłego zapisu danych z panelu administratora (obecnie nie są jeszcze używane w aplikacji).
 
+### 3.10 Firebase — aktualne reguły Firestore
+1. W Firebase Console przejdź do **Firestore Database** → zakładka **Rules**.
+2. Upewnij się, że reguły odpowiadają poniższej konfiguracji (umożliwia odczyt i zapis dla aplikacji web):
+   ```
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /admin_messages/{docId} {
+         allow read, write: if true;
+       }
+       match /app_settings/{docId} {
+         allow read, write: if true;
+       }
+       match /Tables/{tableId} {
+         allow read, write: if true;
+
+         match /rows/{rowId} {
+           allow read, write: if true;
+         }
+       }
+       match /Collection1/{docId} {
+         allow read, write: if true;
+       }
+     }
+   }
+   ```
+3. Kliknij **Publish**, aby zapisać reguły.
+
 ## 4. Widok użytkownika — zakładki „Najbliższa gra” i „Aktualności”
 
 ### 4.1 Zakładka „Aktualności”
