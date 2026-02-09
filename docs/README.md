@@ -41,12 +41,6 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
    - jeśli nie ma żadnej nazwy „Gra X”, numeracja wraca do **„Gra 1”**.
 6. Aby usunąć tabelę, kliknij czerwony przycisk **Usuń** obok jej nazwy.
 7. Tabele pojawiają się jedna pod drugą w kolejności utworzenia.
-8. Jeśli po kliknięciu **Dodaj** pojawia się komunikat o błędzie:
-   - Otwórz plik `config/firebase-config.js`.
-   - Upewnij się, że pole `tablesCollection` jest zgodne z nazwą kolekcji w regułach Firestore, np.:
-     - `tablesCollection: "Tables"` (domyślna nazwa),
-     - `tablesCollection: "tables"` (gdy Twoje reguły używają małych liter).
-   - Zapisz plik i odśwież stronę.
 
 ### 3.3 Stoły — edycja pól nad nazwą
 1. Nad nazwą każdej tabeli są dwa pola edytowalne:
@@ -95,44 +89,6 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
    - Kliknij przycisk **Losuj PIN**.
 4. Kliknij przycisk **Zapisz PIN**.
 5. Pod polem pojawi się komunikat **„PIN zapisany.”** jeśli zapis się powiódł.
-
-### 3.9 Firebase — przygotowanie Collection1 (pola admina na przyszłość)
-1. Wejdź do **Firebase Console** → **Firestore Database**.
-2. W lewym panelu kliknij **Start collection**.
-3. W polu nazwy wpisz dokładnie `Collection1` i kliknij **Next**.
-4. Jako **Document ID** wpisz `document1`.
-5. Dodaj pola:
-   - `field1` do `field20` (typ **string**, wartość może być pusta).
-6. Zapisz dokument przyciskiem **Save**.
-7. Te pola są przygotowane do przyszłego zapisu danych z panelu administratora (obecnie nie są jeszcze używane w aplikacji).
-
-### 3.10 Firebase — aktualne reguły Firestore
-1. W Firebase Console przejdź do **Firestore Database** → zakładka **Rules**.
-2. Upewnij się, że reguły odpowiadają poniższej konfiguracji (umożliwia odczyt i zapis dla aplikacji web):
-   ```
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /admin_messages/{docId} {
-         allow read, write: if true;
-       }
-       match /app_settings/{docId} {
-         allow read, write: if true;
-       }
-       match /Tables/{tableId} {
-         allow read, write: if true;
-
-         match /rows/{rowId} {
-           allow read, write: if true;
-         }
-       }
-       match /Collection1/{docId} {
-         allow read, write: if true;
-       }
-     }
-   }
-   ```
-3. Kliknij **Publish**, aby zapisać reguły.
 
 ## 4. Widok użytkownika — zakładki „Najbliższa gra” i „Aktualności”
 
