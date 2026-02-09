@@ -115,7 +115,10 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
 ## 6. Konfiguracja Firebase
 1. Uzupełnij dane w pliku `config/firebase-config.js`.
 2. Skonfiguruj Firestore tak, aby web i Android mogły czytać/zapisywać kolekcję `admin_messages` oraz dokument `app_settings/next_game`.
-3. Kolekcja `Tables` (stoły) jest używana przez panel admina:
+3. Dodaj reguły Firestore dla stołów (pamiętaj o wielkości liter w nazwie `Tables`):
+   - kolekcja `Tables` i jej subkolekcja `rows` muszą mieć możliwość zapisu z poziomu panelu admina,
+   - w przeciwnym razie aplikacja pokaże komunikat o braku dostępu do kolekcji `Tables`.
+4. Kolekcja `Tables` (stoły) jest używana przez panel admina:
    - Kliknij **Start collection** i wpisz nazwę `Tables` (jeśli jeszcze nie istnieje).
    - Dokumenty w tej kolekcji tworzą się automatycznie po kliknięciu **Dodaj** w panelu admina.
    - Każdy dokument zawiera pola:
@@ -129,13 +132,13 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
      - `playerName`, `percentAllGames`, `percentPlayedGames`, `payouts`, `totalGames`,
        `summary`, `deposits`, `meetings`, `points`, `rebuyTotal` (string/number),
      - `createdAt` (timestamp).
-4. Kolekcja `players` (gracze) w Firebase Console:
+5. Kolekcja `players` (gracze) w Firebase Console:
    - Kliknij **Start collection** i wpisz nazwę `players`.
    - Każdy dokument w tej kolekcji powinien zawierać pola:
      - `Name` (string) – nazwa gracza,
      - `Cash`, `GamesPlayed`, `GamesWon`, `MoneySpend`, `MoneyWon` (string/number),
      - `Placeholder1`-`Placeholder9` (string) – pola rezerwowe na przyszłe dane.
-5. Szczegółowa instrukcja krok po kroku znajduje się w pliku `Firebase.md`.
+6. Szczegółowa instrukcja krok po kroku znajduje się w pliku `Firebase.md`.
 
 ## 7. Zasoby graficzne
 - Folder `Pliki/` jest przeznaczony na grafiki i zasoby używane w aplikacji.

@@ -539,39 +539,50 @@ const initAdminTables = () => {
 
   db.collection(TABLES_COLLECTION)
     .orderBy("createdAt", "asc")
-    .onSnapshot((snapshot) => {
-      const tables = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      adminTablesState.tableList = tables;
-      adminTablesState.tables = new Map(tables.map((table) => [table.id, table]));
+    .onSnapshot(
+      (snapshot) => {
+        const tables = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        adminTablesState.tableList = tables;
+        adminTablesState.tables = new Map(tables.map((table) => [table.id, table]));
 
-      const activeIds = new Set(tables.map((table) => table.id));
-      adminTablesState.rowUnsubscribers.forEach((unsubscribe, tableId) => {
-        if (!activeIds.has(tableId)) {
-          unsubscribe();
-          adminTablesState.rowUnsubscribers.delete(tableId);
-          adminTablesState.rows.delete(tableId);
+        const activeIds = new Set(tables.map((table) => table.id));
+        adminTablesState.rowUnsubscribers.forEach((unsubscribe, tableId) => {
+          if (!activeIds.has(tableId)) {
+            unsubscribe();
+            adminTablesState.rowUnsubscribers.delete(tableId);
+            adminTablesState.rows.delete(tableId);
+          }
+        });
+
+        tables.forEach((table) => {
+          if (adminTablesState.rowUnsubscribers.has(table.id)) {
+            return;
+          }
+          const unsubscribe = db
+            .collection(TABLES_COLLECTION)
+            .doc(table.id)
+            .collection(TABLE_ROWS_COLLECTION)
+            .orderBy("createdAt", "asc")
+            .onSnapshot((rowSnapshot) => {
+              const rows = rowSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+              adminTablesState.rows.set(table.id, rows);
+              renderTables();
+            });
+          adminTablesState.rowUnsubscribers.set(table.id, unsubscribe);
+        });
+
+        renderTables();
+      },
+      (error) => {
+        const errorCode = error?.code;
+        if (errorCode === "permission-denied") {
+          status.textContent =
+            "Brak dostępu do kolekcji Tables. Sprawdź reguły Firestore i wielkość liter.";
+        } else {
+          status.textContent = "Nie udało się pobrać listy stołów.";
         }
-      });
-
-      tables.forEach((table) => {
-        if (adminTablesState.rowUnsubscribers.has(table.id)) {
-          return;
-        }
-        const unsubscribe = db
-          .collection(TABLES_COLLECTION)
-          .doc(table.id)
-          .collection(TABLE_ROWS_COLLECTION)
-          .orderBy("createdAt", "asc")
-          .onSnapshot((rowSnapshot) => {
-            const rows = rowSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-            adminTablesState.rows.set(table.id, rows);
-            renderTables();
-          });
-        adminTablesState.rowUnsubscribers.set(table.id, unsubscribe);
-      });
-
-      renderTables();
-    });
+      }
+    );
 
   addButton.addEventListener("click", async () => {
     addButton.disabled = true;
@@ -587,7 +598,13 @@ const initAdminTables = () => {
       });
       status.textContent = "Stół dodany.";
     } catch (error) {
-      status.textContent = "Nie udało się dodać stołu.";
+      const errorCode = error?.code;
+      if (errorCode === "permission-denied") {
+        status.textContent =
+          "Brak uprawnień do zapisu w kolekcji Tables. Sprawdź reguły Firestore i wielkość liter.";
+      } else {
+        status.textContent = "Nie udało się dodać stołu.";
+      }
     } finally {
       addButton.disabled = false;
     }
