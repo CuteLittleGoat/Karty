@@ -238,11 +238,25 @@ Dodatkowo ustawiono: `text-rendering: geometricPrecision`, `-webkit-font-smoothi
     - `name` (string) – nazwa stołu, np. „Gra 1” lub „Turniej A”,
     - `gameType` (string) – wartość pola „rodzaj gry”,
     - `gameDate` (string) – wartość pola „data”,
-    - `createdAt` (timestamp) – czas utworzenia (do sortowania).
+    - `createdAt` (timestamp) – czas utworzenia (do sortowania),
+    - `Date` (string) – data ustawiana w panelu Firebase (opcjonalne),
+    - `PlayersInvited` (string) – liczba/tekst zaproszonych graczy (opcjonalne),
+    - `Stakes` (string) – stawka stołu (opcjonalne),
+    - `TableNumber` (string) – numer/etykieta stołu (opcjonalne),
+    - `Winner` (string) – zwycięzca stołu (opcjonalne),
+    - `Placeholder1`-`Placeholder9` (string) – pola rezerwowe na przyszłe dane.
     - Subkolekcja `rows` przechowuje wiersze tabeli z polami:
       - `playerName`, `percentAllGames`, `percentPlayedGames`, `payouts`, `totalGames`,
         `summary`, `deposits`, `meetings`, `points`, `rebuyTotal` (string/number),
       - `createdAt` (timestamp) – czas utworzenia wiersza.
+  - `players` – kolekcja graczy. Każdy dokument zawiera pola:
+    - `Name` (string) – nazwa gracza,
+    - `Cash` (string/number) – aktualna gotówka,
+    - `GamesPlayed` (string/number) – liczba rozegranych gier,
+    - `GamesWon` (string/number) – liczba wygranych gier,
+    - `MoneySpend` (string/number) – suma wydanych środków,
+    - `MoneyWon` (string/number) – suma wygranych środków,
+    - `Placeholder1`-`Placeholder9` (string) – pola rezerwowe na przyszłe dane.
   - `admin_messages` oraz `app_settings` – dane dla wiadomości i PIN-u.
 - `app.js` nasłuchuje ostatniej wiadomości i pokazuje ją w polu „Najnowsze”.
 - Konfiguracja Firestore i reguł dostępu jest opisana w `Firebase.md`.

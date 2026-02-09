@@ -122,12 +122,20 @@ Po wejściu na adres z parametrem `?admin=1` zobaczysz sekcję **Stoły** (dodaw
      - `name` (string) – nazwa stołu („Gra 1”, „Turniej A” itd.),
      - `gameType` (string) – rodzaj gry,
      - `gameDate` (string) – data,
-     - `createdAt` (timestamp).
+     - `createdAt` (timestamp),
+     - `Date`, `PlayersInvited`, `Stakes`, `TableNumber`, `Winner` (string) – pola opcjonalne,
+     - `Placeholder1`-`Placeholder9` (string) – pola rezerwowe na przyszłe dane.
    - W każdym dokumencie powstaje subkolekcja `rows`, w której każdy wiersz ma pola:
      - `playerName`, `percentAllGames`, `percentPlayedGames`, `payouts`, `totalGames`,
        `summary`, `deposits`, `meetings`, `points`, `rebuyTotal` (string/number),
      - `createdAt` (timestamp).
-4. Szczegółowa instrukcja krok po kroku znajduje się w pliku `Firebase.md`.
+4. Kolekcja `players` (gracze) w Firebase Console:
+   - Kliknij **Start collection** i wpisz nazwę `players`.
+   - Każdy dokument w tej kolekcji powinien zawierać pola:
+     - `Name` (string) – nazwa gracza,
+     - `Cash`, `GamesPlayed`, `GamesWon`, `MoneySpend`, `MoneyWon` (string/number),
+     - `Placeholder1`-`Placeholder9` (string) – pola rezerwowe na przyszłe dane.
+5. Szczegółowa instrukcja krok po kroku znajduje się w pliku `Firebase.md`.
 
 ## 7. Zasoby graficzne
 - Folder `Pliki/` jest przeznaczony na grafiki i zasoby używane w aplikacji.
