@@ -10,6 +10,8 @@ const AVAILABLE_PLAYER_TABS = [
 ];
 
 const TABLES_COLLECTION = "Tables";
+const GAMES_COLLECTION = "Games";
+const GAME_DETAILS_COLLECTION = "details";
 const TABLES_COLLECTION_CONFIG_KEY = "tablesCollection";
 const TABLE_ROWS_COLLECTION = "rows";
 const DEFAULT_TABLE_META = {
@@ -42,26 +44,8 @@ const adminPlayersState = {
 };
 const debounceTimers = new Map();
 const adminRefreshHandlers = new Map();
-const adminTablesListeners = new Set();
 const ADMIN_GAMES_YEARS_STORAGE_KEY = "adminGamesYears";
 const DEFAULT_GAMES_YEARS = [2026, 2025];
-let refreshAdminTablesData = async () => {};
-
-const registerAdminTablesListener = (listener) => {
-  if (typeof listener !== "function") {
-    return () => {};
-  }
-  adminTablesListeners.add(listener);
-  return () => {
-    adminTablesListeners.delete(listener);
-  };
-};
-
-const notifyAdminTablesListeners = () => {
-  adminTablesListeners.forEach((listener) => {
-    listener();
-  });
-};
 
 const getFocusedAdminInputState = (container) => {
   if (!container) {
@@ -162,6 +146,44 @@ const getNextTableName = (tables) => {
     candidate += 1;
   }
   return `Gra ${candidate}`;
+};
+
+const getFormattedCurrentDate = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const sanitizeIntegerInput = (value) => {
+  if (typeof value !== "string") {
+    return "";
+  }
+  const normalized = value.replace(/\s+/g, "").replace(/,/g, "");
+  const withoutMinus = normalized.replace(/-/g, "");
+  if (!withoutMinus.length) {
+    return normalized.startsWith("-") ? "-" : "";
+  }
+  const digits = withoutMinus.replace(/\D/g, "");
+  if (!digits.length) {
+    return normalized.startsWith("-") ? "-" : "";
+  }
+  return normalized.startsWith("-") ? `-${digits}` : digits;
+};
+
+const parseIntegerOrZero = (value) => {
+  const normalized = sanitizeIntegerInput(typeof value === "number" ? `${value}` : value ?? "");
+  if (!normalized || normalized === "-") {
+    return 0;
+  }
+  const parsed = Number.parseInt(normalized, 10);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const getNextGameNameForDate = (games, gameDate) => {
+  const sameDayGames = games.filter((game) => (game.gameDate ?? "") === gameDate);
+  return getNextTableName(sameDayGames);
 };
 
 const normalizeNumber = (value) => {
@@ -876,10 +898,7 @@ const initAdminTables = () => {
 
     adminTablesState.rows = rowsByTable;
     renderTables();
-    notifyAdminTablesListeners();
   };
-
-  refreshAdminTablesData = refreshTablesData;
 
   registerAdminRefreshHandler("adminTournamentsTab", refreshTablesData);
 
@@ -1121,13 +1140,11 @@ const initAdminTables = () => {
               const rows = rowSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
               adminTablesState.rows.set(table.id, rows);
               renderTables();
-              notifyAdminTablesListeners();
             });
           adminTablesState.rowUnsubscribers.set(table.id, unsubscribe);
         });
 
         renderTables();
-        notifyAdminTablesListeners();
       },
       (error) => {
         const errorCode = error?.code;
@@ -1174,81 +1191,96 @@ const initAdminGames = () => {
   const yearsList = document.querySelector("#adminGamesYearsList");
   const addYearButton = document.querySelector("#adminGamesAddYear");
   const deleteYearButton = document.querySelector("#adminGamesDeleteYear");
+  const addGameButton = document.querySelector("#adminGamesAddGame");
   const gamesTableBody = document.querySelector("#adminGamesTableBody");
+  const summariesContainer = document.querySelector("#adminGamesSummaries");
+  const statsBody = document.querySelector("#adminGamesStatsBody");
   const status = document.querySelector("#adminGamesStatus");
   const modal = document.querySelector("#gameDetailsModal");
   const modalMeta = document.querySelector("#gameDetailsMeta");
-  const modalHeaderRow = document.querySelector("#gameDetailsHeaderRow");
   const modalBody = document.querySelector("#gameDetailsBody");
   const modalClose = document.querySelector("#gameDetailsClose");
   const modalCloseFooter = document.querySelector("#gameDetailsCloseFooter");
+  const modalAddRowButton = document.querySelector("#gameDetailsAddRow");
 
-  if (!yearsList || !addYearButton || !deleteYearButton || !gamesTableBody || !status) {
+  if (!yearsList || !addYearButton || !deleteYearButton || !gamesTableBody || !summariesContainer || !statsBody || !status || !addGameButton) {
     return;
   }
 
+  const firebaseApp = getFirebaseApp();
+  if (!firebaseApp) {
+    status.textContent = "Uzupełnij konfigurację Firebase, aby zarządzać grami.";
+    addGameButton.disabled = true;
+    addYearButton.disabled = true;
+    deleteYearButton.disabled = true;
+    return;
+  }
+
+  const db = firebaseApp.firestore();
   const state = {
     years: loadSavedGameYears(),
-    selectedYear: null
-  };
-
-  const getGamesForSelectedYear = () => {
-    if (!state.selectedYear) {
-      return [];
-    }
-
-    return adminTablesState.tableList
-      .filter((table) => extractYearFromDate(table.gameDate) === state.selectedYear)
-      .sort((a, b) => String(b.gameDate ?? "").localeCompare(String(a.gameDate ?? ""), "pl"));
+    selectedYear: null,
+    games: [],
+    detailsByGame: new Map(),
+    detailsUnsubscribers: new Map(),
+    activeGameIdInModal: null,
+    playerOptions: []
   };
 
   const closeModal = () => {
     if (!modal) {
       return;
     }
+    state.activeGameIdInModal = null;
     modal.classList.remove("is-visible");
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
   };
 
-  const openModal = (table) => {
-    if (!modal || !modalMeta || !modalHeaderRow || !modalBody) {
-      return;
+  const getGamesForSelectedYear = () => {
+    if (!state.selectedYear) {
+      return [];
     }
+    return state.games
+      .filter((game) => extractYearFromDate(game.gameDate) === state.selectedYear)
+      .sort((a, b) => String(b.gameDate ?? "").localeCompare(String(a.gameDate ?? ""), "pl"));
+  };
 
-    modalMeta.textContent = `Nazwa: ${table.name || "-"} | Rodzaj gry: ${table.gameType || "-"} | Data: ${table.gameDate || "-"}`;
-    modalHeaderRow.innerHTML = "";
-    TABLE_COLUMNS.forEach((column) => {
-      const th = document.createElement("th");
-      th.textContent = column.label;
-      modalHeaderRow.appendChild(th);
+  const getDetailRows = (gameId) => {
+    const rows = state.detailsByGame.get(gameId) ?? [];
+    return rows.map((row) => {
+      const entryFee = parseIntegerOrZero(row.entryFee);
+      const rebuy = parseIntegerOrZero(row.rebuy);
+      const payout = parseIntegerOrZero(row.payout);
+      const profit = entryFee + rebuy - payout;
+      return {
+        ...row,
+        entryFee,
+        rebuy,
+        payout,
+        profit,
+        points: parseIntegerOrZero(row.points),
+        championship: Boolean(row.championship)
+      };
+    });
+  };
+
+  const getGameSummaryMetrics = (gameId) => {
+    const rows = getDetailRows(gameId);
+    const pool = rows.reduce((sum, row) => sum + row.entryFee + row.rebuy, 0);
+    const sortedRows = [...rows].sort((a, b) => {
+      const percentA = pool === 0 ? 0 : Math.round((a.payout / pool) * 100);
+      const percentB = pool === 0 ? 0 : Math.round((b.payout / pool) * 100);
+      return percentB - percentA;
     });
 
-    modalBody.innerHTML = "";
-    const rows = adminTablesState.rows.get(table.id) ?? [];
-
-    if (!rows.length) {
-      const emptyRow = document.createElement("tr");
-      const emptyCell = document.createElement("td");
-      emptyCell.colSpan = TABLE_COLUMNS.length;
-      emptyCell.textContent = "Brak danych dla tej gry.";
-      emptyRow.appendChild(emptyCell);
-      modalBody.appendChild(emptyRow);
-    } else {
-      rows.forEach((row) => {
-        const tr = document.createElement("tr");
-        TABLE_COLUMNS.forEach((column) => {
-          const td = document.createElement("td");
-          td.textContent = row[column.key] ?? "";
-          tr.appendChild(td);
-        });
-        modalBody.appendChild(tr);
-      });
-    }
-
-    modal.classList.add("is-visible");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.classList.add("modal-open");
+    return {
+      pool,
+      rows: sortedRows.map((row) => ({
+        ...row,
+        poolSharePercent: pool === 0 ? 0 : Math.round((row.payout / pool) * 100)
+      }))
+    };
   };
 
   const renderYears = () => {
@@ -1271,6 +1303,8 @@ const initAdminGames = () => {
         state.selectedYear = year;
         renderYears();
         renderGamesTable();
+        renderSummaries();
+        renderStatsTable();
       });
       yearsList.appendChild(yearButton);
     });
@@ -1285,50 +1319,297 @@ const initAdminGames = () => {
     }
 
     const games = getGamesForSelectedYear();
-    status.textContent = `Wybrany rok: ${state.selectedYear}. Liczba turniejów: ${games.length}.`;
+    status.textContent = `Wybrany rok: ${state.selectedYear}. Liczba gier: ${games.length}.`;
 
     if (!games.length) {
       const emptyRow = document.createElement("tr");
       const emptyCell = document.createElement("td");
-      emptyCell.colSpan = 3;
-      emptyCell.textContent = "Brak turniejów z datą w wybranym roku.";
+      emptyCell.colSpan = 5;
+      emptyCell.textContent = "Brak gier z datą w wybranym roku.";
       emptyRow.appendChild(emptyCell);
       gamesTableBody.appendChild(emptyRow);
       return;
     }
 
-    games.forEach((table) => {
+    games.forEach((game) => {
       const row = document.createElement("tr");
 
       const gameTypeCell = document.createElement("td");
-      gameTypeCell.textContent = table.gameType ?? "";
+      const gameTypeSelect = document.createElement("select");
+      gameTypeSelect.className = "admin-input";
+      ["Cashout", "Turniej"].forEach((label) => {
+        const option = document.createElement("option");
+        option.value = label;
+        option.textContent = label;
+        gameTypeSelect.appendChild(option);
+      });
+      gameTypeSelect.value = game.gameType === "Turniej" ? "Turniej" : "Cashout";
+      gameTypeSelect.addEventListener("change", () => {
+        void db.collection(GAMES_COLLECTION).doc(game.id).update({ gameType: gameTypeSelect.value });
+      });
+      gameTypeCell.appendChild(gameTypeSelect);
 
       const dateCell = document.createElement("td");
-      dateCell.textContent = table.gameDate ?? "";
+      const dateInput = document.createElement("input");
+      dateInput.type = "date";
+      dateInput.className = "admin-input";
+      dateInput.value = game.gameDate ?? getFormattedCurrentDate();
+      dateInput.addEventListener("change", () => {
+        const nextDate = dateInput.value || getFormattedCurrentDate();
+        const currentName = typeof game.name === "string" ? game.name.trim() : "";
+        const updatePayload = { gameDate: nextDate };
+        if (!currentName || parseDefaultTableNumber(currentName)) {
+          const otherGames = state.games.filter((entry) => entry.id !== game.id);
+          updatePayload.name = getNextGameNameForDate(otherGames, nextDate);
+        }
+        void db.collection(GAMES_COLLECTION).doc(game.id).update(updatePayload);
+      });
+      dateCell.appendChild(dateInput);
 
       const nameCell = document.createElement("td");
-      const nameButton = document.createElement("button");
-      nameButton.type = "button";
-      nameButton.className = "admin-games-link";
-      nameButton.textContent = table.name ?? "Bez nazwy";
-      nameButton.addEventListener("click", () => {
-        openModal(table);
+      const nameWrap = document.createElement("div");
+      nameWrap.className = "admin-games-name-control";
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.className = "admin-input";
+      nameInput.value = game.name ?? "";
+      nameInput.placeholder = "Nazwa gry";
+      nameInput.addEventListener("input", () => {
+        const value = nameInput.value;
+        scheduleDebouncedUpdate(`game-name-${game.id}`, () => {
+          void db.collection(GAMES_COLLECTION).doc(game.id).update({ name: value });
+        });
       });
-      nameCell.appendChild(nameButton);
+      const detailsButton = document.createElement("button");
+      detailsButton.type = "button";
+      detailsButton.className = "secondary";
+      detailsButton.textContent = "Szczegóły";
+      detailsButton.addEventListener("click", () => openModal(game.id));
+      nameWrap.append(nameInput, detailsButton);
+      nameCell.appendChild(nameWrap);
 
-      row.appendChild(gameTypeCell);
-      row.appendChild(dateCell);
-      row.appendChild(nameCell);
+      const deleteCell = document.createElement("td");
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "danger";
+      deleteButton.textContent = "Usuń";
+      deleteButton.addEventListener("click", async () => {
+        const gameRef = db.collection(GAMES_COLLECTION).doc(game.id);
+        const detailsSnapshot = await gameRef.collection(GAME_DETAILS_COLLECTION).get();
+        const batch = db.batch();
+        detailsSnapshot.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        batch.delete(gameRef);
+        await batch.commit();
+      });
+      deleteCell.appendChild(deleteButton);
+
+      row.append(gameTypeCell, dateCell, nameCell, deleteCell);
       gamesTableBody.appendChild(row);
     });
   };
 
-  const synchronizeYearsFromTables = () => {
-    const yearsFromTables = adminTablesState.tableList
-      .map((table) => extractYearFromDate(table.gameDate))
+  const renderSummaries = () => {
+    summariesContainer.innerHTML = "";
+    const games = getGamesForSelectedYear();
+
+    games.forEach((game) => {
+      const wrapper = document.createElement("section");
+      wrapper.className = "admin-games-section admin-game-summary";
+
+      const title = document.createElement("h3");
+      title.textContent = `Podsumowanie gry ${game.name || "Bez nazwy"}`;
+
+      const metrics = getGameSummaryMetrics(game.id);
+      const poolInfo = document.createElement("p");
+      poolInfo.className = "status-text";
+      poolInfo.textContent = `Pula: ${metrics.pool}`;
+
+      const tableScroll = document.createElement("div");
+      tableScroll.className = "admin-table-scroll";
+      const table = document.createElement("table");
+      table.className = "admin-data-table";
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Gracz</th>
+            <th>Wpisowe</th>
+            <th>Rebuy/Add-on</th>
+            <th>Wypłata</th>
+            <th>+/-</th>
+            <th>% puli</th>
+            <th>Punkty</th>
+            <th>Mistrzostwo</th>
+          </tr>
+        </thead>
+      `;
+      const tbody = document.createElement("tbody");
+
+      if (!metrics.rows.length) {
+        const emptyRow = document.createElement("tr");
+        const emptyCell = document.createElement("td");
+        emptyCell.colSpan = 8;
+        emptyCell.textContent = "Brak danych do podsumowania.";
+        emptyRow.appendChild(emptyCell);
+        tbody.appendChild(emptyRow);
+      } else {
+        metrics.rows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.playerName || ""}</td>
+            <td>${row.entryFee}</td>
+            <td>${row.rebuy}</td>
+            <td>${row.payout}</td>
+            <td>${row.profit}</td>
+            <td>${row.poolSharePercent}</td>
+            <td>${row.points}</td>
+            <td>${row.championship ? "✓" : ""}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      table.appendChild(tbody);
+      tableScroll.appendChild(table);
+      wrapper.append(title, poolInfo, tableScroll);
+      summariesContainer.appendChild(wrapper);
+    });
+  };
+
+  const renderStatsTable = () => {
+    statsBody.innerHTML = "";
+    const games = getGamesForSelectedYear();
+    const gameCount = games.length;
+    const totalPool = games.reduce((sum, game) => sum + getGameSummaryMetrics(game.id).pool, 0);
+
+    const rows = [
+      ["Liczba gier", String(gameCount)],
+      ["Łączna pula", String(totalPool)]
+    ];
+
+    rows.forEach(([label, value]) => {
+      const tr = document.createElement("tr");
+      const labelCell = document.createElement("td");
+      labelCell.textContent = label;
+      const valueCell = document.createElement("td");
+      valueCell.textContent = value;
+      tr.append(labelCell, valueCell);
+      statsBody.appendChild(tr);
+    });
+  };
+
+  const renderModal = (gameId) => {
+    if (!modalBody || !modalMeta) {
+      return;
+    }
+    const game = state.games.find((entry) => entry.id === gameId);
+    if (!game) {
+      return;
+    }
+
+    modalMeta.textContent = `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"}`;
+    modalBody.innerHTML = "";
+
+    const rows = state.detailsByGame.get(gameId) ?? [];
+    rows.forEach((row) => {
+      const tr = document.createElement("tr");
+
+      const playerCell = document.createElement("td");
+      const playerSelect = document.createElement("select");
+      playerSelect.className = "admin-input";
+      const currentPlayerName = typeof row.playerName === "string" ? row.playerName : "";
+      const options = [...state.playerOptions];
+      const emptyOption = document.createElement("option");
+      emptyOption.value = "";
+      emptyOption.textContent = "Wybierz gracza";
+      playerSelect.appendChild(emptyOption);
+      if (currentPlayerName && !options.includes(currentPlayerName)) {
+        const legacyOption = document.createElement("option");
+        legacyOption.value = currentPlayerName;
+        legacyOption.textContent = `${currentPlayerName} (usunięty)`;
+        legacyOption.disabled = true;
+        legacyOption.selected = true;
+        playerSelect.appendChild(legacyOption);
+      }
+      options.forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        playerSelect.appendChild(option);
+      });
+      playerSelect.value = currentPlayerName;
+      playerSelect.addEventListener("change", () => {
+        void db.collection(GAMES_COLLECTION).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).update({ playerName: playerSelect.value });
+      });
+      playerCell.appendChild(playerSelect);
+
+      const createNumericCell = (key) => {
+        const td = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "admin-input";
+        input.value = row[key] ?? "";
+        input.addEventListener("input", () => {
+          input.value = sanitizeIntegerInput(input.value);
+          scheduleDebouncedUpdate(`detail-${gameId}-${row.id}-${key}`, () => {
+            void db.collection(GAMES_COLLECTION).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).update({ [key]: input.value });
+          });
+        });
+        td.appendChild(input);
+        return td;
+      };
+
+      const entryFeeCell = createNumericCell("entryFee");
+      const rebuyCell = createNumericCell("rebuy");
+      const payoutCell = createNumericCell("payout");
+
+      const profitCell = document.createElement("td");
+      profitCell.textContent = String(parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy) - parseIntegerOrZero(row.payout));
+
+      const pointsCell = createNumericCell("points");
+
+      const championshipCell = document.createElement("td");
+      const championshipInput = document.createElement("input");
+      championshipInput.type = "checkbox";
+      championshipInput.checked = Boolean(row.championship);
+      championshipInput.addEventListener("change", () => {
+        void db.collection(GAMES_COLLECTION).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).update({ championship: championshipInput.checked });
+      });
+      championshipCell.appendChild(championshipInput);
+
+      const deleteCell = document.createElement("td");
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "danger admin-row-delete";
+      deleteButton.textContent = "Usuń";
+      deleteButton.addEventListener("click", () => {
+        void db.collection(GAMES_COLLECTION).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).delete();
+      });
+      deleteCell.appendChild(deleteButton);
+
+      tr.append(playerCell, entryFeeCell, rebuyCell, payoutCell, profitCell, pointsCell, championshipCell, deleteCell);
+      modalBody.appendChild(tr);
+    });
+  };
+
+  const openModal = (gameId) => {
+    if (!modal) {
+      return;
+    }
+    state.activeGameIdInModal = gameId;
+    renderModal(gameId);
+    modal.classList.add("is-visible");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  };
+
+  const synchronizeYearsFromGames = () => {
+    const yearsFromGames = state.games
+      .map((game) => extractYearFromDate(game.gameDate))
       .filter((year) => Number.isInteger(year));
 
-    const combinedYears = normalizeYearList([...state.years, ...yearsFromTables]);
+    const combinedYears = normalizeYearList([...state.years, ...yearsFromGames]);
     state.years = combinedYears.length ? combinedYears : [...DEFAULT_GAMES_YEARS];
 
     if (!state.selectedYear || !state.years.includes(state.selectedYear)) {
@@ -1338,33 +1619,88 @@ const initAdminGames = () => {
     saveGameYears(state.years);
     renderYears();
     renderGamesTable();
+    renderSummaries();
+    renderStatsTable();
   };
+
+  db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
+    const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
+    state.playerOptions = players
+      .map((player) => (typeof player.name === "string" ? player.name.trim() : ""))
+      .filter((name) => Boolean(name));
+    if (state.activeGameIdInModal) {
+      renderModal(state.activeGameIdInModal);
+    }
+  });
+
+  db.collection(GAMES_COLLECTION)
+    .orderBy("createdAt", "asc")
+    .onSnapshot((snapshot) => {
+      state.games = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+      const activeIds = new Set(state.games.map((game) => game.id));
+      state.detailsUnsubscribers.forEach((unsubscribe, gameId) => {
+        if (!activeIds.has(gameId)) {
+          unsubscribe();
+          state.detailsUnsubscribers.delete(gameId);
+          state.detailsByGame.delete(gameId);
+        }
+      });
+
+      state.games.forEach((game) => {
+        if (state.detailsUnsubscribers.has(game.id)) {
+          return;
+        }
+        const unsubscribe = db.collection(GAMES_COLLECTION).doc(game.id).collection(GAME_DETAILS_COLLECTION).orderBy("createdAt", "asc").onSnapshot((rowSnapshot) => {
+          state.detailsByGame.set(game.id, rowSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+          if (state.activeGameIdInModal === game.id) {
+            renderModal(game.id);
+          }
+          renderSummaries();
+          renderStatsTable();
+        });
+        state.detailsUnsubscribers.set(game.id, unsubscribe);
+      });
+
+      synchronizeYearsFromGames();
+    });
+
+  addGameButton.addEventListener("click", async () => {
+    const gameDate = getFormattedCurrentDate();
+    const name = getNextGameNameForDate(state.games, gameDate);
+    await db.collection(GAMES_COLLECTION).add({
+      gameType: "Cashout",
+      gameDate,
+      name,
+      createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+    });
+  });
 
   addYearButton.addEventListener("click", () => {
     const rawYear = window.prompt("Podaj rok (RRRR):", String(new Date().getFullYear()));
     if (rawYear === null) {
       return;
     }
-
     const parsedYear = Number(rawYear.trim());
     if (!Number.isInteger(parsedYear) || parsedYear < 1900 || parsedYear > 2999) {
       status.textContent = "Podaj poprawny rok w formacie RRRR.";
       return;
     }
-
     if (state.years.includes(parsedYear)) {
       state.selectedYear = parsedYear;
-      status.textContent = "Ten rok już istnieje na liście.";
       renderYears();
       renderGamesTable();
+      renderSummaries();
+      renderStatsTable();
       return;
     }
-
     state.years = normalizeYearList([...state.years, parsedYear]);
     state.selectedYear = parsedYear;
     saveGameYears(state.years);
     renderYears();
     renderGamesTable();
+    renderSummaries();
+    renderStatsTable();
   });
 
   deleteYearButton.addEventListener("click", () => {
@@ -1372,22 +1708,37 @@ const initAdminGames = () => {
       status.textContent = "Najpierw wybierz rok do usunięcia.";
       return;
     }
-
     state.years = state.years.filter((year) => year !== state.selectedYear);
     state.years = state.years.length ? state.years : [...DEFAULT_GAMES_YEARS];
     state.selectedYear = state.years[0] ?? null;
-
     saveGameYears(state.years);
     renderYears();
     renderGamesTable();
+    renderSummaries();
+    renderStatsTable();
   });
 
   if (modalClose) {
     modalClose.addEventListener("click", closeModal);
   }
-
   if (modalCloseFooter) {
     modalCloseFooter.addEventListener("click", closeModal);
+  }
+  if (modalAddRowButton) {
+    modalAddRowButton.addEventListener("click", async () => {
+      if (!state.activeGameIdInModal) {
+        return;
+      }
+      await db.collection(GAMES_COLLECTION).doc(state.activeGameIdInModal).collection(GAME_DETAILS_COLLECTION).add({
+        playerName: "",
+        entryFee: "",
+        rebuy: "",
+        payout: "",
+        points: "",
+        championship: false,
+        createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+      });
+    });
   }
 
   if (modal) {
@@ -1396,7 +1747,6 @@ const initAdminGames = () => {
         closeModal();
       }
     });
-
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && modal.classList.contains("is-visible")) {
         closeModal();
@@ -1404,17 +1754,7 @@ const initAdminGames = () => {
     });
   }
 
-  const refreshGamesData = async () => {
-    await refreshAdminTablesData();
-    synchronizeYearsFromTables();
-  };
-
-  registerAdminRefreshHandler("adminGamesTab", refreshGamesData);
-  registerAdminTablesListener(() => {
-    synchronizeYearsFromTables();
-  });
-
-  synchronizeYearsFromTables();
+  registerAdminRefreshHandler("adminGamesTab", async () => {});
 };
 
 const initLatestMessage = () => {

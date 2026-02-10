@@ -1,101 +1,57 @@
 # Detale layoutu (casino vibe)
 
 ## 1) Fonty i rendering
-- Fonty: `Cinzel`, `Cormorant Garamond`, `Inter`, `Rajdhani` (Google Fonts z latin-ext).
-- Wymagane ustawienia renderingu:
-  - `text-rendering: geometricPrecision;`
-  - `-webkit-font-smoothing: antialiased;`
-  - `font-kerning: normal;`
+- Fonty: `Cinzel`, `Cormorant Garamond`, `Inter`, `Rajdhani`.
+- Rendering: antyaliasing + precyzyjne renderowanie tekstu.
 
-## 2) Paleta kolorów
-- Tło noir: `--bg #07070a`, `--bg2 #0c0d12`.
-- Tekst: `--ink #edebe6`, `--muted rgba(237, 235, 230, 0.72)`.
-- Złoto: `--gold #d4af37`, `--gold-line rgba(212, 175, 55, 0.35)`.
-- Zieleń neonowa: `--neon #2be38b`.
-- Danger: `--danger rgba(226, 58, 75, 0.95)`.
+## 2) Kolory
+- Tło noir: ciemne gradienty.
+- Tekst: jasny (`--ink`) + przygaszony (`--muted`).
+- Akcent złoty: aktywne elementy, obramowania, linki i nagłówki.
+- Akcent zielony: przyciski drugorzędne.
+- Czerwony: akcje destrukcyjne (`Usuń`).
 
-## 3) Globalny układ
-- `.page` max-width: `1200px`, padding `40px 24px 80px`.
-- `.grid` responsywna siatka kart.
-- `.card` gradient filc/noir, złota obwódka (`::before`), cień i zaokrąglenia.
+## 3) Panel Administratora — aktualny układ
+- Zakładki: `Aktualności`, `Gracze`, `Turnieje`, `Gry`.
+- Usunięta osobna zakładka `Statystyki`.
+- Sekcja `Statystyki` została przeniesiona do wnętrza zakładki `Gry` (dolna tabela).
 
-## 4) Przyciski
-- Bazowy `button`: uppercase, `Rajdhani`, border + delikatny hover (`translateY(-1px)`).
-- `button.primary`: złoty gradient i glow.
-- `button.secondary`: zielony neon.
-- `button.danger`: czerwony wariant do usuwania.
+## 4) Zakładka Gry — szczegóły wizualne
+### 4.1 Layout
+- `.admin-games-layout`: dwie kolumny (`220px` + `1fr`).
+- Lewa kolumna: lista lat + przyciski „Dodaj rok/Usuń rok”.
+- Prawa kolumna: status + sekcje tabel.
 
-## 5) Elementy UI po przebudowie panelu administratora
+### 4.2 Sekcja „Tabele Gier”
+- Nagłówek z tytułem i przyciskiem `Dodaj`.
+- Tabela z kolumnami:
+  - `Rodzaj Gry`
+  - `Data`
+  - `Nazwa`
+  - akcja usunięcia
+- W kolumnie nazwy zastosowano `.admin-games-name-control`:
+  - `display:flex`,
+  - `gap:8px`,
+  - wyrównanie pionowe do środka,
+  - pole nazwy ma min. szerokość `200px`.
 
-### 5.1 Panel Administratora
-- `.admin-panel-card` zajmuje pełną szerokość siatki (`grid-column: 1 / -1`).
-- Tytuł panelu: „Panel Administratora”.
-- Zakładki: `Aktualności`, `Gracze`, `Turnieje`, `Gry`, `Statystyki`.
+### 4.3 Sekcje „Podsumowanie gry ...”
+- Kontener: `.admin-games-summaries` (grid, odstęp 12px).
+- Pojedyncza karta podsumowania: `.admin-game-summary`:
+  - wewnętrzny padding,
+  - subtelne tło noir,
+  - cienka ramka,
+  - zaokrąglenie jak inne karty panelu.
 
-### 5.2 Zakładka „Gracze” — PIN i losowanie
-- W kolumnie PIN każdy wiersz używa kontenera `.pin-control`:
-  - `display: flex`,
-  - `gap: 8px`,
-  - `align-items: center`.
-- Pole PIN (`.pin-control .admin-input`) ma minimalną szerokość `108px`, żeby obok mieścił się przycisk.
-- Przycisk `Losuj` ma klasę `.admin-pin-random`:
-  - padding `8px 12px`,
-  - font-size `11px`,
-  - letter-spacing `0.12em`,
-  - `flex-shrink: 0` (nie zwęża się przy mniejszej szerokości).
+### 4.4 Modal „Szczegóły gry”
+- Tabela modalna ma edytowalne pola i checkbox `Mistrzostwo`.
+- Pod tabelą widoczny przycisk `Dodaj` do nowego wiersza.
+- Przycisk `Usuń` po prawej stronie każdego wiersza.
 
-### 5.3 Pozostałe elementy zakładki „Gracze”
-- `.admin-players` — karta wewnętrzna z tłem noir (`rgba(0,0,0,.32)`), border `--border2`, padding `16px`.
-- `.players-table` — minimalna szerokość `700px`.
-- `.permissions-tags`, `.permission-badge`, `.admin-permissions-edit` — wizualizacja i edycja uprawnień.
+## 5) Linki i interakcje
+- `.admin-games-link` (linkopodobny przycisk) zachowuje złoty kolor.
+- Hover bez podnoszenia elementu — tylko podkreślenie.
 
-### 5.4 Nagłówek panelu administratora i odświeżanie
-- `.admin-panel-header` ustawia układ flex dla tytułu i przycisku:
-  - `display: flex`,
-  - `justify-content: space-between`,
-  - `align-items: center`,
-  - `flex-wrap: wrap` dla małych szerokości.
-- Przycisk `Odśwież` znajduje się w prawym górnym rogu karty „Panel Administratora”.
-- Obok przycisku widoczny jest komunikat statusu (`#adminPanelRefreshStatus`, klasa `.status-text`) pokazujący etapy ręcznego odświeżenia danych aktywnej zakładki.
-
-### 5.5 Oznaczenia uprawnień graczy
-- `.permission-badge` używa złotego stylu jak aktywna zakładka:
-  - border `var(--gold-line)`,
-  - tło `rgba(212, 175, 55, 0.2)`,
-  - kolor tekstu `var(--gold)`,
-  - `box-shadow: var(--glow-gold)`.
-- `.permission-badge.is-empty` pozostaje neutralny (ciemny), aby odróżnić brak uprawnień od przyznanych dostępów.
-
-### 5.6 Zakładka „Gry”
-- `.admin-games-layout`:
-  - `display: grid`,
-  - kolumny `220px` + `1fr`,
-  - odstęp `var(--gap-3)`.
-- `.admin-games-sidebar` i `.admin-games-content`:
-  - tło noir `rgba(0, 0, 0, 0.32)`,
-  - border `1px solid var(--border2)`,
-  - zaokrąglenie `var(--radius-md)`,
-  - padding `16px`.
-- `.admin-games-years-actions` i `.admin-games-years-list` renderują pionowe grupy przycisków.
-- `.admin-games-year-button.is-active` używa złotego stanu aktywnego jak zakładki (`--gold-line`, `--gold`, `--glow-gold`).
-- `.admin-games-link` (nazwa gry w tabeli):
-  - wygląda jak link (brak obramowania i tła),
-  - kolor `var(--gold)`,
-  - hover: podkreślenie bez transformacji i bez glow.
-- Kolejność sekcji w prawej kolumnie zakładki „Gry”: najpierw tabela „Tabele Gier”, poniżej sekcja „Statystyki”.
-
-
-### 5.7 Modal „Instrukcja”
-- W stopce modala instrukcji znajduje się tylko jeden przycisk akcji: `Zamknij` (`#instructionCloseFooter`, styl `button.primary`).
-- Przycisk `Odśwież` został usunięty z układu modala, a pobieranie treści odbywa się automatycznie po otwarciu okna.
-- W części treści widoczny jest status (`#instructionStatus`, klasa `.status-text`) informujący o stanie pobierania dokumentu.
-
-## 6) Zakładki użytkownika
-- `tab-button` zachowuje styl pill.
-- `tab-button.is-active` — złoty aktywny stan.
-- PIN gate w ramce dashed gold (`.pin-gate`) i z kartą `.pin-card`.
-- Sekcja „Strefa gracza” pozostaje na dole strony (`.next-game-card`).
-
-## 7) Responsywność
-- `<720px`: przyciski i elementy modalne układają się pionowo; układ zakładki „Gry” przechodzi z 2 kolumn na 1 kolumnę.
-- `<520px`: mniejszy padding modala.
+## 6) Responsywność
+- Przy mniejszych szerokościach layout zakładki Gry przechodzi do jednej kolumny.
+- Tabele pozostają w poziomym scrollu (`.admin-table-scroll`) dla czytelności.

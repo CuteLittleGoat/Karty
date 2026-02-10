@@ -38,7 +38,6 @@
             <button class="admin-panel-tab" type="button" data-target="adminPlayersTab">Gracze</button>
             <button class="admin-panel-tab" type="button" data-target="adminTournamentsTab">Turnieje</button>
             <button class="admin-panel-tab" type="button" data-target="adminGamesTab">Gry</button>
-            <button class="admin-panel-tab" type="button" data-target="adminStatsTab">Statystyki</button>
           </div>
           <div id="adminNewsTab" class="admin-panel-content is-active" role="tabpanel">
           <div class="admin-message">
@@ -121,9 +120,6 @@
               </div>
             </div>
           </div>
-          <div id="adminStatsTab" class="admin-panel-content" role="tabpanel">
-            <div class="admin-stats-placeholder">do zrobienia później</div>
-          </div>
           <div id="adminGamesTab" class="admin-panel-content" role="tabpanel">
             <div class="admin-games-layout">
               <aside class="admin-games-sidebar">
@@ -139,20 +135,25 @@
               <section class="admin-games-content">
                 <span id="adminGamesStatus" class="status-text" aria-live="polite"></span>
                 <div class="admin-games-section">
-                  <h3>Tabele Gier</h3>
+                  <div class="card-header admin-tables-header">
+                    <h3>Tabele Gier</h3>
+                    <button id="adminGamesAddGame" class="primary" type="button">Dodaj</button>
+                  </div>
                   <div class="admin-table-scroll">
                     <table class="admin-data-table">
                       <thead>
                         <tr>
-                          <th>Rodzaj gry</th>
+                          <th>Rodzaj Gry</th>
                           <th>Data</th>
                           <th>Nazwa</th>
+                          <th></th>
                         </tr>
                       </thead>
                       <tbody id="adminGamesTableBody"></tbody>
                     </table>
                   </div>
                 </div>
+                <div id="adminGamesSummaries" class="admin-games-summaries"></div>
                 <div class="admin-games-section">
                   <h3>Statystyki</h3>
                   <div class="admin-table-scroll">
@@ -160,13 +161,10 @@
                       <thead>
                         <tr>
                           <th>Opis</th>
+                          <th>Wartość</th>
                         </tr>
                       </thead>
-                      <tbody>
-                        <tr>
-                          <td>W budowie</td>
-                        </tr>
-                      </tbody>
+                      <tbody id="adminGamesStatsBody"></tbody>
                     </table>
                   </div>
                 </div>
@@ -282,10 +280,22 @@
           <div class="admin-table-scroll">
             <table class="admin-data-table">
               <thead>
-                <tr id="gameDetailsHeaderRow"></tr>
+                <tr>
+                  <th>Gracz</th>
+                  <th>Wpisowe</th>
+                  <th>Rebuy/Add-on</th>
+                  <th>Wypłata</th>
+                  <th>+/-</th>
+                  <th>Punkty</th>
+                  <th>Mistrzostwo</th>
+                  <th></th>
+                </tr>
               </thead>
               <tbody id="gameDetailsBody"></tbody>
             </table>
+          </div>
+          <div class="admin-table-actions">
+            <button id="gameDetailsAddRow" class="secondary" type="button">Dodaj</button>
           </div>
         </div>
         <div class="modal-footer">
