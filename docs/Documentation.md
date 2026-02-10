@@ -35,7 +35,7 @@ Najważniejsze kolekcje Firestore:
 - `admin_messages` — wiadomości administratora,
 - `app_settings/player_access` — gracze + PIN + uprawnienia,
 - `Tables` + subkolekcja `rows` — zakładka Turnieje,
-- `Tables` + subkolekcja `details` — zakładka Gry (domyślnie ta sama kolekcja co Turnieje, nazwa konfigurowana przez `gamesCollection`).
+- `Tables` + subkolekcja `rows` — zakładka Gry (domyślnie ta sama kolekcja co Turnieje, nazwa konfigurowana przez `gamesCollection`, a subkolekcja przez `gameDetailsCollection`).
 
 ## 5. Zakładka Gry — pełny opis implementacji
 Logika znajduje się w `initAdminGames()`.
@@ -44,7 +44,7 @@ Logika znajduje się w `initAdminGames()`.
 - `years` — lista lat wyliczana automatycznie z `gameDate` dokumentów kolekcji skonfigurowanej w `gamesCollection` (domyślnie `Tables`),
 - `selectedYear` — aktywny rok (zapisywany lokalnie jako ostatni wybór administratora),
 - `games` — lista gier z kolekcji wskazanej przez `gamesCollection`,
-- `detailsByGame` — mapa `gameId -> rows` (subkolekcja `details`),
+- `detailsByGame` — mapa `gameId -> rows` (subkolekcja konfigurowana przez `gameDetailsCollection`, domyślnie `rows`),
 - `detailsUnsubscribers` — aktywne subskrypcje snapshotów szczegółów,
 - `activeGameIdInModal` — aktualnie otwarta gra w modalu,
 - `playerOptions` — lista nazw graczy z zakładki Gracze.
@@ -164,7 +164,7 @@ Dolna tabela `Statystyki` pokazuje agregaty dla aktywnego roku:
 
 
 ## 8. Reguły Firestore (aktualny wariant z produkcji)
-Wersja reguł podana przez użytkownika (działa z domyślną konfiguracją `gamesCollection: "Tables"`):
+Wersja reguł podana przez użytkownika (działa z domyślną konfiguracją `gamesCollection: "Tables"` oraz `gameDetailsCollection: "rows"`):
 
 ```
 rules_version = '2';
@@ -191,3 +191,5 @@ service cloud.firestore {
 ```
 
 Błąd „Brak uprawnień do zapisu w kolekcji Games” wynikał z rozjazdu między nazwą kolekcji po stronie aplikacji (`Games`) i regułami (brak bloku `match /Games/{docId}`).
+
+Błąd „nie działa Usuń w Gry / Dodaj w Szczegółach” wynikał z innego rozjazdu: kod zapisywał szczegóły w subkolekcji `details`, a reguły dopuszczały tylko `rows`. Naprawa polega na ustawieniu domyślnej subkolekcji szczegółów gry na `rows` oraz dodaniu konfiguracji `gameDetailsCollection`, aby można było jawnie dopasować aplikację do reguł Firestore bez zmiany kodu.

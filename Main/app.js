@@ -11,9 +11,10 @@ const AVAILABLE_PLAYER_TABS = [
 
 const TABLES_COLLECTION = "Tables";
 const GAMES_COLLECTION = "Tables";
-const GAME_DETAILS_COLLECTION = "details";
+const GAME_DETAILS_COLLECTION = "rows";
 const TABLES_COLLECTION_CONFIG_KEY = "tablesCollection";
 const GAMES_COLLECTION_CONFIG_KEY = "gamesCollection";
+const GAME_DETAILS_COLLECTION_CONFIG_KEY = "gameDetailsCollection";
 const TABLE_ROWS_COLLECTION = "rows";
 const DEFAULT_TABLE_META = {
   gameType: "rodzaj gry",
@@ -219,6 +220,14 @@ const getGamesCollectionName = () => {
       ? window.firebaseConfig[GAMES_COLLECTION_CONFIG_KEY].trim()
       : "";
   return configured || GAMES_COLLECTION;
+};
+
+const getGameDetailsCollectionName = () => {
+  const configured =
+    window.firebaseConfig && typeof window.firebaseConfig[GAME_DETAILS_COLLECTION_CONFIG_KEY] === "string"
+      ? window.firebaseConfig[GAME_DETAILS_COLLECTION_CONFIG_KEY].trim()
+      : "";
+  return configured || GAME_DETAILS_COLLECTION;
 };
 
 
@@ -1217,6 +1226,7 @@ const initAdminGames = () => {
 
   const db = firebaseApp.firestore();
   const gamesCollectionName = getGamesCollectionName();
+  const gameDetailsCollectionName = getGameDetailsCollectionName();
   const state = {
     years: [],
     selectedYear: loadSavedSelectedGamesYear(),
@@ -1396,7 +1406,7 @@ const initAdminGames = () => {
       deleteButton.textContent = "Usuń";
       deleteButton.addEventListener("click", async () => {
         const gameRef = db.collection(gamesCollectionName).doc(game.id);
-        const detailsSnapshot = await gameRef.collection(GAME_DETAILS_COLLECTION).get();
+        const detailsSnapshot = await gameRef.collection(gameDetailsCollectionName).get();
         const batch = db.batch();
         detailsSnapshot.forEach((doc) => {
           batch.delete(doc.ref);
@@ -1541,7 +1551,7 @@ const initAdminGames = () => {
       });
       playerSelect.value = currentPlayerName;
       playerSelect.addEventListener("change", () => {
-        void db.collection(gamesCollectionName).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).update({ playerName: playerSelect.value });
+        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ playerName: playerSelect.value });
       });
       playerCell.appendChild(playerSelect);
 
@@ -1554,7 +1564,7 @@ const initAdminGames = () => {
         input.addEventListener("input", () => {
           input.value = sanitizeIntegerInput(input.value);
           scheduleDebouncedUpdate(`detail-${gameId}-${row.id}-${key}`, () => {
-            void db.collection(gamesCollectionName).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).update({ [key]: input.value });
+            void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ [key]: input.value });
           });
         });
         td.appendChild(input);
@@ -1575,7 +1585,7 @@ const initAdminGames = () => {
       championshipInput.type = "checkbox";
       championshipInput.checked = Boolean(row.championship);
       championshipInput.addEventListener("change", () => {
-        void db.collection(gamesCollectionName).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).update({ championship: championshipInput.checked });
+        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ championship: championshipInput.checked });
       });
       championshipCell.appendChild(championshipInput);
 
@@ -1585,7 +1595,7 @@ const initAdminGames = () => {
       deleteButton.className = "danger admin-row-delete";
       deleteButton.textContent = "Usuń";
       deleteButton.addEventListener("click", () => {
-        void db.collection(gamesCollectionName).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).delete();
+        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).delete();
       });
       deleteCell.appendChild(deleteButton);
 
@@ -1651,7 +1661,7 @@ const initAdminGames = () => {
         if (state.detailsUnsubscribers.has(game.id)) {
           return;
         }
-        const unsubscribe = db.collection(gamesCollectionName).doc(game.id).collection(GAME_DETAILS_COLLECTION).orderBy("createdAt", "asc").onSnapshot((rowSnapshot) => {
+        const unsubscribe = db.collection(gamesCollectionName).doc(game.id).collection(gameDetailsCollectionName).orderBy("createdAt", "asc").onSnapshot((rowSnapshot) => {
           state.detailsByGame.set(game.id, rowSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
           if (state.activeGameIdInModal === game.id) {
             renderModal(game.id);
@@ -1705,7 +1715,7 @@ const initAdminGames = () => {
       if (!state.activeGameIdInModal) {
         return;
       }
-      await db.collection(gamesCollectionName).doc(state.activeGameIdInModal).collection(GAME_DETAILS_COLLECTION).add({
+      await db.collection(gamesCollectionName).doc(state.activeGameIdInModal).collection(gameDetailsCollectionName).add({
         playerName: "",
         entryFee: "",
         rebuy: "",
