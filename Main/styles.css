@@ -481,6 +481,28 @@ h1 {
   text-decoration: underline;
 }
 
+.admin-games-name-control {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-games-name-control .admin-input {
+  min-width: 200px;
+}
+
+.admin-games-summaries {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-game-summary {
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.24);
+}
+
 .admin-players {
   display: grid;
   gap: var(--gap-2);

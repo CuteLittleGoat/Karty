@@ -1,239 +1,149 @@
-# Dokumentacja techniczna — Karty
+# Karty — dokumentacja techniczna
 
-## 1. Cel aplikacji
-Aplikacja to front-end HTML/CSS/JS oparty o Firebase Firestore. Działa w dwóch trybach:
-- użytkownik (domyślnie),
-- administrator (`?admin=1`).
+## 1. Architektura plików
+- `Main/index.html` — struktura UI (panel admina, zakładki, modale).
+- `Main/styles.css` — pełne style (layout, typografia, komponenty, responsywność).
+- `Main/app.js` — logika aplikacji (zakładki, Firebase, CRUD, obliczenia).
+- `config/firebase-config.js` — konfiguracja projektu Firebase.
 
-System udostępnia moduły:
-- Aktualności,
-- Gracze (lista, PIN, uprawnienia),
-- Turnieje,
-- Statystyki (placeholder),
-- Gry (lata + tabela turniejów + modal szczegółów),
-- bramka PIN do zakładki „Najbliższa gra”.
+## 2. Fonty, style i zasady wizualne
+Aplikacja używa fontów Google:
+- `Cinzel`
+- `Cormorant Garamond`
+- `Inter`
+- `Rajdhani`
 
-## 2. Struktura plików
-- `Main/index.html` — struktura widoków, tabel, zakładek i modali.
-- `Main/styles.css` — style layoutu, typografia, komponenty i responsywność.
-- `Main/app.js` — pełna logika UI, obsługa Firestore, walidacje, renderowanie.
-- `docs/README.md` — instrukcja użytkownika krok po kroku.
-- `docs/Documentation.md` — dokumentacja techniczna i opis działania.
-- `DetaleLayout.md` — rejestr fontów, kolorów, styli i detali wizualnych.
+Główne zasady:
+- ciemne tło noir,
+- złote i zielone akcenty,
+- czytelne tabele administracyjne,
+- modalne okna dla operacji szczegółowych.
 
-## 2.1 Integracje danych (aktualny stan)
-- Projekt nie używa importu z plików `.xlsx`.
-- W kodzie nie ma aktywnego mechanizmu konwersji arkusza do pliku `data.json`.
-- Dane aplikacji są utrzymywane wyłącznie w Firebase Firestore (kolekcje opisane w sekcji 6).
+## 3. Panel administratora — zakładki
+Panel zawiera karty:
+- `adminNewsTab` (Aktualności),
+- `adminPlayersTab` (Gracze),
+- `adminTournamentsTab` (Turnieje),
+- `adminGamesTab` (Gry).
 
-## 3. HTML (`Main/index.html`)
-### 3.1 Układ główny
-- Nagłówek strony z tytułami.
-- Karta administratora z zakładkami panelu:
-  - Aktualności,
-  - Gracze,
-  - Turnieje,
-  - Gry,
-  - Statystyki.
-- Karta „Strefa gracza” (podgląd części użytkownika).
-- Modal instrukcji, modal edycji uprawnień gracza i modal szczegółów gry.
-- W nagłówku panelu administratora przycisk `Odśwież` oraz pole statusu `#adminPanelRefreshStatus`.
+Zakładka `adminStatsTab` została usunięta z HTML.
 
-### 3.2 Zakładka „Gracze”
-Tabela zawiera kolumny:
-- Nazwa,
-- PIN,
-- Uprawnienia,
-- Akcje.
+Przełączanie kart realizuje `initAdminPanelTabs()`.
 
-W kolumnie PIN każdy wiersz renderuje:
-- input numeryczny (maks. 5 cyfr),
-- przycisk `Losuj` do wygenerowania unikalnego kodu.
+## 4. Firebase i kolekcje
+Najważniejsze kolekcje Firestore:
+- `admin_messages` — wiadomości administratora,
+- `app_settings/player_access` — gracze + PIN + uprawnienia,
+- `Tables` + subkolekcja `rows` — zakładka Turnieje,
+- `Games` + subkolekcja `details` — zakładka Gry.
 
+## 5. Zakładka Gry — pełny opis implementacji
+Logika znajduje się w `initAdminGames()`.
 
-### 3.3 Zakładka „Gry”
-Struktura zakładki składa się z dwóch kolumn:
-- lewy panel (`.admin-games-sidebar`) z listą lat (`#adminGamesYearsList`),
-- prawa sekcja (`.admin-games-content`) z dwiema tabelami: „Tabele Gier” (u góry) i „Statystyki” (na dole).
+### 5.1 Stan modułu (state)
+- `years` — lista lat dla sidebaru,
+- `selectedYear` — aktywny rok,
+- `games` — lista gier z kolekcji `Games`,
+- `detailsByGame` — mapa `gameId -> rows` (subkolekcja `details`),
+- `detailsUnsubscribers` — aktywne subskrypcje snapshotów szczegółów,
+- `activeGameIdInModal` — aktualnie otwarta gra w modalu,
+- `playerOptions` — lista nazw graczy z zakładki Gracze.
 
-Elementy sterujące:
-- `#adminGamesAddYear` — przycisk dodawania roku,
-- `#adminGamesDeleteYear` — przycisk usuwania aktualnie zaznaczonego roku.
+### 5.2 Dodawanie gry
+Przycisk `#adminGamesAddGame` dodaje dokument do `Games` z polami:
+- `gameType: "Cashout"`,
+- `gameDate: getFormattedCurrentDate()`,
+- `name: getNextGameNameForDate(state.games, gameDate)`,
+- `createdAt` (timestamp serwera).
 
-Tabela gier (`#adminGamesTableBody`) pokazuje:
-- `Rodzaj gry` (`gameType`),
-- `Data` (`gameDate`),
-- `Nazwa` (`name`, klikalna).
+### 5.3 Logika nazewnictwa „Gra X”
+Użyte funkcje:
+- `parseDefaultTableNumber(name)` — odczytuje numer z formatu `Gra <liczba>`.
+- `getNextTableName(tables)` — znajduje pierwszy wolny numer, np. 1,2,4 => zwraca 3.
+- `getNextGameNameForDate(games, gameDate)` — filtruje gry dla konkretnej daty i wylicza pierwszy wolny numer tylko dla tej daty.
 
-Kliknięcie nazwy otwiera modal `#gameDetailsModal`, który renderuje wszystkie kolumny z `TABLE_COLUMNS` i wszystkie wiersze z subkolekcji `rows` dla wybranego turnieju.
+To spełnia regułę: **domyślna nazwa to „Gra X”, gdzie X jest pierwszym wolnym numerem w danym dniu**.
 
-## 4. CSS (`Main/styles.css`)
-### 4.1 Tokeny i fonty
-- Fonty: `Cinzel`, `Cormorant Garamond`, `Rajdhani`, `Inter`.
-- Kolory zdefiniowane jako custom properties (`--bg`, `--gold`, `--neon`, `--danger` itd.).
+### 5.4 Edycja tabeli gier
+Wiersz gry zawiera:
+- `Rodzaj Gry` (`select`: Cashout/Turniej),
+- `Data` (`input type=date`),
+- `Nazwa` (`input text`) + przycisk `Szczegóły`,
+- przycisk `Usuń`.
 
-### 4.2 Komponenty
-- `button.primary`, `button.secondary`, `button.danger` — trzy warianty akcji.
-- `.admin-input` — wspólny styl pól formularzy administratora.
-- `.admin-players`, `.players-table`, `.permissions-tags` — layout modułu graczy.
-- `.admin-panel-header` — poziome ułożenie tytułu „Panel Administratora” i sekcji odświeżania w prawym górnym rogu.
-- `.permission-badge` — złote kapsułki uprawnień (border `--gold-line`, kolor `--gold`, glow `--glow-gold`) odpowiadające stylistyce aktywnej zakładki użytkownika.
-- `.pin-control` — kontener flex łączący pole PIN i przycisk `Losuj`.
-- `.admin-pin-random` — styl przycisku losowania PIN (mniejszy, kompaktowy wariant secondary).
-- `.admin-games-layout` — dwukolumnowy układ zakładki „Gry” (sidebar lat + obszar tabel).
-- `.admin-games-year-button` i `.admin-games-year-button.is-active` — przyciski lat z podświetleniem aktywnego roku.
-- `.admin-games-link` — klikalna nazwa gry w tabeli, wizualnie jako link.
+Zmiany są zapisywane do Firestore (`update`).
 
+### 5.5 Rozdzielenie Gry vs Turnieje
+Zakładka `Gry` działa na kolekcji `Games`.
+Zakładka `Turnieje` działa na kolekcji `Tables`.
+Brak synchronizacji i współdzielonego źródła między nimi.
 
-## 5. JavaScript (`Main/app.js`)
+### 5.6 Sidebar lat w zakładce Gry
+Lata są wyznaczane z `gameDate` dokumentów `Games`:
+- parsowanie roku: `extractYearFromDate()`,
+- normalizacja i sortowanie malejące: `normalizeYearList()`,
+- zapis lokalny listy lat: `localStorage` (`ADMIN_GAMES_YEARS_STORAGE_KEY`).
 
-## 5.1 Stałe i walidacja
-Kluczowe stałe:
-- `PIN_LENGTH = 5` — wymagana długość PIN.
-- `PLAYER_ACCESS_COLLECTION = "app_settings"` i `PLAYER_ACCESS_DOCUMENT = "player_access"` — źródło listy graczy.
+### 5.7 Modal „Szczegóły gry” — tryb edycji
+Tabela w modalu zawiera kolumny:
+- Gracz,
+- Wpisowe,
+- Rebuy/Add-on,
+- Wypłata,
+- +/- (obliczane),
+- Punkty,
+- Mistrzostwo,
+- Usuń.
 
-Kluczowe funkcje PIN:
-- `sanitizePin(value)` — usuwa znaki nienumeryczne i ucina do 5 znaków.
-- `isPinValid(value)` — sprawdza wzorzec dokładnie 5 cyfr (`/^\d{5}$/`).
-- `generateRandomPin()` — losuje 5-cyfrowy kod (z zachowaniem zer wiodących).
+#### Walidacja pól liczbowych
+- `sanitizeIntegerInput(value)` przepuszcza tylko cyfry + opcjonalny minus na początku.
+- `parseIntegerOrZero(value)` konwertuje wartość do liczby całkowitej, puste/niepoprawne => 0.
 
-## 5.2 Moduł Gracze (`initAdminPlayers`)
-Moduł obsługuje:
-- pobranie i normalizację danych graczy,
-- renderowanie tabeli,
-- edycję pól nazwa/PIN,
-- usuwanie i dodawanie graczy,
-- modal uprawnień,
-- zapis do Firestore.
+#### Obliczanie +/-
+Dla każdego wiersza:
+- `profit = entryFee + rebuy - payout`.
+Pole jest wyświetlane jako wartość obliczana, bez ręcznej edycji.
 
-Dodatkowe funkcje wewnątrz modułu:
-- `getPinOwnerId(pin, excludedId)` — wyszukuje właściciela PIN z pominięciem bieżącego gracza.
-- `rebuildPinMap()` — aktualizuje mapę poprawnych PIN-ów do szybkiej weryfikacji dostępu.
-- `generateUniquePlayerPin(excludedId)` — losuje kod PIN i ponawia losowanie, dopóki kod nie będzie unikalny.
+#### Powiązanie pola Gracz z zakładką Gracze
+Lista opcji pobierana jest z `app_settings/player_access`.
+Jeżeli gracz został usunięty z zakładki Gracze, to:
+- historyczna wartość w istniejącym wpisie zostaje,
+- jest oznaczona jako `(usunięty)`,
+- nie pojawia się jako normalna opcja do nowego wyboru.
 
-### 5.2.1 Zasada walidacji PIN po zmianach
-W zdarzeniu `input` dla pola PIN:
-1. Wartość jest sanitizowana do cyfr i max 5 znaków.
-2. Jeżeli PIN ma 1–4 cyfry, pole dostaje walidację „PIN musi mieć dokładnie 5 cyfr.”
-3. Jeżeli wpisany PIN jest duplikatem:
-   - input jest czyszczony do pustej wartości,
-   - pokazuje się walidacja „PIN musi być unikalny.”,
-   - stan gracza zapisywany jest z pustym PIN (`""`), aby nie zostawał skrócony kod.
-4. PIN zapisywany jest tylko gdy jest pełny (`5 cyfr`) albo gdy użytkownik celowo czyści pole.
+### 5.8 Podsumowanie gry
+Dla każdej gry z wybranego roku renderowany jest segment:
+- nagłówek: `Podsumowanie gry [nazwa]`,
+- pole `Pula`.
 
-Efekt: aplikacja nie utrwala PIN-ów krótszych niż 5 cyfr i eliminuje przypadek skracania kodu po wpisaniu duplikatu.
+Obliczenia:
+- `Pula = suma(entryFee + rebuy)` ze wszystkich wierszy szczegółów danej gry,
+- `% puli = round((payout / pool) * 100)`,
+- sortowanie tabeli podsumowania: malejąco po `% puli`.
 
-### 5.2.2 Przycisk „Losuj”
-Każdy wiersz gracza ma przycisk `Losuj`:
-1. Kliknięcie uruchamia `generateUniquePlayerPin(player.id)`.
-2. Kod jest losowany w pętli do uzyskania unikalnej wartości.
-3. Wylosowany 5-cyfrowy PIN trafia do inputu i od razu jest zapisywany przez `updatePlayerField`.
+### 5.9 Statystyki (wewnątrz zakładki Gry)
+Dolna tabela `Statystyki` pokazuje agregaty dla aktywnego roku:
+- liczba gier,
+- łączna pula.
 
-## 5.3 Bramka PIN użytkownika (`initPinGate` + `updatePinVisibility`)
-- Użytkownik wpisuje PIN i klika `Otwórz`.
-- Dostęp zależy od:
-  - poprawnego 5-cyfrowego PIN,
-  - zgodności PIN -> gracz,
-  - uprawnienia `nextGameTab`.
-- Funkcja `updatePinVisibility()` opiera widoczność wyłącznie o `sessionStorage` (`PIN_STORAGE_KEY`) i **nie** robi wyjątku dla trybu administratora.
-- Efekt: sekcja „Strefa gracza” w trybie administratora odwzorowuje 1:1 zachowanie zwykłego widoku użytkownika (najpierw PIN, potem ewentualny dostęp).
-- W `initUserTabs()` przy wejściu na `nextGameTab` stan dostępu jest resetowany (`setPinGateState(false)`), więc każde nowe wejście w zakładkę wymaga ponownej walidacji PIN.
+## 6. Inne kluczowe funkcje JS
+- `initAdminPlayers()` — zarządzanie graczami i PIN,
+- `initAdminNews()` — wysyłka wiadomości,
+- `initAdminTables()` — zarządzanie zakładką Turnieje,
+- `initLatestMessage()` — odczyt ostatniej wiadomości,
+- `initInstructionModal()` — ładowanie instrukcji do modala,
+- `initPinGate()` — wejście PIN po stronie gracza.
 
-## 5.4 Inne moduły
-- `initAdminMessaging()` — wysyłanie wiadomości do graczy (`admin_messages`).
-- `initLatestMessage()` — odczyt najnowszej wiadomości i render po stronie gracza.
-- `initAdminTables()` — operacje CRUD na turniejach i wierszach tabeli, z utrzymaniem fokusu/pozycji kursora przy ponownym renderze po synchronizacji Firestore.
-- `initAdminGames()` — logika zakładki „Gry”: lista lat, synchronizacja z datami turniejów, tabela „Tabele Gier”, modal szczegółów.
-- `initAdminPanelTabs()` + `initUserTabs()` — zarządzanie zakładkami.
-- `initAdminPanelRefresh()` — odświeża dane tylko dla aktualnie aktywnej zakładki administratora bez przełączania widoku i bez przeładowania całej strony.
-- `initInstructionModal()` — modal instrukcji z automatycznym pobieraniem treści przy pierwszym otwarciu i cache w pamięci sesji strony.
-
-### 5.5 Mechanizm odświeżania danych w panelu administratora
-- `adminRefreshHandlers` (Map) przechowuje funkcje odświeżające przypisane do identyfikatora zakładki (`adminNewsTab`, `adminPlayersTab`, `adminTournamentsTab`, `adminGamesTab`).
-- `registerAdminRefreshHandler(tabId, handler)` rejestruje callback odświeżania dla konkretnej zakładki.
-- Po kliknięciu `#adminPanelRefresh`:
-  1. kod wykrywa aktywny panel (`.admin-panel-content.is-active`),
-  2. pobiera odpowiadający mu handler z `adminRefreshHandlers`,
-  3. blokuje przycisk na czas odświeżania,
-  4. wyświetla status w `#adminPanelRefreshStatus`,
-  5. uruchamia odczyt danych z Firestore po stronie serwera (`get({ source: "server" })`).
-
-Rejestrowane handlery:
-- `adminNewsTab` (`initAdminMessaging`) — wykonuje odczyt najnowszego dokumentu z `admin_messages`.
-- `adminPlayersTab` (`initAdminPlayers`) — pobiera dokument `app_settings/player_access`, normalizuje listę i renderuje tabelę graczy.
-- `adminTournamentsTab` (`initAdminTables`) — pobiera wszystkie turnieje i ich wiersze, aktualizuje `adminTablesState`, potem renderuje widok.
-- `adminGamesTab` (`initAdminGames`) — wywołuje odświeżenie danych turniejów, a następnie odtwarza listę lat i tabelę gier.
-
-Efekt: przycisk „Odśwież” nie przenosi już użytkownika do „Aktualności”, ponieważ nie wykonuje `window.location.reload()`, tylko odświeża dane w aktualnej zakładce.
-
-
-
-### 5.5A Modal instrukcji (`initInstructionModal`)
-- Elementy DOM:
-  - `#adminInstructionButton` — otwarcie modala,
-  - `#instructionModal` — overlay modala,
-  - `#instructionClose` i `#instructionCloseFooter` — zamknięcie,
-  - `#instructionStatus` — status pobierania,
-  - `#instructionContent` — treść instrukcji (`README.md`).
-- Źródło danych: `https://cutelittlegoat.github.io/Karty/docs/README.md`.
-- Logika działania:
-  1. po otwarciu modala uruchamiane jest `loadInstruction()` tylko wtedy, gdy treść nie jest jeszcze w cache (`cachedText`),
-  2. podczas pobierania status zmienia się na `Pobieranie instrukcji...`,
-  3. po sukcesie treść markdown trafia do `#instructionContent`, a status przyjmuje `Instrukcja została pobrana.`,
-  4. przy błędzie status informuje o konieczności ponownego otwarcia okna.
-- W stopce modala pozostaje pojedynczy przycisk `Zamknij`; przycisk ręcznego odświeżania instrukcji został usunięty z interfejsu.
-
-### 5.6 Szczegóły modułu „Gry”
-- `extractYearFromDate(value)` — wyciąga rok (4 cyfry) z pola daty turnieju; używa ostatniego dopasowania `19xx/20xx`.
-- `normalizeYearList(years)` — usuwa duplikaty, waliduje zakres lat i sortuje malejąco.
-- `loadSavedGameYears()` / `saveGameYears(years)` — trwałość listy lat w `localStorage` (`adminGamesYears`).
-- `registerAdminTablesListener(listener)` + `notifyAdminTablesListeners()` — mechanizm powiadamiania zakładki „Gry” o zmianach w module „Turnieje”.
-- `initAdminGames()`:
-  1. ładuje listę lat (domyślnie `2026`, `2025`),
-  2. scala lata ręczne z latami wykrytymi z dat turniejów,
-  3. renderuje panel lat i wybór aktywnego roku,
-  4. renderuje tabelę gier dla wybranego roku,
-  5. otwiera modal szczegółów gry z pełnym zestawem kolumn i danych graczy,
-  6. rejestruje odświeżanie dla zakładki `adminGamesTab`.
-
-### 5.7 Stabilność edycji pól w zakładce „Turnieje”
-Aby usunąć problem utraty aktywnego pola po wpisaniu znaku, moduł turniejów ma mechanizm odtwarzania fokusu:
-- `getFocusedAdminInputState(container)` zapisuje identyfikator aktualnie aktywnego inputa (`tableId`, `rowId`, `columnKey`, typ pola) oraz zakres zaznaczenia (`selectionStart`, `selectionEnd`) przed przebudową DOM.
-- Każde pole edycyjne w turnieju otrzymuje metadane `data-*` (`data-focus-target`, `data-table-id`, `data-row-id`, `data-column-key`), które jednoznacznie identyfikują to pole po ponownym renderze.
-- `restoreFocusedAdminInputState(container, focusState)` po renderze wyszukuje odpowiadający input i przywraca fokus oraz pozycję kursora.
-
-Efekt działania:
-1. administrator może wpisywać nazwę gry, datę i dane wierszy bez ponownego klikania po każdej synchronizacji,
-2. nawet po automatycznym odświeżeniu przez `onSnapshot` aktywne pole nie „gubi” podświetlenia,
-3. zachowana zostaje wygoda edycji wolnego i szybkiego wpisywania danych.
-
-## 6. Firestore — model danych
-### 6.1 Kolekcje
-- `admin_messages`
-- `Tables` (oraz subkolekcja `rows`)
-- `app_settings/player_access`
-
-### 6.2 Dokumenty
-`app_settings/player_access`:
-- `players[]`:
-  - `id` (string),
-  - `name` (string),
-  - `pin` (string, dokładnie 5 cyfr lub pusty),
-  - `permissions` (array stringów).
-- `updatedAt` (timestamp serwera).
-
-## 7. Jak odtworzyć aplikację na podstawie dokumentacji
-1. Odtwórz strukturę HTML: panel administratora + karta gracza + modale.
-2. W CSS zastosuj wskazane tokeny kolorów, fonty i komponenty.
-3. W JS zaimplementuj:
-   - tryby admin/użytkownik,
-   - moduły zakładek,
-   - integrację Firestore,
-   - moduł graczy z walidacją PIN (5 cyfr, unikalność, pełne czyszczenie duplikatu),
-   - przycisk `Losuj` z pętlą do unikalnego PIN,
-   - bramkę dostępu po PIN i uprawnieniach,
-   - identyczne działanie bramki PIN w widoku użytkownika i w sekcji „Strefa gracza” podczas trybu administratora (bez bypassu),
-   - rejestr handlerów odświeżania dla zakładek panelu administratora,
-   - przycisk `Odśwież` działający lokalnie na aktywnej zakładce (bez pełnego reloadu),
-   - złote znaczniki nazw uprawnień w tabeli graczy (wizualnie jak aktywna zakładka).
-4. Podłącz konfigurację Firebase (`config/firebase-config.js`) i biblioteki compat.
+## 7. Jak odtworzyć aplikację tylko na podstawie dokumentacji
+1. Zbuduj HTML z panelem admina (zakładki, tabele, modale) i strefą gracza.
+2. Dodaj style noir/gold/green oraz siatkę kart i komponenty tabel.
+3. W JS dodaj:
+   - wykrywanie trybu admin (`?admin=1`),
+   - przełączanie zakładek,
+   - moduły Firebase i snapshot listeners,
+   - pełny CRUD dla Gracze, Turnieje, Gry,
+   - logikę nazw `Gra X` zależnie od daty,
+   - modal szczegółów gry z walidacją liczb,
+   - obliczenia `+/-`, `Pula`, `% puli`, sortowanie,
+   - agregaty roczne w sekcji Statystyki (w zakładce Gry).
+4. Podłącz `firebase-app-compat` i `firebase-firestore-compat`.

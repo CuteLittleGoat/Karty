@@ -1,142 +1,129 @@
-# Karty — instrukcja użytkownika
+# Karty — instrukcja użytkownika (administrator + gracz)
 
-## 1. Uruchomienie
-1. Otwórz plik `Main/index.html` w przeglądarce.
-2. Jeśli chcesz wejść do panelu administratora, dopisz w pasku adresu `?admin=1` i odśwież stronę.
-   - Przykład: `.../Main/index.html?admin=1`
-3. Aplikacja **nie posiada już** importu danych z pliku `.xlsx` i nie konwertuje danych do `data.json`.
-   - Wszystkie dane operacyjne (gracze, turnieje, wiadomości) są zapisywane i odczytywane bezpośrednio z Firebase Firestore.
-   - Jeżeli szukasz przycisku importu lub sekcji „xlsx/json”, nie występują one w interfejsie.
+## 1. Uruchomienie aplikacji
+1. Otwórz `Main/index.html` w przeglądarce.
+2. Aby wejść do panelu administratora, dopisz `?admin=1` do adresu, np. `.../Main/index.html?admin=1`.
+3. Bez `?admin=1` widoczna jest tylko strefa użytkownika.
 
-## 2. Panel administratora (co i gdzie kliknąć)
+---
 
+## 2. Panel Administratora — szybki opis zakładek
+W panelu są zakładki:
+- **Aktualności**
+- **Gracze**
+- **Turnieje**
+- **Gry**
 
-### 2.0 Odświeżenie panelu widoku
-1. Wejdź do trybu administratora (`?admin=1`).
-2. Kliknij zakładkę, na której aktualnie pracujesz (**Aktualności**, **Gracze**, **Turnieje** lub **Gry**).
-3. W prawym górnym rogu karty **Panel Administratora** kliknij przycisk **Odśwież**.
-4. Zwróć uwagę, że aplikacja **nie przełącza zakładki** — pozostajesz na tym samym widoku.
-5. Pod przyciskiem pojawi się status odświeżania:
-   - `Odświeżanie danych...` podczas pobierania,
-   - `Dane zostały odświeżone.` po sukcesie,
-   - `Nie udało się odświeżyć danych.` w razie błędu połączenia.
-6. Zakładka **Statystyki** nie ma jeszcze danych do pobierania — po kliknięciu odświeżania zobaczysz komunikat: `Ta zakładka nie ma danych do odświeżenia.`
-7. Zakładka **Gry** przy odświeżeniu pobiera ponownie dane turniejów, a następnie aktualizuje listę lat i tabelę gier.
+Zakładka **Statystyki** (osobna karta) została usunięta — statystyki są teraz częścią zakładki **Gry**.
 
-### 2.1 Zakładka „Aktualności”
-1. Kliknij kartę **Aktualności** w górnej części panelu.
-2. Kliknij pole **Treść wiadomości**.
-3. Wpisz komunikat.
-4. Kliknij przycisk **Wyślij**.
-5. Sprawdź komunikat pod formularzem (status zapisu).
+---
 
-### 2.2 Zakładka „Gracze”
-
-#### Dodanie nowego gracza
+## 3. Zakładka „Gracze” — co i gdzie kliknąć
+### 3.1 Dodanie gracza
 1. Kliknij zakładkę **Gracze**.
-2. Kliknij przycisk **Dodaj** pod tabelą graczy.
-3. W nowym wierszu:
-   - kliknij pole w kolumnie **Nazwa** i wpisz nazwę gracza,
-   - kliknij pole **PIN** i wpisz kod 5-cyfrowy **albo** kliknij przycisk **Losuj**.
+2. Kliknij przycisk **Dodaj** pod tabelą.
+3. W nowym wierszu kliknij pole **Nazwa** i wpisz imię/nick.
+4. Kliknij pole **PIN** i wpisz 5 cyfr albo kliknij **Losuj**.
 
-#### Jak działa pole PIN
-1. Pole PIN przyjmuje tylko cyfry.
-2. PIN jest poprawny wyłącznie wtedy, gdy ma **dokładnie 5 cyfr**.
-3. Jeżeli wpiszesz PIN, który już istnieje u innego gracza:
-   - aplikacja wyświetli komunikat walidacji,
-   - pole PIN zostanie wyczyszczone **w całości** (nie tylko ostatnia cyfra).
-4. Nie da się zapisać aktywnego PIN-u krótszego niż 5 cyfr.
+### 3.2 Usunięcie gracza
+1. W wierszu gracza kliknij **Usuń**.
+2. Wpis gracza znika z listy.
 
-#### Przycisk „Losuj” przy każdym graczu
-1. W wierszu danego gracza kliknij **Losuj** obok pola PIN.
-2. Aplikacja losuje 5-cyfrowy PIN.
-3. Jeśli wylosowany PIN jest zajęty, losowanie powtarza się automatycznie aż do uzyskania unikalnego kodu.
-4. Wylosowany PIN jest od razu wpisany w pole i zapisany.
+> Ważne dla zakładki Gry: jeśli gracz był już użyty w „Szczegółach gry”, jego nazwa pozostaje historycznie we wpisie, ale po usunięciu z zakładki Gracze nie będzie dostępna do nowego wyboru z listy.
 
-#### Edycja uprawnień gracza
-1. W kolumnie **Uprawnienia** kliknij **Edytuj** przy wybranym graczu.
-2. W oknie modalnym zaznacz lub odznacz dostępne uprawnienia (np. „Najbliższa gra”).
-3. Kliknij **Zamknij**.
-4. Po zapisaniu nazwy uprawnień widoczne w tabeli są oznaczone złotymi kapsułkami (spójnie ze stylem aktywnej zakładki).
+---
 
-#### Usuwanie gracza
-1. W wierszu gracza kliknij przycisk **Usuń**.
-2. Gracz jest od razu usuwany z listy i zapisywany.
+## 4. Zakładka „Gry” — pełna instrukcja krok po kroku
+Zakładka ma teraz 3 obszary:
+1. **Lewa kolumna „Lata”**.
+2. **Górny segment „Tabele Gier”**.
+3. **Dolny segment „Statystyki”**.
 
-### 2.3 Zakładka „Turnieje”
+Dodatkowo pod tabelą gier pojawiają się sekcje **„Podsumowanie gry [nazwa]”** dla każdej gry z wybranego roku.
 
-#### Dodanie turnieju
-1. Kliknij zakładkę **Turnieje**.
-2. Kliknij **Dodaj** w nagłówku sekcji.
-3. Pojawi się nowa karta turnieju (np. `Gra 1`).
-
-#### Edycja turnieju
-1. Kliknij nazwę turnieju i wpisz własną nazwę.
-2. Uzupełnij pola `rodzaj gry` i `data`.
-3. W tabeli turnieju klikaj komórki i wpisuj dane zawodników.
-4. Podczas wpisywania możesz pisać ciągiem bez ponownego klikania — po zapisach do Firestore fokus i pozycja kursora są automatycznie utrzymywane w aktualnie edytowanym polu.
-5. Jeśli zatrzymasz pisanie na chwilę i dane się zsynchronizują, pole nadal pozostanie aktywne, więc możesz kontynuować od razu.
-
-#### Dodawanie i usuwanie wierszy
-1. Kliknij **Dodaj** pod tabelą danego turnieju, aby dodać zawodnika.
-2. Kliknij **Usuń** w wierszu zawodnika, aby usunąć tylko ten wiersz.
-3. Kliknij czerwony **Usuń** przy nagłówku turnieju, aby usunąć cały turniej.
-
-
-### 2.4 Zakładka „Gry”
-
-#### Panel lat (lewa strona)
-1. Kliknij zakładkę **Gry**.
-2. W lewej kolumnie zobaczysz listę lat ułożoną malejąco (najnowszy rok na górze).
-3. Domyślnie lista startuje od lat `2026` i `2025`, a potem automatycznie rozszerza się o lata wykryte z dat turniejów.
-
-#### Dodawanie roku
-1. W zakładce **Gry** kliknij przycisk **Dodaj rok**.
-2. W oknie dialogowym wpisz rok w formacie `RRRR` (np. `2027`).
+### 4.1 Lewy panel „Lata”
+#### Dodanie roku
+1. W zakładce **Gry** kliknij **Dodaj rok**.
+2. Wpisz rok `RRRR` (np. `2027`).
 3. Kliknij **OK**.
-4. Rok pojawi się na liście po lewej, a lista pozostanie posortowana chronologicznie (malejąco).
+4. Kliknij nowy rok na liście, aby go aktywować.
 
-#### Usuwanie roku
-1. Kliknij wybrany rok na liście po lewej, aby go zaznaczyć.
-2. Kliknij przycisk **Usuń rok**.
-3. Rok znika z listy, a aplikacja automatycznie zaznacza kolejny dostępny rok.
+#### Usunięcie roku
+1. Kliknij rok na liście po lewej.
+2. Kliknij **Usuń rok**.
 
-#### Tabela „Tabele Gier”
-1. Kliknij rok po lewej stronie.
-2. W sekcji **Tabele Gier** (górna tabela po prawej stronie) zobaczysz wszystkie turnieje, których pole `data` (uzupełniane w zakładce **Turnieje**) zawiera wybrany rok.
-3. Wiersz pokazuje trzy informacje: **Rodzaj gry**, **Data**, **Nazwa**.
-4. Kliknij nazwę gry w kolumnie **Nazwa**.
-5. Otworzy się dodatkowe okno (modal).
-6. W modalu zobaczysz wszystkie dane graczy z tej gry (te same kolumny, które są w tabeli turnieju, np. `nazwa gracza`, `% z wszystkich gier`, `% procent z rozegranych gier`, `wypłaty`, itd.).
-7. Zamknij okno przez przycisk **Zamknij**, ikonę `×` lub kliknięcie tła modala.
+### 4.2 Segment „Tabele Gier” (góra)
+#### Dodanie nowej gry
+1. Kliknij przycisk **Dodaj** w nagłówku „Tabele Gier”.
+2. Aplikacja tworzy nowy wiersz z domyślnymi wartościami:
+   - **Rodzaj Gry**: `Cashout`.
+   - **Data**: bieżąca data (format `rrrr-MM-dd`).
+   - **Nazwa**: `Gra X`, gdzie `X` to pierwszy wolny numer dla tej konkretnej daty.
 
-#### Tabela „Statystyki”
-1. Sekcja **Statystyki** znajduje się pod tabelą **Tabele Gier** (na dole prawej kolumny).
-2. W sekcji **Statystyki** widoczna jest obecnie jedna pozycja: **W budowie**.
+#### Edycja wiersza gry
+1. W kolumnie **Rodzaj Gry** wybierz z listy `Cashout` lub `Turniej`.
+2. W kolumnie **Data** kliknij pole daty i wybierz dzień.
+3. W kolumnie **Nazwa** wpisz własną nazwę gry.
+4. Kliknij **Szczegóły**, aby otworzyć okno szczegółów tej gry.
+5. Kliknij **Usuń** (po prawej), aby skasować cały wiersz gry.
 
-### 2.5 Zakładka „Statystyki”
-1. Kliknij zakładkę **Statystyki**.
-2. Widoczny jest placeholder „do zrobienia później”.
+### 4.3 Okno „Szczegóły gry”
+Po kliknięciu **Szczegóły** otwiera się modal z edytowalną tabelą.
 
-## 3. Widok gracza
+#### Dodanie gracza do szczegółów
+1. Kliknij **Szczegóły** przy wybranej grze.
+2. W oknie kliknij **Dodaj** (pod tabelą).
+3. W nowym wierszu uzupełnij kolumny:
+   - **Gracz**: wybór z listy graczy z zakładki „Gracze”.
+   - **Wpisowe**: tylko cyfry (dozwolony minus na początku).
+   - **Rebuy/Add-on**: tylko cyfry (dozwolony minus na początku).
+   - **Wypłata**: tylko cyfry (dozwolony minus na początku).
+   - **+/-**: pole liczone automatycznie (`Wpisowe + Rebuy/Add-on - Wypłata`).
+   - **Punkty**: tylko cyfry (dozwolony minus na początku).
+   - **Mistrzostwo**: checkbox.
+4. Aby usunąć wiersz gracza ze szczegółów, kliknij **Usuń** w tym wierszu.
 
-### 3.1 Aktualności
-1. W sekcji „Strefa gracza” kliknij zakładkę **Aktualności**.
-2. Odczytaj najnowszy komunikat od administratora.
+#### Zachowanie usuniętych graczy
+- Jeśli administrator usunie gracza w zakładce „Gracze”, nazwa we wcześniej zapisanych szczegółach nie jest kasowana.
+- Taki gracz nie jest dostępny na liście rozwijanej do nowego wyboru.
 
-### 3.2 Najbliższa gra (dostęp po PIN)
-1. Kliknij zakładkę **Najbliższa gra**.
-2. Zawsze najpierw zobaczysz kartę z prośbą o PIN (dotyczy zarówno zwykłego widoku użytkownika, jak i sekcji **Strefa gracza** podczas pracy administratora).
-3. Kliknij pole **PIN (5 cyfr)** i wpisz dokładnie 5 cyfr.
-4. Kliknij **Otwórz**.
-5. Jeżeli PIN jest poprawny i przypisany do gracza z uprawnieniem **Najbliższa gra**, karta PIN zniknie i pokaże się zawartość zakładki.
-6. Jeżeli PIN jest błędny albo gracz nie ma uprawnienia, zobaczysz komunikat o braku dostępu i pozostaniesz na ekranie PIN.
-7. Po ponownym wejściu w zakładkę **Najbliższa gra** aplikacja ponownie wymaga wpisania PIN (sesja dostępu jest resetowana przy przełączaniu zakładki).
+### 4.4 Segment „Podsumowanie gry [nazwa]”
+Pod każdą grą renderuje się osobny segment podsumowania.
 
-## 4. Przycisk „Instrukcja”
-1. W panelu administratora kliknij **Instrukcja**.
-2. Otworzy się okno modalne.
-3. Treść instrukcji pobiera się automatycznie po otwarciu okna (bez dodatkowego klikania).
-4. Gdy pobieranie się powiedzie, pod nagłówkiem pojawi się komunikat: `Instrukcja została pobrana.`
-5. Jeśli pojawi się błąd, zamknij i otwórz okno ponownie, aby ponowić pobranie.
-6. Zamknij modal przyciskiem **Zamknij**, ikoną `×` lub kliknięciem tła.
+W segmencie:
+1. Linia **Pula** = suma wszystkich wartości `Wpisowe + Rebuy/Add-on` ze szczegółów danej gry.
+2. Tabela z kolumnami:
+   - Gracz
+   - Wpisowe
+   - Rebuy/Add-on
+   - Wypłata
+   - +/-
+   - % puli
+   - Punkty
+   - Mistrzostwo
+3. Kolumna **% puli** liczona jest jako `round((Wypłata / Pula) * 100)`.
+4. Sortowanie wierszy: malejąco po **% puli**.
+
+### 4.5 Segment „Statystyki” (dół)
+Sekcja pokazuje zbiorcze wartości dla aktywnego roku, m.in.:
+- liczba gier,
+- łączna pula.
+
+### 4.6 Najważniejsza zmiana architektury
+Zakładka **Gry** działa niezależnie od zakładki **Turnieje**:
+- dane i lista lat są liczone z dat wpisanych w zakładce **Gry**,
+- zakładka Gry nie pobiera już danych z Turniejów.
+
+---
+
+## 5. Aktualności
+1. Wejdź w zakładkę **Aktualności**.
+2. Wpisz wiadomość.
+3. Kliknij **Wyślij**.
+
+---
+
+## 6. Strefa gracza
+1. Otwórz stronę bez `?admin=1`.
+2. W zakładce „Najbliższa gra” wpisz PIN i kliknij **Otwórz**.
+3. W zakładce „Aktualności” odczytasz najnowszą wiadomość administratora.
