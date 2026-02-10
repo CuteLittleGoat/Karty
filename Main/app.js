@@ -10,7 +10,7 @@ const AVAILABLE_PLAYER_TABS = [
 ];
 
 const TABLES_COLLECTION = "Tables";
-const GAMES_COLLECTION = "Games";
+const GAMES_COLLECTION = "Tables";
 const GAME_DETAILS_COLLECTION = "details";
 const TABLES_COLLECTION_CONFIG_KEY = "tablesCollection";
 const GAMES_COLLECTION_CONFIG_KEY = "gamesCollection";

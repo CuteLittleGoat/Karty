@@ -35,22 +35,22 @@ Najważniejsze kolekcje Firestore:
 - `admin_messages` — wiadomości administratora,
 - `app_settings/player_access` — gracze + PIN + uprawnienia,
 - `Tables` + subkolekcja `rows` — zakładka Turnieje,
-- `Games` + subkolekcja `details` — zakładka Gry.
+- `Tables` + subkolekcja `details` — zakładka Gry (domyślnie ta sama kolekcja co Turnieje, nazwa konfigurowana przez `gamesCollection`).
 
 ## 5. Zakładka Gry — pełny opis implementacji
 Logika znajduje się w `initAdminGames()`.
 
 ### 5.1 Stan modułu (state)
-- `years` — lista lat wyliczana automatycznie z `gameDate` dokumentów `Games`,
+- `years` — lista lat wyliczana automatycznie z `gameDate` dokumentów kolekcji skonfigurowanej w `gamesCollection` (domyślnie `Tables`),
 - `selectedYear` — aktywny rok (zapisywany lokalnie jako ostatni wybór administratora),
-- `games` — lista gier z kolekcji `Games`,
+- `games` — lista gier z kolekcji wskazanej przez `gamesCollection`,
 - `detailsByGame` — mapa `gameId -> rows` (subkolekcja `details`),
 - `detailsUnsubscribers` — aktywne subskrypcje snapshotów szczegółów,
 - `activeGameIdInModal` — aktualnie otwarta gra w modalu,
 - `playerOptions` — lista nazw graczy z zakładki Gracze.
 
 ### 5.2 Dodawanie gry
-Przycisk `#adminGamesAddGame` dodaje dokument do kolekcji skonfigurowanej jako `gamesCollection` (domyślnie `Games`) z polami:
+Przycisk `#adminGamesAddGame` dodaje dokument do kolekcji skonfigurowanej jako `gamesCollection` (domyślnie `Tables`) z polami:
 - `gameType: "Cashout"`,
 - `gameDate: getFormattedCurrentDate()` (zawsze bieżąca data w formacie `rrrr-MM-dd`),
 - `name: getNextGameNameForDate(state.games, gameDate)`,
@@ -82,9 +82,9 @@ Wiersz gry zawiera:
 Zmiany są zapisywane do Firestore (`update`).
 
 ### 5.5 Rozdzielenie Gry vs Turnieje
-Zakładka `Gry` działa na kolekcji `Games`.
-Zakładka `Turnieje` działa na kolekcji `Tables`.
-Brak synchronizacji i współdzielonego źródła między nimi.
+Zakładka `Gry` działa na kolekcji z `gamesCollection` (domyślnie `Tables`).
+Zakładka `Turnieje` działa na kolekcji z `tablesCollection` (domyślnie `Tables`).
+Jeśli obie wartości wskazują ten sam zbiór, oba moduły zapisują dane do tej samej kolekcji.
 
 ### 5.6 Sidebar lat w zakładce Gry
 Lata są wyznaczane wyłącznie z `gameDate` dokumentów kolekcji gier:
@@ -161,3 +161,33 @@ Dolna tabela `Statystyki` pokazuje agregaty dla aktywnego roku:
    - obliczenia `+/-`, `Pula`, `% puli`, sortowanie,
    - agregaty roczne w sekcji Statystyki (w zakładce Gry).
 4. Podłącz `firebase-app-compat` i `firebase-firestore-compat`.
+
+
+## 8. Reguły Firestore (aktualny wariant z produkcji)
+Wersja reguł podana przez użytkownika (działa z domyślną konfiguracją `gamesCollection: "Tables"`):
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /admin_messages/{docId} {
+      allow read, write: if true;
+    }
+    match /app_settings/{docId} {
+      allow read, write: if true;
+    }
+    match /Tables/{tableId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+    }
+    match /Collection1/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+Błąd „Brak uprawnień do zapisu w kolekcji Games” wynikał z rozjazdu między nazwą kolekcji po stronie aplikacji (`Games`) i regułami (brak bloku `match /Games/{docId}`).
