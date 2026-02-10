@@ -287,6 +287,17 @@ const initAdminPanelTabs = () => {
   });
 };
 
+const initAdminPanelRefresh = () => {
+  const refreshButton = document.querySelector("#adminPanelRefresh");
+  if (!refreshButton) {
+    return;
+  }
+
+  refreshButton.addEventListener("click", () => {
+    window.location.reload();
+  });
+};
+
 const initAdminPlayers = () => {
   const body = document.querySelector("#adminPlayersBody");
   const status = document.querySelector("#adminPlayersStatus");
@@ -1071,6 +1082,7 @@ const bootstrap = async () => {
   const isAdmin = getAdminMode();
   document.body.classList.toggle("is-admin", isAdmin);
   initAdminPanelTabs();
+  initAdminPanelRefresh();
   initUserTabs();
   initAdminMessaging();
   initAdminTables();
