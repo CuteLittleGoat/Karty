@@ -52,9 +52,15 @@ Logika znajduje się w `initAdminGames()`.
 ### 5.2 Dodawanie gry
 Przycisk `#adminGamesAddGame` dodaje dokument do `Games` z polami:
 - `gameType: "Cashout"`,
-- `gameDate: getFormattedCurrentDate()`,
+- `gameDate: getDefaultGameDateForYear(state.selectedYear)`,
 - `name: getNextGameNameForDate(state.games, gameDate)`,
 - `createdAt` (timestamp serwera).
+
+Nowa funkcja `getDefaultGameDateForYear(year)` działa tak:
+- jeżeli `year` to poprawna liczba całkowita w zakresie `1900-2999`, zwraca datę `${year}-01-01`,
+- w przeciwnym razie zwraca bieżącą datę z `getFormattedCurrentDate()`.
+
+Dzięki temu nowa gra trafia bezpośrednio do aktualnie wybranego roku w panelu „Lata”, co eliminuje wrażenie, że przycisk „Dodaj” nie działa.
 
 ### 5.3 Logika nazewnictwa „Gra X”
 Użyte funkcje:

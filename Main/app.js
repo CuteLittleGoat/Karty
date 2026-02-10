@@ -186,6 +186,13 @@ const getNextGameNameForDate = (games, gameDate) => {
   return getNextTableName(sameDayGames);
 };
 
+const getDefaultGameDateForYear = (year) => {
+  if (!Number.isInteger(year) || year < 1900 || year > 2999) {
+    return getFormattedCurrentDate();
+  }
+  return `${year}-01-01`;
+};
+
 const normalizeNumber = (value) => {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : 0;
@@ -1666,7 +1673,7 @@ const initAdminGames = () => {
     });
 
   addGameButton.addEventListener("click", async () => {
-    const gameDate = getFormattedCurrentDate();
+    const gameDate = getDefaultGameDateForYear(state.selectedYear);
     const name = getNextGameNameForDate(state.games, gameDate);
     await db.collection(GAMES_COLLECTION).add({
       gameType: "Cashout",

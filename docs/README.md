@@ -55,10 +55,12 @@ Dodatkowo pod tabelą gier pojawiają się sekcje **„Podsumowanie gry [nazwa]�
 ### 4.2 Segment „Tabele Gier” (góra)
 #### Dodanie nowej gry
 1. Kliknij przycisk **Dodaj** w nagłówku „Tabele Gier”.
-2. Aplikacja tworzy nowy wiersz z domyślnymi wartościami:
+2. Upewnij się, że po lewej stronie jest aktywny właściwy rok (podświetlony przycisk roku).
+3. Aplikacja tworzy nowy wiersz z domyślnymi wartościami:
    - **Rodzaj Gry**: `Cashout`.
-   - **Data**: bieżąca data (format `rrrr-MM-dd`).
+   - **Data**: `01-01` aktywnego roku z panelu „Lata” (np. dla aktywnego roku `2027` nowa gra dostaje datę `2027-01-01`).
    - **Nazwa**: `Gra X`, gdzie `X` to pierwszy wolny numer dla tej konkretnej daty.
+4. Jeśli z jakiegoś powodu rok nie jest aktywny, system użyje bieżącej daty systemowej.
 
 #### Edycja wiersza gry
 1. W kolumnie **Rodzaj Gry** wybierz z listy `Cashout` lub `Turniej`.
