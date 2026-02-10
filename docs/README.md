@@ -10,9 +10,14 @@
 
 ### 2.0 Odświeżenie panelu widoku
 1. Wejdź do trybu administratora (`?admin=1`).
-2. W prawym górnym rogu karty **Panel Administratora** kliknij przycisk **Odśwież**.
-3. Strona przeładuje się natychmiast (pełne odświeżenie widoku).
-4. Użyj tej opcji, gdy chcesz szybko wyczyścić bieżący stan formularzy lub odświeżyć dane po błędnym wpisaniu PIN.
+2. Kliknij zakładkę, na której aktualnie pracujesz (**Aktualności**, **Gracze** lub **Turnieje**).
+3. W prawym górnym rogu karty **Panel Administratora** kliknij przycisk **Odśwież**.
+4. Zwróć uwagę, że aplikacja **nie przełącza zakładki** — pozostajesz na tym samym widoku.
+5. Pod przyciskiem pojawi się status odświeżania:
+   - `Odświeżanie danych...` podczas pobierania,
+   - `Dane zostały odświeżone.` po sukcesie,
+   - `Nie udało się odświeżyć danych.` w razie błędu połączenia.
+6. Zakładka **Statystyki** nie ma jeszcze danych do pobierania — po kliknięciu odświeżania zobaczysz komunikat: `Ta zakładka nie ma danych do odświeżenia.`
 
 ### 2.1 Zakładka „Aktualności”
 1. Kliknij kartę **Aktualności** w górnej części panelu.
