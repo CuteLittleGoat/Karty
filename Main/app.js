@@ -41,6 +41,14 @@ const adminPlayersState = {
   editingPlayerId: null
 };
 const debounceTimers = new Map();
+const adminRefreshHandlers = new Map();
+
+const registerAdminRefreshHandler = (tabId, handler) => {
+  if (!tabId || typeof handler !== "function") {
+    return;
+  }
+  adminRefreshHandlers.set(tabId, handler);
+};
 
 const getAdminMode = () => {
   const params = new URLSearchParams(window.location.search);
@@ -289,12 +297,43 @@ const initAdminPanelTabs = () => {
 
 const initAdminPanelRefresh = () => {
   const refreshButton = document.querySelector("#adminPanelRefresh");
+  const panelStatus = document.querySelector("#adminPanelRefreshStatus");
   if (!refreshButton) {
     return;
   }
 
-  refreshButton.addEventListener("click", () => {
-    window.location.reload();
+  const setPanelStatus = (message) => {
+    if (panelStatus) {
+      panelStatus.textContent = message;
+    }
+  };
+
+  refreshButton.addEventListener("click", async () => {
+    const activePanel = document.querySelector(".admin-panel-content.is-active");
+    const activeTabId = activePanel?.id;
+
+    if (!activeTabId) {
+      setPanelStatus("Nie udało się rozpoznać aktywnej zakładki.");
+      return;
+    }
+
+    const refreshHandler = adminRefreshHandlers.get(activeTabId);
+    if (!refreshHandler) {
+      setPanelStatus("Ta zakładka nie ma danych do odświeżenia.");
+      return;
+    }
+
+    setPanelStatus("Odświeżanie danych...");
+    refreshButton.disabled = true;
+
+    try {
+      await refreshHandler();
+      setPanelStatus("Dane zostały odświeżone.");
+    } catch (error) {
+      setPanelStatus("Nie udało się odświeżyć danych.");
+    } finally {
+      refreshButton.disabled = false;
+    }
   });
 };
 
@@ -349,6 +388,19 @@ const initAdminPlayers = () => {
     });
     adminPlayersState.playerByPin = nextMap;
   };
+
+  const refreshPlayersData = async () => {
+    const snapshot = await db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).get({
+      source: "server"
+    });
+    const data = snapshot.data();
+    const rawPlayers = Array.isArray(data?.players) ? data.players : [];
+    adminPlayersState.players = rawPlayers.map(normalizePlayer);
+    rebuildPinMap();
+    renderPlayers();
+  };
+
+  registerAdminRefreshHandler("adminPlayersTab", refreshPlayersData);
 
   const savePlayers = async () => {
     try {
@@ -623,6 +675,16 @@ const initAdminMessaging = () => {
 
   const db = firebaseApp.firestore();
 
+  const refreshNewsData = async () => {
+    await db
+      .collection("admin_messages")
+      .orderBy("createdAt", "desc")
+      .limit(1)
+      .get({ source: "server" });
+  };
+
+  registerAdminRefreshHandler("adminNewsTab", refreshNewsData);
+
   sendButton.addEventListener("click", async () => {
     const message = input.value.trim();
 
@@ -671,6 +733,38 @@ const initAdminTables = () => {
 
   const db = firebaseApp.firestore();
   const tablesCollectionName = getTablesCollectionName();
+
+  const refreshTablesData = async () => {
+    const snapshot = await db
+      .collection(tablesCollectionName)
+      .orderBy("createdAt", "asc")
+      .get({ source: "server" });
+
+    const tables = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    adminTablesState.tableList = tables;
+    adminTablesState.tables = new Map(tables.map((table) => [table.id, table]));
+
+    const rowsByTable = new Map();
+    await Promise.all(
+      tables.map(async (table) => {
+        const rowsSnapshot = await db
+          .collection(tablesCollectionName)
+          .doc(table.id)
+          .collection(TABLE_ROWS_COLLECTION)
+          .orderBy("createdAt", "asc")
+          .get({ source: "server" });
+        rowsByTable.set(
+          table.id,
+          rowsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        );
+      })
+    );
+
+    adminTablesState.rows = rowsByTable;
+    renderTables();
+  };
+
+  registerAdminRefreshHandler("adminTournamentsTab", refreshTablesData);
 
   const updateSummary = () => {
     const totalTables = adminTablesState.tableList.length;

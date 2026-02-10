@@ -30,7 +30,7 @@ System udostępnia moduły:
   - Statystyki.
 - Karta „Strefa gracza” (podgląd części użytkownika).
 - Modal instrukcji i modal edycji uprawnień gracza.
-- W nagłówku panelu administratora przycisk `Odśwież` do pełnego przeładowania widoku.
+- W nagłówku panelu administratora przycisk `Odśwież` oraz pole statusu `#adminPanelRefreshStatus`.
 
 ### 3.2 Zakładka „Gracze”
 Tabela zawiera kolumny:
@@ -52,7 +52,7 @@ W kolumnie PIN każdy wiersz renderuje:
 - `button.primary`, `button.secondary`, `button.danger` — trzy warianty akcji.
 - `.admin-input` — wspólny styl pól formularzy administratora.
 - `.admin-players`, `.players-table`, `.permissions-tags` — layout modułu graczy.
-- `.admin-panel-header` — poziome ułożenie tytułu „Panel Administratora” i przycisku `Odśwież` w prawym górnym rogu.
+- `.admin-panel-header` — poziome ułożenie tytułu „Panel Administratora” i sekcji odświeżania w prawym górnym rogu.
 - `.permission-badge` — złote kapsułki uprawnień (border `--gold-line`, kolor `--gold`, glow `--glow-gold`) odpowiadające stylistyce aktywnej zakładki użytkownika.
 - `.pin-control` — kontener flex łączący pole PIN i przycisk `Losuj`.
 - `.admin-pin-random` — styl przycisku losowania PIN (mniejszy, kompaktowy wariant secondary).
@@ -116,8 +116,25 @@ Każdy wiersz gracza ma przycisk `Losuj`:
 - `initLatestMessage()` — odczyt najnowszej wiadomości i render po stronie gracza.
 - `initAdminTables()` — operacje CRUD na turniejach i wierszach tabeli.
 - `initAdminPanelTabs()` + `initUserTabs()` — zarządzanie zakładkami.
-- `initAdminPanelRefresh()` — podpina kliknięcie przycisku `#adminPanelRefresh` i wykonuje `window.location.reload()` dla szybkiego odświeżenia całego widoku.
+- `initAdminPanelRefresh()` — odświeża dane tylko dla aktualnie aktywnej zakładki administratora bez przełączania widoku i bez przeładowania całej strony.
 - `initInstructionModal()` — modal instrukcji z odświeżaniem treści.
+
+### 5.5 Mechanizm odświeżania danych w panelu administratora
+- `adminRefreshHandlers` (Map) przechowuje funkcje odświeżające przypisane do identyfikatora zakładki (`adminNewsTab`, `adminPlayersTab`, `adminTournamentsTab`).
+- `registerAdminRefreshHandler(tabId, handler)` rejestruje callback odświeżania dla konkretnej zakładki.
+- Po kliknięciu `#adminPanelRefresh`:
+  1. kod wykrywa aktywny panel (`.admin-panel-content.is-active`),
+  2. pobiera odpowiadający mu handler z `adminRefreshHandlers`,
+  3. blokuje przycisk na czas odświeżania,
+  4. wyświetla status w `#adminPanelRefreshStatus`,
+  5. uruchamia odczyt danych z Firestore po stronie serwera (`get({ source: "server" })`).
+
+Rejestrowane handlery:
+- `adminNewsTab` (`initAdminMessaging`) — wykonuje odczyt najnowszego dokumentu z `admin_messages`.
+- `adminPlayersTab` (`initAdminPlayers`) — pobiera dokument `app_settings/player_access`, normalizuje listę i renderuje tabelę graczy.
+- `adminTournamentsTab` (`initAdminTables`) — pobiera wszystkie turnieje i ich wiersze, aktualizuje `adminTablesState`, potem renderuje widok.
+
+Efekt: przycisk „Odśwież” nie przenosi już użytkownika do „Aktualności”, ponieważ nie wykonuje `window.location.reload()`, tylko odświeża dane w aktualnej zakładce.
 
 ## 6. Firestore — model danych
 ### 6.1 Kolekcje
@@ -145,6 +162,7 @@ Każdy wiersz gracza ma przycisk `Losuj`:
    - przycisk `Losuj` z pętlą do unikalnego PIN,
    - bramkę dostępu po PIN i uprawnieniach,
    - identyczne działanie bramki PIN w widoku użytkownika i w sekcji „Strefa gracza” podczas trybu administratora (bez bypassu),
-   - przycisk `Odśwież` w panelu admina wywołujący pełny reload strony,
+   - rejestr handlerów odświeżania dla zakładek panelu administratora,
+   - przycisk `Odśwież` działający lokalnie na aktywnej zakładce (bez pełnego reloadu),
    - złote znaczniki nazw uprawnień w tabeli graczy (wizualnie jak aktywna zakładka).
 4. Podłącz konfigurację Firebase (`config/firebase-config.js`) i biblioteki compat.

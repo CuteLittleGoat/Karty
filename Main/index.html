@@ -28,7 +28,10 @@
         <section class="card admin-only admin-panel-card">
           <div class="card-header admin-panel-header">
             <h2>Panel Administratora</h2>
-            <button id="adminPanelRefresh" class="secondary" type="button">Odśwież</button>
+            <div class="admin-panel-refresh-controls">
+              <button id="adminPanelRefresh" class="secondary" type="button">Odśwież</button>
+              <span id="adminPanelRefreshStatus" class="status-text" aria-live="polite"></span>
+            </div>
           </div>
           <div class="admin-panel-tabs" role="tablist" aria-label="Zakładki panelu administratora">
             <button class="admin-panel-tab is-active" type="button" data-target="adminNewsTab">Aktualności</button>

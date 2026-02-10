@@ -56,6 +56,7 @@
   - `align-items: center`,
   - `flex-wrap: wrap` dla małych szerokości.
 - Przycisk `Odśwież` znajduje się w prawym górnym rogu karty „Panel Administratora”.
+- Obok przycisku widoczny jest komunikat statusu (`#adminPanelRefreshStatus`, klasa `.status-text`) pokazujący etapy ręcznego odświeżenia danych aktywnej zakładki.
 
 ### 5.5 Oznaczenia uprawnień graczy
 - `.permission-badge` używa złotego stylu jak aktywna zakładka:
