@@ -9,6 +9,5 @@ window.firebaseConfig = {
   storageBucket: "karty-turniej.firebasestorage.app",
   messagingSenderId: "716608782712",
   appId: "1:716608782712:web:27d29434f013a5cf31888d",
-  tablesCollection: "Tables",
-  collection1Name: "Collection1"
+  tablesCollection: "Tables"
 };

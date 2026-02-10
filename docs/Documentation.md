@@ -20,6 +20,11 @@ System udostępnia moduły:
 - `docs/Documentation.md` — dokumentacja techniczna i opis działania.
 - `DetaleLayout.md` — rejestr fontów, kolorów, styli i detali wizualnych.
 
+## 2.1 Integracje danych (aktualny stan)
+- Projekt nie używa importu z plików `.xlsx`.
+- W kodzie nie ma aktywnego mechanizmu konwersji arkusza do pliku `data.json`.
+- Dane aplikacji są utrzymywane wyłącznie w Firebase Firestore (kolekcje opisane w sekcji 6).
+
 ## 3. HTML (`Main/index.html`)
 ### 3.1 Układ główny
 - Nagłówek strony z tytułami.

@@ -4,6 +4,9 @@
 1. Otwórz plik `Main/index.html` w przeglądarce.
 2. Jeśli chcesz wejść do panelu administratora, dopisz w pasku adresu `?admin=1` i odśwież stronę.
    - Przykład: `.../Main/index.html?admin=1`
+3. Aplikacja **nie posiada już** importu danych z pliku `.xlsx` i nie konwertuje danych do `data.json`.
+   - Wszystkie dane operacyjne (gracze, turnieje, wiadomości) są zapisywane i odczytywane bezpośrednio z Firebase Firestore.
+   - Jeżeli szukasz przycisku importu lub sekcji „xlsx/json”, nie występują one w interfejsie.
 
 ## 2. Panel administratora (co i gdzie kliknąć)
 
