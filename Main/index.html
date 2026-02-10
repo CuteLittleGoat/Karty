@@ -64,6 +64,13 @@
           <div class="card-header">
             <h2>Panel administratora</h2>
           </div>
+          <div class="admin-panel-tabs" role="tablist" aria-label="Zakładki panelu administratora">
+            <button class="admin-panel-tab is-active" type="button" data-target="adminSettingsTab">
+              Ustawienia
+            </button>
+            <button class="admin-panel-tab" type="button" data-target="adminPlayersTab">Gracze</button>
+          </div>
+          <div id="adminSettingsTab" class="admin-panel-content is-active" role="tabpanel">
           <div class="admin-message">
             <div>
               <h3>Wiadomość do graczy</h3>
@@ -85,7 +92,7 @@
           <div class="admin-pin">
             <div>
               <h3>PIN do zakładki „Najbliższa gra”</h3>
-              <p>PIN składa się z 5 cyfr i zabezpiecza treści widoczne dla użytkowników.</p>
+              <p>PIN składa się z 5 cyfr. Pole pozostaje jako archiwum po usuniętej funkcjonalności.</p>
             </div>
             <div class="admin-pin-form">
               <label for="adminPinInput">PIN (5 cyfr)</label>
@@ -103,6 +110,35 @@
                 <button id="adminPinSave" class="primary" type="button">Zapisz PIN</button>
                 <button id="adminPinRandom" class="secondary" type="button">Losuj PIN</button>
                 <span id="adminPinStatus" class="status-text" aria-live="polite"></span>
+              </div>
+              <p class="admin-pin-legacy-note">
+                „Zapisz PIN” i „Losuj PIN” są dostępne wyłącznie jako pozostałość po skasowanej funkcjonalności.
+              </p>
+            </div>
+          </div>
+          </div>
+          <div id="adminPlayersTab" class="admin-panel-content" role="tabpanel">
+            <div class="admin-players">
+              <div class="card-header">
+                <h3>Gracze</h3>
+                <p>Zarządzaj PIN-ami graczy i uprawnieniami do zakładek aplikacji.</p>
+              </div>
+              <span id="adminPlayersStatus" class="status-text" aria-live="polite"></span>
+              <div class="admin-table-scroll">
+                <table class="admin-data-table players-table">
+                  <thead>
+                    <tr>
+                      <th>Nazwa</th>
+                      <th>PIN</th>
+                      <th>Uprawnienia</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminPlayersBody"></tbody>
+                </table>
+              </div>
+              <div class="admin-table-actions">
+                <button id="adminAddPlayer" class="secondary" type="button">Dodaj</button>
               </div>
             </div>
           </div>
@@ -182,6 +218,25 @@
         <div class="modal-footer">
           <button id="instructionRefresh" type="button">Odśwież</button>
           <button id="instructionCloseFooter" class="primary" type="button">Zamknij</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="playerPermissionsModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="playerPermissionsTitle">
+        <div class="modal-header">
+          <h3 id="playerPermissionsTitle">Uprawnienia gracza</h3>
+          <button id="playerPermissionsClose" class="icon-button" type="button" aria-label="Zamknij okno">
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="status-text">Aktualności są zawsze dostępne dla każdego gracza.</p>
+          <div id="playerPermissionsList" class="permissions-list"></div>
+          <p id="playerPermissionsStatus" class="status-text" aria-live="polite"></p>
+        </div>
+        <div class="modal-footer">
+          <button id="playerPermissionsCloseFooter" class="primary" type="button">Zamknij</button>
         </div>
       </div>
     </div>
