@@ -146,7 +146,7 @@ Każdy wiersz gracza ma przycisk `Losuj`:
 - `initAdminGames()` — logika zakładki „Gry”: lista lat, synchronizacja z datami turniejów, tabela „Tabele Gier”, modal szczegółów.
 - `initAdminPanelTabs()` + `initUserTabs()` — zarządzanie zakładkami.
 - `initAdminPanelRefresh()` — odświeża dane tylko dla aktualnie aktywnej zakładki administratora bez przełączania widoku i bez przeładowania całej strony.
-- `initInstructionModal()` — modal instrukcji z odświeżaniem treści.
+- `initInstructionModal()` — modal instrukcji z automatycznym pobieraniem treści przy pierwszym otwarciu i cache w pamięci sesji strony.
 
 ### 5.5 Mechanizm odświeżania danych w panelu administratora
 - `adminRefreshHandlers` (Map) przechowuje funkcje odświeżające przypisane do identyfikatora zakładki (`adminNewsTab`, `adminPlayersTab`, `adminTournamentsTab`, `adminGamesTab`).
@@ -166,6 +166,22 @@ Rejestrowane handlery:
 
 Efekt: przycisk „Odśwież” nie przenosi już użytkownika do „Aktualności”, ponieważ nie wykonuje `window.location.reload()`, tylko odświeża dane w aktualnej zakładce.
 
+
+
+### 5.5A Modal instrukcji (`initInstructionModal`)
+- Elementy DOM:
+  - `#adminInstructionButton` — otwarcie modala,
+  - `#instructionModal` — overlay modala,
+  - `#instructionClose` i `#instructionCloseFooter` — zamknięcie,
+  - `#instructionStatus` — status pobierania,
+  - `#instructionContent` — treść instrukcji (`README.md`).
+- Źródło danych: `https://cutelittlegoat.github.io/Karty/docs/README.md`.
+- Logika działania:
+  1. po otwarciu modala uruchamiane jest `loadInstruction()` tylko wtedy, gdy treść nie jest jeszcze w cache (`cachedText`),
+  2. podczas pobierania status zmienia się na `Pobieranie instrukcji...`,
+  3. po sukcesie treść markdown trafia do `#instructionContent`, a status przyjmuje `Instrukcja została pobrana.`,
+  4. przy błędzie status informuje o konieczności ponownego otwarcia okna.
+- W stopce modala pozostaje pojedynczy przycisk `Zamknij`; przycisk ręcznego odświeżania instrukcji został usunięty z interfejsu.
 
 ### 5.6 Szczegóły modułu „Gry”
 - `extractYearFromDate(value)` — wyciąga rok (4 cyfry) z pola daty turnieju; używa ostatniego dopasowania `19xx/20xx`.

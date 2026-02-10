@@ -1465,7 +1465,6 @@ const initInstructionModal = () => {
   const modal = document.querySelector("#instructionModal");
   const closeButton = document.querySelector("#instructionClose");
   const closeFooterButton = document.querySelector("#instructionCloseFooter");
-  const refreshButton = document.querySelector("#instructionRefresh");
   const content = document.querySelector("#instructionContent");
   const status = document.querySelector("#instructionStatus");
 
@@ -1481,12 +1480,12 @@ const initInstructionModal = () => {
     status.textContent = message;
   };
 
-  const loadInstruction = async ({ force } = { force: false }) => {
+  const loadInstruction = async () => {
     if (isLoading) {
       return;
     }
 
-    if (cachedText && !force) {
+    if (cachedText) {
       return;
     }
 
@@ -1494,7 +1493,7 @@ const initInstructionModal = () => {
     setStatus("Pobieranie instrukcji...");
 
     try {
-      const response = await fetch(instructionUrl, { cache: force ? "no-store" : "default" });
+      const response = await fetch(instructionUrl, { cache: "default" });
       if (!response.ok) {
         throw new Error("Network response was not ok.");
       }
@@ -1502,7 +1501,7 @@ const initInstructionModal = () => {
       content.textContent = cachedText;
       setStatus("Instrukcja została pobrana.");
     } catch (error) {
-      setStatus("Nie udało się pobrać instrukcji. Spróbuj ponownie.");
+      setStatus("Nie udało się pobrać instrukcji. Zamknij i otwórz okno ponownie.");
     } finally {
       isLoading = false;
     }
@@ -1531,12 +1530,6 @@ const initInstructionModal = () => {
 
   if (closeFooterButton) {
     closeFooterButton.addEventListener("click", closeModal);
-  }
-
-  if (refreshButton) {
-    refreshButton.addEventListener("click", () => {
-      void loadInstruction({ force: true });
-    });
   }
 
   modal.addEventListener("click", (event) => {
