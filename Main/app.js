@@ -161,19 +161,19 @@ const isPlayerAllowedForTab = (player, tabKey) => {
   return player.permissions.includes(tabKey);
 };
 
-const updatePinVisibility = ({ isAdmin }) => {
+const updatePinVisibility = () => {
   const gate = document.querySelector("#nextGamePinGate");
   const content = document.querySelector("#nextGameContent");
   if (!gate || !content) {
     return;
   }
 
-  const isVerified = isAdmin || getPinGateState();
+  const isVerified = getPinGateState();
   gate.style.display = isVerified ? "none" : "block";
   content.classList.toggle("is-visible", isVerified);
 };
 
-const initPinGate = ({ isAdmin }) => {
+const initPinGate = () => {
   const input = document.querySelector("#nextGamePinInput");
   const submitButton = document.querySelector("#nextGamePinSubmit");
   const status = document.querySelector("#nextGamePinStatus");
@@ -198,7 +198,7 @@ const initPinGate = ({ isAdmin }) => {
     if (player && isPlayerAllowedForTab(player, "nextGameTab")) {
       setPinGateState(true);
       status.textContent = `PIN poprawny. Witaj ${player.name || "graczu"}.`;
-      updatePinVisibility({ isAdmin });
+      updatePinVisibility();
     } else {
       status.textContent = "Błędny PIN lub brak uprawnień do zakładki „Najbliższa gra”.";
     }
@@ -211,10 +211,10 @@ const initPinGate = ({ isAdmin }) => {
     }
   });
 
-  updatePinVisibility({ isAdmin });
+  updatePinVisibility();
 };
 
-const initUserTabs = ({ isAdmin }) => {
+const initUserTabs = () => {
   const tabButtons = document.querySelectorAll(".tab-button");
   const panels = document.querySelectorAll(".tab-panel");
   if (!tabButtons.length) {
@@ -244,7 +244,7 @@ const initUserTabs = ({ isAdmin }) => {
       if (pinStatus) {
         pinStatus.textContent = "";
       }
-      updatePinVisibility({ isAdmin });
+      updatePinVisibility();
     }
 
     if (targetButton) {
@@ -1071,11 +1071,11 @@ const bootstrap = async () => {
   const isAdmin = getAdminMode();
   document.body.classList.toggle("is-admin", isAdmin);
   initAdminPanelTabs();
-  initUserTabs({ isAdmin });
+  initUserTabs();
   initAdminMessaging();
   initAdminTables();
   initAdminPlayers();
-  initPinGate({ isAdmin });
+  initPinGate();
   initLatestMessage();
   initInstructionModal();
 };

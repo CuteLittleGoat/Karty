@@ -98,12 +98,15 @@ Każdy wiersz gracza ma przycisk `Losuj`:
 2. Kod jest losowany w pętli do uzyskania unikalnej wartości.
 3. Wylosowany 5-cyfrowy PIN trafia do inputu i od razu jest zapisywany przez `updatePlayerField`.
 
-## 5.3 Bramka PIN użytkownika (`initPinGate`)
+## 5.3 Bramka PIN użytkownika (`initPinGate` + `updatePinVisibility`)
 - Użytkownik wpisuje PIN i klika `Otwórz`.
 - Dostęp zależy od:
   - poprawnego 5-cyfrowego PIN,
   - zgodności PIN -> gracz,
   - uprawnienia `nextGameTab`.
+- Funkcja `updatePinVisibility()` opiera widoczność wyłącznie o `sessionStorage` (`PIN_STORAGE_KEY`) i **nie** robi wyjątku dla trybu administratora.
+- Efekt: sekcja „Strefa gracza” w trybie administratora odwzorowuje 1:1 zachowanie zwykłego widoku użytkownika (najpierw PIN, potem ewentualny dostęp).
+- W `initUserTabs()` przy wejściu na `nextGameTab` stan dostępu jest resetowany (`setPinGateState(false)`), więc każde nowe wejście w zakładkę wymaga ponownej walidacji PIN.
 
 ## 5.4 Inne moduły
 - `initAdminMessaging()` — wysyłanie wiadomości do graczy (`admin_messages`).
@@ -136,5 +139,6 @@ Każdy wiersz gracza ma przycisk `Losuj`:
    - integrację Firestore,
    - moduł graczy z walidacją PIN (5 cyfr, unikalność, pełne czyszczenie duplikatu),
    - przycisk `Losuj` z pętlą do unikalnego PIN,
-   - bramkę dostępu po PIN i uprawnieniach.
+   - bramkę dostępu po PIN i uprawnieniach,
+   - identyczne działanie bramki PIN w widoku użytkownika i w sekcji „Strefa gracza” podczas trybu administratora (bez bypassu).
 4. Podłącz konfigurację Firebase (`config/firebase-config.js`) i biblioteki compat.
