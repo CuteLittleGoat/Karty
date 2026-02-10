@@ -13,7 +13,7 @@
 
 ### 2.0 Odświeżenie panelu widoku
 1. Wejdź do trybu administratora (`?admin=1`).
-2. Kliknij zakładkę, na której aktualnie pracujesz (**Aktualności**, **Gracze** lub **Turnieje**).
+2. Kliknij zakładkę, na której aktualnie pracujesz (**Aktualności**, **Gracze**, **Turnieje** lub **Gry**).
 3. W prawym górnym rogu karty **Panel Administratora** kliknij przycisk **Odśwież**.
 4. Zwróć uwagę, że aplikacja **nie przełącza zakładki** — pozostajesz na tym samym widoku.
 5. Pod przyciskiem pojawi się status odświeżania:
@@ -21,6 +21,7 @@
    - `Dane zostały odświeżone.` po sukcesie,
    - `Nie udało się odświeżyć danych.` w razie błędu połączenia.
 6. Zakładka **Statystyki** nie ma jeszcze danych do pobierania — po kliknięciu odświeżania zobaczysz komunikat: `Ta zakładka nie ma danych do odświeżenia.`
+7. Zakładka **Gry** przy odświeżeniu pobiera ponownie dane turniejów, a następnie aktualizuje listę lat i tabelę gier.
 
 ### 2.1 Zakładka „Aktualności”
 1. Kliknij kartę **Aktualności** w górnej części panelu.
@@ -79,7 +80,38 @@
 2. Kliknij **Usuń** w wierszu zawodnika, aby usunąć tylko ten wiersz.
 3. Kliknij czerwony **Usuń** przy nagłówku turnieju, aby usunąć cały turniej.
 
-### 2.4 Zakładka „Statystyki”
+
+### 2.4 Zakładka „Gry”
+
+#### Panel lat (lewa strona)
+1. Kliknij zakładkę **Gry**.
+2. W lewej kolumnie zobaczysz listę lat ułożoną malejąco (najnowszy rok na górze).
+3. Domyślnie lista startuje od lat `2026` i `2025`, a potem automatycznie rozszerza się o lata wykryte z dat turniejów.
+
+#### Dodawanie roku
+1. W zakładce **Gry** kliknij przycisk **Dodaj rok**.
+2. W oknie dialogowym wpisz rok w formacie `RRRR` (np. `2027`).
+3. Kliknij **OK**.
+4. Rok pojawi się na liście po lewej, a lista pozostanie posortowana chronologicznie (malejąco).
+
+#### Usuwanie roku
+1. Kliknij wybrany rok na liście po lewej, aby go zaznaczyć.
+2. Kliknij przycisk **Usuń rok**.
+3. Rok znika z listy, a aplikacja automatycznie zaznacza kolejny dostępny rok.
+
+#### Tabela „Statystyki”
+1. W sekcji **Statystyki** widoczna jest obecnie jedna pozycja: **W budowie**.
+
+#### Tabela „Tabele Gier”
+1. Kliknij rok po lewej stronie.
+2. W tabeli **Tabele Gier** zobaczysz wszystkie turnieje, których pole `data` (uzupełniane w zakładce **Turnieje**) zawiera wybrany rok.
+3. Wiersz pokazuje trzy informacje: **Rodzaj gry**, **Data**, **Nazwa**.
+4. Kliknij nazwę gry w kolumnie **Nazwa**.
+5. Otworzy się dodatkowe okno (modal).
+6. W modalu zobaczysz wszystkie dane graczy z tej gry (te same kolumny, które są w tabeli turnieju, np. `nazwa gracza`, `% z wszystkich gier`, `% procent z rozegranych gier`, `wypłaty`, itd.).
+7. Zamknij okno przez przycisk **Zamknij**, ikonę `×` lub kliknięcie tła modala.
+
+### 2.5 Zakładka „Statystyki”
 1. Kliknij zakładkę **Statystyki**.
 2. Widoczny jest placeholder „do zrobienia później”.
 

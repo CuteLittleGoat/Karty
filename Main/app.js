@@ -42,6 +42,26 @@ const adminPlayersState = {
 };
 const debounceTimers = new Map();
 const adminRefreshHandlers = new Map();
+const adminTablesListeners = new Set();
+const ADMIN_GAMES_YEARS_STORAGE_KEY = "adminGamesYears";
+const DEFAULT_GAMES_YEARS = [2026, 2025];
+let refreshAdminTablesData = async () => {};
+
+const registerAdminTablesListener = (listener) => {
+  if (typeof listener !== "function") {
+    return () => {};
+  }
+  adminTablesListeners.add(listener);
+  return () => {
+    adminTablesListeners.delete(listener);
+  };
+};
+
+const notifyAdminTablesListeners = () => {
+  adminTablesListeners.forEach((listener) => {
+    listener();
+  });
+};
 
 const registerAdminRefreshHandler = (tabId, handler) => {
   if (!tabId || typeof handler !== "function") {
@@ -270,6 +290,55 @@ const initUserTabs = () => {
       setActiveTab(button.getAttribute("data-target"));
     });
   });
+};
+
+const extractYearFromDate = (value) => {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const yearMatches = value.match(/(?:19|20)\d{2}/g);
+  if (!yearMatches || !yearMatches.length) {
+    return null;
+  }
+
+  const yearValue = Number(yearMatches[yearMatches.length - 1]);
+  return Number.isInteger(yearValue) ? yearValue : null;
+};
+
+const normalizeYearList = (years) => {
+  if (!Array.isArray(years)) {
+    return [];
+  }
+
+  const unique = new Set();
+  years.forEach((year) => {
+    const numericYear = Number(year);
+    if (Number.isInteger(numericYear) && numericYear > 1900 && numericYear < 3000) {
+      unique.add(numericYear);
+    }
+  });
+
+  return Array.from(unique).sort((a, b) => b - a);
+};
+
+const loadSavedGameYears = () => {
+  try {
+    const raw = localStorage.getItem(ADMIN_GAMES_YEARS_STORAGE_KEY);
+    if (!raw) {
+      return [...DEFAULT_GAMES_YEARS];
+    }
+    const parsed = JSON.parse(raw);
+    const normalized = normalizeYearList(parsed);
+    return normalized.length ? normalized : [...DEFAULT_GAMES_YEARS];
+  } catch (error) {
+    return [...DEFAULT_GAMES_YEARS];
+  }
+};
+
+const saveGameYears = (years) => {
+  const normalized = normalizeYearList(years);
+  localStorage.setItem(ADMIN_GAMES_YEARS_STORAGE_KEY, JSON.stringify(normalized));
 };
 
 const initAdminPanelTabs = () => {
@@ -762,7 +831,10 @@ const initAdminTables = () => {
 
     adminTablesState.rows = rowsByTable;
     renderTables();
+    notifyAdminTablesListeners();
   };
+
+  refreshAdminTablesData = refreshTablesData;
 
   registerAdminRefreshHandler("adminTournamentsTab", refreshTablesData);
 
@@ -990,11 +1062,13 @@ const initAdminTables = () => {
               const rows = rowSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
               adminTablesState.rows.set(table.id, rows);
               renderTables();
+              notifyAdminTablesListeners();
             });
           adminTablesState.rowUnsubscribers.set(table.id, unsubscribe);
         });
 
         renderTables();
+        notifyAdminTablesListeners();
       },
       (error) => {
         const errorCode = error?.code;
@@ -1035,6 +1109,253 @@ const initAdminTables = () => {
       addButton.disabled = false;
     }
   });
+};
+
+const initAdminGames = () => {
+  const yearsList = document.querySelector("#adminGamesYearsList");
+  const addYearButton = document.querySelector("#adminGamesAddYear");
+  const deleteYearButton = document.querySelector("#adminGamesDeleteYear");
+  const gamesTableBody = document.querySelector("#adminGamesTableBody");
+  const status = document.querySelector("#adminGamesStatus");
+  const modal = document.querySelector("#gameDetailsModal");
+  const modalMeta = document.querySelector("#gameDetailsMeta");
+  const modalHeaderRow = document.querySelector("#gameDetailsHeaderRow");
+  const modalBody = document.querySelector("#gameDetailsBody");
+  const modalClose = document.querySelector("#gameDetailsClose");
+  const modalCloseFooter = document.querySelector("#gameDetailsCloseFooter");
+
+  if (!yearsList || !addYearButton || !deleteYearButton || !gamesTableBody || !status) {
+    return;
+  }
+
+  const state = {
+    years: loadSavedGameYears(),
+    selectedYear: null
+  };
+
+  const getGamesForSelectedYear = () => {
+    if (!state.selectedYear) {
+      return [];
+    }
+
+    return adminTablesState.tableList
+      .filter((table) => extractYearFromDate(table.gameDate) === state.selectedYear)
+      .sort((a, b) => String(b.gameDate ?? "").localeCompare(String(a.gameDate ?? ""), "pl"));
+  };
+
+  const closeModal = () => {
+    if (!modal) {
+      return;
+    }
+    modal.classList.remove("is-visible");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+
+  const openModal = (table) => {
+    if (!modal || !modalMeta || !modalHeaderRow || !modalBody) {
+      return;
+    }
+
+    modalMeta.textContent = `Nazwa: ${table.name || "-"} | Rodzaj gry: ${table.gameType || "-"} | Data: ${table.gameDate || "-"}`;
+    modalHeaderRow.innerHTML = "";
+    TABLE_COLUMNS.forEach((column) => {
+      const th = document.createElement("th");
+      th.textContent = column.label;
+      modalHeaderRow.appendChild(th);
+    });
+
+    modalBody.innerHTML = "";
+    const rows = adminTablesState.rows.get(table.id) ?? [];
+
+    if (!rows.length) {
+      const emptyRow = document.createElement("tr");
+      const emptyCell = document.createElement("td");
+      emptyCell.colSpan = TABLE_COLUMNS.length;
+      emptyCell.textContent = "Brak danych dla tej gry.";
+      emptyRow.appendChild(emptyCell);
+      modalBody.appendChild(emptyRow);
+    } else {
+      rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        TABLE_COLUMNS.forEach((column) => {
+          const td = document.createElement("td");
+          td.textContent = row[column.key] ?? "";
+          tr.appendChild(td);
+        });
+        modalBody.appendChild(tr);
+      });
+    }
+
+    modal.classList.add("is-visible");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  };
+
+  const renderYears = () => {
+    yearsList.innerHTML = "";
+
+    if (!state.years.length) {
+      const info = document.createElement("p");
+      info.className = "status-text";
+      info.textContent = "Brak lat. Dodaj pierwszy rok.";
+      yearsList.appendChild(info);
+      return;
+    }
+
+    state.years.forEach((year) => {
+      const yearButton = document.createElement("button");
+      yearButton.type = "button";
+      yearButton.className = `admin-games-year-button ${state.selectedYear === year ? "is-active" : ""}`.trim();
+      yearButton.textContent = String(year);
+      yearButton.addEventListener("click", () => {
+        state.selectedYear = year;
+        renderYears();
+        renderGamesTable();
+      });
+      yearsList.appendChild(yearButton);
+    });
+  };
+
+  const renderGamesTable = () => {
+    gamesTableBody.innerHTML = "";
+
+    if (!state.selectedYear) {
+      status.textContent = "Wybierz rok z listy po lewej stronie.";
+      return;
+    }
+
+    const games = getGamesForSelectedYear();
+    status.textContent = `Wybrany rok: ${state.selectedYear}. Liczba turniejów: ${games.length}.`;
+
+    if (!games.length) {
+      const emptyRow = document.createElement("tr");
+      const emptyCell = document.createElement("td");
+      emptyCell.colSpan = 3;
+      emptyCell.textContent = "Brak turniejów z datą w wybranym roku.";
+      emptyRow.appendChild(emptyCell);
+      gamesTableBody.appendChild(emptyRow);
+      return;
+    }
+
+    games.forEach((table) => {
+      const row = document.createElement("tr");
+
+      const gameTypeCell = document.createElement("td");
+      gameTypeCell.textContent = table.gameType ?? "";
+
+      const dateCell = document.createElement("td");
+      dateCell.textContent = table.gameDate ?? "";
+
+      const nameCell = document.createElement("td");
+      const nameButton = document.createElement("button");
+      nameButton.type = "button";
+      nameButton.className = "admin-games-link";
+      nameButton.textContent = table.name ?? "Bez nazwy";
+      nameButton.addEventListener("click", () => {
+        openModal(table);
+      });
+      nameCell.appendChild(nameButton);
+
+      row.appendChild(gameTypeCell);
+      row.appendChild(dateCell);
+      row.appendChild(nameCell);
+      gamesTableBody.appendChild(row);
+    });
+  };
+
+  const synchronizeYearsFromTables = () => {
+    const yearsFromTables = adminTablesState.tableList
+      .map((table) => extractYearFromDate(table.gameDate))
+      .filter((year) => Number.isInteger(year));
+
+    const combinedYears = normalizeYearList([...state.years, ...yearsFromTables]);
+    state.years = combinedYears.length ? combinedYears : [...DEFAULT_GAMES_YEARS];
+
+    if (!state.selectedYear || !state.years.includes(state.selectedYear)) {
+      state.selectedYear = state.years[0] ?? null;
+    }
+
+    saveGameYears(state.years);
+    renderYears();
+    renderGamesTable();
+  };
+
+  addYearButton.addEventListener("click", () => {
+    const rawYear = window.prompt("Podaj rok (RRRR):", String(new Date().getFullYear()));
+    if (rawYear === null) {
+      return;
+    }
+
+    const parsedYear = Number(rawYear.trim());
+    if (!Number.isInteger(parsedYear) || parsedYear < 1900 || parsedYear > 2999) {
+      status.textContent = "Podaj poprawny rok w formacie RRRR.";
+      return;
+    }
+
+    if (state.years.includes(parsedYear)) {
+      state.selectedYear = parsedYear;
+      status.textContent = "Ten rok już istnieje na liście.";
+      renderYears();
+      renderGamesTable();
+      return;
+    }
+
+    state.years = normalizeYearList([...state.years, parsedYear]);
+    state.selectedYear = parsedYear;
+    saveGameYears(state.years);
+    renderYears();
+    renderGamesTable();
+  });
+
+  deleteYearButton.addEventListener("click", () => {
+    if (!state.selectedYear) {
+      status.textContent = "Najpierw wybierz rok do usunięcia.";
+      return;
+    }
+
+    state.years = state.years.filter((year) => year !== state.selectedYear);
+    state.years = state.years.length ? state.years : [...DEFAULT_GAMES_YEARS];
+    state.selectedYear = state.years[0] ?? null;
+
+    saveGameYears(state.years);
+    renderYears();
+    renderGamesTable();
+  });
+
+  if (modalClose) {
+    modalClose.addEventListener("click", closeModal);
+  }
+
+  if (modalCloseFooter) {
+    modalCloseFooter.addEventListener("click", closeModal);
+  }
+
+  if (modal) {
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && modal.classList.contains("is-visible")) {
+        closeModal();
+      }
+    });
+  }
+
+  const refreshGamesData = async () => {
+    await refreshAdminTablesData();
+    synchronizeYearsFromTables();
+  };
+
+  registerAdminRefreshHandler("adminGamesTab", refreshGamesData);
+  registerAdminTablesListener(() => {
+    synchronizeYearsFromTables();
+  });
+
+  synchronizeYearsFromTables();
 };
 
 const initLatestMessage = () => {
@@ -1180,6 +1501,7 @@ const bootstrap = async () => {
   initUserTabs();
   initAdminMessaging();
   initAdminTables();
+  initAdminGames();
   initAdminPlayers();
   initPinGate();
   initLatestMessage();
