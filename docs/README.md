@@ -55,12 +55,12 @@ Aplikacja zapamiętuje ostatnio kliknięty rok (po odświeżeniu strony nadal b�
 ### 4.2 Segment „Tabele Gier” (góra)
 #### Dodanie nowej gry
 1. Kliknij przycisk **Dodaj** w nagłówku „Tabele Gier”.
-2. Jeśli masz aktywny rok po lewej stronie, nowa gra dostanie datę `YYYY-01-01` tego roku.
-3. Jeżeli nie ma jeszcze żadnych gier (panel lat jest pusty), nowa gra dostanie bieżący rok systemowy (`YYYY-01-01`) i automatycznie utworzy pierwszy przycisk roku po lewej stronie.
-4. Aplikacja tworzy nowy wiersz z domyślnymi wartościami:
+2. System natychmiast tworzy nowy wpis z datą **dzisiejszą** (`rrrr-MM-dd`, zgodnie z zegarem urządzenia).
+3. Aplikacja tworzy nowy wiersz z domyślnymi wartościami:
    - **Rodzaj Gry**: `Cashout`.
-   - **Data**: `01-01` aktywnego roku (albo bieżącego roku, gdy to pierwszy wpis).
-   - **Nazwa**: `Gra X`, gdzie `X` to pierwszy wolny numer dla tej konkretnej daty.
+   - **Data**: bieżąca data (`rrrr-MM-dd`).
+   - **Nazwa**: `Gra X`, gdzie `X` to pierwszy wolny numer dla tej konkretnej daty (np. gdy istnieją `Gra 1` i `Gra 3`, nowa nazwa to `Gra 2`).
+4. Po poprawnym zapisie zobaczysz komunikat statusu „Dodano grę ...”. Jeśli zapis się nie uda (np. brak uprawnień Firestore), pojawi się precyzyjny komunikat błędu.
 
 #### Edycja wiersza gry
 1. W kolumnie **Rodzaj Gry** wybierz z listy `Cashout` lub `Turniej`.

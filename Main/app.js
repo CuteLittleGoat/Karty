@@ -186,13 +186,6 @@ const getNextGameNameForDate = (games, gameDate) => {
   return getNextTableName(sameDayGames);
 };
 
-const getDefaultGameDateForYear = (year) => {
-  if (!Number.isInteger(year) || year < 1900 || year > 2999) {
-    return getFormattedCurrentDate();
-  }
-  return `${year}-01-01`;
-};
-
 const normalizeNumber = (value) => {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : 0;
@@ -1673,16 +1666,32 @@ const initAdminGames = () => {
     });
 
   addGameButton.addEventListener("click", async () => {
-    const fallbackYear = new Date().getFullYear();
-    const targetYear = Number.isInteger(state.selectedYear) ? state.selectedYear : fallbackYear;
-    const gameDate = getDefaultGameDateForYear(targetYear);
-    const name = getNextGameNameForDate(state.games, gameDate);
-    await db.collection(gamesCollectionName).add({
-      gameType: "Cashout",
-      gameDate,
-      name,
-      createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
-    });
+    addGameButton.disabled = true;
+    status.textContent = "Dodawanie gry...";
+    try {
+      const gameDate = getFormattedCurrentDate();
+      const name = getNextGameNameForDate(state.games, gameDate);
+      await db.collection(gamesCollectionName).add({
+        gameType: "Cashout",
+        gameDate,
+        name,
+        createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+      });
+      status.textContent = `Dodano grę \"${name}\" z datą ${gameDate}.`;
+    } catch (error) {
+      const errorCode = error?.code;
+      if (errorCode === "permission-denied") {
+        status.textContent =
+          `Brak uprawnień do zapisu w kolekcji ${gamesCollectionName}. Sprawdź reguły Firestore i wielkość liter.`;
+      } else {
+        const details = formatFirestoreError(error);
+        status.textContent = details
+          ? `Nie udało się dodać gry. ${details}`
+          : "Nie udało się dodać gry.";
+      }
+    } finally {
+      addGameButton.disabled = false;
+    }
   });
 
   if (modalClose) {

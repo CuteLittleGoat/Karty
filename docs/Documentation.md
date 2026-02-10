@@ -52,15 +52,17 @@ Logika znajduje się w `initAdminGames()`.
 ### 5.2 Dodawanie gry
 Przycisk `#adminGamesAddGame` dodaje dokument do kolekcji skonfigurowanej jako `gamesCollection` (domyślnie `Games`) z polami:
 - `gameType: "Cashout"`,
-- `gameDate: getDefaultGameDateForYear(targetYear)`,
+- `gameDate: getFormattedCurrentDate()` (zawsze bieżąca data w formacie `rrrr-MM-dd`),
 - `name: getNextGameNameForDate(state.games, gameDate)`,
 - `createdAt` (timestamp serwera).
 
-`targetYear` wyznaczany jest tak:
-- jeśli administrator ma aktywny rok w panelu lat, używany jest ten rok,
-- jeśli to pierwszy wpis i aktywny rok jeszcze nie istnieje, używany jest bieżący rok systemowy.
+Przycisk działa w bloku `try/catch/finally`:
+- na czas zapisu jest blokowany (`disabled`),
+- status pokazuje etap „Dodawanie gry...”,
+- po sukcesie pojawia się komunikat potwierdzający z nazwą i datą gry,
+- przy błędzie wyświetlany jest komunikat (osobno obsługiwany `permission-denied`, dla pozostałych błędów używany `formatFirestoreError()`).
 
-Dzięki temu przycisk „Dodaj” działa także przy pustych danych i od razu tworzy poprawny wpis, który generuje pierwszy rok w panelu bocznym.
+To usuwa problem „klikam Dodaj i nic się nie dzieje”, bo administrator zawsze dostaje jednoznaczny feedback sukcesu lub błędu.
 
 ### 5.3 Logika nazewnictwa „Gra X”
 Użyte funkcje:
