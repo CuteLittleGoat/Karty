@@ -54,7 +54,7 @@ W kolumnie PIN każdy wiersz renderuje:
 ### 3.3 Zakładka „Gry”
 Struktura zakładki składa się z dwóch kolumn:
 - lewy panel (`.admin-games-sidebar`) z listą lat (`#adminGamesYearsList`),
-- prawa sekcja (`.admin-games-content`) z dwiema tabelami: „Statystyki” i „Tabele Gier”.
+- prawa sekcja (`.admin-games-content`) z dwiema tabelami: „Tabele Gier” (u góry) i „Statystyki” (na dole).
 
 Elementy sterujące:
 - `#adminGamesAddYear` — przycisk dodawania roku,
