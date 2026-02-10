@@ -164,7 +164,7 @@ h1 {
   font-size: var(--fs-body);
 }
 
-.admin-tables {
+.admin-panel-card {
   grid-column: 1 / -1;
 }
 
@@ -386,6 +386,21 @@ h1 {
 
 .admin-panel-content.is-active {
   display: grid;
+}
+
+.admin-tournaments {
+  display: grid;
+  gap: var(--gap-3);
+}
+
+.admin-stats-placeholder {
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.32);
+  font-family: var(--font-subtitle);
+  font-size: 22px;
+  letter-spacing: 0.04em;
 }
 
 .admin-players {
@@ -621,8 +636,7 @@ button.danger {
   align-items: center;
 }
 
-.pin-inputs input,
-.admin-pin-form input {
+.pin-inputs input {
   padding: 10px 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
@@ -634,8 +648,7 @@ button.danger {
   max-width: 180px;
 }
 
-.pin-inputs input:focus,
-.admin-pin-form input:focus {
+.pin-inputs input:focus {
   outline: none;
   border-color: rgba(212, 175, 55, 0.55);
   box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18), 0 0 12px rgba(43, 227, 139, 0.18);
@@ -680,52 +693,6 @@ button.danger {
   font-family: var(--font-text);
   font-size: var(--fs-body);
   line-height: 1.5;
-}
-
-
-.admin-pin {
-  margin-top: var(--gap-3);
-  padding: 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(125, 125, 125, 0.24);
-  display: grid;
-  gap: var(--gap-2);
-}
-
-.admin-pin h3 {
-  margin: 0 0 6px;
-  font-family: var(--font-subtitle);
-  font-size: 18px;
-}
-
-.admin-pin p {
-  margin: 0;
-  color: rgba(237, 235, 230, 0.8);
-}
-
-.admin-pin-form {
-  display: grid;
-  gap: 10px;
-}
-
-.admin-pin-form label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-family: var(--font-panel);
-  color: rgba(237, 235, 230, 0.85);
-}
-
-.admin-pin-legacy-note {
-  font-size: 12px;
-  color: rgba(237, 235, 230, 0.72);
-}
-
-.admin-pin-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 
 .modal-overlay {

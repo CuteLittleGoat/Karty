@@ -25,52 +25,17 @@
       </header>
 
       <main class="grid">
-        <section class="card admin-only admin-tables">
-          <div class="card-header admin-tables-header">
-            <div>
-              <h2>Stoły</h2>
-              <p>Dodawaj kolejne rozgrywki i uzupełniaj dane w tabelach.</p>
-            </div>
-            <button id="adminAddTable" class="primary" type="button">Dodaj</button>
-          </div>
-          <span id="adminTablesStatus" class="status-text" aria-live="polite"></span>
-          <div id="adminTablesList" class="admin-tables-list"></div>
-          <div class="admin-summary">
-            <h3>Podsumowanie</h3>
-            <div class="admin-table-scroll">
-              <table class="admin-data-table summary-table">
-                <thead>
-                  <tr>
-                    <th>Suma Gier</th>
-                    <th>Łączna pula</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <input id="summaryGameCount" class="admin-input" type="text" readonly />
-                    </td>
-                    <td>
-                      <input id="summaryTotalPool" class="admin-input" type="text" readonly />
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <section class="card admin-only">
+        <section class="card admin-only admin-panel-card">
           <div class="card-header">
-            <h2>Panel administratora</h2>
+            <h2>Panel Administratora</h2>
           </div>
           <div class="admin-panel-tabs" role="tablist" aria-label="Zakładki panelu administratora">
-            <button class="admin-panel-tab is-active" type="button" data-target="adminSettingsTab">
-              Ustawienia
-            </button>
+            <button class="admin-panel-tab is-active" type="button" data-target="adminNewsTab">Aktualności</button>
             <button class="admin-panel-tab" type="button" data-target="adminPlayersTab">Gracze</button>
+            <button class="admin-panel-tab" type="button" data-target="adminTournamentsTab">Turnieje</button>
+            <button class="admin-panel-tab" type="button" data-target="adminStatsTab">Statystyki</button>
           </div>
-          <div id="adminSettingsTab" class="admin-panel-content is-active" role="tabpanel">
+          <div id="adminNewsTab" class="admin-panel-content is-active" role="tabpanel">
           <div class="admin-message">
             <div>
               <h3>Wiadomość do graczy</h3>
@@ -87,33 +52,6 @@
                 <button id="adminMessageSend" class="primary" type="button">Wyślij</button>
                 <span id="adminMessageStatus" class="status-text" aria-live="polite"></span>
               </div>
-            </div>
-          </div>
-          <div class="admin-pin">
-            <div>
-              <h3>PIN do zakładki „Najbliższa gra”</h3>
-              <p>PIN składa się z 5 cyfr. Pole pozostaje jako archiwum po usuniętej funkcjonalności.</p>
-            </div>
-            <div class="admin-pin-form">
-              <label for="adminPinInput">PIN (5 cyfr)</label>
-              <input
-                id="adminPinInput"
-                type="tel"
-                inputmode="numeric"
-                pattern="[0-9]{5}"
-                autocomplete="off"
-                maxlength="5"
-                minlength="5"
-                placeholder="Np. 12345"
-              />
-              <div class="admin-pin-actions">
-                <button id="adminPinSave" class="primary" type="button">Zapisz PIN</button>
-                <button id="adminPinRandom" class="secondary" type="button">Losuj PIN</button>
-                <span id="adminPinStatus" class="status-text" aria-live="polite"></span>
-              </div>
-              <p class="admin-pin-legacy-note">
-                „Zapisz PIN” i „Losuj PIN” są dostępne wyłącznie jako pozostałość po skasowanej funkcjonalności.
-              </p>
             </div>
           </div>
           </div>
@@ -141,6 +79,45 @@
                 <button id="adminAddPlayer" class="secondary" type="button">Dodaj</button>
               </div>
             </div>
+          </div>
+          <div id="adminTournamentsTab" class="admin-panel-content" role="tabpanel">
+            <div class="admin-tournaments">
+              <div class="card-header admin-tables-header">
+                <div>
+                  <h3>Turnieje</h3>
+                  <p>Dodawaj kolejne rozgrywki i uzupełniaj dane w tabelach.</p>
+                </div>
+                <button id="adminAddTable" class="primary" type="button">Dodaj</button>
+              </div>
+              <span id="adminTablesStatus" class="status-text" aria-live="polite"></span>
+              <div id="adminTablesList" class="admin-tables-list"></div>
+              <div class="admin-summary">
+                <h3>Podsumowanie</h3>
+                <div class="admin-table-scroll">
+                  <table class="admin-data-table summary-table">
+                    <thead>
+                      <tr>
+                        <th>Suma Gier</th>
+                        <th>Łączna pula</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <input id="summaryGameCount" class="admin-input" type="text" readonly />
+                        </td>
+                        <td>
+                          <input id="summaryTotalPool" class="admin-input" type="text" readonly />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="adminStatsTab" class="admin-panel-content" role="tabpanel">
+            <div class="admin-stats-placeholder">do zrobienia później</div>
           </div>
         </section>
 

@@ -25,39 +25,50 @@
 - `button.secondary`: zielony neon.
 - `button.danger`: czerwony wariant do usuwania.
 
-## 5) Nowe elementy UI (zmiana 2026-02)
+## 5) Elementy UI po przebudowie panelu administratora
 
-### 5.1 Zakładki panelu administratora
-- `.admin-panel-tabs` — pozioma lista przycisków zakładek.
-- `.admin-panel-tab` — styl „pill”, inactive: ciemny.
-- `.admin-panel-tab.is-active` — aktywny złoty stan.
-- `.admin-panel-content` — kontener treści zakładki (`display: none`),
-- `.admin-panel-content.is-active` — aktywna treść (`display: grid`).
+### 5.1 Panel Administratora
+- `.admin-panel-card` zajmuje pełną szerokość siatki (`grid-column: 1 / -1`).
+- Tytuł panelu: „Panel Administratora”.
+- Zakładki: `Aktualności`, `Gracze`, `Turnieje`, `Statystyki`.
+- Zakładki używają:
+  - `.admin-panel-tabs` (kontener),
+  - `.admin-panel-tab` (pill),
+  - `.admin-panel-tab.is-active` (złoty aktywny stan),
+  - `.admin-panel-content` / `.admin-panel-content.is-active` (ukrywanie/pokazywanie treści).
 
-### 5.2 Tabela „Gracze”
+### 5.2 Zakładka „Aktualności”
+- Sekcja `.admin-message` pozostaje wizualnie jak wcześniej.
+- Pole wiadomości jest szersze dzięki pełnoszerokiemu panelowi nadrzędnemu.
+
+### 5.3 Zakładka „Gracze”
 - `.admin-players` — karta wewnętrzna z tłem noir (`rgba(0,0,0,.32)`), border `--border2`, padding `16px`.
 - `.players-table` — minimalna szerokość `700px`.
-- `.permissions-tags` — flex-wrap badge’y uprawnień.
-- `.permission-badge` — małe etykiety (zielony border/tło, uppercase).
-- `.permission-badge.is-empty` — neutralny wariant „Brak dodatkowych uprawnień”.
-- `.admin-permissions-edit` — mniejszy przycisk „Edytuj”.
+- `.permissions-tags`, `.permission-badge`, `.admin-permissions-edit` — wizualizacja i edycja uprawnień.
 
-### 5.3 Modal uprawnień
-- Używa bazowego `.modal-overlay` i `.modal-card`.
-- `.modal-card-sm` zmniejsza szerokość modala do `min(520px, 100%)`.
-- `.permissions-list` i `.permissions-item` organizują listę checkboxów.
+### 5.4 Zakładka „Turnieje”
+- Funkcjonalność dawnych „Stołów” umieszczona w `.admin-tournaments`.
+- Używa istniejących klas:
+  - `.admin-tables-header`,
+  - `.admin-tables-list`,
+  - `.admin-table-card`,
+  - `.admin-summary`.
 
-### 5.4 Sekcja archiwalnego PIN-u
-- `.admin-pin` zmieniono na szary wariant:
-  - tło `rgba(125, 125, 125, 0.24)`,
-  - border `rgba(255, 255, 255, 0.14)`.
-- Teksty pomocnicze są lekko rozjaśnione (`rgba(237, 235, 230, 0.8)`).
-- Dodano `.admin-pin-legacy-note` dla opisu, że przyciski to pozostałość po usuniętej funkcji.
+### 5.5 Zakładka „Statystyki”
+- Placeholder `.admin-stats-placeholder`:
+  - padding `20px`,
+  - border `1px solid var(--border2)`,
+  - tło `rgba(0,0,0,.32)`,
+  - font `var(--font-subtitle)`, rozmiar `22px`.
+
+### 5.6 Usunięte elementy
+- Usunięto cały segment stylów `.admin-pin*` (archiwalny PIN administratora).
 
 ## 6) Zakładki użytkownika
 - `tab-button` zachowuje styl pill.
 - `tab-button.is-active` — złoty aktywny stan.
 - PIN gate nadal w ramce dashed gold (`.pin-gate`) i z kartą `.pin-card`.
+- Sekcja „Strefa gracza” pozostaje na dole strony (`.next-game-card`).
 
 ## 7) Responsywność
 - `<720px`: przyciski w sekcji wiadomości i elementy modala układają się pionowo.
