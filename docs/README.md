@@ -130,3 +130,19 @@ Zakładka **Gry** działa niezależnie od zakładki **Turnieje**:
 1. Otwórz stronę bez `?admin=1`.
 2. W zakładce „Najbliższa gra” wpisz PIN i kliknij **Otwórz**.
 3. W zakładce „Aktualności” odczytasz najnowszą wiadomość administratora.
+
+## 7. Firebase — konfiguracja konieczna, żeby przycisk „Dodaj” działał
+1. Otwórz plik `config/firebase-config.js`.
+2. Upewnij się, że ustawienie ma dokładnie taką wartość (z wielkością liter):
+   - `gamesCollection: "Tables"`
+3. Wejdź do Firebase Console → Firestore Database → Rules i sprawdź, że masz blok:
+   - `match /Tables/{tableId} { allow read, write: if true; ... }`
+4. Kliknij **Publish** w regułach (jeśli cokolwiek zmieniasz).
+5. Wróć do aplikacji i odśwież stronę (`Ctrl+R`).
+6. Wejdź w `?admin=1` → zakładka **Gry** → kliknij **Dodaj**.
+7. Oczekiwany efekt: nowy dokument pojawia się w kolekcji `Tables` i znika błąd o braku uprawnień dla `Games`.
+
+### Dlaczego to naprawia błąd
+- Błąd dotyczył zapisu do kolekcji `Games`, której nie obejmowały Twoje reguły.
+- Aplikacja została ustawiona tak, aby zakładka **Gry** używała kolekcji `Tables`, która jest dozwolona przez Twoje reguły.
+

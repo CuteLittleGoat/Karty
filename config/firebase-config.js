@@ -10,5 +10,5 @@ window.firebaseConfig = {
   messagingSenderId: "716608782712",
   appId: "1:716608782712:web:27d29434f013a5cf31888d",
   tablesCollection: "Tables",
-  gamesCollection: "Games"
+  gamesCollection: "Tables"
 };
