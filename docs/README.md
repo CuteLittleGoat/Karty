@@ -75,9 +75,12 @@
 
 ### 3.2 Najbliższa gra (dostęp po PIN)
 1. Kliknij zakładkę **Najbliższa gra**.
-2. Kliknij pole PIN i wpisz 5 cyfr.
-3. Kliknij **Otwórz**.
-4. Dostęp zostanie przyznany tylko, gdy PIN istnieje i gracz ma odpowiednie uprawnienie.
+2. Zawsze najpierw zobaczysz kartę z prośbą o PIN (dotyczy zarówno zwykłego widoku użytkownika, jak i sekcji **Strefa gracza** podczas pracy administratora).
+3. Kliknij pole **PIN (5 cyfr)** i wpisz dokładnie 5 cyfr.
+4. Kliknij **Otwórz**.
+5. Jeżeli PIN jest poprawny i przypisany do gracza z uprawnieniem **Najbliższa gra**, karta PIN zniknie i pokaże się zawartość zakładki.
+6. Jeżeli PIN jest błędny albo gracz nie ma uprawnienia, zobaczysz komunikat o braku dostępu i pozostaniesz na ekranie PIN.
+7. Po ponownym wejściu w zakładkę **Najbliższa gra** aplikacja ponownie wymaga wpisania PIN (sesja dostępu jest resetowana przy przełączaniu zakładki).
 
 ## 4. Przycisk „Instrukcja”
 1. W panelu administratora kliknij **Instrukcja**.
