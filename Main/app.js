@@ -1,6 +1,13 @@
 const PIN_LENGTH = 5;
 const PIN_STORAGE_KEY = "nextGamePinVerified";
-let currentPin = "12345";
+const PLAYER_ACCESS_COLLECTION = "app_settings";
+const PLAYER_ACCESS_DOCUMENT = "player_access";
+const AVAILABLE_PLAYER_TABS = [
+  {
+    key: "nextGameTab",
+    label: "Najbliższa gra"
+  }
+];
 
 const TABLES_COLLECTION = "Tables";
 const TABLES_COLLECTION_CONFIG_KEY = "tablesCollection";
@@ -27,6 +34,11 @@ const adminTablesState = {
   rows: new Map(),
   rowUnsubscribers: new Map(),
   tableList: []
+};
+const adminPlayersState = {
+  players: [],
+  playerByPin: new Map(),
+  editingPlayerId: null
 };
 const debounceTimers = new Map();
 
@@ -141,6 +153,13 @@ const setPinGateState = (isVerified) => {
   sessionStorage.setItem(PIN_STORAGE_KEY, isVerified ? "1" : "0");
 };
 
+const isPlayerAllowedForTab = (player, tabKey) => {
+  if (!player || !Array.isArray(player.permissions)) {
+    return false;
+  }
+  return player.permissions.includes(tabKey);
+};
+
 const updatePinVisibility = ({ isAdmin }) => {
   const gate = document.querySelector("#nextGamePinGate");
   const content = document.querySelector("#nextGameContent");
@@ -153,23 +172,6 @@ const updatePinVisibility = ({ isAdmin }) => {
   content.classList.toggle("is-visible", isVerified);
 };
 
-const loadPinFromFirestore = async () => {
-  const firebaseApp = getFirebaseApp();
-  if (!firebaseApp) {
-    return;
-  }
-
-  try {
-    const snapshot = await firebaseApp.firestore().collection("app_settings").doc("next_game").get();
-    const data = snapshot.data();
-    if (data && typeof data.pin === "string" && data.pin.trim()) {
-      currentPin = data.pin.trim();
-    }
-  } catch (error) {
-    // Silent fail: use fallback PIN.
-  }
-};
-
 const initAdminPin = () => {
   const input = document.querySelector("#adminPinInput");
   const saveButton = document.querySelector("#adminPinSave");
@@ -180,7 +182,7 @@ const initAdminPin = () => {
     return;
   }
 
-  input.value = currentPin;
+  input.value = "";
   input.addEventListener("input", () => {
     input.value = sanitizePin(input.value);
   });
@@ -193,7 +195,7 @@ const initAdminPin = () => {
   randomButton.addEventListener("click", () => {
     const generatedPin = generateRandomPin();
     input.value = generatedPin;
-    status.textContent = "Wylosowano PIN. Kliknij „Zapisz PIN”, aby go utrwalić.";
+    status.textContent = "Wylosowano PIN testowy (pozostałość po usuniętej funkcji).";
   });
 
   const firebaseApp = getFirebaseApp();
@@ -213,12 +215,11 @@ const initAdminPin = () => {
     }
 
     saveButton.disabled = true;
-    status.textContent = "Zapisywanie PIN...";
+    status.textContent = "Zapisywanie archiwalnego PIN...";
 
     try {
       await firebaseApp.firestore().collection("app_settings").doc("next_game").set({ pin: pinValue });
-      currentPin = pinValue;
-      status.textContent = "PIN zapisany.";
+      status.textContent = "Zapisano PIN archiwalny. Funkcja nie wpływa na dostęp graczy.";
     } catch (error) {
       status.textContent = "Nie udało się zapisać PIN. Sprawdź konfigurację.";
     } finally {
@@ -247,12 +248,14 @@ const initPinGate = ({ isAdmin }) => {
       return;
     }
 
-    if (pinValue === currentPin) {
+    const player = adminPlayersState.playerByPin.get(pinValue);
+
+    if (player && isPlayerAllowedForTab(player, "nextGameTab")) {
       setPinGateState(true);
-      status.textContent = "PIN poprawny. Otwieranie...";
+      status.textContent = `PIN poprawny. Witaj ${player.name || "graczu"}.`;
       updatePinVisibility({ isAdmin });
     } else {
-      status.textContent = "Niepoprawny PIN. Spróbuj ponownie.";
+      status.textContent = "Błędny PIN lub brak uprawnień do zakładki „Najbliższa gra”.";
     }
   };
 
@@ -266,7 +269,7 @@ const initPinGate = ({ isAdmin }) => {
   updatePinVisibility({ isAdmin });
 };
 
-const initUserTabs = () => {
+const initUserTabs = ({ isAdmin }) => {
   const tabButtons = document.querySelectorAll(".tab-button");
   const panels = document.querySelectorAll(".tab-panel");
   if (!tabButtons.length) {
@@ -286,6 +289,19 @@ const initUserTabs = () => {
     );
     const targetPanel = document.querySelector(`#${target}`);
 
+    if (target === "nextGameTab") {
+      setPinGateState(false);
+      const pinInput = document.querySelector("#nextGamePinInput");
+      const pinStatus = document.querySelector("#nextGamePinStatus");
+      if (pinInput) {
+        pinInput.value = "";
+      }
+      if (pinStatus) {
+        pinStatus.textContent = "";
+      }
+      updatePinVisibility({ isAdmin });
+    }
+
     if (targetButton) {
       targetButton.classList.add("is-active");
     }
@@ -301,6 +317,292 @@ const initUserTabs = () => {
       setActiveTab(button.getAttribute("data-target"));
     });
   });
+};
+
+const initAdminPanelTabs = () => {
+  const tabButtons = document.querySelectorAll(".admin-panel-tab");
+  const tabPanels = document.querySelectorAll(".admin-panel-content");
+  if (!tabButtons.length || !tabPanels.length) {
+    return;
+  }
+
+  const setActiveTab = (target) => {
+    tabButtons.forEach((button) => {
+      button.classList.toggle("is-active", button.getAttribute("data-target") === target);
+    });
+    tabPanels.forEach((panel) => {
+      panel.classList.toggle("is-active", panel.id === target);
+    });
+  };
+
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      setActiveTab(button.getAttribute("data-target"));
+    });
+  });
+};
+
+const initAdminPlayers = () => {
+  const body = document.querySelector("#adminPlayersBody");
+  const status = document.querySelector("#adminPlayersStatus");
+  const addButton = document.querySelector("#adminAddPlayer");
+  const modal = document.querySelector("#playerPermissionsModal");
+  const modalList = document.querySelector("#playerPermissionsList");
+  const modalStatus = document.querySelector("#playerPermissionsStatus");
+  const closeButton = document.querySelector("#playerPermissionsClose");
+  const closeFooterButton = document.querySelector("#playerPermissionsCloseFooter");
+
+  if (!body || !status || !addButton || !modal || !modalList || !modalStatus) {
+    return;
+  }
+
+  const firebaseApp = getFirebaseApp();
+  if (!firebaseApp) {
+    addButton.disabled = true;
+    status.textContent = "Uzupełnij konfigurację Firebase, aby zarządzać graczami.";
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+
+  const normalizePlayer = (player, index) => ({
+    id: typeof player.id === "string" && player.id.trim() ? player.id.trim() : `player-${index + 1}`,
+    name: typeof player.name === "string" ? player.name : "",
+    pin: sanitizePin(typeof player.pin === "string" ? player.pin : ""),
+    permissions: Array.isArray(player.permissions)
+      ? player.permissions.filter((permission) =>
+          AVAILABLE_PLAYER_TABS.some((availableTab) => availableTab.key === permission)
+        )
+      : []
+  });
+
+  const getPinOwnerId = (pin, excludedId) => {
+    if (!pin) {
+      return null;
+    }
+    const match = adminPlayersState.players.find((player) => player.pin === pin && player.id !== excludedId);
+    return match ? match.id : null;
+  };
+
+  const rebuildPinMap = () => {
+    const nextMap = new Map();
+    adminPlayersState.players.forEach((player) => {
+      if (isPinValid(player.pin) && !nextMap.has(player.pin)) {
+        nextMap.set(player.pin, player);
+      }
+    });
+    adminPlayersState.playerByPin = nextMap;
+  };
+
+  const savePlayers = async () => {
+    try {
+      await db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).set({
+        players: adminPlayersState.players,
+        updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+      });
+      status.textContent = "Lista graczy zapisana.";
+    } catch (error) {
+      status.textContent = "Nie udało się zapisać listy graczy.";
+    }
+  };
+
+  const openModal = (playerId) => {
+    adminPlayersState.editingPlayerId = playerId;
+    modal.classList.add("is-visible");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    renderPermissions();
+  };
+
+  const closeModal = () => {
+    adminPlayersState.editingPlayerId = null;
+    modal.classList.remove("is-visible");
+    modal.setAttribute("aria-hidden", "true");
+    modalStatus.textContent = "";
+    document.body.classList.remove("modal-open");
+  };
+
+  const updatePlayerField = (playerId, field, value) => {
+    const player = adminPlayersState.players.find((entry) => entry.id === playerId);
+    if (!player) {
+      return;
+    }
+
+    if (field === "pin") {
+      const pinValue = sanitizePin(value);
+      if (isPinValid(pinValue) && getPinOwnerId(pinValue, playerId)) {
+        status.textContent = "Ten PIN jest już przypisany do innego gracza.";
+        return;
+      }
+      player.pin = pinValue;
+      rebuildPinMap();
+    } else {
+      player[field] = value;
+    }
+
+    scheduleDebouncedUpdate(`players:${playerId}:${field}`, () => {
+      void savePlayers();
+    });
+  };
+
+  const renderPermissions = () => {
+    modalList.innerHTML = "";
+    const player = adminPlayersState.players.find((entry) => entry.id === adminPlayersState.editingPlayerId);
+    if (!player) {
+      modalStatus.textContent = "Nie znaleziono gracza.";
+      return;
+    }
+
+    AVAILABLE_PLAYER_TABS.forEach((tab) => {
+      const label = document.createElement("label");
+      label.className = "permissions-item";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = player.permissions.includes(tab.key);
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+          player.permissions = Array.from(new Set([...player.permissions, tab.key]));
+        } else {
+          player.permissions = player.permissions.filter((permission) => permission !== tab.key);
+        }
+        renderPlayers();
+        void savePlayers();
+      });
+
+      const text = document.createElement("span");
+      text.textContent = tab.label;
+
+      label.appendChild(checkbox);
+      label.appendChild(text);
+      modalList.appendChild(label);
+    });
+  };
+
+  const renderPlayers = () => {
+    body.innerHTML = "";
+    adminPlayersState.players.forEach((player) => {
+      const row = document.createElement("tr");
+
+      const nameCell = document.createElement("td");
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.className = "admin-input";
+      nameInput.placeholder = "Np. Jan Kowalski";
+      nameInput.value = player.name;
+      nameInput.addEventListener("input", () => {
+        updatePlayerField(player.id, "name", nameInput.value);
+      });
+      nameCell.appendChild(nameInput);
+
+      const pinCell = document.createElement("td");
+      const pinInput = document.createElement("input");
+      pinInput.type = "tel";
+      pinInput.className = "admin-input";
+      pinInput.inputMode = "numeric";
+      pinInput.maxLength = PIN_LENGTH;
+      pinInput.placeholder = "5 cyfr";
+      pinInput.value = player.pin;
+      pinInput.addEventListener("input", () => {
+        const pinValue = sanitizePin(pinInput.value);
+        pinInput.value = pinValue;
+        const duplicateOwnerId = getPinOwnerId(pinValue, player.id);
+        if (duplicateOwnerId) {
+          pinInput.setCustomValidity("PIN musi być unikalny.");
+          pinInput.reportValidity();
+          return;
+        }
+        pinInput.setCustomValidity("");
+        updatePlayerField(player.id, "pin", pinValue);
+      });
+      pinCell.appendChild(pinInput);
+
+      const permissionsCell = document.createElement("td");
+      const tags = document.createElement("div");
+      tags.className = "permissions-tags";
+      if (player.permissions.length) {
+        player.permissions.forEach((permission) => {
+          const tab = AVAILABLE_PLAYER_TABS.find((entry) => entry.key === permission);
+          const badge = document.createElement("span");
+          badge.className = "permission-badge";
+          badge.textContent = tab ? tab.label : permission;
+          tags.appendChild(badge);
+        });
+      } else {
+        const empty = document.createElement("span");
+        empty.className = "permission-badge is-empty";
+        empty.textContent = "Brak dodatkowych uprawnień";
+        tags.appendChild(empty);
+      }
+      const editButton = document.createElement("button");
+      editButton.type = "button";
+      editButton.className = "secondary admin-permissions-edit";
+      editButton.textContent = "Edytuj";
+      editButton.addEventListener("click", () => {
+        openModal(player.id);
+      });
+      permissionsCell.appendChild(tags);
+      permissionsCell.appendChild(editButton);
+
+      const actionsCell = document.createElement("td");
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "danger admin-row-delete";
+      deleteButton.textContent = "Usuń";
+      deleteButton.addEventListener("click", async () => {
+        adminPlayersState.players = adminPlayersState.players.filter((entry) => entry.id !== player.id);
+        rebuildPinMap();
+        renderPlayers();
+        await savePlayers();
+      });
+      actionsCell.appendChild(deleteButton);
+
+      row.appendChild(nameCell);
+      row.appendChild(pinCell);
+      row.appendChild(permissionsCell);
+      row.appendChild(actionsCell);
+      body.appendChild(row);
+    });
+  };
+
+  addButton.addEventListener("click", async () => {
+    adminPlayersState.players.push({
+      id: `player-${Date.now()}`,
+      name: "",
+      pin: "",
+      permissions: []
+    });
+    renderPlayers();
+    await savePlayers();
+  });
+
+  if (closeButton) {
+    closeButton.addEventListener("click", closeModal);
+  }
+  if (closeFooterButton) {
+    closeFooterButton.addEventListener("click", closeModal);
+  }
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  db.collection(PLAYER_ACCESS_COLLECTION)
+    .doc(PLAYER_ACCESS_DOCUMENT)
+    .onSnapshot(
+      (snapshot) => {
+        const data = snapshot.data();
+        const rawPlayers = Array.isArray(data?.players) ? data.players : [];
+        adminPlayersState.players = rawPlayers.map(normalizePlayer);
+        rebuildPinMap();
+        renderPlayers();
+      },
+      () => {
+        status.textContent = "Nie udało się pobrać listy graczy.";
+      }
+    );
 };
 
 const initAdminMessaging = () => {
@@ -780,11 +1082,12 @@ const initInstructionModal = () => {
 const bootstrap = async () => {
   const isAdmin = getAdminMode();
   document.body.classList.toggle("is-admin", isAdmin);
-  initUserTabs();
-  await loadPinFromFirestore();
+  initAdminPanelTabs();
+  initUserTabs({ isAdmin });
   initAdminMessaging();
   initAdminPin();
   initAdminTables();
+  initAdminPlayers();
   initPinGate({ isAdmin });
   initLatestMessage();
   initInstructionModal();

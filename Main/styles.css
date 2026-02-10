@@ -357,6 +357,101 @@ h1 {
   gap: 12px;
 }
 
+.admin-panel-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-2);
+}
+
+.admin-panel-tab {
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  background: rgba(0, 0, 0, 0.35);
+  border-color: var(--border2);
+}
+
+.admin-panel-tab.is-active {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: var(--gold-line);
+  color: var(--gold);
+  box-shadow: var(--glow-gold);
+}
+
+.admin-panel-content {
+  display: none;
+  gap: var(--gap-3);
+}
+
+.admin-panel-content.is-active {
+  display: grid;
+}
+
+.admin-players {
+  display: grid;
+  gap: var(--gap-2);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.players-table {
+  min-width: 700px;
+}
+
+.permissions-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.permission-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(43, 227, 139, 0.45);
+  background: rgba(43, 227, 139, 0.14);
+  color: rgba(237, 235, 230, 0.92);
+  padding: 4px 10px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--font-panel);
+}
+
+.permission-badge.is-empty {
+  border-color: var(--border2);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--muted);
+}
+
+.admin-permissions-edit {
+  padding: 8px 12px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+
+.permissions-list {
+  display: grid;
+  gap: 10px;
+}
+
+.permissions-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-body);
+  color: var(--ink);
+}
+
+.permissions-item input {
+  width: 18px;
+  height: 18px;
+}
+
 .status-text {
   font-size: var(--fs-small);
   color: var(--muted);
@@ -592,8 +687,8 @@ button.danger {
   margin-top: var(--gap-3);
   padding: 16px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border2);
-  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(125, 125, 125, 0.24);
   display: grid;
   gap: var(--gap-2);
 }
@@ -606,7 +701,7 @@ button.danger {
 
 .admin-pin p {
   margin: 0;
-  color: var(--muted);
+  color: rgba(237, 235, 230, 0.8);
 }
 
 .admin-pin-form {
@@ -620,6 +715,11 @@ button.danger {
   letter-spacing: 0.12em;
   font-family: var(--font-panel);
   color: rgba(237, 235, 230, 0.85);
+}
+
+.admin-pin-legacy-note {
+  font-size: 12px;
+  color: rgba(237, 235, 230, 0.72);
 }
 
 .admin-pin-actions {
@@ -654,6 +754,10 @@ button.danger {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.modal-card-sm {
+  width: min(520px, 100%);
 }
 
 .modal-card::before {
