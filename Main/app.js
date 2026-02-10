@@ -172,62 +172,6 @@ const updatePinVisibility = ({ isAdmin }) => {
   content.classList.toggle("is-visible", isVerified);
 };
 
-const initAdminPin = () => {
-  const input = document.querySelector("#adminPinInput");
-  const saveButton = document.querySelector("#adminPinSave");
-  const randomButton = document.querySelector("#adminPinRandom");
-  const status = document.querySelector("#adminPinStatus");
-
-  if (!input || !saveButton || !randomButton || !status) {
-    return;
-  }
-
-  input.value = "";
-  input.addEventListener("input", () => {
-    input.value = sanitizePin(input.value);
-  });
-
-  const generateRandomPin = () =>
-    Math.floor(Math.random() * Math.pow(10, PIN_LENGTH))
-      .toString()
-      .padStart(PIN_LENGTH, "0");
-
-  randomButton.addEventListener("click", () => {
-    const generatedPin = generateRandomPin();
-    input.value = generatedPin;
-    status.textContent = "Wylosowano PIN testowy (pozostałość po usuniętej funkcji).";
-  });
-
-  const firebaseApp = getFirebaseApp();
-
-  if (!firebaseApp) {
-    saveButton.disabled = true;
-    status.textContent = "Uzupełnij konfigurację Firebase, aby zapisać PIN.";
-    return;
-  }
-
-  saveButton.addEventListener("click", async () => {
-    const pinValue = sanitizePin(input.value);
-
-    if (!isPinValid(pinValue)) {
-      status.textContent = "PIN musi mieć dokładnie 5 cyfr.";
-      return;
-    }
-
-    saveButton.disabled = true;
-    status.textContent = "Zapisywanie archiwalnego PIN...";
-
-    try {
-      await firebaseApp.firestore().collection("app_settings").doc("next_game").set({ pin: pinValue });
-      status.textContent = "Zapisano PIN archiwalny. Funkcja nie wpływa na dostęp graczy.";
-    } catch (error) {
-      status.textContent = "Nie udało się zapisać PIN. Sprawdź konfigurację.";
-    } finally {
-      saveButton.disabled = false;
-    }
-  });
-};
-
 const initPinGate = ({ isAdmin }) => {
   const input = document.querySelector("#nextGamePinInput");
   const submitButton = document.querySelector("#nextGamePinSubmit");
@@ -1085,7 +1029,6 @@ const bootstrap = async () => {
   initAdminPanelTabs();
   initUserTabs({ isAdmin });
   initAdminMessaging();
-  initAdminPin();
   initAdminTables();
   initAdminPlayers();
   initPinGate({ isAdmin });

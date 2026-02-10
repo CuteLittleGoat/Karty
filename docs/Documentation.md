@@ -1,150 +1,165 @@
 # Dokumentacja techniczna — Karty
 
 ## 1. Zakres aplikacji
-Aplikacja działa jako front-end HTML/CSS/JS z Firebase Firestore. Ma dwa tryby:
+Aplikacja to front-end HTML/CSS/JS z Firebase Firestore, działający w dwóch trybach:
 - tryb użytkownika (domyślny),
 - tryb administratora (`?admin=1`).
 
 Najważniejsze moduły:
-- zarządzanie stołami,
+- panel administratora z zakładkami: Aktualności, Gracze, Turnieje, Statystyki,
+- edycja turniejów (dawna funkcja „Stoły”),
 - wysyłanie wiadomości do graczy,
-- zarządzanie listą graczy (nazwa, PIN, uprawnienia),
-- kontrola dostępu do zakładki „Najbliższa gra” po PIN-ie i uprawnieniach,
+- zarządzanie graczami (nazwa, PIN, uprawnienia),
+- kontrola dostępu do zakładki „Najbliższa gra” po PIN i uprawnieniach,
 - modal instrukcji.
 
 ## 2. Struktura plików
-- `Main/index.html` — struktura UI i modale.
-- `Main/styles.css` — pełna warstwa wizualna (kolory, fonty, siatka, formularze, modale, zakładki).
-- `Main/app.js` — logika aplikacji, integracja Firestore, render tabel i walidacje.
-- `docs/README.md` — instrukcja użytkownika.
+- `Main/index.html` — struktura widoków admin/user i modali.
+- `Main/styles.css` — warstwa wizualna: layout, typografia, komponenty, responsive.
+- `Main/app.js` — logika UI, Firestore, render list i walidacja danych.
+- `docs/README.md` — instrukcja użytkownika (klik po kliku).
 - `docs/Documentation.md` — dokumentacja techniczna.
-- `DetaleLayout.md` — rejestr stylów i zasad layoutu.
+- `DetaleLayout.md` — katalog stylów, fontów, kolorów i zasad layoutu.
 
 ## 3. HTML (`Main/index.html`)
-### 3.1 Główne sekcje
-1. Sekcja admina **Stoły** z dynamicznie renderowanymi kartami stołów i tabelami wyników.
-2. Sekcja **Panel administratora** z zakładkami:
-   - `adminSettingsTab` (Wiadomość + archiwalne pole PIN),
-   - `adminPlayersTab` (tabela graczy).
-3. Sekcja użytkownika (`next-game-card`) z zakładkami:
-   - `nextGameTab` (PIN gate + zawartość),
-   - `updatesTab` (Aktualności).
+### 3.1 Układ widoku administratora
+1. Nagłówek z tekstami:
+   - „TO NIE JEST nielegalny poker”,
+   - „TO NIE JEST nielegalne kasyno”.
+2. Przycisk `#adminInstructionButton` („Instrukcja”).
+3. Sekcja `.admin-panel-card` na pełną szerokość (`grid-column: 1 / -1`) z tytułem **Panel Administratora**.
+4. Zakładki panelu admina (`.admin-panel-tabs`):
+   - `adminNewsTab` (Aktualności),
+   - `adminPlayersTab` (Gracze),
+   - `adminTournamentsTab` (Turnieje),
+   - `adminStatsTab` (Statystyki).
+5. Karta gracza `.next-game-card` pozostaje na dole strony i zawiera podgląd „Strefa gracza”.
 
-### 3.2 Tabela graczy
-`#adminPlayersBody` jest renderowana z JS i ma kolumny:
-- Nazwa (`input` tekstowy),
-- PIN (`input` numeryczny 5 znaków),
-- Uprawnienia (lista badge + przycisk **Edytuj**),
-- Usuń (przycisk).
+### 3.2 Zawartość zakładek panelu admina
+- **Aktualności (`#adminNewsTab`)**: sekcja „Wiadomość do graczy” z textarea `#adminMessageInput`, przyciskiem `#adminMessageSend` i statusem `#adminMessageStatus`.
+- **Gracze (`#adminPlayersTab`)**: tabela z `#adminPlayersBody`, przyciskiem `#adminAddPlayer` i statusem `#adminPlayersStatus`.
+- **Turnieje (`#adminTournamentsTab`)**: przeniesiona funkcjonalność dawnych „Stołów”, elementy:
+  - `#adminAddTable`,
+  - `#adminTablesStatus`,
+  - `#adminTablesList`,
+  - podsumowanie `#summaryGameCount`, `#summaryTotalPool`.
+- **Statystyki (`#adminStatsTab`)**: placeholder tekstowy „do zrobienia później”.
 
-### 3.3 Modal uprawnień gracza
-`#playerPermissionsModal` pokazuje checkboxy dostępnych zakładek. Aktualnie lista zawiera tylko „Najbliższa gra”. Architektura jest przygotowana do rozszerzenia przez dopisanie kolejnych pozycji w tablicy `AVAILABLE_PLAYER_TABS`.
+### 3.3 Usunięte elementy
+Usunięto segment administracyjny „PIN do zakładki ‘Najbliższa gra’” (UI + logika `initAdminPin`).
 
 ## 4. CSS (`Main/styles.css`)
-### 4.1 Typografia i fonty
-Fonty z Google Fonts:
+### 4.1 Fonty i typografia
+Google Fonts:
 - Cinzel,
 - Cormorant Garamond,
 - Inter,
 - Rajdhani.
 
-Tokeny fontów:
+Tokeny:
 - `--font-title`, `--font-subtitle`, `--font-panel`, `--font-text`.
 
-### 4.2 Kolory i styl
-Główna estetyka: ciemne tło + złoto + zieleń neonowa + czerwony akcent błędu.
-Najważniejsze tokeny:
-- tło/tekst: `--bg`, `--bg2`, `--ink`, `--muted`,
-- złoto: `--gold`, `--gold-line`,
-- zieleń: `--neon`,
-- czerwony alarmowy: `--danger`.
+### 4.2 Kolory i estetyka
+Casino/noir:
+- tła: `--bg`, `--bg2`,
+- tekst: `--ink`, `--muted`,
+- akcent złoty: `--gold`, `--gold-line`,
+- akcent neon: `--neon`,
+- danger: `--danger`.
 
-### 4.3 Nowe klasy związane z funkcją graczy
-- `.admin-panel-tabs`, `.admin-panel-tab`, `.admin-panel-content` — zakładki w panelu administratora.
-- `.admin-players`, `.players-table` — kontener i tabela graczy.
-- `.permissions-tags`, `.permission-badge`, `.admin-permissions-edit` — prezentacja uprawnień i akcja edycji.
-- `.permissions-list`, `.permissions-item` — lista checkboxów w modalu uprawnień.
-- `.modal-card-sm` — mniejszy wariant modala dla uprawnień.
-- `.admin-pin` otrzymał szarą kolorystykę (pole archiwalne).
+### 4.3 Klasy kluczowe po przebudowie
+- `.admin-panel-card` — główny panel administratora na pełną szerokość strony.
+- `.admin-panel-tabs`, `.admin-panel-tab`, `.admin-panel-content` — mechanika i wygląd zakładek.
+- `.admin-tournaments` — kontener funkcji turniejowych (dawnych stołów) wewnątrz zakładki.
+- `.admin-stats-placeholder` — wizualny placeholder dla modułu statystyk.
+- usunięto style `.admin-pin*`.
 
-## 5. JavaScript (`Main/app.js`) — logika i funkcje
-### 5.1 Stałe
+## 5. JavaScript (`Main/app.js`)
+### 5.1 Stałe i dane
 - `PIN_LENGTH = 5` — długość PIN.
-- `PLAYER_ACCESS_COLLECTION = "app_settings"` i `PLAYER_ACCESS_DOCUMENT = "player_access"` — lokalizacja listy graczy w Firestore.
-- `AVAILABLE_PLAYER_TABS` — słownik zakładek, które można nadać jako uprawnienia (aktualnie `nextGameTab`).
+- `PLAYER_ACCESS_COLLECTION = "app_settings"`, `PLAYER_ACCESS_DOCUMENT = "player_access"` — lokalizacja danych graczy.
+- `AVAILABLE_PLAYER_TABS` — obecnie zawiera tylko `nextGameTab` („Najbliższa gra”).
+- `TABLES_COLLECTION` i powiązane stałe — konfiguracja turniejów/stołów.
 
-### 5.2 Stan aplikacji
-- `adminTablesState` — tabele administratora i subskrypcje wierszy.
-- `adminPlayersState`:
-  - `players` — lista graczy,
-  - `playerByPin` — mapa szybkiego wyszukiwania gracza po PIN,
-  - `editingPlayerId` — gracz aktualnie edytowany w modalu.
+### 5.2 Obsługa zakładek admina
+`initAdminPanelTabs()`:
+- nasłuchuje kliknięcia `.admin-panel-tab`,
+- aktywuje panel przez zgodność `data-target` z `id` kontenera `.admin-panel-content`,
+- domyślnie aktywny panel ustawiany jest w HTML przez klasy `is-active` (Aktualności).
 
-### 5.3 Główne funkcje dostępu i PIN
-- `sanitizePin(value)` — filtruje wejście do cyfr i ucina do 5 znaków.
-- `isPinValid(value)` — sprawdza regex `^\d{5}$`.
-- `isPlayerAllowedForTab(player, tabKey)` — sprawdza, czy gracz ma daną zakładkę w `permissions`.
-- `initPinGate({ isAdmin })`:
-  - pobiera wpisany PIN,
-  - szuka gracza po PIN w `adminPlayersState.playerByPin`,
-  - wpuszcza tylko jeśli PIN istnieje i gracz ma `nextGameTab` w uprawnieniach,
-  - w przeciwnym razie pokazuje błąd „Błędny PIN lub brak uprawnień...”.
+### 5.3 Moduł Aktualności
+`initAdminMessaging()`:
+- waliduje niepustą wiadomość,
+- zapisuje dokument do kolekcji `admin_messages` (`message`, `createdAt`, `source`),
+- czyści pole i aktualizuje status.
 
-### 5.4 Funkcje panelu administratora
-- `initAdminPanelTabs()` — obsługuje przełączanie zakładek „Ustawienia / Gracze”.
-- `initAdminMessaging()` — wysyła wiadomość do kolekcji `admin_messages`.
-- `initAdminPin()` — obsługuje archiwalne pole PIN (zapis/losowanie), które nie steruje już dostępem do „Najbliższa gra”.
-- `initAdminTables()` — pełna obsługa stołów i wierszy (`Tables` + subkolekcja `rows`).
-- `initAdminPlayers()`:
-  - subskrybuje `app_settings/player_access`,
-  - renderuje tabelę graczy,
-  - blokuje duplikaty PIN (unikalność w obrębie tabeli),
-  - zapisuje zmiany do Firestore,
-  - otwiera modal checkboxów uprawnień,
-  - usuwa i dodaje wiersze graczy.
+`initLatestMessage()`:
+- nasłuchuje najnowszej wiadomości (`orderBy createdAt desc`, `limit 1`),
+- renderuje ją w `#latestMessageOutput` po stronie gracza.
 
-### 5.5 Bootstrap
-`bootstrap()` inicjuje moduły i przełącza klasę `is-admin` na `<body>`.
+### 5.4 Moduł Gracze
+`initAdminPlayers()`:
+- subskrypcja `app_settings/player_access`,
+- normalizacja graczy (`id`, `name`, `pin`, `permissions`),
+- render tabeli, edycja pól, usuwanie i dodawanie,
+- kontrola unikalności PIN,
+- modal uprawnień na bazie `AVAILABLE_PLAYER_TABS`.
+
+### 5.5 Moduł Turnieje
+`initAdminTables()`:
+- zarządza listą turniejów (kolekcja `Tables` lub nazwa z configu),
+- obsługuje dodawanie/usuwanie turniejów,
+- obsługuje dodawanie/usuwanie i edycję wierszy `rows`,
+- liczy podsumowanie (`Suma Gier`, `Łączna pula`).
+
+### 5.6 Dostęp PIN w widoku gracza
+`initPinGate({ isAdmin })` + funkcje pomocnicze:
+- sprawdza 5-cyfrowy PIN,
+- mapuje PIN do gracza (`adminPlayersState.playerByPin`),
+- wymaga uprawnienia `nextGameTab`.
+
+### 5.7 Bootstrap
+`bootstrap()` uruchamia moduły w kolejności:
+1. tryb admin (`is-admin`),
+2. zakładki admina,
+3. zakładki użytkownika,
+4. wiadomości admin,
+5. turnieje,
+6. gracze,
+7. gate PIN użytkownika,
+8. aktualności użytkownika,
+9. modal instrukcji.
 
 ## 6. Firestore — mapowanie danych
-## 6.1 Kolekcje używane przez aplikację
+### 6.1 Kolekcje
 1. `admin_messages`
-2. `Tables` (lub nazwa z `firebaseConfig.tablesCollection`) + subkolekcja `rows`
-3. `app_settings` (dokumenty `next_game` i `player_access`)
+2. `Tables` + subkolekcja `rows`
+3. `app_settings/player_access`
 
-## 6.2 Szczegóły pól
-### `admin_messages/{docId}`
-- `message` (string) — treść komunikatu.
-- `createdAt` (timestamp) — czas dodania.
-- `source` (string) — źródło (`web-admin`).
+### 6.2 Schemat dokumentów
+`admin_messages/{docId}`:
+- `message` (string),
+- `createdAt` (timestamp),
+- `source` (string).
 
-### `app_settings/next_game`
-- `pin` (string) — archiwalny PIN po usuniętej funkcji.
+`app_settings/player_access`:
+- `players` (array):
+  - `id`,
+  - `name`,
+  - `pin` (5 cyfr),
+  - `permissions` (np. `nextGameTab`).
+- `updatedAt` (timestamp).
 
-### `app_settings/player_access`
-- `players` (array obiektów), każdy obiekt:
-  - `id` (string) — identyfikator wiersza gracza,
-  - `name` (string) — nazwa gracza,
-  - `pin` (string, 5 cyfr) — unikalny PIN gracza,
-  - `permissions` (array stringów) — lista zakładek dostępnych dla gracza (np. `nextGameTab`).
-- `updatedAt` (timestamp) — czas ostatniej zmiany listy.
-
-### `Tables/{tableId}`
+`Tables/{tableId}`:
 - `name`, `gameType`, `gameDate`, `createdAt`.
 
-### `Tables/{tableId}/rows/{rowId}`
+`Tables/{tableId}/rows/{rowId}`:
 - `playerName`, `percentAllGames`, `percentPlayedGames`, `payouts`, `totalGames`, `summary`, `deposits`, `meetings`, `points`, `rebuyTotal`, `createdAt`.
 
-## 7. Reguły działania uprawnień
-- Zakładka **Aktualności** jest zawsze dostępna bez PIN.
-- Zakładka **Najbliższa gra** wymaga:
-  1. poprawnego PIN przypisanego do istniejącego gracza,
-  2. uprawnienia `nextGameTab` w `permissions` tego gracza.
-- Brak któregoś warunku kończy się komunikatem błędu.
-
-## 8. Odtworzenie aplikacji na podstawie dokumentacji
-Aby odtworzyć rozwiązanie, trzeba zaimplementować:
-1. widoki HTML (admin + user + modale),
-2. tokeny CSS i komponenty opisane wyżej,
-3. logikę JS: render tabel, walidację PIN, kontrolę uprawnień, synchronizację Firestore,
-4. kolekcje Firestore i mapowanie pól zgodnie z sekcją 6.
+## 7. Odtworzenie aplikacji na podstawie dokumentacji
+Aby odtworzyć system 1:1:
+1. zbuduj layout z pełnoszerokim `Panel Administratora` i 4 zakładkami,
+2. dodaj dolną kartę „Strefa gracza” z zakładkami „Najbliższa gra” i „Aktualności”,
+3. odwzoruj styl z tokenów CSS i komponentów wskazanych w sekcji 4,
+4. zaimplementuj logikę JS: zakładki, Firestore, gracze, PIN, turnieje, aktualności,
+5. użyj schematów Firestore z sekcji 6.
