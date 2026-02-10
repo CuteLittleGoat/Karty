@@ -146,6 +146,7 @@ const scheduleDebouncedUpdate = (key, callback, delay = 400) => {
 
 const sanitizePin = (value) => value.replace(/\D/g, "").slice(0, PIN_LENGTH);
 const isPinValid = (value) => /^\d{5}$/.test(value);
+const generateRandomPin = () => `${Math.floor(Math.random() * 10 ** PIN_LENGTH)}`.padStart(PIN_LENGTH, "0");
 
 const getPinGateState = () => sessionStorage.getItem(PIN_STORAGE_KEY) === "1";
 
@@ -389,6 +390,20 @@ const initAdminPlayers = () => {
     });
   };
 
+  const generateUniquePlayerPin = (excludedId) => {
+    const existingPins = new Set(
+      adminPlayersState.players
+        .filter((player) => player.id !== excludedId && isPinValid(player.pin))
+        .map((player) => player.pin)
+    );
+
+    let candidate = generateRandomPin();
+    while (existingPins.has(candidate)) {
+      candidate = generateRandomPin();
+    }
+    return candidate;
+  };
+
   const renderPermissions = () => {
     modalList.innerHTML = "";
     const player = adminPlayersState.players.find((entry) => entry.id === adminPlayersState.editingPlayerId);
@@ -440,6 +455,8 @@ const initAdminPlayers = () => {
       nameCell.appendChild(nameInput);
 
       const pinCell = document.createElement("td");
+      const pinControl = document.createElement("div");
+      pinControl.className = "pin-control";
       const pinInput = document.createElement("input");
       pinInput.type = "tel";
       pinInput.className = "admin-input";
@@ -450,16 +467,43 @@ const initAdminPlayers = () => {
       pinInput.addEventListener("input", () => {
         const pinValue = sanitizePin(pinInput.value);
         pinInput.value = pinValue;
+
+        if (pinValue.length > 0 && !isPinValid(pinValue)) {
+          pinInput.setCustomValidity("PIN musi mieć dokładnie 5 cyfr.");
+        } else {
+          pinInput.setCustomValidity("");
+        }
+
         const duplicateOwnerId = getPinOwnerId(pinValue, player.id);
         if (duplicateOwnerId) {
+          pinInput.value = "";
           pinInput.setCustomValidity("PIN musi być unikalny.");
           pinInput.reportValidity();
+          updatePlayerField(player.id, "pin", "");
           return;
         }
-        pinInput.setCustomValidity("");
-        updatePlayerField(player.id, "pin", pinValue);
+
+        if (isPinValid(pinValue)) {
+          updatePlayerField(player.id, "pin", pinValue);
+        } else if (!pinValue) {
+          updatePlayerField(player.id, "pin", "");
+        }
       });
-      pinCell.appendChild(pinInput);
+
+      const pinRandomButton = document.createElement("button");
+      pinRandomButton.type = "button";
+      pinRandomButton.className = "secondary admin-pin-random";
+      pinRandomButton.textContent = "Losuj";
+      pinRandomButton.addEventListener("click", () => {
+        const randomPin = generateUniquePlayerPin(player.id);
+        pinInput.value = randomPin;
+        pinInput.setCustomValidity("");
+        updatePlayerField(player.id, "pin", randomPin);
+      });
+
+      pinControl.appendChild(pinInput);
+      pinControl.appendChild(pinRandomButton);
+      pinCell.appendChild(pinControl);
 
       const permissionsCell = document.createElement("td");
       const tags = document.createElement("div");
