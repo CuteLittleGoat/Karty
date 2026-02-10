@@ -416,6 +416,23 @@ h1 {
   min-width: 700px;
 }
 
+.pin-control {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.pin-control .admin-input {
+  min-width: 108px;
+}
+
+.admin-pin-random {
+  padding: 8px 12px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  flex-shrink: 0;
+}
+
 .permissions-tags {
   display: flex;
   flex-wrap: wrap;

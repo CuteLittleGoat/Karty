@@ -31,45 +31,30 @@
 - `.admin-panel-card` zajmuje pełną szerokość siatki (`grid-column: 1 / -1`).
 - Tytuł panelu: „Panel Administratora”.
 - Zakładki: `Aktualności`, `Gracze`, `Turnieje`, `Statystyki`.
-- Zakładki używają:
-  - `.admin-panel-tabs` (kontener),
-  - `.admin-panel-tab` (pill),
-  - `.admin-panel-tab.is-active` (złoty aktywny stan),
-  - `.admin-panel-content` / `.admin-panel-content.is-active` (ukrywanie/pokazywanie treści).
 
-### 5.2 Zakładka „Aktualności”
-- Sekcja `.admin-message` pozostaje wizualnie jak wcześniej.
-- Pole wiadomości jest szersze dzięki pełnoszerokiemu panelowi nadrzędnemu.
+### 5.2 Zakładka „Gracze” — PIN i losowanie
+- W kolumnie PIN każdy wiersz używa kontenera `.pin-control`:
+  - `display: flex`,
+  - `gap: 8px`,
+  - `align-items: center`.
+- Pole PIN (`.pin-control .admin-input`) ma minimalną szerokość `108px`, żeby obok mieścił się przycisk.
+- Przycisk `Losuj` ma klasę `.admin-pin-random`:
+  - padding `8px 12px`,
+  - font-size `11px`,
+  - letter-spacing `0.12em`,
+  - `flex-shrink: 0` (nie zwęża się przy mniejszej szerokości).
 
-### 5.3 Zakładka „Gracze”
+### 5.3 Pozostałe elementy zakładki „Gracze”
 - `.admin-players` — karta wewnętrzna z tłem noir (`rgba(0,0,0,.32)`), border `--border2`, padding `16px`.
 - `.players-table` — minimalna szerokość `700px`.
 - `.permissions-tags`, `.permission-badge`, `.admin-permissions-edit` — wizualizacja i edycja uprawnień.
 
-### 5.4 Zakładka „Turnieje”
-- Funkcjonalność dawnych „Stołów” umieszczona w `.admin-tournaments`.
-- Używa istniejących klas:
-  - `.admin-tables-header`,
-  - `.admin-tables-list`,
-  - `.admin-table-card`,
-  - `.admin-summary`.
-
-### 5.5 Zakładka „Statystyki”
-- Placeholder `.admin-stats-placeholder`:
-  - padding `20px`,
-  - border `1px solid var(--border2)`,
-  - tło `rgba(0,0,0,.32)`,
-  - font `var(--font-subtitle)`, rozmiar `22px`.
-
-### 5.6 Usunięte elementy
-- Usunięto cały segment stylów `.admin-pin*` (archiwalny PIN administratora).
-
 ## 6) Zakładki użytkownika
 - `tab-button` zachowuje styl pill.
 - `tab-button.is-active` — złoty aktywny stan.
-- PIN gate nadal w ramce dashed gold (`.pin-gate`) i z kartą `.pin-card`.
+- PIN gate w ramce dashed gold (`.pin-gate`) i z kartą `.pin-card`.
 - Sekcja „Strefa gracza” pozostaje na dole strony (`.next-game-card`).
 
 ## 7) Responsywność
-- `<720px`: przyciski w sekcji wiadomości i elementy modala układają się pionowo.
+- `<720px`: przyciski i elementy modalne układają się pionowo.
 - `<520px`: mniejszy padding modala.

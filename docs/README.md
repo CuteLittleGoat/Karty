@@ -1,115 +1,86 @@
 # Karty — instrukcja użytkownika
 
-## 1. Uruchomienie aplikacji
+## 1. Uruchomienie
 1. Otwórz plik `Main/index.html` w przeglądarce.
-2. Domyślnie zobaczysz widok gracza.
-3. Aby wejść do widoku administratora, dopisz `?admin=1` do adresu i odśwież stronę.
+2. Jeśli chcesz wejść do panelu administratora, dopisz w pasku adresu `?admin=1` i odśwież stronę.
    - Przykład: `.../Main/index.html?admin=1`
 
----
+## 2. Panel administratora (co i gdzie kliknąć)
 
-## 2. Widok administratora (szczegółowo, krok po kroku)
+### 2.1 Zakładka „Aktualności”
+1. Kliknij kartę **Aktualności** w górnej części panelu.
+2. Kliknij pole **Treść wiadomości**.
+3. Wpisz komunikat.
+4. Kliknij przycisk **Wyślij**.
+5. Sprawdź komunikat pod formularzem (status zapisu).
 
-Widzisz trzy stałe elementy:
-- nagłówek „TO NIE JEST nielegalny poker” + „TO NIE JEST nielegalne kasyno”,
-- przycisk **Instrukcja**,
-- na dole strony kartę **Strefa gracza** z podglądem widoku gracza.
+### 2.2 Zakładka „Gracze”
 
-Na środku strony jest teraz szeroki, pełny moduł **Panel Administratora** z zakładkami.
+#### Dodanie nowego gracza
+1. Kliknij zakładkę **Gracze**.
+2. Kliknij przycisk **Dodaj** pod tabelą graczy.
+3. W nowym wierszu:
+   - kliknij pole w kolumnie **Nazwa** i wpisz nazwę gracza,
+   - kliknij pole **PIN** i wpisz kod 5-cyfrowy **albo** kliknij przycisk **Losuj**.
 
-## 2.1 Zakładka „Aktualności” (domyślna po wejściu)
-Po otwarciu panelu administratora ta zakładka jest aktywna automatycznie.
+#### Jak działa pole PIN
+1. Pole PIN przyjmuje tylko cyfry.
+2. PIN jest poprawny wyłącznie wtedy, gdy ma **dokładnie 5 cyfr**.
+3. Jeżeli wpiszesz PIN, który już istnieje u innego gracza:
+   - aplikacja wyświetli komunikat walidacji,
+   - pole PIN zostanie wyczyszczone **w całości** (nie tylko ostatnia cyfra).
+4. Nie da się zapisać aktywnego PIN-u krótszego niż 5 cyfr.
 
-### Wysłanie wiadomości do graczy
-1. Kliknij w pole **Treść wiadomości**.
-2. Wpisz komunikat (np. informację o starcie rundy).
-3. Kliknij **Wyślij**.
-4. Po poprawnym zapisie zobaczysz status „Wiadomość wysłana do graczy.”
-5. Gracze zobaczą tę treść w swojej zakładce **Aktualności**.
+#### Przycisk „Losuj” przy każdym graczu
+1. W wierszu danego gracza kliknij **Losuj** obok pola PIN.
+2. Aplikacja losuje 5-cyfrowy PIN.
+3. Jeśli wylosowany PIN jest zajęty, losowanie powtarza się automatycznie aż do uzyskania unikalnego kodu.
+4. Wylosowany PIN jest od razu wpisany w pole i zapisany.
 
-## 2.2 Zakładka „Gracze”
-Zakładka służy do zarządzania listą graczy, PIN-ami i uprawnieniami.
-
-### Dodanie gracza
-1. Przejdź do zakładki **Gracze**.
-2. Kliknij **Dodaj** pod tabelą.
-3. W nowym wierszu wpisz:
-   - nazwę w kolumnie **Nazwa**,
-   - 5-cyfrowy PIN w kolumnie **PIN**.
-
-### Edycja danych gracza
-1. W tym samym wierszu kliknij pole **Nazwa** albo **PIN**.
-2. Wprowadź zmianę.
-3. Dane zapisują się automatycznie po krótkiej chwili.
-
-### Przypisywanie uprawnień do zakładek użytkownika
-1. W kolumnie **Uprawnienia** kliknij przycisk **Edytuj** przy wybranym graczu.
-2. W modalu zaznacz/odznacz checkbox przy nazwie zakładki (aktualnie: **Najbliższa gra**).
+#### Edycja uprawnień gracza
+1. W kolumnie **Uprawnienia** kliknij **Edytuj** przy wybranym graczu.
+2. W oknie modalnym zaznacz lub odznacz dostępne uprawnienia (np. „Najbliższa gra”).
 3. Kliknij **Zamknij**.
-4. Zmiana zapisuje się od razu.
 
-### Ważne zasady PIN
-- PIN musi mieć dokładnie 5 cyfr.
-- Ten sam PIN nie może być przypisany do dwóch graczy.
+#### Usuwanie gracza
+1. W wierszu gracza kliknij przycisk **Usuń**.
+2. Gracz jest od razu usuwany z listy i zapisywany.
 
-### Usunięcie gracza
-1. W wierszu gracza kliknij **Usuń**.
-2. Wiersz zostanie skasowany z tabeli i bazy.
+### 2.3 Zakładka „Turnieje”
 
-## 2.3 Zakładka „Turnieje”
-To miejsce zawiera pełną funkcjonalność dawnych „Stołów”.
+#### Dodanie turnieju
+1. Kliknij zakładkę **Turnieje**.
+2. Kliknij **Dodaj** w nagłówku sekcji.
+3. Pojawi się nowa karta turnieju (np. `Gra 1`).
 
-### Dodanie turnieju (stołu)
-1. Przejdź do **Turnieje**.
-2. Kliknij **Dodaj** (prawy górny róg sekcji).
-3. Pojawi się nowa karta rozgrywki (np. „Gra 1”).
+#### Edycja turnieju
+1. Kliknij nazwę turnieju i wpisz własną nazwę.
+2. Uzupełnij pola `rodzaj gry` i `data`.
+3. W tabeli turnieju klikaj komórki i wpisuj dane zawodników.
 
-### Edycja turnieju
-1. Kliknij nazwę stołu i wpisz własną nazwę.
-2. Uzupełnij pola metadanych:
-   - `rodzaj gry`,
-   - `data`.
-3. Zmiany zapisują się automatycznie.
+#### Dodawanie i usuwanie wierszy
+1. Kliknij **Dodaj** pod tabelą danego turnieju, aby dodać zawodnika.
+2. Kliknij **Usuń** w wierszu zawodnika, aby usunąć tylko ten wiersz.
+3. Kliknij czerwony **Usuń** przy nagłówku turnieju, aby usunąć cały turniej.
 
-### Dodawanie i usuwanie wierszy zawodników
-1. W karcie turnieju kliknij **Dodaj** pod tabelą.
-2. Uzupełnij komórki wiersza.
-3. Aby usunąć pojedynczy wiersz, kliknij **Usuń** w tym wierszu.
-4. Aby usunąć cały turniej/stół, kliknij czerwony **Usuń** obok nazwy.
-
-### Podsumowanie turniejów
-1. Pod listą turniejów znajduje się sekcja **Podsumowanie**.
-2. **Suma Gier** = liczba stołów.
-3. **Łączna pula** = suma wartości z kolumny `wpłaty` ze wszystkich stołów.
-
-## 2.4 Zakładka „Statystyki”
-1. Przejdź do zakładki **Statystyki**.
-2. Zobaczysz placeholder: **„do zrobienia później”**.
-
----
+### 2.4 Zakładka „Statystyki”
+1. Kliknij zakładkę **Statystyki**.
+2. Widoczny jest placeholder „do zrobienia później”.
 
 ## 3. Widok gracza
 
-## 3.1 Aktualności
-1. W karcie **Strefa gracza** kliknij zakładkę **Aktualności**.
-2. W polu **Najnowsze** pojawia się ostatnia wiadomość od administratora.
+### 3.1 Aktualności
+1. W sekcji „Strefa gracza” kliknij zakładkę **Aktualności**.
+2. Odczytaj najnowszy komunikat od administratora.
 
-## 3.2 Najbliższa gra
+### 3.2 Najbliższa gra (dostęp po PIN)
 1. Kliknij zakładkę **Najbliższa gra**.
-2. Wpisz 5-cyfrowy PIN.
+2. Kliknij pole PIN i wpisz 5 cyfr.
 3. Kliknij **Otwórz**.
-4. Dostęp zostanie przyznany tylko gdy:
-   - PIN istnieje,
-   - PIN należy do gracza,
-   - gracz ma uprawnienie do zakładki „Najbliższa gra”.
-
----
+4. Dostęp zostanie przyznany tylko, gdy PIN istnieje i gracz ma odpowiednie uprawnienie.
 
 ## 4. Przycisk „Instrukcja”
-1. W widoku administratora kliknij przycisk **Instrukcja** (górny pasek).
-2. Otworzy się okno modalne z treścią instrukcji.
-3. Kliknij **Odśwież**, aby pobrać najnowszą treść.
-4. Zamknij przez:
-   - **Zamknij**,
-   - ikonę `×`,
-   - kliknięcie tła.
+1. W panelu administratora kliknij **Instrukcja**.
+2. Otworzy się okno modalne.
+3. Kliknij **Odśwież**, aby pobrać aktualną treść dokumentacji.
+4. Zamknij modal przyciskiem **Zamknij**, ikoną `×` lub kliknięciem tła.
