@@ -48,23 +48,46 @@ const debounceTimers = new Map();
 const adminRefreshHandlers = new Map();
 const ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY = "adminGamesSelectedYear";
 
+const isFocusableFormControl = (element) => {
+  return element instanceof HTMLInputElement
+    || element instanceof HTMLSelectElement
+    || element instanceof HTMLTextAreaElement;
+};
+
+const supportsSelectionRange = (element) => {
+  if (element instanceof HTMLTextAreaElement) {
+    return true;
+  }
+
+  if (!(element instanceof HTMLInputElement)) {
+    return false;
+  }
+
+  const selectableTypes = new Set(["text", "search", "url", "tel", "password", "email", "number"]);
+  return selectableTypes.has(element.type);
+};
+
 const getFocusedAdminInputState = (container) => {
   if (!container) {
     return null;
   }
 
   const activeElement = document.activeElement;
-  if (!(activeElement instanceof HTMLInputElement) || !container.contains(activeElement)) {
+  if (!isFocusableFormControl(activeElement) || !container.contains(activeElement)) {
     return null;
   }
+
+  const safeSelectionStart = supportsSelectionRange(activeElement) ? activeElement.selectionStart : null;
+  const safeSelectionEnd = supportsSelectionRange(activeElement) ? activeElement.selectionEnd : null;
 
   return {
     target: activeElement.dataset.focusTarget ?? "",
     tableId: activeElement.dataset.tableId ?? "",
     rowId: activeElement.dataset.rowId ?? "",
     columnKey: activeElement.dataset.columnKey ?? "",
-    selectionStart: activeElement.selectionStart,
-    selectionEnd: activeElement.selectionEnd
+    section: activeElement.dataset.section ?? "",
+    selectionStart: safeSelectionStart,
+    selectionEnd: safeSelectionEnd
   };
 };
 
@@ -73,13 +96,14 @@ const restoreFocusedAdminInputState = (container, focusState) => {
     return;
   }
 
-  const targetInput = Array.from(container.querySelectorAll("input[data-focus-target]"))
+  const targetInput = Array.from(container.querySelectorAll("[data-focus-target]"))
     .find((input) => {
       return (
         input.dataset.focusTarget === focusState.target
         && (input.dataset.tableId ?? "") === focusState.tableId
         && (input.dataset.rowId ?? "") === focusState.rowId
         && (input.dataset.columnKey ?? "") === focusState.columnKey
+        && (input.dataset.section ?? "") === focusState.section
       );
     });
 
@@ -88,7 +112,9 @@ const restoreFocusedAdminInputState = (container, focusState) => {
   }
 
   targetInput.focus();
-  if (typeof focusState.selectionStart === "number" && typeof focusState.selectionEnd === "number") {
+  if (supportsSelectionRange(targetInput)
+    && typeof focusState.selectionStart === "number"
+    && typeof focusState.selectionEnd === "number") {
     targetInput.setSelectionRange(focusState.selectionStart, focusState.selectionEnd);
   }
 };
@@ -650,6 +676,7 @@ const initAdminPlayers = () => {
   };
 
   const renderPlayers = () => {
+    const focusState = getFocusedAdminInputState(body);
     body.innerHTML = "";
     adminPlayersState.players.forEach((player) => {
       const row = document.createElement("tr");
@@ -658,6 +685,10 @@ const initAdminPlayers = () => {
       const nameInput = document.createElement("input");
       nameInput.type = "text";
       nameInput.className = "admin-input";
+      nameInput.dataset.focusTarget = "player-field";
+      nameInput.dataset.section = "players";
+      nameInput.dataset.rowId = player.id;
+      nameInput.dataset.columnKey = "name";
       nameInput.placeholder = "Np. Jan Kowalski";
       nameInput.value = player.name;
       nameInput.addEventListener("input", () => {
@@ -671,6 +702,10 @@ const initAdminPlayers = () => {
       const pinInput = document.createElement("input");
       pinInput.type = "tel";
       pinInput.className = "admin-input";
+      pinInput.dataset.focusTarget = "player-field";
+      pinInput.dataset.section = "players";
+      pinInput.dataset.rowId = player.id;
+      pinInput.dataset.columnKey = "pin";
       pinInput.inputMode = "numeric";
       pinInput.maxLength = PIN_LENGTH;
       pinInput.placeholder = "5 cyfr";
@@ -762,6 +797,8 @@ const initAdminPlayers = () => {
       row.appendChild(actionsCell);
       body.appendChild(row);
     });
+
+    restoreFocusedAdminInputState(body, focusState);
   };
 
   addButton.addEventListener("click", async () => {
@@ -1322,6 +1359,7 @@ const initAdminGames = () => {
   };
 
   const renderGamesTable = () => {
+    const focusState = getFocusedAdminInputState(gamesTableBody);
     gamesTableBody.innerHTML = "";
 
     if (!state.selectedYear) {
@@ -1348,6 +1386,10 @@ const initAdminGames = () => {
       const gameTypeCell = document.createElement("td");
       const gameTypeSelect = document.createElement("select");
       gameTypeSelect.className = "admin-input";
+      gameTypeSelect.dataset.focusTarget = "game-list";
+      gameTypeSelect.dataset.section = "games-table";
+      gameTypeSelect.dataset.tableId = game.id;
+      gameTypeSelect.dataset.columnKey = "gameType";
       ["Cashout", "Turniej"].forEach((label) => {
         const option = document.createElement("option");
         option.value = label;
@@ -1364,6 +1406,10 @@ const initAdminGames = () => {
       const dateInput = document.createElement("input");
       dateInput.type = "date";
       dateInput.className = "admin-input";
+      dateInput.dataset.focusTarget = "game-list";
+      dateInput.dataset.section = "games-table";
+      dateInput.dataset.tableId = game.id;
+      dateInput.dataset.columnKey = "gameDate";
       dateInput.value = game.gameDate ?? getFormattedCurrentDate();
       dateInput.addEventListener("change", () => {
         const nextDate = dateInput.value || getFormattedCurrentDate();
@@ -1383,6 +1429,10 @@ const initAdminGames = () => {
       const nameInput = document.createElement("input");
       nameInput.type = "text";
       nameInput.className = "admin-input";
+      nameInput.dataset.focusTarget = "game-list";
+      nameInput.dataset.section = "games-table";
+      nameInput.dataset.tableId = game.id;
+      nameInput.dataset.columnKey = "name";
       nameInput.value = game.name ?? "";
       nameInput.placeholder = "Nazwa gry";
       nameInput.addEventListener("input", () => {
@@ -1419,6 +1469,8 @@ const initAdminGames = () => {
       row.append(gameTypeCell, dateCell, nameCell, deleteCell);
       gamesTableBody.appendChild(row);
     });
+
+    restoreFocusedAdminInputState(gamesTableBody, focusState);
   };
 
   const renderSummaries = () => {
@@ -1519,6 +1571,7 @@ const initAdminGames = () => {
       return;
     }
 
+    const focusState = getFocusedAdminInputState(modalBody);
     modalMeta.textContent = `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"}`;
     modalBody.innerHTML = "";
 
@@ -1529,6 +1582,11 @@ const initAdminGames = () => {
       const playerCell = document.createElement("td");
       const playerSelect = document.createElement("select");
       playerSelect.className = "admin-input";
+      playerSelect.dataset.focusTarget = "game-details-row";
+      playerSelect.dataset.section = "games-modal";
+      playerSelect.dataset.tableId = gameId;
+      playerSelect.dataset.rowId = row.id;
+      playerSelect.dataset.columnKey = "playerName";
       const currentPlayerName = typeof row.playerName === "string" ? row.playerName : "";
       const options = [...state.playerOptions];
       const emptyOption = document.createElement("option");
@@ -1560,6 +1618,11 @@ const initAdminGames = () => {
         const input = document.createElement("input");
         input.type = "text";
         input.className = "admin-input";
+        input.dataset.focusTarget = "game-details-row";
+        input.dataset.section = "games-modal";
+        input.dataset.tableId = gameId;
+        input.dataset.rowId = row.id;
+        input.dataset.columnKey = key;
         input.value = row[key] ?? "";
         input.addEventListener("input", () => {
           input.value = sanitizeIntegerInput(input.value);
@@ -1583,6 +1646,11 @@ const initAdminGames = () => {
       const championshipCell = document.createElement("td");
       const championshipInput = document.createElement("input");
       championshipInput.type = "checkbox";
+      championshipInput.dataset.focusTarget = "game-details-row";
+      championshipInput.dataset.section = "games-modal";
+      championshipInput.dataset.tableId = gameId;
+      championshipInput.dataset.rowId = row.id;
+      championshipInput.dataset.columnKey = "championship";
       championshipInput.checked = Boolean(row.championship);
       championshipInput.addEventListener("change", () => {
         void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ championship: championshipInput.checked });
@@ -1602,6 +1670,8 @@ const initAdminGames = () => {
       tr.append(playerCell, entryFeeCell, rebuyCell, payoutCell, profitCell, pointsCell, championshipCell, deleteCell);
       modalBody.appendChild(tr);
     });
+
+    restoreFocusedAdminInputState(modalBody, focusState);
   };
 
   const openModal = (gameId) => {
