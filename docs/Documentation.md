@@ -30,6 +30,7 @@ System udostępnia moduły:
   - Statystyki.
 - Karta „Strefa gracza” (podgląd części użytkownika).
 - Modal instrukcji i modal edycji uprawnień gracza.
+- W nagłówku panelu administratora przycisk `Odśwież` do pełnego przeładowania widoku.
 
 ### 3.2 Zakładka „Gracze”
 Tabela zawiera kolumny:
@@ -51,6 +52,8 @@ W kolumnie PIN każdy wiersz renderuje:
 - `button.primary`, `button.secondary`, `button.danger` — trzy warianty akcji.
 - `.admin-input` — wspólny styl pól formularzy administratora.
 - `.admin-players`, `.players-table`, `.permissions-tags` — layout modułu graczy.
+- `.admin-panel-header` — poziome ułożenie tytułu „Panel Administratora” i przycisku `Odśwież` w prawym górnym rogu.
+- `.permission-badge` — złote kapsułki uprawnień (border `--gold-line`, kolor `--gold`, glow `--glow-gold`) odpowiadające stylistyce aktywnej zakładki użytkownika.
 - `.pin-control` — kontener flex łączący pole PIN i przycisk `Losuj`.
 - `.admin-pin-random` — styl przycisku losowania PIN (mniejszy, kompaktowy wariant secondary).
 
@@ -113,6 +116,7 @@ Każdy wiersz gracza ma przycisk `Losuj`:
 - `initLatestMessage()` — odczyt najnowszej wiadomości i render po stronie gracza.
 - `initAdminTables()` — operacje CRUD na turniejach i wierszach tabeli.
 - `initAdminPanelTabs()` + `initUserTabs()` — zarządzanie zakładkami.
+- `initAdminPanelRefresh()` — podpina kliknięcie przycisku `#adminPanelRefresh` i wykonuje `window.location.reload()` dla szybkiego odświeżenia całego widoku.
 - `initInstructionModal()` — modal instrukcji z odświeżaniem treści.
 
 ## 6. Firestore — model danych
@@ -140,5 +144,7 @@ Każdy wiersz gracza ma przycisk `Losuj`:
    - moduł graczy z walidacją PIN (5 cyfr, unikalność, pełne czyszczenie duplikatu),
    - przycisk `Losuj` z pętlą do unikalnego PIN,
    - bramkę dostępu po PIN i uprawnieniach,
-   - identyczne działanie bramki PIN w widoku użytkownika i w sekcji „Strefa gracza” podczas trybu administratora (bez bypassu).
+   - identyczne działanie bramki PIN w widoku użytkownika i w sekcji „Strefa gracza” podczas trybu administratora (bez bypassu),
+   - przycisk `Odśwież` w panelu admina wywołujący pełny reload strony,
+   - złote znaczniki nazw uprawnień w tabeli graczy (wizualnie jak aktywna zakładka).
 4. Podłącz konfigurację Firebase (`config/firebase-config.js`) i biblioteki compat.

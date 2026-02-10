@@ -49,6 +49,22 @@
 - `.players-table` — minimalna szerokość `700px`.
 - `.permissions-tags`, `.permission-badge`, `.admin-permissions-edit` — wizualizacja i edycja uprawnień.
 
+### 5.4 Nagłówek panelu administratora i odświeżanie
+- `.admin-panel-header` ustawia układ flex dla tytułu i przycisku:
+  - `display: flex`,
+  - `justify-content: space-between`,
+  - `align-items: center`,
+  - `flex-wrap: wrap` dla małych szerokości.
+- Przycisk `Odśwież` znajduje się w prawym górnym rogu karty „Panel Administratora”.
+
+### 5.5 Oznaczenia uprawnień graczy
+- `.permission-badge` używa złotego stylu jak aktywna zakładka:
+  - border `var(--gold-line)`,
+  - tło `rgba(212, 175, 55, 0.2)`,
+  - kolor tekstu `var(--gold)`,
+  - `box-shadow: var(--glow-gold)`.
+- `.permission-badge.is-empty` pozostaje neutralny (ciemny), aby odróżnić brak uprawnień od przyznanych dostępów.
+
 ## 6) Zakładki użytkownika
 - `tab-button` zachowuje styl pill.
 - `tab-button.is-active` — złoty aktywny stan.

@@ -7,6 +7,13 @@
 
 ## 2. Panel administratora (co i gdzie kliknąć)
 
+
+### 2.0 Odświeżenie panelu widoku
+1. Wejdź do trybu administratora (`?admin=1`).
+2. W prawym górnym rogu karty **Panel Administratora** kliknij przycisk **Odśwież**.
+3. Strona przeładuje się natychmiast (pełne odświeżenie widoku).
+4. Użyj tej opcji, gdy chcesz szybko wyczyścić bieżący stan formularzy lub odświeżyć dane po błędnym wpisaniu PIN.
+
 ### 2.1 Zakładka „Aktualności”
 1. Kliknij kartę **Aktualności** w górnej części panelu.
 2. Kliknij pole **Treść wiadomości**.
@@ -41,6 +48,7 @@
 1. W kolumnie **Uprawnienia** kliknij **Edytuj** przy wybranym graczu.
 2. W oknie modalnym zaznacz lub odznacz dostępne uprawnienia (np. „Najbliższa gra”).
 3. Kliknij **Zamknij**.
+4. Po zapisaniu nazwy uprawnień widoczne w tabeli są oznaczone złotymi kapsułkami (spójnie ze stylem aktywnej zakładki).
 
 #### Usuwanie gracza
 1. W wierszu gracza kliknij przycisk **Usuń**.

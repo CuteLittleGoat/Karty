@@ -168,6 +168,18 @@ h1 {
   grid-column: 1 / -1;
 }
 
+.admin-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-2);
+  flex-wrap: wrap;
+}
+
+.admin-panel-header h2 {
+  margin-bottom: 0;
+}
+
 .admin-tables-header {
   display: flex;
   align-items: center;
@@ -444,9 +456,10 @@ h1 {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgba(43, 227, 139, 0.45);
-  background: rgba(43, 227, 139, 0.14);
-  color: rgba(237, 235, 230, 0.92);
+  border: 1px solid var(--gold-line);
+  background: rgba(212, 175, 55, 0.2);
+  color: var(--gold);
+  box-shadow: var(--glow-gold);
   padding: 4px 10px;
   font-size: 11px;
   letter-spacing: 0.08em;
