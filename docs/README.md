@@ -41,26 +41,26 @@ Zakładka ma teraz 3 obszary:
 
 Dodatkowo pod tabelą gier pojawiają się sekcje **„Podsumowanie gry [nazwa]”** dla każdej gry z wybranego roku.
 
-### 4.1 Lewy panel „Lata”
-#### Dodanie roku
-1. W zakładce **Gry** kliknij **Dodaj rok**.
-2. Wpisz rok `RRRR` (np. `2027`).
-3. Kliknij **OK**.
-4. Kliknij nowy rok na liście, aby go aktywować.
+### 4.1 Lewy panel „Lata” (działa automatycznie)
+W tej wersji **nie ma już przycisków „Dodaj rok” i „Usuń rok”**.
 
-#### Usunięcie roku
-1. Kliknij rok na liście po lewej.
-2. Kliknij **Usuń rok**.
+Rok pojawia się automatycznie, gdy w tabeli gier istnieje wpis z datą z tego roku.
+- jeśli dodasz grę z datą `2026-02-11`, po lewej pojawi się przycisk `2026`,
+- jeśli później dodasz grę z datą `2027-10-10`, pojawi się także przycisk `2027`.
+
+Usuwanie roku też jest automatyczne: gdy skasujesz ostatnią grę z danego roku, przycisk tego roku znika z panelu.
+
+Aplikacja zapamiętuje ostatnio kliknięty rok (po odświeżeniu strony nadal będzie aktywny ten sam rok, jeśli nadal istnieje w danych).
 
 ### 4.2 Segment „Tabele Gier” (góra)
 #### Dodanie nowej gry
 1. Kliknij przycisk **Dodaj** w nagłówku „Tabele Gier”.
-2. Upewnij się, że po lewej stronie jest aktywny właściwy rok (podświetlony przycisk roku).
-3. Aplikacja tworzy nowy wiersz z domyślnymi wartościami:
+2. Jeśli masz aktywny rok po lewej stronie, nowa gra dostanie datę `YYYY-01-01` tego roku.
+3. Jeżeli nie ma jeszcze żadnych gier (panel lat jest pusty), nowa gra dostanie bieżący rok systemowy (`YYYY-01-01`) i automatycznie utworzy pierwszy przycisk roku po lewej stronie.
+4. Aplikacja tworzy nowy wiersz z domyślnymi wartościami:
    - **Rodzaj Gry**: `Cashout`.
-   - **Data**: `01-01` aktywnego roku z panelu „Lata” (np. dla aktywnego roku `2027` nowa gra dostaje datę `2027-01-01`).
+   - **Data**: `01-01` aktywnego roku (albo bieżącego roku, gdy to pierwszy wpis).
    - **Nazwa**: `Gra X`, gdzie `X` to pierwszy wolny numer dla tej konkretnej daty.
-4. Jeśli z jakiegoś powodu rok nie jest aktywny, system użyje bieżącej daty systemowej.
 
 #### Edycja wiersza gry
 1. W kolumnie **Rodzaj Gry** wybierz z listy `Cashout` lub `Turniej`.
@@ -113,8 +113,9 @@ Sekcja pokazuje zbiorcze wartości dla aktywnego roku, m.in.:
 
 ### 4.6 Najważniejsza zmiana architektury
 Zakładka **Gry** działa niezależnie od zakładki **Turnieje**:
-- dane i lista lat są liczone z dat wpisanych w zakładce **Gry**,
-- zakładka Gry nie pobiera już danych z Turniejów.
+- dane i lista lat są liczone wyłącznie z dat wpisanych w zakładce **Gry**,
+- lata nie są już dodawane ręcznie — panel lat jest generowany automatycznie z kolekcji gier,
+- zakładka Gry nie pobiera danych z Turniejów.
 
 ---
 
