@@ -415,6 +415,72 @@ h1 {
   letter-spacing: 0.04em;
 }
 
+.admin-games-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: var(--gap-3);
+}
+
+.admin-games-sidebar,
+.admin-games-content {
+  display: grid;
+  gap: var(--gap-2);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.admin-games-sidebar-header {
+  padding: 0;
+  border: none;
+}
+
+.admin-games-years-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-games-years-list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-games-year-button {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.admin-games-year-button.is-active {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: var(--gold-line);
+  color: var(--gold);
+  box-shadow: var(--glow-gold);
+}
+
+.admin-games-section {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-games-link {
+  border: none;
+  padding: 0;
+  background: transparent;
+  color: var(--gold);
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--font-text);
+  font-size: var(--fs-body);
+  cursor: pointer;
+}
+
+.admin-games-link:hover {
+  transform: none;
+  box-shadow: none;
+  text-decoration: underline;
+}
+
 .admin-players {
   display: grid;
   gap: var(--gap-2);
@@ -839,6 +905,10 @@ body.modal-open {
 
   .icon-button {
     align-self: flex-end;
+  }
+
+  .admin-games-layout {
+    grid-template-columns: 1fr;
   }
 }
 

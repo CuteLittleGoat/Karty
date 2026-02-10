@@ -10,6 +10,7 @@ System udostępnia moduły:
 - Gracze (lista, PIN, uprawnienia),
 - Turnieje,
 - Statystyki (placeholder),
+- Gry (lata + tabela turniejów + modal szczegółów),
 - bramka PIN do zakładki „Najbliższa gra”.
 
 ## 2. Struktura plików
@@ -32,9 +33,10 @@ System udostępnia moduły:
   - Aktualności,
   - Gracze,
   - Turnieje,
+  - Gry,
   - Statystyki.
 - Karta „Strefa gracza” (podgląd części użytkownika).
-- Modal instrukcji i modal edycji uprawnień gracza.
+- Modal instrukcji, modal edycji uprawnień gracza i modal szczegółów gry.
 - W nagłówku panelu administratora przycisk `Odśwież` oraz pole statusu `#adminPanelRefreshStatus`.
 
 ### 3.2 Zakładka „Gracze”
@@ -47,6 +49,23 @@ Tabela zawiera kolumny:
 W kolumnie PIN każdy wiersz renderuje:
 - input numeryczny (maks. 5 cyfr),
 - przycisk `Losuj` do wygenerowania unikalnego kodu.
+
+
+### 3.3 Zakładka „Gry”
+Struktura zakładki składa się z dwóch kolumn:
+- lewy panel (`.admin-games-sidebar`) z listą lat (`#adminGamesYearsList`),
+- prawa sekcja (`.admin-games-content`) z dwiema tabelami: „Statystyki” i „Tabele Gier”.
+
+Elementy sterujące:
+- `#adminGamesAddYear` — przycisk dodawania roku,
+- `#adminGamesDeleteYear` — przycisk usuwania aktualnie zaznaczonego roku.
+
+Tabela gier (`#adminGamesTableBody`) pokazuje:
+- `Rodzaj gry` (`gameType`),
+- `Data` (`gameDate`),
+- `Nazwa` (`name`, klikalna).
+
+Kliknięcie nazwy otwiera modal `#gameDetailsModal`, który renderuje wszystkie kolumny z `TABLE_COLUMNS` i wszystkie wiersze z subkolekcji `rows` dla wybranego turnieju.
 
 ## 4. CSS (`Main/styles.css`)
 ### 4.1 Tokeny i fonty
@@ -61,6 +80,10 @@ W kolumnie PIN każdy wiersz renderuje:
 - `.permission-badge` — złote kapsułki uprawnień (border `--gold-line`, kolor `--gold`, glow `--glow-gold`) odpowiadające stylistyce aktywnej zakładki użytkownika.
 - `.pin-control` — kontener flex łączący pole PIN i przycisk `Losuj`.
 - `.admin-pin-random` — styl przycisku losowania PIN (mniejszy, kompaktowy wariant secondary).
+- `.admin-games-layout` — dwukolumnowy układ zakładki „Gry” (sidebar lat + obszar tabel).
+- `.admin-games-year-button` i `.admin-games-year-button.is-active` — przyciski lat z podświetleniem aktywnego roku.
+- `.admin-games-link` — klikalna nazwa gry w tabeli, wizualnie jako link.
+
 
 ## 5. JavaScript (`Main/app.js`)
 
@@ -120,12 +143,13 @@ Każdy wiersz gracza ma przycisk `Losuj`:
 - `initAdminMessaging()` — wysyłanie wiadomości do graczy (`admin_messages`).
 - `initLatestMessage()` — odczyt najnowszej wiadomości i render po stronie gracza.
 - `initAdminTables()` — operacje CRUD na turniejach i wierszach tabeli.
+- `initAdminGames()` — logika zakładki „Gry”: lista lat, synchronizacja z datami turniejów, tabela „Tabele Gier”, modal szczegółów.
 - `initAdminPanelTabs()` + `initUserTabs()` — zarządzanie zakładkami.
 - `initAdminPanelRefresh()` — odświeża dane tylko dla aktualnie aktywnej zakładki administratora bez przełączania widoku i bez przeładowania całej strony.
 - `initInstructionModal()` — modal instrukcji z odświeżaniem treści.
 
 ### 5.5 Mechanizm odświeżania danych w panelu administratora
-- `adminRefreshHandlers` (Map) przechowuje funkcje odświeżające przypisane do identyfikatora zakładki (`adminNewsTab`, `adminPlayersTab`, `adminTournamentsTab`).
+- `adminRefreshHandlers` (Map) przechowuje funkcje odświeżające przypisane do identyfikatora zakładki (`adminNewsTab`, `adminPlayersTab`, `adminTournamentsTab`, `adminGamesTab`).
 - `registerAdminRefreshHandler(tabId, handler)` rejestruje callback odświeżania dla konkretnej zakładki.
 - Po kliknięciu `#adminPanelRefresh`:
   1. kod wykrywa aktywny panel (`.admin-panel-content.is-active`),
@@ -138,8 +162,23 @@ Rejestrowane handlery:
 - `adminNewsTab` (`initAdminMessaging`) — wykonuje odczyt najnowszego dokumentu z `admin_messages`.
 - `adminPlayersTab` (`initAdminPlayers`) — pobiera dokument `app_settings/player_access`, normalizuje listę i renderuje tabelę graczy.
 - `adminTournamentsTab` (`initAdminTables`) — pobiera wszystkie turnieje i ich wiersze, aktualizuje `adminTablesState`, potem renderuje widok.
+- `adminGamesTab` (`initAdminGames`) — wywołuje odświeżenie danych turniejów, a następnie odtwarza listę lat i tabelę gier.
 
 Efekt: przycisk „Odśwież” nie przenosi już użytkownika do „Aktualności”, ponieważ nie wykonuje `window.location.reload()`, tylko odświeża dane w aktualnej zakładce.
+
+
+### 5.6 Szczegóły modułu „Gry”
+- `extractYearFromDate(value)` — wyciąga rok (4 cyfry) z pola daty turnieju; używa ostatniego dopasowania `19xx/20xx`.
+- `normalizeYearList(years)` — usuwa duplikaty, waliduje zakres lat i sortuje malejąco.
+- `loadSavedGameYears()` / `saveGameYears(years)` — trwałość listy lat w `localStorage` (`adminGamesYears`).
+- `registerAdminTablesListener(listener)` + `notifyAdminTablesListeners()` — mechanizm powiadamiania zakładki „Gry” o zmianach w module „Turnieje”.
+- `initAdminGames()`:
+  1. ładuje listę lat (domyślnie `2026`, `2025`),
+  2. scala lata ręczne z latami wykrytymi z dat turniejów,
+  3. renderuje panel lat i wybór aktywnego roku,
+  4. renderuje tabelę gier dla wybranego roku,
+  5. otwiera modal szczegółów gry z pełnym zestawem kolumn i danych graczy,
+  6. rejestruje odświeżanie dla zakładki `adminGamesTab`.
 
 ## 6. Firestore — model danych
 ### 6.1 Kolekcje

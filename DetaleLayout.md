@@ -30,7 +30,7 @@
 ### 5.1 Panel Administratora
 - `.admin-panel-card` zajmuje pełną szerokość siatki (`grid-column: 1 / -1`).
 - Tytuł panelu: „Panel Administratora”.
-- Zakładki: `Aktualności`, `Gracze`, `Turnieje`, `Statystyki`.
+- Zakładki: `Aktualności`, `Gracze`, `Turnieje`, `Gry`, `Statystyki`.
 
 ### 5.2 Zakładka „Gracze” — PIN i losowanie
 - W kolumnie PIN każdy wiersz używa kontenera `.pin-control`:
@@ -66,6 +66,23 @@
   - `box-shadow: var(--glow-gold)`.
 - `.permission-badge.is-empty` pozostaje neutralny (ciemny), aby odróżnić brak uprawnień od przyznanych dostępów.
 
+### 5.6 Zakładka „Gry”
+- `.admin-games-layout`:
+  - `display: grid`,
+  - kolumny `220px` + `1fr`,
+  - odstęp `var(--gap-3)`.
+- `.admin-games-sidebar` i `.admin-games-content`:
+  - tło noir `rgba(0, 0, 0, 0.32)`,
+  - border `1px solid var(--border2)`,
+  - zaokrąglenie `var(--radius-md)`,
+  - padding `16px`.
+- `.admin-games-years-actions` i `.admin-games-years-list` renderują pionowe grupy przycisków.
+- `.admin-games-year-button.is-active` używa złotego stanu aktywnego jak zakładki (`--gold-line`, `--gold`, `--glow-gold`).
+- `.admin-games-link` (nazwa gry w tabeli):
+  - wygląda jak link (brak obramowania i tła),
+  - kolor `var(--gold)`,
+  - hover: podkreślenie bez transformacji i bez glow.
+
 ## 6) Zakładki użytkownika
 - `tab-button` zachowuje styl pill.
 - `tab-button.is-active` — złoty aktywny stan.
@@ -73,5 +90,5 @@
 - Sekcja „Strefa gracza” pozostaje na dole strony (`.next-game-card`).
 
 ## 7) Responsywność
-- `<720px`: przyciski i elementy modalne układają się pionowo.
+- `<720px`: przyciski i elementy modalne układają się pionowo; układ zakładki „Gry” przechodzi z 2 kolumn na 1 kolumnę.
 - `<520px`: mniejszy padding modala.
