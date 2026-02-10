@@ -140,7 +140,57 @@ Dolna tabela `Statystyki` pokazuje agregaty dla aktywnego roku:
 - liczba gier,
 - łączna pula.
 
-## 6. Inne kluczowe funkcje JS
+## 6. Stabilizacja fokusu pól (rozwiązanie problemu „znika podświetlenie pola”)
+
+### 6.1 Objaw błędu przed poprawką
+W modułach administracyjnych aplikacja intensywnie korzysta z `onSnapshot(...)` Firestore. Każda zmiana zapisana do bazy wywołuje ponowny render odpowiedniej tabeli/modala (`innerHTML = ""` + odbudowa węzłów DOM).
+
+Przed poprawką, gdy użytkownik wpisywał znaki do pola, po przyjściu odświeżenia z Firestore tworzony był nowy element `<input>`/`<select>`, a przeglądarka traciła odniesienie do poprzednio aktywnego elementu. Skutek dla użytkownika:
+- znikało wizualne podświetlenie aktywnego pola,
+- wpisywanie było przerywane,
+- trzeba było ponownie kliknąć to samo pole, aby dokończyć wpisywanie,
+- w przypadku pól tekstowych kursor wracał do domyślnej pozycji zamiast zostać tam, gdzie był.
+
+### 6.2 Miejsca, gdzie problem występował
+Problem został potwierdzony i naprawiony we wszystkich głównych obszarach edycji danych:
+- zakładka **Turnieje** (wcześniej naprawione),
+- zakładka **Gracze** (`Nazwa`, `PIN`),
+- zakładka **Gry** (tabela gier: `Rodzaj Gry`, `Data`, `Nazwa`),
+- modal **Szczegóły gry** (`Gracz`, pola liczbowe, `Mistrzostwo`).
+
+### 6.3 Implementacja techniczna (krok po kroku)
+1. **Uogólnienie detekcji aktywnego pola**
+   - dodano `isFocusableFormControl(element)`, które rozpoznaje `HTMLInputElement`, `HTMLSelectElement`, `HTMLTextAreaElement`.
+2. **Bezpieczne zapamiętanie pozycji kursora**
+   - dodano `supportsSelectionRange(element)` i warunkowe pobieranie `selectionStart/selectionEnd` tylko dla pól, które to wspierają.
+3. **Rozszerzenie klucza identyfikacji pola**
+   - stan fokusu obejmuje teraz: `data-focus-target`, `data-table-id`, `data-row-id`, `data-column-key`, oraz dodatkowe `data-section`.
+   - `data-section` eliminuje kolizje identyfikatorów pomiędzy podobnymi tabelami/modałami.
+4. **Przywracanie fokusu po renderze**
+   - `restoreFocusedAdminInputState(...)` wyszukuje element po komplecie `data-*`, ustawia `focus()` i odtwarza selekcję kursora, jeśli to możliwe.
+5. **Wpięcie mechanizmu do wszystkich rendererów z przebudową DOM**
+   - `renderPlayers()`:
+     - zapamiętanie fokusu przed `body.innerHTML = ""`,
+     - odtworzenie fokusu po odbudowaniu wierszy.
+   - `renderGamesTable()`:
+     - analogiczny mechanizm dla tabeli gier.
+   - `renderModal(gameId)`:
+     - analogiczny mechanizm dla wierszy szczegółów gry.
+6. **Nadanie identyfikatorów `data-*` wszystkim edytowalnym kontrolkom**
+   - pola w `Gracze`: `data-focus-target="player-field"` + `data-section="players"` + identyfikacja wiersza/kolumny,
+   - pola w tabeli `Gry`: `data-focus-target="game-list"` + `data-section="games-table"` + `gameId` + kolumna,
+   - pola w modalu szczegółów: `data-focus-target="game-details-row"` + `data-section="games-modal"` + `gameId` + `rowId` + kolumna.
+
+### 6.4 Dlaczego rozwiązanie działa
+W momencie przebudowy widoku stare węzły DOM znikają, ale przed usunięciem zapisywany jest „odcisk palca” aktywnego kontrolera (`data-*` + pozycja kursora). Po renderze nowy element o tym samym identyfikatorze logicznym jest odnajdywany i otrzymuje fokus. Użytkownik widzi ciągłe podświetlenie i może pisać bez ponownego klikania.
+
+### 6.5 Efekt końcowy
+- brak zrywania wpisywania podczas autosynchronizacji Firestore,
+- brak utraty podświetlenia aktywnego pola,
+- zachowanie pozycji kursora w polach tekstowych,
+- spójne zachowanie we wszystkich zakładkach administracyjnych, które renderują dane reaktywnie.
+
+## 7. Inne kluczowe funkcje JS
 - `initAdminPlayers()` — zarządzanie graczami i PIN,
 - `initAdminNews()` — wysyłka wiadomości,
 - `initAdminTables()` — zarządzanie zakładką Turnieje,
@@ -148,7 +198,7 @@ Dolna tabela `Statystyki` pokazuje agregaty dla aktywnego roku:
 - `initInstructionModal()` — ładowanie instrukcji do modala,
 - `initPinGate()` — wejście PIN po stronie gracza.
 
-## 7. Jak odtworzyć aplikację tylko na podstawie dokumentacji
+## 8. Jak odtworzyć aplikację tylko na podstawie dokumentacji
 1. Zbuduj HTML z panelem admina (zakładki, tabele, modale) i strefą gracza.
 2. Dodaj style noir/gold/green oraz siatkę kart i komponenty tabel.
 3. W JS dodaj:
@@ -158,12 +208,13 @@ Dolna tabela `Statystyki` pokazuje agregaty dla aktywnego roku:
    - pełny CRUD dla Gracze, Turnieje, Gry,
    - logikę nazw `Gra X` zależnie od daty,
    - modal szczegółów gry z walidacją liczb,
+   - mechanizm stabilizacji fokusu pól (`data-*` identyfikujące + zapamiętywanie/odtwarzanie kursora po renderze),
    - obliczenia `+/-`, `Pula`, `% puli`, sortowanie,
    - agregaty roczne w sekcji Statystyki (w zakładce Gry).
 4. Podłącz `firebase-app-compat` i `firebase-firestore-compat`.
 
 
-## 8. Reguły Firestore (aktualny wariant z produkcji)
+## 9. Reguły Firestore (aktualny wariant z produkcji)
 Wersja reguł podana przez użytkownika (działa z domyślną konfiguracją `gamesCollection: "Tables"` oraz `gameDetailsCollection: "rows"`):
 
 ```

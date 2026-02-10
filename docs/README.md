@@ -33,6 +33,16 @@ Zakładka **Statystyki** (osobna karta) została usunięta — statystyki są te
 
 ---
 
+### 3.3 Stabilność kursora podczas wpisywania (ważne)
+1. Wejdź do **Gracze**.
+2. Kliknij pole **Nazwa** albo **PIN** dowolnego gracza.
+3. Wpisuj tekst/cyfry ciągiem (bez dodatkowego klikania po każdej literze).
+4. Oczekiwany efekt po poprawce: aktywne pole pozostaje zaznaczone (zachowuje fokus), a kursor zostaje w tym samym miejscu nawet wtedy, gdy dane właśnie synchronizują się z bazą Firestore.
+
+Działa to także, gdy równolegle zapisuje się inny wiersz i tabela jest odświeżana.
+
+---
+
 ## 4. Zakładka „Gry” — pełna instrukcja krok po kroku
 Zakładka ma teraz 3 obszary:
 1. **Lewa kolumna „Lata”**.
@@ -116,6 +126,19 @@ Zakładka **Gry** działa niezależnie od zakładki **Turnieje**:
 - dane i lista lat są liczone wyłącznie z dat wpisanych w zakładce **Gry**,
 - lata nie są już dodawane ręcznie — panel lat jest generowany automatycznie z kolekcji gier,
 - zakładka Gry nie pobiera danych z Turniejów.
+
+---
+
+### 4.7 Stabilność wpisywania w zakładce „Gry” i w „Szczegółach gry”
+Po tej poprawce nie trzeba już ponownie klikać w pole po każdej synchronizacji danych:
+
+1. W tabeli gier kliknij **Nazwa** i wpisuj długi tekst.
+2. Bez klikania przejdź strzałkami w tekście i dopisuj kolejne znaki.
+3. Zmień w tym samym wierszu **Data** lub **Rodzaj Gry**.
+4. Kliknij **Szczegóły** i w modalu wpisuj wartości w kolumnach: **Wpisowe**, **Rebuy/Add-on**, **Wypłata**, **Punkty**.
+5. Oczekiwany efekt: fokus i pozycja kursora są automatycznie przywracane po każdym przebudowaniu widoku, więc piszesz ciągiem bez zrywania podświetlenia pola.
+
+Mechanizm działa dla pól tekstowych, pól liczbowych wpisywanych jako tekst, selectów i checkboxa „Mistrzostwo” w szczegółach gry.
 
 ---
 
