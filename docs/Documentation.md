@@ -142,7 +142,7 @@ Każdy wiersz gracza ma przycisk `Losuj`:
 ## 5.4 Inne moduły
 - `initAdminMessaging()` — wysyłanie wiadomości do graczy (`admin_messages`).
 - `initLatestMessage()` — odczyt najnowszej wiadomości i render po stronie gracza.
-- `initAdminTables()` — operacje CRUD na turniejach i wierszach tabeli.
+- `initAdminTables()` — operacje CRUD na turniejach i wierszach tabeli, z utrzymaniem fokusu/pozycji kursora przy ponownym renderze po synchronizacji Firestore.
 - `initAdminGames()` — logika zakładki „Gry”: lista lat, synchronizacja z datami turniejów, tabela „Tabele Gier”, modal szczegółów.
 - `initAdminPanelTabs()` + `initUserTabs()` — zarządzanie zakładkami.
 - `initAdminPanelRefresh()` — odświeża dane tylko dla aktualnie aktywnej zakładki administratora bez przełączania widoku i bez przeładowania całej strony.
@@ -179,6 +179,17 @@ Efekt: przycisk „Odśwież” nie przenosi już użytkownika do „Aktualnośc
   4. renderuje tabelę gier dla wybranego roku,
   5. otwiera modal szczegółów gry z pełnym zestawem kolumn i danych graczy,
   6. rejestruje odświeżanie dla zakładki `adminGamesTab`.
+
+### 5.7 Stabilność edycji pól w zakładce „Turnieje”
+Aby usunąć problem utraty aktywnego pola po wpisaniu znaku, moduł turniejów ma mechanizm odtwarzania fokusu:
+- `getFocusedAdminInputState(container)` zapisuje identyfikator aktualnie aktywnego inputa (`tableId`, `rowId`, `columnKey`, typ pola) oraz zakres zaznaczenia (`selectionStart`, `selectionEnd`) przed przebudową DOM.
+- Każde pole edycyjne w turnieju otrzymuje metadane `data-*` (`data-focus-target`, `data-table-id`, `data-row-id`, `data-column-key`), które jednoznacznie identyfikują to pole po ponownym renderze.
+- `restoreFocusedAdminInputState(container, focusState)` po renderze wyszukuje odpowiadający input i przywraca fokus oraz pozycję kursora.
+
+Efekt działania:
+1. administrator może wpisywać nazwę gry, datę i dane wierszy bez ponownego klikania po każdej synchronizacji,
+2. nawet po automatycznym odświeżeniu przez `onSnapshot` aktywne pole nie „gubi” podświetlenia,
+3. zachowana zostaje wygoda edycji wolnego i szybkiego wpisywania danych.
 
 ## 6. Firestore — model danych
 ### 6.1 Kolekcje

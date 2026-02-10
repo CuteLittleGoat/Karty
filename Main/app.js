@@ -63,6 +63,51 @@ const notifyAdminTablesListeners = () => {
   });
 };
 
+const getFocusedAdminInputState = (container) => {
+  if (!container) {
+    return null;
+  }
+
+  const activeElement = document.activeElement;
+  if (!(activeElement instanceof HTMLInputElement) || !container.contains(activeElement)) {
+    return null;
+  }
+
+  return {
+    target: activeElement.dataset.focusTarget ?? "",
+    tableId: activeElement.dataset.tableId ?? "",
+    rowId: activeElement.dataset.rowId ?? "",
+    columnKey: activeElement.dataset.columnKey ?? "",
+    selectionStart: activeElement.selectionStart,
+    selectionEnd: activeElement.selectionEnd
+  };
+};
+
+const restoreFocusedAdminInputState = (container, focusState) => {
+  if (!container || !focusState) {
+    return;
+  }
+
+  const targetInput = Array.from(container.querySelectorAll("input[data-focus-target]"))
+    .find((input) => {
+      return (
+        input.dataset.focusTarget === focusState.target
+        && (input.dataset.tableId ?? "") === focusState.tableId
+        && (input.dataset.rowId ?? "") === focusState.rowId
+        && (input.dataset.columnKey ?? "") === focusState.columnKey
+      );
+    });
+
+  if (!targetInput) {
+    return;
+  }
+
+  targetInput.focus();
+  if (typeof focusState.selectionStart === "number" && typeof focusState.selectionEnd === "number") {
+    targetInput.setSelectionRange(focusState.selectionStart, focusState.selectionEnd);
+  }
+};
+
 const registerAdminRefreshHandler = (tabId, handler) => {
   if (!tabId || typeof handler !== "function") {
     return;
@@ -869,6 +914,7 @@ const initAdminTables = () => {
   };
 
   const renderTables = () => {
+    const focusState = getFocusedAdminInputState(list);
     list.innerHTML = "";
 
     adminTablesState.tableList.forEach((table) => {
@@ -881,6 +927,9 @@ const initAdminTables = () => {
       const gameTypeInput = document.createElement("input");
       gameTypeInput.type = "text";
       gameTypeInput.className = "admin-input";
+      gameTypeInput.dataset.focusTarget = "table-meta";
+      gameTypeInput.dataset.tableId = table.id;
+      gameTypeInput.dataset.columnKey = "gameType";
       gameTypeInput.value = table.gameType ?? DEFAULT_TABLE_META.gameType;
       gameTypeInput.placeholder = DEFAULT_TABLE_META.gameType;
       gameTypeInput.addEventListener("input", () => {
@@ -893,6 +942,9 @@ const initAdminTables = () => {
       const gameDateInput = document.createElement("input");
       gameDateInput.type = "text";
       gameDateInput.className = "admin-input";
+      gameDateInput.dataset.focusTarget = "table-meta";
+      gameDateInput.dataset.tableId = table.id;
+      gameDateInput.dataset.columnKey = "gameDate";
       gameDateInput.value = table.gameDate ?? DEFAULT_TABLE_META.gameDate;
       gameDateInput.placeholder = DEFAULT_TABLE_META.gameDate;
       gameDateInput.addEventListener("input", () => {
@@ -911,6 +963,8 @@ const initAdminTables = () => {
       const nameInput = document.createElement("input");
       nameInput.type = "text";
       nameInput.className = "admin-input";
+      nameInput.dataset.focusTarget = "table-name";
+      nameInput.dataset.tableId = table.id;
       nameInput.value = table.name ?? getNextTableName([]);
       nameInput.placeholder = "Nazwa stołu";
       nameInput.addEventListener("input", () => {
@@ -959,6 +1013,10 @@ const initAdminTables = () => {
           const input = document.createElement("input");
           input.type = "text";
           input.className = "admin-input";
+          input.dataset.focusTarget = "table-row";
+          input.dataset.tableId = table.id;
+          input.dataset.rowId = row.id;
+          input.dataset.columnKey = column.key;
           input.value = row[column.key] ?? "";
           input.addEventListener("input", () => {
             const value = input.value;
@@ -1030,6 +1088,7 @@ const initAdminTables = () => {
     });
 
     updateSummary();
+    restoreFocusedAdminInputState(list, focusState);
   };
 
   db.collection(tablesCollectionName)
