@@ -5,6 +5,7 @@
 5. Plik Documentation.md ma służyć do tego, żeby inny użytkownik tylko czytając dokumentację mógł odtworzyć aplikację
 6. Każda zmiana dotycząca wyglądu jakiegoś elementu musi mieć odzwierciedlenie w zawartości pliku DetaleLayout.md
 7. Plik DetaleLayout.md to repozytorium użytych fontów, styli, kolorów itp.
-Jeżeli polecenie użytkownika nie dotyczy zmiany kodu a tylko analizy to wnioski zapisz w folderze Analizy w nowoutworzonym pliku o odekwatnej nazwie do przeprowadzanej analizy
-Folderu Analizy nie uwzględniaj w żadnych dokumentacjach i instrukcjach
-Ignoruj zawartość folderu MigracjaAndroid
+8. Jeżeli polecenie użytkownika nie dotyczy zmiany kodu a tylko analizy to wnioski zapisz w folderze Analizy w nowoutworzonym pliku o odekwatnej nazwie do przeprowadzanej analizy
+9. Folderu Analizy nie uwzględniaj w żadnych dokumentacjach i instrukcjach
+10. Ignoruj zawartość folderu MigracjaAndroid
+11. Nie wykonuj próbnych zrzutów ekranu. Pomiń ten etap i przejdź do tworzenia PR.
