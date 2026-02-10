@@ -74,6 +74,8 @@
 1. Kliknij nazwę turnieju i wpisz własną nazwę.
 2. Uzupełnij pola `rodzaj gry` i `data`.
 3. W tabeli turnieju klikaj komórki i wpisuj dane zawodników.
+4. Podczas wpisywania możesz pisać ciągiem bez ponownego klikania — po zapisach do Firestore fokus i pozycja kursora są automatycznie utrzymywane w aktualnie edytowanym polu.
+5. Jeśli zatrzymasz pisanie na chwilę i dane się zsynchronizują, pole nadal pozostanie aktywne, więc możesz kontynuować od razu.
 
 #### Dodawanie i usuwanie wierszy
 1. Kliknij **Dodaj** pod tabelą danego turnieju, aby dodać zawodnika.
