@@ -101,17 +101,18 @@
 2. Kliknij przycisk **Usuń rok**.
 3. Rok znika z listy, a aplikacja automatycznie zaznacza kolejny dostępny rok.
 
-#### Tabela „Statystyki”
-1. W sekcji **Statystyki** widoczna jest obecnie jedna pozycja: **W budowie**.
-
 #### Tabela „Tabele Gier”
 1. Kliknij rok po lewej stronie.
-2. W tabeli **Tabele Gier** zobaczysz wszystkie turnieje, których pole `data` (uzupełniane w zakładce **Turnieje**) zawiera wybrany rok.
+2. W sekcji **Tabele Gier** (górna tabela po prawej stronie) zobaczysz wszystkie turnieje, których pole `data` (uzupełniane w zakładce **Turnieje**) zawiera wybrany rok.
 3. Wiersz pokazuje trzy informacje: **Rodzaj gry**, **Data**, **Nazwa**.
 4. Kliknij nazwę gry w kolumnie **Nazwa**.
 5. Otworzy się dodatkowe okno (modal).
 6. W modalu zobaczysz wszystkie dane graczy z tej gry (te same kolumny, które są w tabeli turnieju, np. `nazwa gracza`, `% z wszystkich gier`, `% procent z rozegranych gier`, `wypłaty`, itd.).
 7. Zamknij okno przez przycisk **Zamknij**, ikonę `×` lub kliknięcie tła modala.
+
+#### Tabela „Statystyki”
+1. Sekcja **Statystyki** znajduje się pod tabelą **Tabele Gier** (na dole prawej kolumny).
+2. W sekcji **Statystyki** widoczna jest obecnie jedna pozycja: **W budowie**.
 
 ### 2.5 Zakładka „Statystyki”
 1. Kliknij zakładkę **Statystyki**.

@@ -82,6 +82,7 @@
   - wygląda jak link (brak obramowania i tła),
   - kolor `var(--gold)`,
   - hover: podkreślenie bez transformacji i bez glow.
+- Kolejność sekcji w prawej kolumnie zakładki „Gry”: najpierw tabela „Tabele Gier”, poniżej sekcja „Statystyki”.
 
 ## 6) Zakładki użytkownika
 - `tab-button` zachowuje styl pill.
