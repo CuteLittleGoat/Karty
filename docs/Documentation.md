@@ -4,7 +4,7 @@
 - `Main/index.html` — struktura UI (panel admina, zakładki, modale).
 - `Main/styles.css` — pełne style (layout, typografia, komponenty, responsywność).
 - `Main/app.js` — logika aplikacji (zakładki, Firebase, CRUD, obliczenia).
-- `config/firebase-config.js` — konfiguracja projektu Firebase.
+- `config/firebase-config.js` — konfiguracja projektu Firebase (`tablesCollection`, `gamesCollection`, klucze projektu).
 
 ## 2. Fonty, style i zasady wizualne
 Aplikacja używa fontów Google:
@@ -41,8 +41,8 @@ Najważniejsze kolekcje Firestore:
 Logika znajduje się w `initAdminGames()`.
 
 ### 5.1 Stan modułu (state)
-- `years` — lista lat dla sidebaru,
-- `selectedYear` — aktywny rok,
+- `years` — lista lat wyliczana automatycznie z `gameDate` dokumentów `Games`,
+- `selectedYear` — aktywny rok (zapisywany lokalnie jako ostatni wybór administratora),
 - `games` — lista gier z kolekcji `Games`,
 - `detailsByGame` — mapa `gameId -> rows` (subkolekcja `details`),
 - `detailsUnsubscribers` — aktywne subskrypcje snapshotów szczegółów,
@@ -50,17 +50,17 @@ Logika znajduje się w `initAdminGames()`.
 - `playerOptions` — lista nazw graczy z zakładki Gracze.
 
 ### 5.2 Dodawanie gry
-Przycisk `#adminGamesAddGame` dodaje dokument do `Games` z polami:
+Przycisk `#adminGamesAddGame` dodaje dokument do kolekcji skonfigurowanej jako `gamesCollection` (domyślnie `Games`) z polami:
 - `gameType: "Cashout"`,
-- `gameDate: getDefaultGameDateForYear(state.selectedYear)`,
+- `gameDate: getDefaultGameDateForYear(targetYear)`,
 - `name: getNextGameNameForDate(state.games, gameDate)`,
 - `createdAt` (timestamp serwera).
 
-Nowa funkcja `getDefaultGameDateForYear(year)` działa tak:
-- jeżeli `year` to poprawna liczba całkowita w zakresie `1900-2999`, zwraca datę `${year}-01-01`,
-- w przeciwnym razie zwraca bieżącą datę z `getFormattedCurrentDate()`.
+`targetYear` wyznaczany jest tak:
+- jeśli administrator ma aktywny rok w panelu lat, używany jest ten rok,
+- jeśli to pierwszy wpis i aktywny rok jeszcze nie istnieje, używany jest bieżący rok systemowy.
 
-Dzięki temu nowa gra trafia bezpośrednio do aktualnie wybranego roku w panelu „Lata”, co eliminuje wrażenie, że przycisk „Dodaj” nie działa.
+Dzięki temu przycisk „Dodaj” działa także przy pustych danych i od razu tworzy poprawny wpis, który generuje pierwszy rok w panelu bocznym.
 
 ### 5.3 Logika nazewnictwa „Gra X”
 Użyte funkcje:
@@ -85,10 +85,16 @@ Zakładka `Turnieje` działa na kolekcji `Tables`.
 Brak synchronizacji i współdzielonego źródła między nimi.
 
 ### 5.6 Sidebar lat w zakładce Gry
-Lata są wyznaczane z `gameDate` dokumentów `Games`:
+Lata są wyznaczane wyłącznie z `gameDate` dokumentów kolekcji gier:
 - parsowanie roku: `extractYearFromDate()`,
 - normalizacja i sortowanie malejące: `normalizeYearList()`,
-- zapis lokalny listy lat: `localStorage` (`ADMIN_GAMES_YEARS_STORAGE_KEY`).
+- **brak ręcznego dodawania/usuwania lat** — przyciski lat pojawiają się i znikają automatycznie zależnie od danych,
+- w `localStorage` zapisywany jest tylko ostatnio wybrany rok (`ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY`).
+
+Reguła aktywności:
+- gdy danych nie ma i pojawi się pierwsza gra, jej rok staje się automatycznie aktywny,
+- gdy pojawiają się kolejne lata, aktywny rok nie zmienia się samoczynnie,
+- jeżeli aktywny rok zniknie z danych (np. usunięto ostatnią grę), aktywowany jest pierwszy dostępny rok z listy.
 
 ### 5.7 Modal „Szczegóły gry” — tryb edycji
 Tabela w modalu zawiera kolumny:

@@ -13,6 +13,7 @@ const TABLES_COLLECTION = "Tables";
 const GAMES_COLLECTION = "Games";
 const GAME_DETAILS_COLLECTION = "details";
 const TABLES_COLLECTION_CONFIG_KEY = "tablesCollection";
+const GAMES_COLLECTION_CONFIG_KEY = "gamesCollection";
 const TABLE_ROWS_COLLECTION = "rows";
 const DEFAULT_TABLE_META = {
   gameType: "rodzaj gry",
@@ -44,8 +45,7 @@ const adminPlayersState = {
 };
 const debounceTimers = new Map();
 const adminRefreshHandlers = new Map();
-const ADMIN_GAMES_YEARS_STORAGE_KEY = "adminGamesYears";
-const DEFAULT_GAMES_YEARS = [2026, 2025];
+const ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY = "adminGamesSelectedYear";
 
 const getFocusedAdminInputState = (container) => {
   if (!container) {
@@ -219,6 +219,15 @@ const getTablesCollectionName = () => {
       : "";
   return configured || TABLES_COLLECTION;
 };
+
+const getGamesCollectionName = () => {
+  const configured =
+    window.firebaseConfig && typeof window.firebaseConfig[GAMES_COLLECTION_CONFIG_KEY] === "string"
+      ? window.firebaseConfig[GAMES_COLLECTION_CONFIG_KEY].trim()
+      : "";
+  return configured || GAMES_COLLECTION;
+};
+
 
 const formatFirestoreError = (error) => {
   if (!error) {
@@ -396,23 +405,17 @@ const normalizeYearList = (years) => {
   return Array.from(unique).sort((a, b) => b - a);
 };
 
-const loadSavedGameYears = () => {
-  try {
-    const raw = localStorage.getItem(ADMIN_GAMES_YEARS_STORAGE_KEY);
-    if (!raw) {
-      return [...DEFAULT_GAMES_YEARS];
-    }
-    const parsed = JSON.parse(raw);
-    const normalized = normalizeYearList(parsed);
-    return normalized.length ? normalized : [...DEFAULT_GAMES_YEARS];
-  } catch (error) {
-    return [...DEFAULT_GAMES_YEARS];
-  }
+const loadSavedSelectedGamesYear = () => {
+  const rawValue = Number(localStorage.getItem(ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY));
+  return Number.isInteger(rawValue) && rawValue > 1900 && rawValue < 3000 ? rawValue : null;
 };
 
-const saveGameYears = (years) => {
-  const normalized = normalizeYearList(years);
-  localStorage.setItem(ADMIN_GAMES_YEARS_STORAGE_KEY, JSON.stringify(normalized));
+const saveSelectedGamesYear = (year) => {
+  if (!Number.isInteger(year) || year < 1900 || year > 2999) {
+    localStorage.removeItem(ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY);
+    return;
+  }
+  localStorage.setItem(ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY, String(year));
 };
 
 const initAdminPanelTabs = () => {
@@ -1196,8 +1199,6 @@ const initAdminTables = () => {
 
 const initAdminGames = () => {
   const yearsList = document.querySelector("#adminGamesYearsList");
-  const addYearButton = document.querySelector("#adminGamesAddYear");
-  const deleteYearButton = document.querySelector("#adminGamesDeleteYear");
   const addGameButton = document.querySelector("#adminGamesAddGame");
   const gamesTableBody = document.querySelector("#adminGamesTableBody");
   const summariesContainer = document.querySelector("#adminGamesSummaries");
@@ -1210,7 +1211,7 @@ const initAdminGames = () => {
   const modalCloseFooter = document.querySelector("#gameDetailsCloseFooter");
   const modalAddRowButton = document.querySelector("#gameDetailsAddRow");
 
-  if (!yearsList || !addYearButton || !deleteYearButton || !gamesTableBody || !summariesContainer || !statsBody || !status || !addGameButton) {
+  if (!yearsList || !gamesTableBody || !summariesContainer || !statsBody || !status || !addGameButton) {
     return;
   }
 
@@ -1218,15 +1219,14 @@ const initAdminGames = () => {
   if (!firebaseApp) {
     status.textContent = "Uzupełnij konfigurację Firebase, aby zarządzać grami.";
     addGameButton.disabled = true;
-    addYearButton.disabled = true;
-    deleteYearButton.disabled = true;
     return;
   }
 
   const db = firebaseApp.firestore();
+  const gamesCollectionName = getGamesCollectionName();
   const state = {
-    years: loadSavedGameYears(),
-    selectedYear: null,
+    years: [],
+    selectedYear: loadSavedSelectedGamesYear(),
     games: [],
     detailsByGame: new Map(),
     detailsUnsubscribers: new Map(),
@@ -1296,7 +1296,7 @@ const initAdminGames = () => {
     if (!state.years.length) {
       const info = document.createElement("p");
       info.className = "status-text";
-      info.textContent = "Brak lat. Dodaj pierwszy rok.";
+      info.textContent = "Brak lat. Dodaj pierwszą grę w tabeli, aby rok pojawił się automatycznie.";
       yearsList.appendChild(info);
       return;
     }
@@ -1308,6 +1308,7 @@ const initAdminGames = () => {
       yearButton.textContent = String(year);
       yearButton.addEventListener("click", () => {
         state.selectedYear = year;
+        saveSelectedGamesYear(state.selectedYear);
         renderYears();
         renderGamesTable();
         renderSummaries();
@@ -1352,7 +1353,7 @@ const initAdminGames = () => {
       });
       gameTypeSelect.value = game.gameType === "Turniej" ? "Turniej" : "Cashout";
       gameTypeSelect.addEventListener("change", () => {
-        void db.collection(GAMES_COLLECTION).doc(game.id).update({ gameType: gameTypeSelect.value });
+        void db.collection(gamesCollectionName).doc(game.id).update({ gameType: gameTypeSelect.value });
       });
       gameTypeCell.appendChild(gameTypeSelect);
 
@@ -1369,7 +1370,7 @@ const initAdminGames = () => {
           const otherGames = state.games.filter((entry) => entry.id !== game.id);
           updatePayload.name = getNextGameNameForDate(otherGames, nextDate);
         }
-        void db.collection(GAMES_COLLECTION).doc(game.id).update(updatePayload);
+        void db.collection(gamesCollectionName).doc(game.id).update(updatePayload);
       });
       dateCell.appendChild(dateInput);
 
@@ -1384,7 +1385,7 @@ const initAdminGames = () => {
       nameInput.addEventListener("input", () => {
         const value = nameInput.value;
         scheduleDebouncedUpdate(`game-name-${game.id}`, () => {
-          void db.collection(GAMES_COLLECTION).doc(game.id).update({ name: value });
+          void db.collection(gamesCollectionName).doc(game.id).update({ name: value });
         });
       });
       const detailsButton = document.createElement("button");
@@ -1401,7 +1402,7 @@ const initAdminGames = () => {
       deleteButton.className = "danger";
       deleteButton.textContent = "Usuń";
       deleteButton.addEventListener("click", async () => {
-        const gameRef = db.collection(GAMES_COLLECTION).doc(game.id);
+        const gameRef = db.collection(gamesCollectionName).doc(game.id);
         const detailsSnapshot = await gameRef.collection(GAME_DETAILS_COLLECTION).get();
         const batch = db.batch();
         detailsSnapshot.forEach((doc) => {
@@ -1547,7 +1548,7 @@ const initAdminGames = () => {
       });
       playerSelect.value = currentPlayerName;
       playerSelect.addEventListener("change", () => {
-        void db.collection(GAMES_COLLECTION).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).update({ playerName: playerSelect.value });
+        void db.collection(gamesCollectionName).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).update({ playerName: playerSelect.value });
       });
       playerCell.appendChild(playerSelect);
 
@@ -1560,7 +1561,7 @@ const initAdminGames = () => {
         input.addEventListener("input", () => {
           input.value = sanitizeIntegerInput(input.value);
           scheduleDebouncedUpdate(`detail-${gameId}-${row.id}-${key}`, () => {
-            void db.collection(GAMES_COLLECTION).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).update({ [key]: input.value });
+            void db.collection(gamesCollectionName).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).update({ [key]: input.value });
           });
         });
         td.appendChild(input);
@@ -1581,7 +1582,7 @@ const initAdminGames = () => {
       championshipInput.type = "checkbox";
       championshipInput.checked = Boolean(row.championship);
       championshipInput.addEventListener("change", () => {
-        void db.collection(GAMES_COLLECTION).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).update({ championship: championshipInput.checked });
+        void db.collection(gamesCollectionName).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).update({ championship: championshipInput.checked });
       });
       championshipCell.appendChild(championshipInput);
 
@@ -1591,7 +1592,7 @@ const initAdminGames = () => {
       deleteButton.className = "danger admin-row-delete";
       deleteButton.textContent = "Usuń";
       deleteButton.addEventListener("click", () => {
-        void db.collection(GAMES_COLLECTION).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).delete();
+        void db.collection(gamesCollectionName).doc(gameId).collection(GAME_DETAILS_COLLECTION).doc(row.id).delete();
       });
       deleteCell.appendChild(deleteButton);
 
@@ -1616,14 +1617,13 @@ const initAdminGames = () => {
       .map((game) => extractYearFromDate(game.gameDate))
       .filter((year) => Number.isInteger(year));
 
-    const combinedYears = normalizeYearList([...state.years, ...yearsFromGames]);
-    state.years = combinedYears.length ? combinedYears : [...DEFAULT_GAMES_YEARS];
+    state.years = normalizeYearList(yearsFromGames);
 
     if (!state.selectedYear || !state.years.includes(state.selectedYear)) {
       state.selectedYear = state.years[0] ?? null;
     }
 
-    saveGameYears(state.years);
+    saveSelectedGamesYear(state.selectedYear);
     renderYears();
     renderGamesTable();
     renderSummaries();
@@ -1640,7 +1640,7 @@ const initAdminGames = () => {
     }
   });
 
-  db.collection(GAMES_COLLECTION)
+  db.collection(gamesCollectionName)
     .orderBy("createdAt", "asc")
     .onSnapshot((snapshot) => {
       state.games = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -1658,7 +1658,7 @@ const initAdminGames = () => {
         if (state.detailsUnsubscribers.has(game.id)) {
           return;
         }
-        const unsubscribe = db.collection(GAMES_COLLECTION).doc(game.id).collection(GAME_DETAILS_COLLECTION).orderBy("createdAt", "asc").onSnapshot((rowSnapshot) => {
+        const unsubscribe = db.collection(gamesCollectionName).doc(game.id).collection(GAME_DETAILS_COLLECTION).orderBy("createdAt", "asc").onSnapshot((rowSnapshot) => {
           state.detailsByGame.set(game.id, rowSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
           if (state.activeGameIdInModal === game.id) {
             renderModal(game.id);
@@ -1673,56 +1673,16 @@ const initAdminGames = () => {
     });
 
   addGameButton.addEventListener("click", async () => {
-    const gameDate = getDefaultGameDateForYear(state.selectedYear);
+    const fallbackYear = new Date().getFullYear();
+    const targetYear = Number.isInteger(state.selectedYear) ? state.selectedYear : fallbackYear;
+    const gameDate = getDefaultGameDateForYear(targetYear);
     const name = getNextGameNameForDate(state.games, gameDate);
-    await db.collection(GAMES_COLLECTION).add({
+    await db.collection(gamesCollectionName).add({
       gameType: "Cashout",
       gameDate,
       name,
       createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
     });
-  });
-
-  addYearButton.addEventListener("click", () => {
-    const rawYear = window.prompt("Podaj rok (RRRR):", String(new Date().getFullYear()));
-    if (rawYear === null) {
-      return;
-    }
-    const parsedYear = Number(rawYear.trim());
-    if (!Number.isInteger(parsedYear) || parsedYear < 1900 || parsedYear > 2999) {
-      status.textContent = "Podaj poprawny rok w formacie RRRR.";
-      return;
-    }
-    if (state.years.includes(parsedYear)) {
-      state.selectedYear = parsedYear;
-      renderYears();
-      renderGamesTable();
-      renderSummaries();
-      renderStatsTable();
-      return;
-    }
-    state.years = normalizeYearList([...state.years, parsedYear]);
-    state.selectedYear = parsedYear;
-    saveGameYears(state.years);
-    renderYears();
-    renderGamesTable();
-    renderSummaries();
-    renderStatsTable();
-  });
-
-  deleteYearButton.addEventListener("click", () => {
-    if (!state.selectedYear) {
-      status.textContent = "Najpierw wybierz rok do usunięcia.";
-      return;
-    }
-    state.years = state.years.filter((year) => year !== state.selectedYear);
-    state.years = state.years.length ? state.years : [...DEFAULT_GAMES_YEARS];
-    state.selectedYear = state.years[0] ?? null;
-    saveGameYears(state.years);
-    renderYears();
-    renderGamesTable();
-    renderSummaries();
-    renderStatsTable();
   });
 
   if (modalClose) {
@@ -1736,7 +1696,7 @@ const initAdminGames = () => {
       if (!state.activeGameIdInModal) {
         return;
       }
-      await db.collection(GAMES_COLLECTION).doc(state.activeGameIdInModal).collection(GAME_DETAILS_COLLECTION).add({
+      await db.collection(gamesCollectionName).doc(state.activeGameIdInModal).collection(GAME_DETAILS_COLLECTION).add({
         playerName: "",
         entryFee: "",
         rebuy: "",

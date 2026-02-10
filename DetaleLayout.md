@@ -19,7 +19,7 @@
 ## 4) Zakładka Gry — szczegóły wizualne
 ### 4.1 Layout
 - `.admin-games-layout`: dwie kolumny (`220px` + `1fr`).
-- Lewa kolumna: lista lat + przyciski „Dodaj rok/Usuń rok”.
+- Lewa kolumna: automatyczna lista lat (bez osobnych przycisków „Dodaj rok/Usuń rok”).
 - Prawa kolumna: status + sekcje tabel.
 
 ### 4.2 Sekcja „Tabele Gier”
