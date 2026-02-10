@@ -84,6 +84,12 @@
   - hover: podkreślenie bez transformacji i bez glow.
 - Kolejność sekcji w prawej kolumnie zakładki „Gry”: najpierw tabela „Tabele Gier”, poniżej sekcja „Statystyki”.
 
+
+### 5.7 Modal „Instrukcja”
+- W stopce modala instrukcji znajduje się tylko jeden przycisk akcji: `Zamknij` (`#instructionCloseFooter`, styl `button.primary`).
+- Przycisk `Odśwież` został usunięty z układu modala, a pobieranie treści odbywa się automatycznie po otwarciu okna.
+- W części treści widoczny jest status (`#instructionStatus`, klasa `.status-text`) informujący o stanie pobierania dokumentu.
+
 ## 6) Zakładki użytkownika
 - `tab-button` zachowuje styl pill.
 - `tab-button.is-active` — złoty aktywny stan.

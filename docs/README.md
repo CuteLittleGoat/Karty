@@ -136,5 +136,7 @@
 ## 4. Przycisk „Instrukcja”
 1. W panelu administratora kliknij **Instrukcja**.
 2. Otworzy się okno modalne.
-3. Kliknij **Odśwież**, aby pobrać aktualną treść dokumentacji.
-4. Zamknij modal przyciskiem **Zamknij**, ikoną `×` lub kliknięciem tła.
+3. Treść instrukcji pobiera się automatycznie po otwarciu okna (bez dodatkowego klikania).
+4. Gdy pobieranie się powiedzie, pod nagłówkiem pojawi się komunikat: `Instrukcja została pobrana.`
+5. Jeśli pojawi się błąd, zamknij i otwórz okno ponownie, aby ponowić pobranie.
+6. Zamknij modal przyciskiem **Zamknij**, ikoną `×` lub kliknięciem tła.
