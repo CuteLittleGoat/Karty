@@ -12,7 +12,7 @@
 - Czerwony: akcje destrukcyjne (`Usuń`).
 
 ## 3) Panel Administratora — aktualny układ
-- Zakładki: `Aktualności`, `Gracze`, `Turnieje`, `Gry`.
+- Zakładki: `Aktualności`, `Regulamin`, `Gracze`, `Turnieje`, `Gry`.
 - Usunięta osobna zakładka `Statystyki`.
 - Sekcja `Statystyki` została przeniesiona do wnętrza zakładki `Gry` (dolna tabela).
 
@@ -68,3 +68,14 @@
   - kursor `pointer` dla czytelnej interakcji.
 - Zmiana zachowuje istniejący styl noir/gold i nie modyfikuje pozostałych kolumn (`Nazwa`, `PIN`, `Uprawnienia`, `Usuń`).
 
+
+
+## 8) Zakładka „Regulamin” — detale wizualne
+- Panel administratora:
+  - nowy kontener `.admin-rules` oparty o ten sam język wizualny co `.admin-message` (ciemne tło, subtelna ramka, zaokrąglenia).
+  - pole `textarea` ma zwiększoną wysokość minimalną (`170px`), aby wygodnie edytować dłuższy tekst zasad.
+  - przyciski akcji (`Edytuj`, `Zapisz`, `Usuń`) są grupowane w `.admin-rules-actions` z zawijaniem do nowej linii.
+- Widok użytkownika:
+  - zakładka `Regulamin` używa wariantu `.latest-rules` z takim samym typograficznym stylem jak `Aktualności`, ale z większym polem na treść.
+- Mobile (`max-width: 720px`):
+  - `.admin-rules-actions` przechodzi do układu kolumnowego dla wygodniejszego klikania przycisków.
