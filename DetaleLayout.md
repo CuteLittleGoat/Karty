@@ -79,3 +79,35 @@
   - zakładka `Regulamin` używa wariantu `.latest-rules` z takim samym typograficznym stylem jak `Aktualności`, ale z większym polem na treść.
 - Mobile (`max-width: 720px`):
   - `.admin-rules-actions` zachowuje responsywne pozycjonowanie komunikatu statusu.
+
+## 9) Zakładki „Czat” — detale wizualne
+### 9.1 Czat w panelu administratora
+- Dodana nowa karta panelu admina: `Czat`.
+- Kontener `.admin-chat`:
+  - tło noir (`rgba(0,0,0,0.32)`),
+  - cienka ramka `var(--border2)`,
+  - zaokrąglenie `var(--radius-md)`,
+  - układ `grid` ze stałymi odstępami.
+- Lista wiadomości `.admin-chat-list`:
+  - przewijana pionowo (`max-height: 440px`, `overflow: auto`),
+  - każdy wpis w karcie `.admin-chat-item` z subtelnym obramowaniem.
+- Metadata wpisu `.admin-chat-meta` używa mniejszego fontu (`--fs-small`) i koloru przygaszonego (`--muted`).
+- Przycisk usuwania pojedynczej wiadomości `.admin-chat-delete` używa stylu `danger` (czerwony akcent destrukcyjny).
+
+### 9.2 Czat w strefie gracza
+- Dodana nowa karta użytkownika: `Czat`.
+- Widok jest dwuetapowy:
+  1. `.pin-gate` (bramka PIN),
+  2. `.chat-content` (lista wiadomości + formularz), aktywowany klasą `.is-visible`.
+- Lista wiadomości `.chat-messages`:
+  - przewijana (`max-height: 420px`),
+  - każdy wpis jako `.chat-message-item` z nagłówkiem autora i czasu (`.chat-message-header`, `.chat-message-date`).
+- Formularz `.chat-form`:
+  - etykieta uppercase w stylu panelowym,
+  - `textarea` z tym samym motywem focus co reszta aplikacji (gold/neon glow),
+  - akcje w `.chat-form-actions`.
+- Pusty stan listy pokazuje tekst z klasą `.chat-empty`.
+
+### 9.3 Responsywność czatu
+- Dla `max-width: 720px` sekcja `.chat-form-actions` przechodzi na układ kolumnowy,
+- dzięki temu przycisk wysyłki i status nie nachodzą na siebie na wąskich ekranach.

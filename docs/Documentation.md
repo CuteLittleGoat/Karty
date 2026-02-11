@@ -260,93 +260,9 @@ Nie bierze udziału w:
 4. Podłącz `firebase-app-compat` i `firebase-firestore-compat`.
 
 
-## 9. Reguły Firestore (aktualny wariant z produkcji)
-Wersja reguł podana przez użytkownika (działa z domyślną konfiguracją `gamesCollection: "Tables"` oraz `gameDetailsCollection: "rows"`):
+## 9. Firestore — aktualne Rules i struktura bazy danych
 
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /admin_messages/{docId} {
-      allow read, write: if true;
-    }
-    match /app_settings/{docId} {
-      allow read, write: if true;
-    }
-    match /Tables/{tableId} {
-      allow read, write: if true;
-
-      match /rows/{rowId} {
-        allow read, write: if true;
-      }
-    }
-    match /Collection1/{docId} {
-      allow read, write: if true;
-    }
-  }
-}
-```
-
-Błąd „Brak uprawnień do zapisu w kolekcji Games” wynikał z rozjazdu między nazwą kolekcji po stronie aplikacji (`Games`) i regułami (brak bloku `match /Games/{docId}`).
-
-Błąd „nie działa Usuń w Gry / Dodaj w Szczegółach” wynikał z innego rozjazdu: kod zapisywał szczegóły w subkolekcji `details`, a reguły dopuszczały tylko `rows`. Naprawa polega na ustawieniu domyślnej subkolekcji szczegółów gry na `rows` oraz dodaniu konfiguracji `gameDetailsCollection`, aby można było jawnie dopasować aplikację do reguł Firestore bez zmiany kodu.
-
-
-## 10. Zakładka „Regulamin” — implementacja techniczna
-### 10.1 Struktura HTML
-- W panelu administratora dodano przycisk zakładki `data-target="adminRulesTab"`.
-- Panel `#adminRulesTab` z komponentem `.admin-rules` zawiera teraz:
-  - `#adminRulesInput` (textarea edytowalny bezpośrednio, bez `readonly`),
-  - `#adminRulesStatus` (status autozapisu).
-- Usunięto przyciski akcji `#adminRulesEdit`, `#adminRulesSave`, `#adminRulesDelete`.
-- W strefie użytkownika pozostaje przycisk zakładki `data-target="rulesTab"` i panel `#rulesTab` z polem `#rulesOutput` (readonly) oraz statusem `#rulesStatus`.
-
-### 10.2 Zasady dostępu
-- Zakładka użytkownika „Regulamin” jest zawsze widoczna w `initUserTabs()` i nie używa bramki PIN.
-- Uprawnienia gracza (`permissions`) nadal kontrolują tylko zakładkę `nextGameTab`; regulamin nie jest częścią listy `AVAILABLE_PLAYER_TABS`.
-
-### 10.3 Logika admina (`initAdminRules`)
-- Źródło danych: dokument Firestore `app_settings/rules`.
-- Odczyt: listener `onSnapshot` aktualizuje pole i status.
-- Edycja:
-  - admin klika bezpośrednio w `#adminRulesInput` i wpisuje treść,
-  - brak osobnego trybu „edytuj/zapisz” — zachowanie jest spójne z innymi polami administracyjnymi.
-- Zapis automatyczny:
-  - na zdarzeniu `input` uruchamiany jest `scheduleDebouncedUpdate("admin-rules-text", ...)`,
-  - po ~400 ms bez kolejnego wpisu wykonywany jest `set(..., { merge: true })` z polami `text`, `updatedAt`, `source`.
-- Synchronizacja z `onSnapshot`:
-  - jeśli pole jest aktywnie edytowane i zapis jest w toku (`isSaving`), snapshot nie nadpisuje wpisywanej treści,
-  - po potwierdzeniu danych z Firestore status wraca do „Regulamin jest aktualny.” albo „Brak zapisanej treści regulaminu.”.
-- Czyszczenie treści regulaminu:
-  - odbywa się przez ręczne usunięcie tekstu z pola; autozapis zapisuje pusty `text`.
-
-### 10.4 Logika użytkownika (`initRulesDisplay`)
-- Listener `onSnapshot` odczytuje dokument `app_settings/rules`.
-- Pole `#rulesOutput` zawsze jest tylko do odczytu i pokazuje:
-  - treść regulaminu, albo
-  - komunikat zastępczy „Administrator jeszcze nie dodał regulaminu.”, gdy `text` jest pusty.
-
-### 10.5 Warstwa stylów
-- Utrzymane klasy:
-  - `.admin-rules`,
-  - `.admin-rules-actions` (kontener statusu),
-  - `.latest-rules`.
-- Styl textarea w zakładce admina i użytkownika nadal korzysta z motywu noir/gold/green z wysokością minimalną `170px`.
-- Usunięcie przycisków z sekcji `admin-rules-actions` upraszcza interfejs i pozostawia wyłącznie komunikaty statusu.
-
-## 11. Firebase — aktualna struktura danych i Rules (stan bieżący + rozszerzenie pod „Czat”)
-
-### 11.1. Aktualna struktura Firestore używana przez aplikację
-Obecny kod korzysta z następujących ścieżek:
-- `admin_messages` — wiadomości administratora (zakładka Aktualności),
-- `app_settings/player_access` — konfiguracja graczy (lista `players[]`, PIN, uprawnienia, `appEnabled`),
-- `app_settings/rules` — treść regulaminu,
-- `Tables/{tableId}` — rekordy turniejów i gier (zależnie od konfiguracji),
-- `Tables/{tableId}/rows/{rowId}` — szczegóły turnieju/gry,
-- `Collection1/{docId}` — historycznie uwzględniona kolekcja objęta regułami.
-
-### 11.2. Aktualne Rules Firestore (wariant produkcyjny)
-
+### 9.1 Aktualne reguły bezpieczeństwa (stan bieżący)
 ```js
 rules_version = '2';
 service cloud.firestore {
@@ -354,9 +270,11 @@ service cloud.firestore {
     match /admin_messages/{docId} {
       allow read, write: if true;
     }
+
     match /app_settings/{docId} {
       allow read, write: if true;
     }
+
     match /Tables/{tableId} {
       allow read, write: if true;
 
@@ -364,43 +282,110 @@ service cloud.firestore {
         allow read, write: if true;
       }
     }
+
     match /Collection1/{docId} {
+      allow read, write: if true;
+    }
+
+    match /chat_messages/{docId} {
       allow read, write: if true;
     }
   }
 }
 ```
 
-### 11.3. Rozszerzenie Rules wymagane dla wdrożenia czatu
-Po dodaniu funkcji „Czat” należy dodać dodatkowy blok:
+### 9.2 Aktualna struktura bazy Firestore (kolekcje i dokumenty)
+W projekcie działają następujące kolekcje:
+1. `admin_messages`
+   - komunikaty admina (`message`, `createdAt`, `source`).
+2. `app_settings`
+   - `next_game` z polem `pin`,
+   - `player_access` z tablicą `players[]` (`id`, `name`, `pin`, `permissions`, `appEnabled`),
+   - `rules` (`text`, `updatedAt`, `source`).
+3. `Tables`
+   - dokumenty gier/turniejów (`gameType`, `gameDate`, `name`, `createdAt`, itp.),
+   - subkolekcja `rows` dla szczegółów wpisów.
+4. `Collection1`
+   - kolekcja historyczna utrzymywana pod obecne reguły.
+5. `chat_messages`
+   - wiadomości czatu (`text`, `authorName`, `authorId`, `createdAt`, `expireAt`, `source`).
+6. `players`
+   - dokument legacy `players` z polami agregacyjnymi (`Cash`, `GamesPlayed`, `GamesWon`, itd.).
 
-```js
-match /chat_messages/{docId} {
-  allow read, write: if true;
-}
-```
+## 10. Czat — implementacja techniczna (wariant bez TTL Policy)
 
-### 11.4. Struktura danych planowana dla czatu
-Kolekcja: `chat_messages`.
+### 10.1 Zakres UI (`Main/index.html`)
+Dodane elementy:
+- nowa zakładka admina: przycisk `data-target="adminChatTab"` + panel `#adminChatTab`,
+- sekcja moderacji: `#adminChatList`, przycisk `#adminChatCleanup`, status `#adminChatStatus`,
+- nowa zakładka gracza: przycisk `data-target="chatTab"` + panel `#chatTab`,
+- bramka PIN dla czatu: `#chatPinGate` (`#chatPinInput`, `#chatPinSubmit`, `#chatPinStatus`),
+- właściwy widok czatu: `#chatContent`, lista `#chatMessages`, formularz `#chatMessageInput` + `#chatMessageSend`.
 
-Dokument wiadomości:
+### 10.2 Stałe i stan modułu (`Main/app.js`)
+Najważniejsze dodatki:
+- `CHAT_COLLECTION = "chat_messages"`,
+- `CHAT_RETENTION_DAYS = 30`,
+- klucze sesyjne: `CHAT_PIN_STORAGE_KEY`, `CHAT_PLAYER_ID_STORAGE_KEY`,
+- rozszerzenie `AVAILABLE_PLAYER_TABS` o `chatTab`,
+- `chatState` z osobnymi subskrypcjami gracza i admina.
 
-```json
-{
-  "text": "Cześć",
-  "authorName": "GraczA",
-  "authorId": "player-1700000000000",
-  "createdAt": "Timestamp",
-  "expireAt": "Timestamp",
-  "source": "web-player"
-}
-```
+### 10.3 Bramkowanie PIN + uprawnienie `chatTab`
+`initChatTab()` realizuje pełny przepływ:
+1. sanitizacja i walidacja PIN (`sanitizePin`, `isPinValid`),
+2. mapowanie PIN -> gracz (`adminPlayersState.playerByPin`),
+3. sprawdzenie `isPlayerAllowedForTab(player, "chatTab")`,
+4. zapis sesji (`setChatPinGateState`, `setChatVerifiedPlayerId`),
+5. uruchomienie live subskrypcji wiadomości.
 
-### 11.5. Retencja wiadomości bez TTL Policy
-Decyzja projektowa: **bez Firebase TTL Policy**.
+Brak uprawnienia lub błędny PIN zwraca komunikat: „Błędny PIN lub brak uprawnień do zakładki „Czat”.”.
 
-Retencja „30 dni” jest realizowana przez logikę admina:
-1. ręczny przycisk „Usuń starsze niż 30 dni” (query po `expireAt <= now` + kasowanie partiami),
-2. opcjonalnie automatyczne uruchomienie tej samej procedury po wejściu admina na zakładkę „Czat”.
+### 10.4 Wysyłka wiadomości i model danych
+Przy `#chatMessageSend` aplikacja zapisuje dokument do `chat_messages`:
+- `text`,
+- `authorName`,
+- `authorId`,
+- `createdAt: serverTimestamp()`,
+- `expireAt: Timestamp(now + 30 dni)`,
+- `source: "web-player"`.
 
-Pole `expireAt` pozostaje wymagane — służy jako kryterium filtrowania do czyszczenia danych.
+Dzięki temu retencja działa bez TTL policy: pole `expireAt` jest używane przez ręczne czyszczenie admina.
+
+### 10.5 Moderacja administratora
+`initAdminChat()` dodaje:
+1. live listę ostatnich 200 wpisów (`orderBy(createdAt, desc)`),
+2. usuwanie pojedynczych dokumentów (`delete()` po `doc.id`),
+3. masowe czyszczenie rekordów starszych niż 30 dni:
+   - zapytanie `where("expireAt", "<=", now).limit(200)`,
+   - kasowanie partiami (`batch.delete`),
+   - pętla aż do wyczyszczenia zbioru,
+   - raport statusu z liczbą usuniętych rekordów.
+
+### 10.6 Integracja z panelem Gracze
+Ponieważ `AVAILABLE_PLAYER_TABS` zawiera `chatTab`, modal uprawnień w `initAdminPlayers()` automatycznie:
+- pokazuje opcję **Czat**,
+- zapisuje ją do `players[].permissions`,
+- renderuje badge „Czat” w tabeli graczy.
+
+### 10.7 Warstwa stylów czatu (`Main/styles.css`)
+Dodane klasy:
+- admin: `.admin-chat`, `.admin-chat-actions`, `.admin-chat-list`, `.admin-chat-item`, `.admin-chat-meta`, `.admin-chat-delete`,
+- gracz: `.chat-content`, `.chat-messages`, `.chat-message-item`, `.chat-message-header`, `.chat-form`, `.chat-form-actions`, `.chat-empty`.
+
+Wszystkie nowe komponenty używają istniejącej palety noir/gold/green i tych samych fontów (`Cinzel`, `Cormorant Garamond`, `Inter`, `Rajdhani`).
+
+## 11. Jak odtworzyć aplikację tylko na podstawie dokumentacji
+1. Zbuduj HTML z panelem admina (zakładki, tabele, modale) i strefą gracza.
+2. Dodaj style noir/gold/green oraz siatkę kart i komponenty tabel.
+3. W JS dodaj:
+   - wykrywanie trybu admin (`?admin=1`),
+   - przełączanie zakładek,
+   - moduły Firebase i snapshot listeners,
+   - pełny CRUD dla Gracze, Turnieje, Gry,
+   - logikę nazw `Gra X` zależnie od daty,
+   - modal szczegółów gry z walidacją liczb,
+   - mechanizm stabilizacji fokusu pól (`data-*` identyfikujące + zapamiętywanie/odtwarzanie kursora po renderze),
+   - moduł czatu (PIN + `chatTab`, real-time, wysyłka, moderacja, cleanup 30 dni),
+   - obliczenia `+/-`, `Pula`, `% puli`, sortowanie,
+   - agregaty roczne w sekcji Statystyki (w zakładce Gry).
+4. Podłącz `firebase-app-compat` i `firebase-firestore-compat`.

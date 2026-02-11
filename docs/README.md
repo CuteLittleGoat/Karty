@@ -228,45 +228,105 @@ Mechanizm działa dla pól tekstowych, pól liczbowych wpisywanych jako tekst, s
 - Aplikacja została ustawiona tak, aby zakładka **Gry** używała `Tables` + `rows` (konfigurowalne przez `gamesCollection` i `gameDetailsCollection`).
 
 
-## 8. Plan obsługi czatu (wdrożenie bez TTL Policy) — instrukcja dla administratora
-Poniższa sekcja opisuje docelową obsługę czatu przy założeniu, że **nie używamy TTL Policy w Firebase**.
+## 8. Czat — szczegółowa instrukcja obsługi (wdrożenie bez TTL Policy)
 
-### 8.1 Włączenie dostępu do czatu dla konkretnego gracza
-1. Otwórz aplikację z parametrem `?admin=1`.
+### 8.1 Nadanie uprawnienia „Czat” dla gracza (admin)
+1. Otwórz aplikację w trybie administratora (`?admin=1`).
 2. Kliknij zakładkę **Gracze**.
-3. Znajdź wiersz gracza, któremu chcesz nadać dostęp do czatu.
-4. W kolumnie uprawnień zaznacz pozycję **Czat** (uprawnienie `chatTab`).
-5. Poczekaj na autozapis danych.
-6. Poproś gracza, aby przeszedł do strefy gracza i zalogował się swoim PIN-em.
-7. Oczekiwany efekt: gracz z uprawnieniem `chatTab` widzi i otwiera zakładkę **Czat**.
+3. W wybranym wierszu kliknij przycisk **Uprawnienia**.
+4. W oknie „Uprawnienia gracza” zaznacz checkbox **Czat**.
+5. Kliknij **Zamknij**.
+6. Poczekaj na zapis (status pod tabelą).
+7. Oczekiwany efekt: w kolumnie uprawnień gracza pojawia się znacznik **Czat**.
 
-### 8.2 Ręczne usuwanie starych wiadomości (przycisk „Usuń starsze niż 30 dni”)
-1. Otwórz panel administratora (`?admin=1`).
-2. Kliknij zakładkę **Czat**.
-3. W sekcji zarządzania wiadomościami kliknij przycisk **Usuń starsze niż 30 dni**.
-4. Poczekaj na zakończenie operacji.
-5. Odczytaj komunikat statusu pod przyciskiem:
-   - np. „Usunięto 27 wiadomości starszych niż 30 dni”.
-6. Odśwież listę wiadomości.
-7. Oczekiwany efekt: wiadomości starsze niż 30 dni nie są już widoczne.
+### 8.2 Wejście gracza do czatu (PIN + uprawnienie)
+1. Otwórz aplikację bez `?admin=1`.
+2. W panelu „Strefa gracza” kliknij zakładkę **Czat**.
+3. W polu PIN wpisz dokładnie 5 cyfr przypisanych do gracza.
+4. Kliknij **Otwórz**.
+5. Oczekiwane komunikaty:
+   - sukces: „PIN poprawny. Witaj ...” i otwarcie listy wiadomości,
+   - błąd: „Błędny PIN lub brak uprawnień do zakładki „Czat”.”.
 
-### 8.3 Usuwanie pojedynczej wiadomości przez admina
-1. W panelu administratora wejdź do zakładki **Czat**.
-2. Przy wybranej wiadomości kliknij **Usuń**.
-3. Potwierdź operację (jeśli aplikacja pokaże okno potwierdzenia).
-4. Oczekiwany efekt:
-   - wiadomość znika od razu z listy admina,
-   - wiadomość znika też u użytkowników dzięki synchronizacji real-time.
+### 8.3 Wysyłka wiadomości przez gracza
+1. Wejdź do zakładki **Czat** i przejdź bramkę PIN.
+2. W sekcji „Twoja wiadomość” kliknij pole tekstowe.
+3. Wpisz treść wiadomości (do 600 znaków).
+4. Kliknij **Wyślij**.
+5. Oczekiwany efekt:
+   - status „Wysyłanie...”, następnie „Wiadomość wysłana.”,
+   - wiadomość od razu pojawia się na liście wszystkim użytkownikom czatu (real-time).
 
-### 8.4 Wariant półautomatyczny (opcjonalny): czyszczenie przy wejściu na zakładkę Czat
-1. Administrator otwiera `?admin=1`.
-2. Klikając zakładkę **Czat**, uruchamia automatycznie proces czyszczenia wiadomości starszych niż 30 dni.
-3. Dodatkowy przycisk **Usuń starsze niż 30 dni** pozostaje dostępny jako akcja ręczna.
-4. Oczekiwany efekt: nawet bez pamiętania o ręcznym klikaniu baza jest regularnie czyszczona, gdy admin odwiedza zakładkę.
+### 8.4 Moderacja czatu w panelu administratora
+1. Otwórz aplikację z `?admin=1`.
+2. Kliknij zakładkę **Czat** w panelu administratora.
+3. W liście widzisz autora, datę i treść wiadomości.
+4. Aby skasować pojedynczą wiadomość, kliknij **Usuń** przy tej wiadomości.
+5. Oczekiwany efekt: wpis natychmiast znika z listy (u admina i graczy).
 
-### 8.5 Co sprawdzić po wdrożeniu
-1. Gracz bez uprawnienia `chatTab` nie może wejść do czatu mimo poprawnego PIN.
-2. Gracz z uprawnieniem `chatTab` może czytać i wysyłać wiadomości.
-3. Admin może usuwać pojedyncze wiadomości.
-4. Admin może masowo usuwać wiadomości starsze niż 30 dni.
-5. W Firebase Rules istnieje blok `match /chat_messages/{docId}` z uprawnieniami zgodnymi z projektem.
+### 8.5 Usuwanie wiadomości starszych niż 30 dni (manual, bez TTL Policy)
+1. Otwórz `?admin=1` → zakładka **Czat**.
+2. Kliknij przycisk **Usuń starsze niż 30 dni**.
+3. Poczekaj na zakończenie operacji (aplikacja usuwa rekordy partiami).
+4. Odczytaj status pod przyciskiem, np. „Usunięto 12 wiadomości starszych niż 30 dni.”.
+5. Oczekiwany efekt: w bazie nie pozostają rekordy z `expireAt <= teraz`.
+
+### 8.6 Co sprawdzić po wdrożeniu czatu
+1. Gracz bez uprawnienia `chatTab` nie wejdzie na czat mimo poprawnego PIN.
+2. Gracz z `chatTab` widzi wiadomości i może wysyłać nowe.
+3. Administrator usuwa pojedyncze wiadomości.
+4. Administrator uruchamia masowe czyszczenie starszych wpisów.
+
+## 9. Firebase — aktualna struktura bazy i aktualne Rules
+
+### 9.1 Struktura Firestore (kolekcje i dokumenty)
+Aktualnie wykorzystywane są kolekcje:
+1. `admin_messages`
+   - dokumenty komunikatów admina,
+   - pola: `message`, `createdAt`, `source`.
+2. `app_settings`
+   - dokument `next_game` z polem `pin`,
+   - dokument `player_access` z tablicą `players[]` (obiekty m.in. `id`, `name`, `pin`, `permissions`, `appEnabled`),
+   - dokument `rules` z treścią regulaminu (`text`, `updatedAt`, `source`).
+3. `Tables`
+   - dokumenty gier/turniejów (m.in. `gameType`, `gameDate`, `name`, `createdAt`),
+   - subkolekcja `rows` z wierszami szczegółów.
+4. `Collection1`
+   - kolekcja historyczna pozostawiona w projekcie.
+5. `chat_messages`
+   - dokumenty czatu,
+   - pola: `text`, `authorName`, `authorId`, `createdAt`, `expireAt`, `source`.
+6. `players`
+   - dokument techniczny/historyczny `players` z polami zbiorczymi (`Cash`, `GamesPlayed`, `GamesWon`, itp.).
+
+### 9.2 Aktualne Firestore Rules
+```js
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /admin_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    match /app_settings/{docId} {
+      allow read, write: if true;
+    }
+
+    match /Tables/{tableId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /Collection1/{docId} {
+      allow read, write: if true;
+    }
+
+    match /chat_messages/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
+```
