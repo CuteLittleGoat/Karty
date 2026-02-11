@@ -116,3 +116,37 @@
 - Pozostawiono tylko ikonę `×` (`.icon-button`) w prawym górnym rogu nagłówka modala.
 - Efekt wizualny: mniej elementów akcji w stopce i prostsza hierarchia interakcji (jeden główny punkt zamknięcia okna).
 
+
+## 11) Potwierdzenia obecności — detale layoutu
+
+### 11.1 Nowe elementy nawigacji
+- Dodana karta panelu admina: `Gry do potwierdzenia`.
+- Dodana karta strefy gracza: `Gry do potwierdzenia`.
+- Obie karty używają istniejącego stylu pigułki (`.admin-panel-tab`, `.tab-button`) z aktywnym wariantem gold.
+
+### 11.2 Zakładka „Gry” (admin) — nowa kolumna
+- W tabeli `Tabele Gier` dodano kolumnę `CzyZamknięta` z natywnym checkboxem.
+- Checkbox nie ma osobnego przycisku zapisu — zapis jest natychmiastowy po zmianie.
+
+### 11.3 Widok potwierdzeń gracza
+- Kontener `.confirmations-content` działa jak `chat-content`:
+  - domyślnie `display: none`,
+  - po autoryzacji PIN aktywowany przez `.is-visible`.
+- Pasek akcji `.confirmations-toolbar` zawiera:
+  - przycisk `Odśwież`,
+  - tekst statusu.
+- Tabela `.confirmations-table` ma minimalną szerokość `760px`.
+
+### 11.4 Widok potwierdzeń admina
+- Sekcja `.admin-confirmations`:
+  - tło noir (`rgba(0,0,0,0.32)`),
+  - cienka ramka `var(--border2)`,
+  - zaokrąglenie `var(--radius-md)`.
+- Lista gier `.admin-confirmations-list` renderuje karty `.admin-confirmation-game`.
+- Każda karta gry ma nagłówek (`h4`) i metadane (`.admin-confirmation-game-meta`) w kolorze `--muted`.
+
+### 11.5 Status potwierdzenia (złote podświetlenie)
+- Klasa `.confirmed-row`:
+  - tło: `rgba(212, 175, 55, 0.2)`,
+  - wewnętrzna ramka: `inset 0 0 0 1px var(--gold-line)`.
+- Ta sama klasa jest używana w tabeli użytkownika i administratora dla spójnej semantyki wizualnej.

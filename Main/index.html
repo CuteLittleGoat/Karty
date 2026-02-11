@@ -40,6 +40,7 @@
             <button class="admin-panel-tab" type="button" data-target="adminPlayersTab">Gracze</button>
             <button class="admin-panel-tab" type="button" data-target="adminTournamentsTab">Turnieje</button>
             <button class="admin-panel-tab" type="button" data-target="adminGamesTab">Gry</button>
+            <button class="admin-panel-tab" type="button" data-target="adminConfirmationsTab">Gry do potwierdzenia</button>
           </div>
           <div id="adminNewsTab" class="admin-panel-content is-active" role="tabpanel">
           <div class="admin-message">
@@ -175,6 +176,7 @@
                           <th>Rodzaj Gry</th>
                           <th>Data</th>
                           <th>Nazwa</th>
+                          <th>CzyZamknięta</th>
                           <th></th>
                         </tr>
                       </thead>
@@ -200,6 +202,16 @@
               </section>
             </div>
           </div>
+          <div id="adminConfirmationsTab" class="admin-panel-content" role="tabpanel">
+            <section class="admin-confirmations">
+              <div class="card-header">
+                <h3>Gry do potwierdzenia</h3>
+                <p>Lista aktywnych gier z potwierdzeniami obecności graczy.</p>
+              </div>
+              <span id="adminConfirmationsStatus" class="status-text" aria-live="polite"></span>
+              <div id="adminConfirmationsList" class="admin-confirmations-list"></div>
+            </section>
+          </div>
         </section>
 
         <section class="card next-game-card">
@@ -219,6 +231,9 @@
               </button>
               <button class="tab-button" type="button" data-target="chatTab">
                 Czat
+              </button>
+              <button class="tab-button" type="button" data-target="confirmationsTab">
+                Gry do potwierdzenia
               </button>
             </div>
           </div>
@@ -311,6 +326,46 @@
                     <button id="chatMessageSend" class="primary" type="button">Wyślij</button>
                     <span id="chatMessageStatus" class="status-text" aria-live="polite"></span>
                   </div>
+                </div>
+              </div>
+            </div>
+            <div id="confirmationsTab" class="tab-panel" role="tabpanel">
+              <div id="confirmationsPinGate" class="pin-gate" aria-live="polite">
+                <div class="pin-card">
+                  <p class="pin-title">Wpisz PIN, aby przejść do listy gier do potwierdzenia.</p>
+                  <div class="pin-inputs">
+                    <input
+                      id="confirmationsPinInput"
+                      type="tel"
+                      inputmode="numeric"
+                      pattern="[0-9]{5}"
+                      autocomplete="one-time-code"
+                      maxlength="5"
+                      minlength="5"
+                      placeholder="PIN (5 cyfr)"
+                    />
+                    <button id="confirmationsPinSubmit" class="primary" type="button">Otwórz</button>
+                  </div>
+                  <p id="confirmationsPinStatus" class="status-text"></p>
+                </div>
+              </div>
+              <div id="confirmationsContent" class="confirmations-content">
+                <div class="confirmations-toolbar">
+                  <button id="confirmationsRefresh" class="secondary" type="button">Odśwież</button>
+                  <span id="confirmationsStatus" class="status-text" aria-live="polite"></span>
+                </div>
+                <div class="admin-table-scroll">
+                  <table class="admin-data-table confirmations-table">
+                    <thead>
+                      <tr>
+                        <th>Rodzaj Gry</th>
+                        <th>Data</th>
+                        <th>Nazwa</th>
+                        <th>Potwierdzenie</th>
+                      </tr>
+                    </thead>
+                    <tbody id="confirmationsBody"></tbody>
+                  </table>
                 </div>
               </div>
             </div>
