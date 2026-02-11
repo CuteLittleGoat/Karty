@@ -39,7 +39,7 @@
             <button class="admin-panel-tab" type="button" data-target="adminRulesTab">Regulamin</button>
             <button class="admin-panel-tab" type="button" data-target="adminPlayersTab">Gracze</button>
             <button class="admin-panel-tab" type="button" data-target="adminTournamentsTab">Turnieje</button>
-            <button class="admin-panel-tab" type="button" data-target="adminGamesTab">Gry</button>
+            <button class="admin-panel-tab" type="button" data-target="adminGamesTab">Gry admina</button>
             <button class="admin-panel-tab" type="button" data-target="adminConfirmationsTab">Gry do potwierdzenia</button>
           </div>
           <div id="adminNewsTab" class="admin-panel-content is-active" role="tabpanel">
@@ -235,6 +235,9 @@
               <button class="tab-button" type="button" data-target="confirmationsTab">
                 Gry do potwierdzenia
               </button>
+              <button class="tab-button" type="button" data-target="userGamesTab">
+                Gry użytkowników
+              </button>
             </div>
           </div>
           <div class="user-tab-content">
@@ -367,6 +370,30 @@
                     <tbody id="confirmationsBody"></tbody>
                   </table>
                 </div>
+              </div>
+            </div>
+            <div id="userGamesTab" class="tab-panel" role="tabpanel">
+              <div id="userGamesPinGate" class="pin-gate" aria-live="polite">
+                <div class="pin-card">
+                  <p class="pin-title">Wpisz PIN z uprawnieniem Gry użytkowników, aby wejść do tej sekcji.</p>
+                  <div class="pin-inputs">
+                    <input
+                      id="userGamesPinInput"
+                      type="tel"
+                      inputmode="numeric"
+                      pattern="[0-9]{5}"
+                      autocomplete="one-time-code"
+                      maxlength="5"
+                      minlength="5"
+                      placeholder="PIN (5 cyfr)"
+                    />
+                    <button id="userGamesPinSubmit" class="primary" type="button">Otwórz</button>
+                  </div>
+                  <p id="userGamesPinStatus" class="status-text"></p>
+                </div>
+              </div>
+              <div id="userGamesContent" class="next-game-content">
+                <p class="user-construction">Strona w budowie</p>
               </div>
             </div>
           </div>

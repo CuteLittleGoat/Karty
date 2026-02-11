@@ -13,9 +13,9 @@ W panelu są zakładki:
 - **Regulamin**
 - **Gracze**
 - **Turnieje**
-- **Gry**
+- **Gry admina**
 
-Zakładka **Statystyki** (osobna karta) została usunięta — statystyki są teraz częścią zakładki **Gry**.
+Zakładka **Statystyki** (osobna karta) została usunięta — statystyki są teraz częścią zakładki **Gry admina**.
 
 ---
 
@@ -391,3 +391,25 @@ Jeżeli masz restrykcyjne reguły Firestore, upewnij się, że dostępna jest te
 - `Tables/{tableId}/confirmations/{playerId}`
 
 W tej subkolekcji zapisywany jest stan potwierdzenia obecności (`confirmed`, `updatedAt`, `updatedBy`, `playerName`, `playerId`).
+
+
+## 9. Zakładka „Gry użytkowników” — dokładna obsługa (widok gracza)
+### 9.1 Włączenie uprawnienia przez administratora
+1. Otwórz aplikację w trybie administratora (`?admin=1`).
+2. Kliknij zakładkę **Gracze**.
+3. W wierszu wybranego gracza kliknij **Edytuj** w kolumnie **Uprawnienia**.
+4. W oknie „Uprawnienia gracza” zaznacz pozycję **Gry użytkowników**.
+5. Zamknij okno przyciskiem **X**.
+6. Poczekaj na automatyczny zapis (status pod tabelą graczy).
+
+### 9.2 Wejście gracza do zakładki
+1. Otwórz aplikację bez `?admin=1`.
+2. W sekcji **Strefa gracza** kliknij zakładkę **Gry użytkowników**.
+3. W polu PIN wpisz dokładnie 5 cyfr przypisanych do gracza, który ma uprawnienie **Gry użytkowników**.
+4. Kliknij **Otwórz**.
+5. Oczekiwany efekt:
+   - poprawny PIN + poprawne uprawnienie: pojawia się duży napis **„Strona w budowie”**,
+   - błędny PIN lub brak uprawnienia: widoczny komunikat o braku dostępu.
+
+### 9.3 Ważna uwaga o przełączaniu zakładek
+Po wejściu na inną kartę i ponownym kliknięciu **Gry użytkowników** aplikacja ponownie poprosi o PIN (sesja dostępu tej zakładki jest resetowana przy każdym wejściu).
