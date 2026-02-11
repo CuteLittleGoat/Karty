@@ -22,8 +22,12 @@ Zakładka **Statystyki** (osobna karta) została usunięta — statystyki są te
 ### 3.1 Dodanie gracza
 1. Kliknij zakładkę **Gracze**.
 2. Kliknij przycisk **Dodaj** pod tabelą.
-3. W nowym wierszu kliknij pole **Nazwa** i wpisz imię/nick.
-4. Kliknij pole **PIN** i wpisz 5 cyfr albo kliknij **Losuj**.
+3. W nowym wierszu najpierw znajdź kolumnę **Aplikacja** (pierwsza z lewej) i ustaw checkbox:
+   - zaznaczony = gracz ma oznaczenie aktywne w aplikacji,
+   - odznaczony = gracz ma oznaczenie nieaktywne.
+4. Kliknij pole **Nazwa** i wpisz imię/nick.
+5. Kliknij pole **PIN** i wpisz 5 cyfr albo kliknij **Losuj**.
+6. Poczekaj chwilę na automatyczny zapis (status pod nagłówkiem może pokazać informację o zapisie).
 
 ### 3.2 Usunięcie gracza
 1. W wierszu gracza kliknij **Usuń**.
@@ -33,7 +37,25 @@ Zakładka **Statystyki** (osobna karta) została usunięta — statystyki są te
 
 ---
 
-### 3.3 Stabilność kursora podczas wpisywania (ważne)
+
+### 3.3 Kolumna „Aplikacja” — dokładna obsługa checkboxa
+1. Wejdź do zakładki **Gracze** w panelu administratora.
+2. W tabeli znajdź pierwszą kolumnę z lewej o nazwie **Aplikacja**.
+3. W wybranym wierszu kliknij checkbox:
+   - kliknięcie zaznacza pole,
+   - kolejne kliknięcie odznacza pole.
+4. Po zmianie nic więcej nie trzeba zatwierdzać — stan zapisuje się automatycznie w bazie Firestore.
+5. Sprawdzenie trwałości ustawienia:
+   - odśwież kartę przeglądarki (`Ctrl+R`),
+   - zamknij przeglądarkę i uruchom ją ponownie,
+   - wróć do `.../Main/index.html?admin=1` → **Gracze**.
+6. Oczekiwany efekt: checkbox dla każdego gracza zachowuje ostatni zapisany stan (zaznaczony/odznaczony).
+
+> Uwaga: zmiana checkboxa w kolumnie **Aplikacja** nie modyfikuje PIN-u, nazwy, uprawnień ani żadnych obliczeń w pozostałych zakładkach.
+
+---
+
+### 3.4 Stabilność kursora podczas wpisywania (ważne)
 1. Wejdź do **Gracze**.
 2. Kliknij pole **Nazwa** albo **PIN** dowolnego gracza.
 3. Wpisuj tekst/cyfry ciągiem (bez dodatkowego klikania po każdej literze).

@@ -516,6 +516,18 @@ h1 {
   min-width: 700px;
 }
 
+.players-app-cell {
+  width: 88px;
+  text-align: center;
+}
+
+.players-app-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
 .pin-control {
   display: flex;
   gap: 8px;
