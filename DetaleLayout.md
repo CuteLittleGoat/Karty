@@ -111,3 +111,8 @@
 ### 9.3 Responsywność czatu
 - Dla `max-width: 720px` sekcja `.chat-form-actions` przechodzi na układ kolumnowy,
 - dzięki temu przycisk wysyłki i status nie nachodzą na siebie na wąskich ekranach.
+## 10) Modale — uproszczenie akcji zamknięcia
+- W oknach modalnych `Instrukcja obsługi`, `Uprawnienia gracza` i `Szczegóły gry` usunięto dolny przycisk tekstowy `Zamknij`.
+- Pozostawiono tylko ikonę `×` (`.icon-button`) w prawym górnym rogu nagłówka modala.
+- Efekt wizualny: mniej elementów akcji w stopce i prostsza hierarchia interakcji (jeden główny punkt zamknięcia okna).
+

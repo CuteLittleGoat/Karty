@@ -789,7 +789,6 @@ const initAdminPlayers = () => {
   const modalList = document.querySelector("#playerPermissionsList");
   const modalStatus = document.querySelector("#playerPermissionsStatus");
   const closeButton = document.querySelector("#playerPermissionsClose");
-  const closeFooterButton = document.querySelector("#playerPermissionsCloseFooter");
 
   if (!body || !status || !addButton || !modal || !modalList || !modalStatus) {
     return;
@@ -1099,9 +1098,6 @@ const initAdminPlayers = () => {
 
   if (closeButton) {
     closeButton.addEventListener("click", closeModal);
-  }
-  if (closeFooterButton) {
-    closeFooterButton.addEventListener("click", closeModal);
   }
 
   modal.addEventListener("click", (event) => {
@@ -1655,7 +1651,6 @@ const initAdminGames = () => {
   const modalMeta = document.querySelector("#gameDetailsMeta");
   const modalBody = document.querySelector("#gameDetailsBody");
   const modalClose = document.querySelector("#gameDetailsClose");
-  const modalCloseFooter = document.querySelector("#gameDetailsCloseFooter");
   const modalAddRowButton = document.querySelector("#gameDetailsAddRow");
 
   if (!yearsList || !gamesTableBody || !summariesContainer || !statsBody || !status || !addGameButton) {
@@ -2185,9 +2180,6 @@ const initAdminGames = () => {
   if (modalClose) {
     modalClose.addEventListener("click", closeModal);
   }
-  if (modalCloseFooter) {
-    modalCloseFooter.addEventListener("click", closeModal);
-  }
   if (modalAddRowButton) {
     modalAddRowButton.addEventListener("click", async () => {
       if (!state.activeGameIdInModal) {
@@ -2357,7 +2349,6 @@ const initInstructionModal = () => {
   const openButton = document.querySelector("#adminInstructionButton");
   const modal = document.querySelector("#instructionModal");
   const closeButton = document.querySelector("#instructionClose");
-  const closeFooterButton = document.querySelector("#instructionCloseFooter");
   const content = document.querySelector("#instructionContent");
   const status = document.querySelector("#instructionStatus");
 
@@ -2419,10 +2410,6 @@ const initInstructionModal = () => {
 
   if (closeButton) {
     closeButton.addEventListener("click", closeModal);
-  }
-
-  if (closeFooterButton) {
-    closeFooterButton.addEventListener("click", closeModal);
   }
 
   modal.addEventListener("click", (event) => {
