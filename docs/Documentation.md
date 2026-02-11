@@ -25,7 +25,7 @@ Panel zawiera karty:
 - `adminRulesTab` (Regulamin),
 - `adminPlayersTab` (Gracze),
 - `adminTournamentsTab` (Turnieje),
-- `adminGamesTab` (Gry).
+- `adminGamesTab` (Gry admina).
 
 Zakładka `adminStatsTab` została usunięta z HTML.
 
@@ -486,3 +486,44 @@ Dodane klasy:
 - `.admin-confirmation-game`, `.admin-confirmation-game-meta`.
 
 Kolorystyka potwierdzenia wykorzystuje istniejący złoty motyw (`--gold`, `--gold-line`) przez `.confirmed-row`.
+
+
+## 11. Zakładka „Gry użytkowników” (strefa gracza)
+
+### 11.1 Zmiany w strukturze UI (`Main/index.html`)
+- Zmieniono nazwę zakładki administratora z **„Gry”** na **„Gry admina”** (ten sam `data-target="adminGamesTab"`).
+- Dodano nowy przycisk zakładki użytkownika z `data-target="userGamesTab"` i etykietą **„Gry użytkowników”**.
+- Dodano panel `#userGamesTab` z:
+  - bramką PIN `#userGamesPinGate`,
+  - polem PIN `#userGamesPinInput`,
+  - przyciskiem `#userGamesPinSubmit`,
+  - statusem `#userGamesPinStatus`,
+  - zawartością `#userGamesContent` z dużym napisem „Strona w budowie”.
+
+### 11.2 Dostęp PIN + uprawnienie (`Main/app.js`)
+- Dodane klucze sesyjne:
+  - `USER_GAMES_PIN_STORAGE_KEY = "userGamesPinVerified"`,
+  - `USER_GAMES_PLAYER_ID_STORAGE_KEY = "userGamesPlayerId"`.
+- `AVAILABLE_PLAYER_TABS` rozszerzono o nową pozycję:
+  - `key: "userGamesTab"`,
+  - `label: "Gry użytkowników"`.
+- Dzięki temu modal uprawnień w zakładce **Gracze** automatycznie renderuje dodatkowy checkbox „Gry użytkowników” i zapisuje go w `players[].permissions`.
+- Dodano funkcje:
+  - `getUserGamesPinGateState`, `setUserGamesPinGateState`,
+  - `setUserGamesVerifiedPlayerId`, `getUserGamesVerifiedPlayer`,
+  - `updateUserGamesVisibility`,
+  - `initUserGamesTab`.
+- Logika dostępu działa analogicznie do pozostałych zakładek PIN:
+  1. Walidacja formatu PIN (`5` cyfr).
+  2. Odszukanie gracza po PIN (`adminPlayersState.playerByPin`).
+  3. Weryfikacja uprawnienia `isPlayerAllowedForTab(player, "userGamesTab")`.
+  4. Po sukcesie: ukrycie bramki i pokazanie treści.
+  5. Po porażce: komunikat o błędnym PIN lub braku uprawnienia.
+
+### 11.3 Integracja z przełączaniem kart
+- W `initUserTabs()` dodano reset sesji dla `target === "userGamesTab"`:
+  - zerowanie flagi PIN,
+  - usunięcie ID zweryfikowanego gracza,
+  - czyszczenie pól PIN/statusu,
+  - ponowne pokazanie bramki.
+- W `bootstrap()` dodano wywołanie `initUserGamesTab()` po `initUserConfirmations()`.

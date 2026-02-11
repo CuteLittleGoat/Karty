@@ -12,7 +12,7 @@
 - Czerwony: akcje destrukcyjne (`Usuń`).
 
 ## 3) Panel Administratora — aktualny układ
-- Zakładki: `Aktualności`, `Regulamin`, `Gracze`, `Turnieje`, `Gry`.
+- Zakładki: `Aktualności`, `Regulamin`, `Gracze`, `Turnieje`, `Gry admina`.
 - Usunięta osobna zakładka `Statystyki`.
 - Sekcja `Statystyki` została przeniesiona do wnętrza zakładki `Gry` (dolna tabela).
 
@@ -150,3 +150,18 @@
   - tło: `rgba(212, 175, 55, 0.2)`,
   - wewnętrzna ramka: `inset 0 0 0 1px var(--gold-line)`.
 - Ta sama klasa jest używana w tabeli użytkownika i administratora dla spójnej semantyki wizualnej.
+
+
+## 12) Zakładka „Gry użytkowników” — detale layoutu
+- W pasku zakładek strefy gracza dodano nową pigułkę: **Gry użytkowników** (`.tab-button`), spójną wizualnie z pozostałymi kartami.
+- Wewnątrz panelu zastosowano istniejący komponent bramki `.pin-gate`:
+  - karta PIN (`.pin-card`),
+  - opis (`.pin-title`),
+  - pole + przycisk w układzie `.pin-inputs`,
+  - status (`.status-text`).
+- Zawartość po poprawnej autoryzacji korzysta z tego samego kontenera co „Najbliższa gra” (`.next-game-content.is-visible`).
+- Główny komunikat „Strona w budowie” używa istniejącego stylu `.user-construction`:
+  - font tytułowy (`var(--font-title)`),
+  - duży responsywny rozmiar (`clamp(36px, 7vw, 96px)`),
+  - uppercase + rozszerzone kerning (`letter-spacing: 0.18em`),
+  - kolor złoty (`var(--gold)`) i poświata (`var(--glow-gold)`).

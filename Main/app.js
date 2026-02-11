@@ -4,6 +4,8 @@ const CHAT_PIN_STORAGE_KEY = "chatPinVerified";
 const CHAT_PLAYER_ID_STORAGE_KEY = "chatPlayerId";
 const CONFIRMATIONS_PIN_STORAGE_KEY = "confirmationsPinVerified";
 const CONFIRMATIONS_PLAYER_ID_STORAGE_KEY = "confirmationsPlayerId";
+const USER_GAMES_PIN_STORAGE_KEY = "userGamesPinVerified";
+const USER_GAMES_PLAYER_ID_STORAGE_KEY = "userGamesPlayerId";
 const PLAYER_ACCESS_COLLECTION = "app_settings";
 const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
@@ -20,6 +22,10 @@ const AVAILABLE_PLAYER_TABS = [
   {
     key: "confirmationsTab",
     label: "Gry do potwierdzenia"
+  },
+  {
+    key: "userGamesTab",
+    label: "Gry użytkowników"
   }
 ];
 
@@ -391,6 +397,28 @@ const setConfirmationsVerifiedPlayerId = (playerId) => {
 
 const getConfirmationsVerifiedPlayer = () => {
   const playerId = sessionStorage.getItem(CONFIRMATIONS_PLAYER_ID_STORAGE_KEY);
+  if (!playerId) {
+    return null;
+  }
+  return adminPlayersState.players.find((player) => player.id === playerId) ?? null;
+};
+
+const getUserGamesPinGateState = () => sessionStorage.getItem(USER_GAMES_PIN_STORAGE_KEY) === "1";
+
+const setUserGamesPinGateState = (isVerified) => {
+  sessionStorage.setItem(USER_GAMES_PIN_STORAGE_KEY, isVerified ? "1" : "0");
+};
+
+const setUserGamesVerifiedPlayerId = (playerId) => {
+  if (playerId) {
+    sessionStorage.setItem(USER_GAMES_PLAYER_ID_STORAGE_KEY, playerId);
+    return;
+  }
+  sessionStorage.removeItem(USER_GAMES_PLAYER_ID_STORAGE_KEY);
+};
+
+const getUserGamesVerifiedPlayer = () => {
+  const playerId = sessionStorage.getItem(USER_GAMES_PLAYER_ID_STORAGE_KEY);
   if (!playerId) {
     return null;
   }
@@ -875,6 +903,69 @@ const initUserConfirmations = () => {
   }
 };
 
+const updateUserGamesVisibility = () => {
+  const gate = document.querySelector("#userGamesPinGate");
+  const content = document.querySelector("#userGamesContent");
+  if (!gate || !content) {
+    return;
+  }
+
+  const isVerified = getUserGamesPinGateState();
+  gate.style.display = isVerified ? "none" : "block";
+  content.classList.toggle("is-visible", isVerified);
+};
+
+const initUserGamesTab = () => {
+  const input = document.querySelector("#userGamesPinInput");
+  const submitButton = document.querySelector("#userGamesPinSubmit");
+  const pinStatus = document.querySelector("#userGamesPinStatus");
+
+  if (!input || !submitButton || !pinStatus) {
+    return;
+  }
+
+  const verifyPin = () => {
+    const pinValue = sanitizePin(input.value);
+    if (!isPinValid(pinValue)) {
+      pinStatus.textContent = "Wpisz komplet 5 cyfr.";
+      return;
+    }
+
+    const player = adminPlayersState.playerByPin.get(pinValue);
+    if (player && isPlayerAllowedForTab(player, "userGamesTab")) {
+      setUserGamesPinGateState(true);
+      setUserGamesVerifiedPlayerId(player.id);
+      pinStatus.textContent = `PIN poprawny. Witaj ${player.name || "graczu"}.`;
+      updateUserGamesVisibility();
+      return;
+    }
+
+    pinStatus.textContent = "Błędny PIN lub brak uprawnień do zakładki „Gry użytkowników”.";
+  };
+
+  input.addEventListener("input", () => {
+    input.value = sanitizePin(input.value);
+  });
+
+  submitButton.addEventListener("click", verifyPin);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      verifyPin();
+    }
+  });
+
+  updateUserGamesVisibility();
+
+  if (getUserGamesPinGateState()) {
+    const verifiedPlayer = getUserGamesVerifiedPlayer();
+    if (!verifiedPlayer || !isPlayerAllowedForTab(verifiedPlayer, "userGamesTab")) {
+      setUserGamesPinGateState(false);
+      setUserGamesVerifiedPlayerId("");
+      updateUserGamesVisibility();
+    }
+  }
+};
+
 const initAdminConfirmations = () => {
   const list = document.querySelector("#adminConfirmationsList");
   const status = document.querySelector("#adminConfirmationsStatus");
@@ -1102,6 +1193,20 @@ const initUserTabs = () => {
       if (confirmationsPinStatus) {
         confirmationsPinStatus.textContent = "";
       }
+    }
+
+    if (target === "userGamesTab") {
+      setUserGamesPinGateState(false);
+      setUserGamesVerifiedPlayerId("");
+      const userGamesPinInput = document.querySelector("#userGamesPinInput");
+      const userGamesPinStatus = document.querySelector("#userGamesPinStatus");
+      if (userGamesPinInput) {
+        userGamesPinInput.value = "";
+      }
+      if (userGamesPinStatus) {
+        userGamesPinStatus.textContent = "";
+      }
+      updateUserGamesVisibility();
     }
 
     if (targetButton) {
@@ -2905,6 +3010,7 @@ const bootstrap = async () => {
   initPinGate();
   initChatTab();
   initUserConfirmations();
+  initUserGamesTab();
   initLatestMessage();
   initRulesDisplay();
   initInstructionModal();
