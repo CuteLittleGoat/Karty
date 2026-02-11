@@ -34,10 +34,12 @@ const CHAT_RETENTION_DAYS = 30;
 
 const TABLES_COLLECTION = "Tables";
 const GAMES_COLLECTION = "Tables";
+const USER_GAMES_COLLECTION = "UserGames";
 const GAME_DETAILS_COLLECTION = "rows";
 const TABLES_COLLECTION_CONFIG_KEY = "tablesCollection";
 const GAMES_COLLECTION_CONFIG_KEY = "gamesCollection";
 const GAME_DETAILS_COLLECTION_CONFIG_KEY = "gameDetailsCollection";
+const USER_GAMES_COLLECTION_CONFIG_KEY = "userGamesCollection";
 const TABLE_ROWS_COLLECTION = "rows";
 const GAME_CONFIRMATIONS_COLLECTION = "confirmations";
 const DEFAULT_TABLE_META = {
@@ -75,6 +77,8 @@ const chatState = {
 const debounceTimers = new Map();
 const adminRefreshHandlers = new Map();
 const ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY = "adminGamesSelectedYear";
+const ADMIN_USER_GAMES_SELECTED_YEAR_STORAGE_KEY = "adminUserGamesSelectedYear";
+const USER_GAMES_SELECTED_YEAR_STORAGE_KEY = "userGamesSelectedYear";
 
 const getDateSortValue = (value) => {
   if (typeof value !== "string") {
@@ -322,6 +326,14 @@ const getGameDetailsCollectionName = () => {
   return configured || GAME_DETAILS_COLLECTION;
 };
 
+const getUserGamesCollectionName = () => {
+  const configured =
+    window.firebaseConfig && typeof window.firebaseConfig[USER_GAMES_COLLECTION_CONFIG_KEY] === "string"
+      ? window.firebaseConfig[USER_GAMES_COLLECTION_CONFIG_KEY].trim()
+      : "";
+  return configured || USER_GAMES_COLLECTION;
+};
+
 const getActiveGamesForConfirmations = async (db, gamesCollectionName, source = "default") => {
   const queryOptions = source === "default" ? undefined : { source };
   const collectionRef = db.collection(gamesCollectionName);
@@ -340,6 +352,23 @@ const getActiveGamesForConfirmations = async (db, gamesCollectionName, source = 
     const fallbackSnapshot = await collectionRef.get(queryOptions);
     return toSortedActiveGames(fallbackSnapshot);
   }
+};
+
+const getActiveGamesForConfirmationsFromCollections = async (db, collectionNames, source = "default") => {
+  const uniqueCollectionNames = Array.from(new Set(collectionNames.filter((name) => typeof name === "string" && name.trim())));
+  const result = [];
+
+  for (const collectionName of uniqueCollectionNames) {
+    const games = await getActiveGamesForConfirmations(db, collectionName, source);
+    games.forEach((game) => {
+      result.push({
+        collectionName,
+        game
+      });
+    });
+  }
+
+  return result.sort((a, b) => compareByGameDateAsc(a.game, b.game));
 };
 
 
@@ -754,6 +783,7 @@ const initUserConfirmations = () => {
 
   const db = firebaseApp.firestore();
   const gamesCollectionName = getGamesCollectionName();
+  const userGamesCollectionName = getUserGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
 
   const readData = async (source = "default") => {
@@ -770,11 +800,12 @@ const initUserConfirmations = () => {
     body.innerHTML = "";
 
     try {
-      const games = await getActiveGamesForConfirmations(db, gamesCollectionName, source);
+      const games = await getActiveGamesForConfirmationsFromCollections(db, [gamesCollectionName, userGamesCollectionName], source);
 
       const visibleGames = [];
-      for (const game of games) {
-        const rowsSnapshot = await db.collection(gamesCollectionName)
+      for (const entry of games) {
+        const { collectionName, game } = entry;
+        const rowsSnapshot = await db.collection(collectionName)
           .doc(game.id)
           .collection(gameDetailsCollectionName)
           .get(source === "default" ? undefined : { source });
@@ -788,13 +819,14 @@ const initUserConfirmations = () => {
           continue;
         }
 
-        const confirmationDoc = await db.collection(gamesCollectionName)
+        const confirmationDoc = await db.collection(collectionName)
           .doc(game.id)
           .collection(GAME_CONFIRMATIONS_COLLECTION)
           .doc(verifiedPlayer.id)
           .get(source === "default" ? undefined : { source });
 
         visibleGames.push({
+          collectionName,
           game,
           confirmation: confirmationDoc.exists ? confirmationDoc.data() : null
         });
@@ -811,7 +843,7 @@ const initUserConfirmations = () => {
         return;
       }
 
-      visibleGames.forEach(({ game, confirmation }) => {
+      visibleGames.forEach(({ collectionName, game, confirmation }) => {
         const tr = document.createElement("tr");
         if (confirmation?.confirmed) {
           tr.classList.add("confirmed-row");
@@ -835,7 +867,7 @@ const initUserConfirmations = () => {
         confirmButton.className = "primary";
         confirmButton.textContent = "Potwierdź";
         confirmButton.addEventListener("click", async () => {
-          await db.collection(gamesCollectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(verifiedPlayer.id).set({
+          await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(verifiedPlayer.id).set({
             playerId: verifiedPlayer.id,
             playerName: verifiedPlayer.name || "",
             confirmed: true,
@@ -850,7 +882,7 @@ const initUserConfirmations = () => {
         cancelButton.className = "danger";
         cancelButton.textContent = "Anuluj";
         cancelButton.addEventListener("click", async () => {
-          await db.collection(gamesCollectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(verifiedPlayer.id).set({
+          await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(verifiedPlayer.id).set({
             playerId: verifiedPlayer.id,
             playerName: verifiedPlayer.name || "",
             confirmed: false,
@@ -981,6 +1013,473 @@ const initUserGamesTab = () => {
   }
 };
 
+const initUserGamesManager = ({
+  yearsListSelector,
+  addGameButtonSelector,
+  gamesTableBodySelector,
+  statusSelector,
+  modalSelector,
+  modalMetaSelector,
+  modalBodySelector,
+  modalCloseSelector,
+  modalAddRowButtonSelector,
+  selectedYearStorageKey,
+  canWrite,
+  createGamePayload
+}) => {
+  const yearsList = document.querySelector(yearsListSelector);
+  const addGameButton = document.querySelector(addGameButtonSelector);
+  const gamesTableBody = document.querySelector(gamesTableBodySelector);
+  const status = document.querySelector(statusSelector);
+  const modal = document.querySelector(modalSelector);
+  const modalMeta = document.querySelector(modalMetaSelector);
+  const modalBody = document.querySelector(modalBodySelector);
+  const modalClose = document.querySelector(modalCloseSelector);
+  const modalAddRowButton = document.querySelector(modalAddRowButtonSelector);
+
+  if (!yearsList || !gamesTableBody || !status || !addGameButton || !modal || !modalMeta || !modalBody || !modalAddRowButton) {
+    return;
+  }
+
+  const firebaseApp = getFirebaseApp();
+  if (!firebaseApp) {
+    status.textContent = "Uzupełnij konfigurację Firebase, aby zarządzać grami użytkowników.";
+    addGameButton.disabled = true;
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+  const gamesCollectionName = getUserGamesCollectionName();
+  const gameDetailsCollectionName = getGameDetailsCollectionName();
+  const state = {
+    years: [],
+    selectedYear: loadSavedSelectedGamesYear(selectedYearStorageKey),
+    games: [],
+    detailsByGame: new Map(),
+    detailsUnsubscribers: new Map(),
+    activeGameIdInModal: null,
+    playerOptions: []
+  };
+
+  const closeModal = () => {
+    state.activeGameIdInModal = null;
+    modal.classList.remove("is-visible");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+
+  const getGamesForSelectedYear = () => {
+    if (!state.selectedYear) {
+      return [];
+    }
+    return state.games.filter((game) => extractYearFromDate(game.gameDate) === state.selectedYear).sort(compareByGameDateAsc);
+  };
+
+  const renderYears = () => {
+    yearsList.innerHTML = "";
+    if (!state.years.length) {
+      const info = document.createElement("p");
+      info.className = "status-text";
+      info.textContent = "Brak lat. Dodaj pierwszą grę, aby rok pojawił się automatycznie.";
+      yearsList.appendChild(info);
+      return;
+    }
+
+    state.years.forEach((year) => {
+      const yearButton = document.createElement("button");
+      yearButton.type = "button";
+      yearButton.className = `admin-games-year-button ${state.selectedYear === year ? "is-active" : ""}`.trim();
+      yearButton.textContent = String(year);
+      yearButton.addEventListener("click", () => {
+        state.selectedYear = year;
+        saveSelectedGamesYear(state.selectedYear, selectedYearStorageKey);
+        renderYears();
+        renderGamesTable();
+      });
+      yearsList.appendChild(yearButton);
+    });
+  };
+
+  const renderGamesTable = () => {
+    const focusState = getFocusedAdminInputState(gamesTableBody);
+    gamesTableBody.innerHTML = "";
+
+    if (!state.selectedYear) {
+      status.textContent = "Wybierz rok z listy po lewej stronie.";
+      return;
+    }
+
+    const games = getGamesForSelectedYear();
+    status.textContent = `Wybrany rok: ${state.selectedYear}. Liczba gier: ${games.length}.`;
+
+    if (!games.length) {
+      const emptyRow = document.createElement("tr");
+      const emptyCell = document.createElement("td");
+      emptyCell.colSpan = 5;
+      emptyCell.textContent = "Brak gier z datą w wybranym roku.";
+      emptyRow.appendChild(emptyCell);
+      gamesTableBody.appendChild(emptyRow);
+      return;
+    }
+
+    games.forEach((game) => {
+      const row = document.createElement("tr");
+      const writeEnabled = canWrite();
+
+      const gameTypeCell = document.createElement("td");
+      const gameTypeSelect = document.createElement("select");
+      gameTypeSelect.className = "admin-input";
+      ["Cashout", "Turniej"].forEach((label) => {
+        const option = document.createElement("option");
+        option.value = label;
+        option.textContent = label;
+        gameTypeSelect.appendChild(option);
+      });
+      gameTypeSelect.value = game.gameType === "Turniej" ? "Turniej" : "Cashout";
+      gameTypeSelect.disabled = !writeEnabled;
+      gameTypeSelect.addEventListener("change", () => {
+        if (!canWrite()) return;
+        void db.collection(gamesCollectionName).doc(game.id).update({ gameType: gameTypeSelect.value });
+      });
+      gameTypeCell.appendChild(gameTypeSelect);
+
+      const dateCell = document.createElement("td");
+      const dateInput = document.createElement("input");
+      dateInput.type = "date";
+      dateInput.className = "admin-input";
+      dateInput.value = game.gameDate ?? getFormattedCurrentDate();
+      dateInput.disabled = !writeEnabled;
+      dateInput.addEventListener("change", () => {
+        if (!canWrite()) return;
+        const nextDate = dateInput.value || getFormattedCurrentDate();
+        const currentName = typeof game.name === "string" ? game.name.trim() : "";
+        const updatePayload = { gameDate: nextDate };
+        if (!currentName || parseDefaultTableNumber(currentName)) {
+          const otherGames = state.games.filter((entry) => entry.id !== game.id);
+          updatePayload.name = getNextGameNameForDate(otherGames, nextDate);
+        }
+        void db.collection(gamesCollectionName).doc(game.id).update(updatePayload);
+      });
+      dateCell.appendChild(dateInput);
+
+      const nameCell = document.createElement("td");
+      const nameWrap = document.createElement("div");
+      nameWrap.className = "admin-games-name-control";
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.className = "admin-input";
+      nameInput.value = game.name ?? "";
+      nameInput.placeholder = "Nazwa gry";
+      nameInput.disabled = !writeEnabled;
+      nameInput.addEventListener("input", () => {
+        if (!canWrite()) return;
+        const value = nameInput.value;
+        scheduleDebouncedUpdate(`user-game-name-${game.id}`, () => {
+          void db.collection(gamesCollectionName).doc(game.id).update({ name: value });
+        });
+      });
+      const detailsButton = document.createElement("button");
+      detailsButton.type = "button";
+      detailsButton.className = "secondary";
+      detailsButton.textContent = "Szczegóły";
+      detailsButton.addEventListener("click", () => {
+        state.activeGameIdInModal = game.id;
+        renderModal(game.id);
+        modal.classList.add("is-visible");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+      });
+      nameWrap.append(nameInput, detailsButton);
+      nameCell.appendChild(nameWrap);
+
+      const closedCell = document.createElement("td");
+      const closedInput = document.createElement("input");
+      closedInput.type = "checkbox";
+      closedInput.checked = Boolean(game.isClosed);
+      closedInput.disabled = !writeEnabled;
+      closedInput.addEventListener("change", () => {
+        if (!canWrite()) return;
+        void db.collection(gamesCollectionName).doc(game.id).update({ isClosed: closedInput.checked });
+      });
+      closedCell.appendChild(closedInput);
+
+      const deleteCell = document.createElement("td");
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "danger";
+      deleteButton.textContent = "Usuń";
+      deleteButton.disabled = !writeEnabled;
+      deleteButton.addEventListener("click", async () => {
+        if (!canWrite()) return;
+        const gameRef = db.collection(gamesCollectionName).doc(game.id);
+        const detailsSnapshot = await gameRef.collection(gameDetailsCollectionName).get();
+        const confirmationsSnapshot = await gameRef.collection(GAME_CONFIRMATIONS_COLLECTION).get();
+        const batch = db.batch();
+        detailsSnapshot.forEach((doc) => batch.delete(doc.ref));
+        confirmationsSnapshot.forEach((doc) => batch.delete(doc.ref));
+        batch.delete(gameRef);
+        await batch.commit();
+      });
+      deleteCell.appendChild(deleteButton);
+
+      row.append(gameTypeCell, dateCell, nameCell, closedCell, deleteCell);
+      gamesTableBody.appendChild(row);
+    });
+
+    restoreFocusedAdminInputState(gamesTableBody, focusState);
+  };
+
+  const renderModal = (gameId) => {
+    const game = state.games.find((entry) => entry.id === gameId);
+    if (!game) {
+      return;
+    }
+
+    const focusState = getFocusedAdminInputState(modalBody);
+    modalMeta.textContent = `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"}`;
+    modalBody.innerHTML = "";
+
+    const rows = state.detailsByGame.get(gameId) ?? [];
+    rows.forEach((row) => {
+      const tr = document.createElement("tr");
+      const writeEnabled = canWrite();
+
+      const playerCell = document.createElement("td");
+      const playerSelect = document.createElement("select");
+      playerSelect.className = "admin-input";
+      const currentPlayerName = typeof row.playerName === "string" ? row.playerName : "";
+      const options = [...state.playerOptions];
+      const emptyOption = document.createElement("option");
+      emptyOption.value = "";
+      emptyOption.textContent = "Wybierz gracza";
+      playerSelect.appendChild(emptyOption);
+      if (currentPlayerName && !options.includes(currentPlayerName)) {
+        const legacyOption = document.createElement("option");
+        legacyOption.value = currentPlayerName;
+        legacyOption.textContent = `${currentPlayerName} (usunięty)`;
+        legacyOption.disabled = true;
+        legacyOption.selected = true;
+        playerSelect.appendChild(legacyOption);
+      }
+      options.forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        playerSelect.appendChild(option);
+      });
+      playerSelect.value = currentPlayerName;
+      playerSelect.disabled = !writeEnabled;
+      playerSelect.addEventListener("change", () => {
+        if (!canWrite()) return;
+        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ playerName: playerSelect.value });
+      });
+      playerCell.appendChild(playerSelect);
+
+      const createNumericCell = (key) => {
+        const td = document.createElement("td");
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "admin-input";
+        input.value = row[key] ?? "";
+        input.disabled = !writeEnabled;
+        input.addEventListener("input", () => {
+          if (!canWrite()) return;
+          input.value = sanitizeIntegerInput(input.value);
+          scheduleDebouncedUpdate(`user-detail-${gameId}-${row.id}-${key}`, () => {
+            void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ [key]: input.value });
+          });
+        });
+        td.appendChild(input);
+        return td;
+      };
+
+      const entryFeeCell = createNumericCell("entryFee");
+      const rebuyCell = createNumericCell("rebuy");
+      const payoutCell = createNumericCell("payout");
+
+      const profitCell = document.createElement("td");
+      profitCell.textContent = String(parseIntegerOrZero(row.payout) - (parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy)));
+
+      const pointsCell = createNumericCell("points");
+
+      const championshipCell = document.createElement("td");
+      const championshipInput = document.createElement("input");
+      championshipInput.type = "checkbox";
+      championshipInput.checked = Boolean(row.championship);
+      championshipInput.disabled = !writeEnabled;
+      championshipInput.addEventListener("change", () => {
+        if (!canWrite()) return;
+        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ championship: championshipInput.checked });
+      });
+      championshipCell.appendChild(championshipInput);
+
+      const deleteCell = document.createElement("td");
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "danger admin-row-delete";
+      deleteButton.textContent = "Usuń";
+      deleteButton.disabled = !writeEnabled;
+      deleteButton.addEventListener("click", () => {
+        if (!canWrite()) return;
+        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).delete();
+      });
+      deleteCell.appendChild(deleteButton);
+
+      tr.append(playerCell, entryFeeCell, rebuyCell, payoutCell, profitCell, pointsCell, championshipCell, deleteCell);
+      modalBody.appendChild(tr);
+    });
+
+    modalAddRowButton.disabled = !canWrite();
+    restoreFocusedAdminInputState(modalBody, focusState);
+  };
+
+  const synchronizeYearsFromGames = () => {
+    state.years = normalizeYearList(state.games.map((game) => extractYearFromDate(game.gameDate)).filter((year) => Number.isInteger(year)));
+    if (!state.selectedYear || !state.years.includes(state.selectedYear)) {
+      state.selectedYear = state.years[0] ?? null;
+    }
+    saveSelectedGamesYear(state.selectedYear, selectedYearStorageKey);
+    renderYears();
+    renderGamesTable();
+  };
+
+  db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
+    const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
+    state.playerOptions = players.map((player) => (typeof player.name === "string" ? player.name.trim() : "")).filter(Boolean);
+    if (state.activeGameIdInModal) {
+      renderModal(state.activeGameIdInModal);
+    }
+  });
+
+  db.collection(gamesCollectionName).orderBy("createdAt", "asc").onSnapshot((snapshot) => {
+    state.games = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+    const activeIds = new Set(state.games.map((game) => game.id));
+    state.detailsUnsubscribers.forEach((unsubscribe, gameId) => {
+      if (!activeIds.has(gameId)) {
+        unsubscribe();
+        state.detailsUnsubscribers.delete(gameId);
+        state.detailsByGame.delete(gameId);
+      }
+    });
+
+    state.games.forEach((game) => {
+      if (state.detailsUnsubscribers.has(game.id)) {
+        return;
+      }
+      const unsubscribe = db.collection(gamesCollectionName).doc(game.id).collection(gameDetailsCollectionName).orderBy("createdAt", "asc").onSnapshot((rowSnapshot) => {
+        state.detailsByGame.set(game.id, rowSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+        if (state.activeGameIdInModal === game.id) {
+          renderModal(game.id);
+        }
+      });
+      state.detailsUnsubscribers.set(game.id, unsubscribe);
+    });
+
+    synchronizeYearsFromGames();
+  });
+
+  addGameButton.addEventListener("click", async () => {
+    if (!canWrite()) {
+      status.textContent = "Zweryfikuj PIN do zakładki „Gry użytkowników”, aby dodawać gry.";
+      return;
+    }
+    addGameButton.disabled = true;
+    status.textContent = "Dodawanie gry...";
+    try {
+      const gameDate = getFormattedCurrentDate();
+      const name = getNextGameNameForDate(state.games, gameDate);
+      await db.collection(gamesCollectionName).add({
+        gameType: "Cashout",
+        gameDate,
+        name,
+        isClosed: false,
+        createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+        ...createGamePayload()
+      });
+      status.textContent = `Dodano grę "${name}" z datą ${gameDate}.`;
+    } catch (error) {
+      status.textContent = "Nie udało się dodać gry użytkownika.";
+    } finally {
+      addGameButton.disabled = false;
+    }
+  });
+
+  modalAddRowButton.addEventListener("click", async () => {
+    if (!state.activeGameIdInModal || !canWrite()) {
+      return;
+    }
+    await db.collection(gamesCollectionName).doc(state.activeGameIdInModal).collection(gameDetailsCollectionName).add({
+      playerName: "",
+      entryFee: "",
+      rebuy: "",
+      payout: "",
+      points: "",
+      championship: false,
+      createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+    });
+  });
+
+  modalClose.addEventListener("click", closeModal);
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modal.classList.contains("is-visible")) {
+      closeModal();
+    }
+  });
+};
+
+const initAdminUserGames = () => {
+  initUserGamesManager({
+    yearsListSelector: "#adminUserGamesYearsList",
+    addGameButtonSelector: "#adminUserGamesAddGame",
+    gamesTableBodySelector: "#adminUserGamesTableBody",
+    statusSelector: "#adminUserGamesStatus",
+    modalSelector: "#userGameDetailsModal",
+    modalMetaSelector: "#userGameDetailsMeta",
+    modalBodySelector: "#userGameDetailsBody",
+    modalCloseSelector: "#userGameDetailsClose",
+    modalAddRowButtonSelector: "#userGameDetailsAddRow",
+    selectedYearStorageKey: ADMIN_USER_GAMES_SELECTED_YEAR_STORAGE_KEY,
+    canWrite: () => true,
+    createGamePayload: () => ({
+      createdByPlayerId: "admin",
+      createdByPlayerName: "Administrator"
+    })
+  });
+};
+
+const initPlayerUserGames = () => {
+  initUserGamesManager({
+    yearsListSelector: "#userGamesYearsList",
+    addGameButtonSelector: "#userGamesAddGame",
+    gamesTableBodySelector: "#userGamesTableBody",
+    statusSelector: "#userGamesStatus",
+    modalSelector: "#playerUserGameDetailsModal",
+    modalMetaSelector: "#playerUserGameDetailsMeta",
+    modalBodySelector: "#playerUserGameDetailsBody",
+    modalCloseSelector: "#playerUserGameDetailsClose",
+    modalAddRowButtonSelector: "#playerUserGameDetailsAddRow",
+    selectedYearStorageKey: USER_GAMES_SELECTED_YEAR_STORAGE_KEY,
+    canWrite: () => {
+      const player = getUserGamesVerifiedPlayer();
+      return getUserGamesPinGateState() && Boolean(player) && isPlayerAllowedForTab(player, "userGamesTab");
+    },
+    createGamePayload: () => {
+      const player = getUserGamesVerifiedPlayer();
+      return {
+        createdByPlayerId: player?.id || "",
+        createdByPlayerName: player?.name || ""
+      };
+    }
+  });
+};
+
+
 const initAdminConfirmations = () => {
   const list = document.querySelector("#adminConfirmationsList");
   const status = document.querySelector("#adminConfirmationsStatus");
@@ -997,6 +1496,7 @@ const initAdminConfirmations = () => {
 
   const db = firebaseApp.firestore();
   const gamesCollectionName = getGamesCollectionName();
+  const userGamesCollectionName = getUserGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
 
   const refreshData = async (source = "default") => {
@@ -1004,14 +1504,15 @@ const initAdminConfirmations = () => {
     status.textContent = source === "server" ? "Odświeżanie danych..." : "Pobieranie danych...";
 
     try {
-      const games = await getActiveGamesForConfirmations(db, gamesCollectionName, source);
+      const games = await getActiveGamesForConfirmationsFromCollections(db, [gamesCollectionName, userGamesCollectionName], source);
 
       if (!games.length) {
         status.textContent = "Brak aktywnych gier do potwierdzenia.";
         return;
       }
 
-      for (const game of games) {
+      for (const entry of games) {
+        const { collectionName, game } = entry;
         const wrapper = document.createElement("section");
         wrapper.className = "admin-confirmation-game";
 
@@ -1037,7 +1538,7 @@ const initAdminConfirmations = () => {
         `;
         const tbody = document.createElement("tbody");
 
-        const rowsSnapshot = await db.collection(gamesCollectionName).doc(game.id).collection(gameDetailsCollectionName).get(
+        const rowsSnapshot = await db.collection(collectionName).doc(game.id).collection(gameDetailsCollectionName).get(
           source === "default" ? undefined : { source }
         );
         const playerNames = Array.from(new Set(rowsSnapshot.docs
@@ -1052,7 +1553,7 @@ const initAdminConfirmations = () => {
           tr.appendChild(td);
           tbody.appendChild(tr);
         } else {
-          const confirmationSnapshot = await db.collection(gamesCollectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).get(
+          const confirmationSnapshot = await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).get(
             source === "default" ? undefined : { source }
           );
           const confirmationsByName = new Map();
@@ -1088,7 +1589,7 @@ const initAdminConfirmations = () => {
             confirmButton.className = "primary";
             confirmButton.textContent = "Potwierdź";
             confirmButton.addEventListener("click", async () => {
-              await db.collection(gamesCollectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(confirmationDocId).set({
+              await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(confirmationDocId).set({
                 playerId: confirmationDocId,
                 playerName,
                 confirmed: true,
@@ -1104,7 +1605,7 @@ const initAdminConfirmations = () => {
             cancelButton.className = "danger";
             cancelButton.textContent = "Anuluj";
             cancelButton.addEventListener("click", async () => {
-              await db.collection(gamesCollectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(confirmationDocId).set({
+              await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(confirmationDocId).set({
                 playerId: confirmationDocId,
                 playerName,
                 confirmed: false,
@@ -1128,7 +1629,7 @@ const initAdminConfirmations = () => {
         list.appendChild(wrapper);
       }
 
-      status.textContent = `Załadowano ${games.length} aktywnych gier.`;
+      status.textContent = `Załadowano ${games.length} aktywnych gier (Tables + UserGames).`;
     } catch (error) {
       status.textContent = "Nie udało się pobrać listy potwierdzeń.";
     }
@@ -1265,17 +1766,17 @@ const normalizeYearList = (years) => {
   return Array.from(unique).sort((a, b) => b - a);
 };
 
-const loadSavedSelectedGamesYear = () => {
-  const rawValue = Number(localStorage.getItem(ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY));
+const loadSavedSelectedGamesYear = (storageKey = ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY) => {
+  const rawValue = Number(localStorage.getItem(storageKey));
   return Number.isInteger(rawValue) && rawValue > 1900 && rawValue < 3000 ? rawValue : null;
 };
 
-const saveSelectedGamesYear = (year) => {
+const saveSelectedGamesYear = (year, storageKey = ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY) => {
   if (!Number.isInteger(year) || year < 1900 || year > 2999) {
-    localStorage.removeItem(ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY);
+    localStorage.removeItem(storageKey);
     return;
   }
-  localStorage.setItem(ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY, String(year));
+  localStorage.setItem(storageKey, String(year));
 };
 
 const initAdminPanelTabs = () => {
@@ -3015,12 +3516,14 @@ const bootstrap = async () => {
   initAdminRules();
   initAdminTables();
   initAdminGames();
+  initAdminUserGames();
   initAdminConfirmations();
   initAdminPlayers();
   initPinGate();
   initChatTab();
   initUserConfirmations();
   initUserGamesTab();
+  initPlayerUserGames();
   initLatestMessage();
   initRulesDisplay();
   initInstructionModal();

@@ -11,5 +11,6 @@ window.firebaseConfig = {
   appId: "1:716608782712:web:27d29434f013a5cf31888d",
   tablesCollection: "Tables",
   gamesCollection: "Tables",
-  gameDetailsCollection: "rows"
+  gameDetailsCollection: "rows",
+  userGamesCollection: "UserGames"
 };

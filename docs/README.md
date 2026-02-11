@@ -436,3 +436,111 @@ Po wejściu na inną kartę i ponownym kliknięciu **Gry użytkowników** aplika
 2. Oczekiwany efekt: status obok przycisku pokazuje komunikat o odświeżeniu danych aktywnej karty.
 3. Zakładka jest przygotowana jako osobne miejsce na dalszą administrację danymi gier użytkowników (na tym etapie zawiera widok informacyjny).
 
+
+---
+
+## 16. Zakładka „Gry użytkowników” — pełna instrukcja po wdrożeniu
+
+### 16.1 Dla gracza (strefa gracza)
+1. Wejdź do zakładki **Gry użytkowników**.
+2. W sekcji PIN wpisz 5-cyfrowy kod gracza, który ma uprawnienie **Gry użytkowników**.
+3. Kliknij **Otwórz**.
+4. Po poprawnej autoryzacji zobaczysz:
+   - panel lat po lewej,
+   - tabelę gier użytkowników po prawej,
+   - przycisk **Dodaj**.
+
+#### Dodanie nowej gry użytkownika
+1. Kliknij **Dodaj**.
+2. Aplikacja utworzy wpis z bieżącą datą i nazwą `Gra X` (najbliższy wolny numer w danym dniu).
+3. W nowym wierszu możesz zmienić:
+   - **Rodzaj Gry** (`Cashout` / `Turniej`),
+   - **Data**,
+   - **Nazwa**,
+   - **CzyZamknięta** (checkbox).
+
+#### Dodanie szczegółów (graczy i stawek)
+1. W wybranej grze kliknij **Szczegóły**.
+2. W modalu kliknij **Dodaj** (pod tabelą), aby dodać wiersz gracza.
+3. Uzupełnij pola:
+   - **Gracz** (z listy graczy),
+   - **Wpisowe**,
+   - **Rebuy/Add-on**,
+   - **Wypłata**,
+   - **Punkty**,
+   - **Mistrzostwo**.
+4. Kolumna **+/-** wylicza się automatycznie.
+5. Aby usunąć pojedynczy wiersz gracza, kliknij **Usuń** w tym wierszu.
+6. Aby zamknąć modal, kliknij **×** w prawym górnym rogu.
+
+#### Usuwanie gry użytkownika
+1. W tabeli gier kliknij **Usuń** w wybranym wierszu gry.
+2. Usunięta zostanie gra oraz jej `rows` i `confirmations`.
+
+### 16.2 Dla administratora (panel admina)
+1. Wejdź do `?admin=1`.
+2. Kliknij zakładkę **Gry użytkowników**.
+3. Dostępne są identyczne akcje jak dla gracza, ale bez PIN-gate:
+   - dodawanie gry,
+   - edycja typu/dat/nazwy,
+   - checkbox **CzyZamknięta**,
+   - wejście w **Szczegóły**,
+   - usuwanie gry i wierszy.
+
+### 16.3 Potwierdzenia obecności (po zmianie)
+- Zakładka **Gry do potwierdzenia** (gracz i admin) agreguje teraz aktywne gry z dwóch kolekcji:
+  - `Tables`,
+  - `UserGames`.
+- Jeżeli gracz zostanie dodany do `UserGames/{gameId}/rows`, zobaczy tę grę w „Gry do potwierdzenia” (o ile ma uprawnienie do tej zakładki).
+- Administrator może potwierdzać/anulować obecności również dla gier z `UserGames`.
+
+### 16.4 Aktualne Firestore Rules (zgodne z nową strukturą)
+Użyj poniższej wersji w Firebase Console → Firestore Database → Rules:
+
+```txt
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /admin_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    match /app_settings/{docId} {
+      allow read, write: if true;
+    }
+
+    match /Tables/{tableId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /UserGames/{gameId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /Collection1/{docId} {
+      allow read, write: if true;
+    }
+
+    match /chat_messages/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
+```
