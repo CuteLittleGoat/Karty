@@ -437,6 +437,8 @@ Nowa inicjalizacja: `initAdminConfirmations()`.
 
 Działanie:
 1. Pobiera gry (`Tables`) i filtruje tylko `isClosed !== true`.
+   - Najpierw próbuje zapytania `orderBy("createdAt", "asc")`.
+   - Gdy zapytanie uporządkowane zwróci błąd (np. reguły/firestore query constraints), używa fallbacku `get()` bez `orderBy` i sortuje wynik lokalnie przez `compareByGameDateAsc`.
 2. Dla każdej gry pobiera zapisanych graczy z subkolekcji `rows`.
 3. Deduplikuje listę nazw graczy.
 4. Pobiera `confirmations` i mapuje statusy.
@@ -460,7 +462,8 @@ Działanie:
    - uprawnienie `confirmationsTab` w `player.permissions`.
 3. Po wejściu ładowane są gry:
    - tylko aktywne (`isClosed === false`),
-   - tylko takie, gdzie użytkownik znajduje się w `rows.playerName`.
+   - tylko takie, gdzie użytkownik znajduje się w `rows.playerName`,
+   - z tym samym mechanizmem fallbacku pobierania listy gier (`orderBy(createdAt)` -> fallback `get()` + sort lokalny).
 4. Dla każdej gry odczyt stanu z `confirmations/{playerId}`.
 5. Akcje w tabeli:
    - **Potwierdź**: zapis `confirmed: true`,
