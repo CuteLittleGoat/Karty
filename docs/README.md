@@ -114,7 +114,7 @@ Zamykanie tego okna odbywa się wyłącznie ikoną **X** w prawym górnym rogu (
    - **Wpisowe**: tylko cyfry (dozwolony minus na początku).
    - **Rebuy/Add-on**: tylko cyfry (dozwolony minus na początku).
    - **Wypłata**: tylko cyfry (dozwolony minus na początku).
-   - **+/-**: pole liczone automatycznie (`Wpisowe + Rebuy/Add-on - Wypłata`).
+   - **+/-**: pole liczone automatycznie (`Wypłata - (Wpisowe + Rebuy/Add-on)`).
    - **Punkty**: tylko cyfry (dozwolony minus na początku).
    - **Mistrzostwo**: checkbox.
 4. Aby usunąć wiersz gracza ze szczegółów, kliknij **Usuń** w tym wierszu.
