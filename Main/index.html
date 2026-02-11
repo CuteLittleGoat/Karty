@@ -204,13 +204,37 @@
             </div>
           </div>
           <div id="adminUserGamesTab" class="admin-panel-content" role="tabpanel">
-            <section class="admin-user-games">
-              <div class="card-header">
-                <h3>Gry użytkowników</h3>
-                <p>Sekcja administracyjna przeznaczona do obsługi gier użytkowników.</p>
-              </div>
-              <p class="user-construction">Strona w budowie</p>
-            </section>
+            <div class="admin-games-layout">
+              <aside class="admin-games-sidebar">
+                <div class="card-header admin-games-sidebar-header">
+                  <h3>Lata</h3>
+                </div>
+                <div id="adminUserGamesYearsList" class="admin-games-years-list"></div>
+              </aside>
+              <section class="admin-games-content">
+                <span id="adminUserGamesStatus" class="status-text" aria-live="polite"></span>
+                <div class="admin-games-section">
+                  <div class="card-header admin-tables-header">
+                    <h3>Gry użytkowników</h3>
+                    <button id="adminUserGamesAddGame" class="primary" type="button">Dodaj</button>
+                  </div>
+                  <div class="admin-table-scroll">
+                    <table class="admin-data-table">
+                      <thead>
+                        <tr>
+                          <th>Rodzaj Gry</th>
+                          <th>Data</th>
+                          <th>Nazwa</th>
+                          <th>CzyZamknięta</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminUserGamesTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            </div>
           </div>
           <div id="adminConfirmationsTab" class="admin-panel-content" role="tabpanel">
             <section class="admin-confirmations">
@@ -402,8 +426,38 @@
                   <p id="userGamesPinStatus" class="status-text"></p>
                 </div>
               </div>
-              <div id="userGamesContent" class="next-game-content">
-                <p class="user-construction">Strona w budowie</p>
+              <div id="userGamesContent" class="user-games-content">
+                <div class="admin-games-layout">
+                  <aside class="admin-games-sidebar">
+                    <div class="card-header admin-games-sidebar-header">
+                      <h3>Lata</h3>
+                    </div>
+                    <div id="userGamesYearsList" class="admin-games-years-list"></div>
+                  </aside>
+                  <section class="admin-games-content">
+                    <span id="userGamesStatus" class="status-text" aria-live="polite"></span>
+                    <div class="admin-games-section">
+                      <div class="card-header admin-tables-header">
+                        <h3>Gry użytkowników</h3>
+                        <button id="userGamesAddGame" class="primary" type="button">Dodaj</button>
+                      </div>
+                      <div class="admin-table-scroll">
+                        <table class="admin-data-table">
+                          <thead>
+                            <tr>
+                              <th>Rodzaj Gry</th>
+                              <th>Data</th>
+                              <th>Nazwa</th>
+                              <th>CzyZamknięta</th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <tbody id="userGamesTableBody"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </section>
+                </div>
               </div>
             </div>
           </div>
@@ -438,6 +492,71 @@
           <p class="status-text">Aktualności i Regulamin są zawsze dostępne dla każdego gracza.</p>
           <div id="playerPermissionsList" class="permissions-list"></div>
           <p id="playerPermissionsStatus" class="status-text" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="userGameDetailsModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="userGameDetailsTitle">
+        <div class="modal-header">
+          <h3 id="userGameDetailsTitle">Szczegóły gry użytkownika</h3>
+          <button id="userGameDetailsClose" class="icon-button" type="button" aria-label="Zamknij okno">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="userGameDetailsMeta" class="status-text"></p>
+          <div class="admin-table-scroll">
+            <table class="admin-data-table">
+              <thead>
+                <tr>
+                  <th>Gracz</th>
+                  <th>Wpisowe</th>
+                  <th>Rebuy/Add-on</th>
+                  <th>Wypłata</th>
+                  <th>+/-</th>
+                  <th>Punkty</th>
+                  <th>Mistrzostwo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="userGameDetailsBody"></tbody>
+            </table>
+          </div>
+          <div class="admin-table-actions">
+            <button id="userGameDetailsAddRow" class="secondary" type="button">Dodaj</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="playerUserGameDetailsModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="playerUserGameDetailsTitle">
+        <div class="modal-header">
+          <h3 id="playerUserGameDetailsTitle">Szczegóły gry użytkownika</h3>
+          <button id="playerUserGameDetailsClose" class="icon-button" type="button" aria-label="Zamknij okno">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="playerUserGameDetailsMeta" class="status-text"></p>
+          <div class="admin-table-scroll">
+            <table class="admin-data-table">
+              <thead>
+                <tr>
+                  <th>Gracz</th>
+                  <th>Wpisowe</th>
+                  <th>Rebuy/Add-on</th>
+                  <th>Wypłata</th>
+                  <th>+/-</th>
+                  <th>Punkty</th>
+                  <th>Mistrzostwo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="playerUserGameDetailsBody"></tbody>
+            </table>
+          </div>
+          <div class="admin-table-actions">
+            <button id="playerUserGameDetailsAddRow" class="secondary" type="button">Dodaj</button>
+          </div>
         </div>
       </div>
     </div>

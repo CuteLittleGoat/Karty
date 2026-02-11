@@ -907,6 +907,15 @@ button.danger {
   min-height: 220px;
 }
 
+.user-games-content {
+  display: none;
+  gap: var(--gap-3);
+}
+
+.user-games-content.is-visible {
+  display: grid;
+}
+
 .latest-message {
   display: grid;
   gap: 10px;

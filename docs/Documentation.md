@@ -558,3 +558,112 @@ Kolorystyka potwierdzenia wykorzystuje istniejący złoty motyw (`--gold`, `--go
   - zaokrąglenie `var(--radius-md)`.
 - Dzięki temu nowa zakładka pozostaje spójna wizualnie z modułami `Czat`, `Gracze` i `Gry do potwierdzenia`.
 
+
+---
+
+## 21. Wdrożenie „Gry użytkowników” (Opcja B: osobna kolekcja `UserGames`)
+
+### 21.1 Model danych Firebase
+Dodano pełną obsługę kolekcji:
+- `UserGames/{gameId}`
+  - pola dokumentu: `name`, `gameType`, `gameDate`, `isClosed`, `createdAt`, `createdByPlayerId`, `createdByPlayerName`.
+- `UserGames/{gameId}/rows/{rowId}`
+  - pola analogiczne jak w `Tables/{gameId}/rows/{rowId}` (`playerName`, `entryFee`, `rebuy`, `payout`, `points`, `championship`, `createdAt`).
+- `UserGames/{gameId}/confirmations/{playerId}`
+  - `playerId`, `playerName`, `confirmed`, `updatedBy`, `updatedAt`.
+
+W kodzie klienta dodano konfigurację `userGamesCollection` w `firebase-config.js`.
+
+### 21.2 Zmiany architektury JS (`Main/app.js`)
+1. **Nowe stałe i konfiguracja:**
+   - `USER_GAMES_COLLECTION`,
+   - `USER_GAMES_COLLECTION_CONFIG_KEY`,
+   - osobne klucze `localStorage` dla wyboru roku (`adminUserGamesSelectedYear`, `userGamesSelectedYear`).
+2. **Nowe helpery:**
+   - `getUserGamesCollectionName()` — odczyt nazwy kolekcji z configu lub fallback `UserGames`.
+   - `getActiveGamesForConfirmationsFromCollections()` — agregacja aktywnych gier z wielu kolekcji i wspólne sortowanie po dacie.
+3. **Potwierdzenia (gracz/admin):**
+   - `initUserConfirmations()` i `initAdminConfirmations()` pobierają teraz gry z `Tables` + `UserGames`.
+   - Operacje `set()` dla potwierdzeń zapisują do odpowiedniej kolekcji źródłowej gry.
+4. **Nowy moduł zarządzania grami użytkowników:**
+   - `initUserGamesManager(config)` — wspólny silnik CRUD dla panelu admina i strefy gracza.
+   - Obsługa: lat, dodawania gry, edycji typu/dat/nazwy, checkbox `CzyZamknięta`, usuwania gry, modala szczegółów i CRUD `rows`.
+5. **Inicjalizacja:**
+   - `initAdminUserGames()` — pełne uprawnienia w zakładce admina.
+   - `initPlayerUserGames()` — zapis możliwy tylko po aktywnej weryfikacji PIN i uprawnieniu `userGamesTab`.
+
+### 21.3 Zmiany HTML (`Main/index.html`)
+1. Zakładka admina `adminUserGamesTab` została przebudowana z placeholdera na pełny layout:
+   - panel lat,
+   - tabela gier,
+   - przycisk `Dodaj`.
+2. Zakładka gracza `userGamesTab`:
+   - zachowano PIN-gate,
+   - po autoryzacji renderowany jest pełny layout gier użytkowników.
+3. Dodano dwa osobne modale szczegółów:
+   - `#userGameDetailsModal` (admin),
+   - `#playerUserGameDetailsModal` (gracz).
+
+### 21.4 Zmiany CSS (`Main/styles.css`)
+Dodano nowy kontener widoczności zakładki gracza:
+- `.user-games-content` (domyślnie ukryty),
+- `.user-games-content.is-visible` (widoczny jako `display: grid`).
+
+Cel: uniknięcie centrowania placeholderowego z `.next-game-content` i zapewnienie poprawnego układu panelu lat + tabeli.
+
+### 21.5 Aktualne Firestore Rules (stan wdrożeniowy)
+W projekcie dokumentacja przyjmuje reguły otwarte, z dodanym match dla nowej kolekcji:
+
+```txt
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /admin_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    match /app_settings/{docId} {
+      allow read, write: if true;
+    }
+
+    match /Tables/{tableId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /UserGames/{gameId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /Collection1/{docId} {
+      allow read, write: if true;
+    }
+
+    match /chat_messages/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+### 21.6 Wpływ funkcjonalny na aplikację
+- „Gry użytkowników” działają analogicznie do „Gry admina”, ale bez sekcji podsumowania/statystyk.
+- Admin i gracz z odpowiednim PIN/uprawnieniem mogą tworzyć i edytować `UserGames`.
+- „Gry do potwierdzenia” obejmują aktywne gry z `Tables` i `UserGames`.
+- Dane `UserGames` pozostają logicznie odseparowane od statystyk opartych o `Tables`.

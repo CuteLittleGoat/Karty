@@ -176,3 +176,23 @@
   - układ `grid` z odstępem `var(--gap-2)`.
 - Komunikat „Strona w budowie” pozostaje w stylu `.user-construction` (duży złoty napis), co utrzymuje wspólny język wizualny placeholderów w aplikacji.
 
+
+## 14) Layout „Gry użytkowników” po wdrożeniu CRUD
+
+### 14.1 Zakładka admina: `adminUserGamesTab`
+- Placeholder został zastąpiony pełnym układem `admin-games-layout`:
+  - lewa kolumna: panel lat (`.admin-games-sidebar`, `.admin-games-years-list`),
+  - prawa kolumna: tabela gier (`.admin-games-content`, `.admin-games-section`, `.admin-data-table`).
+- Użyto tych samych komponentów wizualnych co w „Gry admina”, aby zachować spójność interfejsu.
+
+### 14.2 Zakładka gracza: `userGamesTab`
+- Wprowadzono osobny kontener `.user-games-content`:
+  - domyślnie `display: none`,
+  - po autoryzacji `display: grid` przez `.is-visible`.
+- Powód: wcześniejszy kontener `.next-game-content` miał `place-items: center`, co było właściwe dla placeholdera, ale nie dla tabelarycznego widoku CRUD.
+
+### 14.3 Modale szczegółów gier użytkowników
+- Dodano dwa bliźniacze modale (admin/gracz), aby uniknąć konfliktów zdarzeń i zachować pełną niezależność interakcji:
+  - `#userGameDetailsModal`,
+  - `#playerUserGameDetailsModal`.
+- Oba modale dziedziczą istniejący styl kart modalnych (`.modal-overlay`, `.modal-card`, `.modal-header`, `.modal-body`, `.admin-table-scroll`, `.admin-data-table`).
