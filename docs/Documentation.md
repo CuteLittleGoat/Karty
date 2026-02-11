@@ -289,6 +289,10 @@ service cloud.firestore {
       match /rows/{rowId} {
         allow read, write: if true;
       }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
     }
 
     match /Collection1/{docId} {
@@ -312,7 +316,8 @@ W projekcie działają następujące kolekcje:
    - `rules` (`text`, `updatedAt`, `source`).
 3. `Tables`
    - dokumenty gier/turniejów (`gameType`, `gameDate`, `name`, `createdAt`, itp.),
-   - subkolekcja `rows` dla szczegółów wpisów.
+   - subkolekcja `rows` dla szczegółów wpisów,
+   - subkolekcja `confirmations` do zapisu potwierdzeń (`confirmed`, `updatedAt`, `updatedBy`, `playerName`, `playerId`).
 4. `Collection1`
    - kolekcja historyczna utrzymywana pod obecne reguły.
 5. `chat_messages`
