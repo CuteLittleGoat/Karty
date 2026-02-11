@@ -33,7 +33,7 @@ Przełączanie kart realizuje `initAdminPanelTabs()`.
 ## 4. Firebase i kolekcje
 Najważniejsze kolekcje Firestore:
 - `admin_messages` — wiadomości administratora,
-- `app_settings/player_access` — gracze + PIN + uprawnienia,
+- `app_settings/player_access` — gracze + PIN + uprawnienia + flaga `appEnabled` (stan checkboxa kolumny „Aplikacja”),
 - `Tables` + subkolekcja `rows` — zakładka Turnieje,
 - `Tables` + subkolekcja `rows` — zakładka Gry (domyślnie ta sama kolekcja co Turnieje, nazwa konfigurowana przez `gamesCollection`, a subkolekcja przez `gameDetailsCollection`).
 
@@ -189,6 +189,50 @@ W momencie przebudowy widoku stare węzły DOM znikają, ale przed usunięciem z
 - brak utraty podświetlenia aktywnego pola,
 - zachowanie pozycji kursora w polach tekstowych,
 - spójne zachowanie we wszystkich zakładkach administracyjnych, które renderują dane reaktywnie.
+
+
+## 6A. Zakładka Gracze — nowa kolumna „Aplikacja” (persistencja checkboxa)
+Implementacja znajduje się w `initAdminPlayers()` i działa całkowicie niezależnie od pozostałych modułów.
+
+### 6A.1 Model danych gracza
+Każdy obiekt gracza zapisany w `app_settings/player_access.players[]` zawiera teraz dodatkowe pole:
+- `appEnabled: boolean`
+
+W `normalizePlayer(player, index)` pole jest normalizowane przez `Boolean(player.appEnabled)`, więc:
+- brak pola w starszych rekordach = `false`,
+- istniejące wartości `true/false` są zachowane.
+
+### 6A.2 Render tabeli i kolejność kolumn
+W `Main/index.html` nagłówek tabeli graczy ma kolejność:
+1. `Aplikacja`
+2. `Nazwa`
+3. `PIN`
+4. `Uprawnienia`
+5. akcje
+
+W `renderPlayers()` w `Main/app.js` do każdego wiersza tworzony jest pierwszy `td` (`.players-app-cell`) z checkboxem (`.players-app-checkbox`).
+Checkbox ustawia `checked = Boolean(player.appEnabled)`.
+
+### 6A.3 Zapis i trwałość między sesjami
+Po kliknięciu checkboxa wywoływane jest:
+- `updatePlayerField(player.id, "appEnabled", appCheckbox.checked)`
+
+Mechanizm zapisu jest ten sam, co dla pozostałych pól gracza:
+- `scheduleDebouncedUpdate(...)`
+- `savePlayers()` -> zapis całej tablicy `players` do Firestore
+
+Ponieważ źródłem danych jest Firestore i aktywny `onSnapshot(...)`, stan checkboxa:
+- jest utrzymywany po odświeżeniu strony,
+- jest utrzymywany po restarcie przeglądarki,
+- synchronizuje się między sesjami administratora.
+
+### 6A.4 Brak wpływu na inne moduły
+Flaga `appEnabled` jest tylko prezentowana i zapisywana w tabeli „Gracze”.
+Nie bierze udziału w:
+- walidacji PIN,
+- uprawnieniach zakładek (`permissions`),
+- obliczeniach w zakładce Gry/Turnieje,
+- wyświetlaniu danych w sekcji gracza.
 
 ## 7. Inne kluczowe funkcje JS
 - `initAdminPlayers()` — zarządzanie graczami i PIN,

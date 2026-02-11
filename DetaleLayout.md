@@ -55,3 +55,16 @@
 ## 6) Responsywność
 - Przy mniejszych szerokościach layout zakładki Gry przechodzi do jednej kolumny.
 - Tabele pozostają w poziomym scrollu (`.admin-table-scroll`) dla czytelności.
+
+
+## 7) Zakładka „Gracze” — kolumna „Aplikacja”
+- W tabeli graczy dodano nową, pierwszą kolumnę: `Aplikacja` (po lewej stronie przed `Nazwa`).
+- Komórka kolumny używa klasy `.players-app-cell`:
+  - stała szerokość `88px`,
+  - wyrównanie zawartości do środka (`text-align: center`).
+- Checkbox w kolumnie używa klasy `.players-app-checkbox`:
+  - rozmiar `18px x 18px`,
+  - kolor akcentu `accent-color: var(--gold)`,
+  - kursor `pointer` dla czytelnej interakcji.
+- Zmiana zachowuje istniejący styl noir/gold i nie modyfikuje pozostałych kolumn (`Nazwa`, `PIN`, `Uprawnienia`, `Usuń`).
+

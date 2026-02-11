@@ -538,6 +538,7 @@ const initAdminPlayers = () => {
     id: typeof player.id === "string" && player.id.trim() ? player.id.trim() : `player-${index + 1}`,
     name: typeof player.name === "string" ? player.name : "",
     pin: sanitizePin(typeof player.pin === "string" ? player.pin : ""),
+    appEnabled: Boolean(player.appEnabled),
     permissions: Array.isArray(player.permissions)
       ? player.permissions.filter((permission) =>
           AVAILABLE_PLAYER_TABS.some((availableTab) => availableTab.key === permission)
@@ -681,6 +682,18 @@ const initAdminPlayers = () => {
     adminPlayersState.players.forEach((player) => {
       const row = document.createElement("tr");
 
+      const appCell = document.createElement("td");
+      appCell.className = "players-app-cell";
+      const appCheckbox = document.createElement("input");
+      appCheckbox.type = "checkbox";
+      appCheckbox.className = "players-app-checkbox";
+      appCheckbox.checked = Boolean(player.appEnabled);
+      appCheckbox.setAttribute("aria-label", `Dostęp aplikacji dla gracza ${player.name || player.id}`);
+      appCheckbox.addEventListener("change", () => {
+        updatePlayerField(player.id, "appEnabled", appCheckbox.checked);
+      });
+      appCell.appendChild(appCheckbox);
+
       const nameCell = document.createElement("td");
       const nameInput = document.createElement("input");
       nameInput.type = "text";
@@ -791,6 +804,7 @@ const initAdminPlayers = () => {
       });
       actionsCell.appendChild(deleteButton);
 
+      row.appendChild(appCell);
       row.appendChild(nameCell);
       row.appendChild(pinCell);
       row.appendChild(permissionsCell);
@@ -806,6 +820,7 @@ const initAdminPlayers = () => {
       id: `player-${Date.now()}`,
       name: "",
       pin: "",
+      appEnabled: false,
       permissions: []
     });
     renderPlayers();
