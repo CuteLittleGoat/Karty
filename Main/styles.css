@@ -571,6 +571,15 @@ h1 {
   background: rgba(0, 0, 0, 0.32);
 }
 
+.admin-user-games {
+  display: grid;
+  gap: var(--gap-2);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.32);
+}
+
 .admin-chat-actions {
   display: flex;
   flex-wrap: wrap;

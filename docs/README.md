@@ -14,6 +14,7 @@ W panelu są zakładki:
 - **Gracze**
 - **Turnieje**
 - **Gry admina**
+- **Gry użytkowników**
 
 Zakładka **Statystyki** (osobna karta) została usunięta — statystyki są teraz częścią zakładki **Gry admina**.
 
@@ -423,3 +424,15 @@ W tej subkolekcji zapisywany jest stan potwierdzenia obecności (`confirmed`, `u
 
 ### 9.3 Ważna uwaga o przełączaniu zakładek
 Po wejściu na inną kartę i ponownym kliknięciu **Gry użytkowników** aplikacja ponownie poprosi o PIN (sesja dostępu tej zakładki jest resetowana przy każdym wejściu).
+
+## 10. Zakładka „Gry użytkowników” — dokładna obsługa (widok administratora)
+### 10.1 Wejście do zakładki
+1. Otwórz aplikację w trybie administratora: `.../Main/index.html?admin=1`.
+2. W panelu **Panel Administratora** kliknij zakładkę **Gry użytkowników** (między kartami „Gry admina” i „Gry do potwierdzenia”).
+3. Oczekiwany efekt: w części roboczej panelu zobaczysz nagłówek **Gry użytkowników** i opis „Sekcja administracyjna przeznaczona do obsługi gier użytkowników.”
+
+### 10.2 Odświeżanie zakładki
+1. Będąc na karcie **Gry użytkowników** kliknij globalny przycisk **Odśwież** w prawym górnym rogu panelu administratora.
+2. Oczekiwany efekt: status obok przycisku pokazuje komunikat o odświeżeniu danych aktywnej karty.
+3. Zakładka jest przygotowana jako osobne miejsce na dalszą administrację danymi gier użytkowników (na tym etapie zawiera widok informacyjny).
+

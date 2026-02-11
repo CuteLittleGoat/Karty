@@ -2789,6 +2789,7 @@ const initAdminGames = () => {
   }
 
   registerAdminRefreshHandler("adminGamesTab", async () => {});
+  registerAdminRefreshHandler("adminUserGamesTab", async () => {});
 };
 
 const initLatestMessage = () => {
