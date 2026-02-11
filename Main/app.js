@@ -2,6 +2,8 @@ const PIN_LENGTH = 5;
 const PIN_STORAGE_KEY = "nextGamePinVerified";
 const PLAYER_ACCESS_COLLECTION = "app_settings";
 const PLAYER_ACCESS_DOCUMENT = "player_access";
+const RULES_DOCUMENT = "rules";
+const RULES_DEFAULT_TEXT = "";
 const AVAILABLE_PLAYER_TABS = [
   {
     key: "nextGameTab",
@@ -1871,6 +1873,136 @@ const initLatestMessage = () => {
     );
 };
 
+const initAdminRules = () => {
+  const input = document.querySelector("#adminRulesInput");
+  const editButton = document.querySelector("#adminRulesEdit");
+  const saveButton = document.querySelector("#adminRulesSave");
+  const deleteButton = document.querySelector("#adminRulesDelete");
+  const status = document.querySelector("#adminRulesStatus");
+
+  if (!input || !editButton || !saveButton || !deleteButton || !status) {
+    return;
+  }
+
+  const firebaseApp = getFirebaseApp();
+
+  if (!firebaseApp) {
+    editButton.disabled = true;
+    saveButton.disabled = true;
+    deleteButton.disabled = true;
+    status.textContent = "Uzupełnij konfigurację Firebase, aby edytować regulamin.";
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+  const rulesDocRef = db.collection(PLAYER_ACCESS_COLLECTION).doc(RULES_DOCUMENT);
+  let isEditing = false;
+
+  const setEditingState = (nextState) => {
+    isEditing = nextState;
+    input.readOnly = !nextState;
+    editButton.disabled = nextState;
+    saveButton.disabled = !nextState;
+    deleteButton.disabled = false;
+    if (nextState) {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+  };
+
+  registerAdminRefreshHandler("adminRulesTab", async () => {
+    await rulesDocRef.get({ source: "server" });
+  });
+
+  rulesDocRef.onSnapshot(
+    (snapshot) => {
+      const data = snapshot.data();
+      const rulesText = typeof data?.text === "string" ? data.text : RULES_DEFAULT_TEXT;
+      input.value = rulesText;
+      if (!isEditing) {
+        status.textContent = data?.text ? "Regulamin jest aktualny." : "Brak zapisanej treści regulaminu.";
+      }
+    },
+    () => {
+      status.textContent = "Nie udało się pobrać regulaminu. Sprawdź konfigurację Firestore.";
+    }
+  );
+
+  editButton.addEventListener("click", () => {
+    setEditingState(true);
+    status.textContent = "Tryb edycji włączony.";
+  });
+
+  saveButton.addEventListener("click", async () => {
+    saveButton.disabled = true;
+    status.textContent = "Zapisywanie regulaminu...";
+    try {
+      await rulesDocRef.set({
+        text: input.value.trim(),
+        updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+        source: "web-admin"
+      }, { merge: true });
+      status.textContent = "Regulamin zapisany.";
+      setEditingState(false);
+    } catch (error) {
+      status.textContent = "Nie udało się zapisać regulaminu.";
+      saveButton.disabled = false;
+    }
+  });
+
+  deleteButton.addEventListener("click", async () => {
+    deleteButton.disabled = true;
+    status.textContent = "Usuwanie regulaminu...";
+    try {
+      await rulesDocRef.set({
+        text: RULES_DEFAULT_TEXT,
+        updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+        source: "web-admin"
+      }, { merge: true });
+      input.value = RULES_DEFAULT_TEXT;
+      setEditingState(false);
+      status.textContent = "Treść regulaminu została usunięta.";
+    } catch (error) {
+      status.textContent = "Nie udało się usunąć treści regulaminu.";
+    } finally {
+      deleteButton.disabled = false;
+    }
+  });
+};
+
+const initRulesDisplay = () => {
+  const output = document.querySelector("#rulesOutput");
+  const status = document.querySelector("#rulesStatus");
+
+  if (!output || !status) {
+    return;
+  }
+
+  const firebaseApp = getFirebaseApp();
+
+  if (!firebaseApp) {
+    output.value = "Brak połączenia z Firebase.";
+    status.textContent = "Uzupełnij konfigurację Firebase, aby zobaczyć regulamin.";
+    return;
+  }
+
+  firebaseApp.firestore()
+    .collection(PLAYER_ACCESS_COLLECTION)
+    .doc(RULES_DOCUMENT)
+    .onSnapshot(
+      (snapshot) => {
+        const data = snapshot.data();
+        const rulesText = typeof data?.text === "string" ? data.text.trim() : "";
+        output.value = rulesText || "Administrator jeszcze nie dodał regulaminu.";
+        status.textContent = "";
+      },
+      () => {
+        output.value = "Nie udało się pobrać regulaminu.";
+        status.textContent = "Sprawdź reguły Firestore i konfigurację projektu.";
+      }
+    );
+};
+
 const initInstructionModal = () => {
   const openButton = document.querySelector("#adminInstructionButton");
   const modal = document.querySelector("#instructionModal");
@@ -1963,11 +2095,13 @@ const bootstrap = async () => {
   initAdminPanelRefresh();
   initUserTabs();
   initAdminMessaging();
+  initAdminRules();
   initAdminTables();
   initAdminGames();
   initAdminPlayers();
   initPinGate();
   initLatestMessage();
+  initRulesDisplay();
   initInstructionModal();
 };
 

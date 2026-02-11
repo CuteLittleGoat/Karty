@@ -22,6 +22,7 @@ Główne zasady:
 ## 3. Panel administratora — zakładki
 Panel zawiera karty:
 - `adminNewsTab` (Aktualności),
+- `adminRulesTab` (Regulamin),
 - `adminPlayersTab` (Gracze),
 - `adminTournamentsTab` (Turnieje),
 - `adminGamesTab` (Gry).
@@ -34,6 +35,7 @@ Przełączanie kart realizuje `initAdminPanelTabs()`.
 Najważniejsze kolekcje Firestore:
 - `admin_messages` — wiadomości administratora,
 - `app_settings/player_access` — gracze + PIN + uprawnienia + flaga `appEnabled` (stan checkboxa kolumny „Aplikacja”),
+- `app_settings/rules` — dokument regulaminu (`text`, `updatedAt`, `source`),
 - `Tables` + subkolekcja `rows` — zakładka Turnieje,
 - `Tables` + subkolekcja `rows` — zakładka Gry (domyślnie ta sama kolekcja co Turnieje, nazwa konfigurowana przez `gamesCollection`, a subkolekcja przez `gameDetailsCollection`).
 
@@ -288,3 +290,45 @@ service cloud.firestore {
 Błąd „Brak uprawnień do zapisu w kolekcji Games” wynikał z rozjazdu między nazwą kolekcji po stronie aplikacji (`Games`) i regułami (brak bloku `match /Games/{docId}`).
 
 Błąd „nie działa Usuń w Gry / Dodaj w Szczegółach” wynikał z innego rozjazdu: kod zapisywał szczegóły w subkolekcji `details`, a reguły dopuszczały tylko `rows`. Naprawa polega na ustawieniu domyślnej subkolekcji szczegółów gry na `rows` oraz dodaniu konfiguracji `gameDetailsCollection`, aby można było jawnie dopasować aplikację do reguł Firestore bez zmiany kodu.
+
+
+## 10. Zakładka „Regulamin” — implementacja techniczna
+### 9.1 Struktura HTML
+- W panelu administratora dodano przycisk zakładki `data-target="adminRulesTab"`.
+- Dodano panel `#adminRulesTab` z komponentem `.admin-rules` zawierającym:
+  - `#adminRulesInput` (textarea),
+  - `#adminRulesEdit`,
+  - `#adminRulesSave`,
+  - `#adminRulesDelete`,
+  - `#adminRulesStatus`.
+- W strefie użytkownika dodano przycisk zakładki `data-target="rulesTab"` i panel `#rulesTab` z polem `#rulesOutput` (readonly) oraz statusem `#rulesStatus`.
+
+### 9.2 Zasady dostępu
+- Zakładka użytkownika „Regulamin” jest zawsze widoczna w `initUserTabs()` i nie używa bramki PIN.
+- Uprawnienia gracza (`permissions`) nadal kontrolują tylko zakładkę `nextGameTab`; regulamin nie jest częścią listy `AVAILABLE_PLAYER_TABS`.
+
+### 9.3 Logika admina (`initAdminRules`)
+- Źródło danych: dokument Firestore `app_settings/rules`.
+- Odczyt: listener `onSnapshot` aktualizuje pole admina i stan statusu.
+- Tryb edycji:
+  - `Edytuj` przełącza textarea z `readonly` na tryb edycji i aktywuje przycisk `Zapisz`.
+- Zapis:
+  - `Zapisz` wykonuje `set(..., { merge: true })` z polami `text`, `updatedAt`, `source`.
+- Usunięcie:
+  - `Usuń` zapisuje pusty `text` do tego samego dokumentu (bez kasowania dokumentu), dzięki czemu użytkownicy od razu widzą brak treści.
+- Trwałość:
+  - dane są zapisane w Firestore, więc pozostają po restarcie przeglądarki i po odświeżeniu strony.
+
+### 9.4 Logika użytkownika (`initRulesDisplay`)
+- Listener `onSnapshot` odczytuje ten sam dokument `app_settings/rules`.
+- Pole `#rulesOutput` zawsze jest tylko do odczytu i pokazuje:
+  - treść regulaminu, albo
+  - komunikat zastępczy „Administrator jeszcze nie dodał regulaminu.”, gdy `text` jest pusty.
+
+### 9.5 Warstwa stylów
+- Dodano nowe klasy:
+  - `.admin-rules`,
+  - `.admin-rules-actions`,
+  - `.latest-rules`.
+- Style zachowują istniejący motyw noir/gold/green i rozszerzają go o większe pole tekstowe regulaminu (`min-height: 170px`) oraz responsywne ułożenie akcji na mobile.
+

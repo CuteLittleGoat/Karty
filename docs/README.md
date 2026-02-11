@@ -10,6 +10,7 @@
 ## 2. Panel Administratora — szybki opis zakładek
 W panelu są zakładki:
 - **Aktualności**
+- **Regulamin**
 - **Gracze**
 - **Turnieje**
 - **Gry**
@@ -171,10 +172,37 @@ Mechanizm działa dla pól tekstowych, pól liczbowych wpisywanych jako tekst, s
 
 ---
 
+
+## 5A. Zakładka „Regulamin”
+### 5A.1 Widok administratora (edytowalny)
+1. Otwórz aplikację z parametrem `?admin=1`.
+2. W panelu administratora kliknij zakładkę **Regulamin** (pomiędzy „Aktualności” i „Gracze”).
+3. Zobaczysz pole **Treść regulaminu** i trzy przyciski: **Edytuj**, **Zapisz**, **Usuń**.
+4. Aby wprowadzić treść:
+   - kliknij **Edytuj**,
+   - wpisz pełny tekst zasad (możesz użyć wielu akapitów),
+   - kliknij **Zapisz**.
+5. Oczekiwany efekt po zapisaniu:
+   - status pokaże komunikat „Regulamin zapisany.”,
+   - pole wróci do trybu tylko do odczytu,
+   - treść zostaje zapisana w Firestore i pozostaje po odświeżeniu strony oraz po restarcie przeglądarki.
+6. Aby usunąć treść regulaminu:
+   - kliknij **Usuń**,
+   - system zapisze pustą treść i pokaże komunikat „Treść regulaminu została usunięta.”.
+
+### 5A.2 Widok użytkownika (tylko odczyt, bez PIN)
+1. Otwórz aplikację bez `?admin=1`.
+2. W sekcji „Strefa gracza” kliknij zakładkę **Regulamin**.
+3. Treść regulaminu jest wyświetlana w polu tylko do odczytu.
+4. Ta zakładka jest dostępna zawsze:
+   - nie wymaga wpisania PIN,
+   - nie zależy od uprawnień konfigurowanych w zakładce „Gracze”.
+
 ## 6. Strefa gracza
 1. Otwórz stronę bez `?admin=1`.
 2. W zakładce „Najbliższa gra” wpisz PIN i kliknij **Otwórz**.
 3. W zakładce „Aktualności” odczytasz najnowszą wiadomość administratora.
+4. W zakładce „Regulamin” odczytasz aktualne zasady zapisane przez administratora (bez opcji edycji).
 
 ## 7. Firebase — konfiguracja konieczna, żeby działały przyciski „Dodaj” i „Usuń” w zakładce Gry
 1. Otwórz plik `config/firebase-config.js`.

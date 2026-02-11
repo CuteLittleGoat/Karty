@@ -400,6 +400,56 @@ h1 {
   display: grid;
 }
 
+
+.admin-rules {
+  margin-top: var(--gap-3);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.32);
+  display: grid;
+  gap: 10px;
+}
+
+.admin-rules label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-family: var(--font-panel);
+  color: rgba(237, 235, 230, 0.85);
+}
+
+.admin-rules textarea,
+.latest-rules textarea {
+  resize: vertical;
+  min-height: 170px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+}
+
+.admin-rules textarea[readonly] {
+  opacity: 0.85;
+}
+
+.admin-rules textarea:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.55);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18), 0 0 12px rgba(43, 227, 139, 0.18);
+}
+
+.admin-rules-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .admin-tournaments {
   display: grid;
   gap: var(--gap-3);
@@ -927,6 +977,11 @@ body.modal-open {
   }
 
   .admin-message-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-rules-actions {
     flex-direction: column;
     align-items: stretch;
   }
