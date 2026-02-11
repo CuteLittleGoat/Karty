@@ -227,3 +227,46 @@ Mechanizm działa dla pól tekstowych, pól liczbowych wpisywanych jako tekst, s
 - Drugi błąd dotyczył zapisu/usuwania w subkolekcji `details`, podczas gdy reguły dopuszczały subkolekcję `rows`.
 - Aplikacja została ustawiona tak, aby zakładka **Gry** używała `Tables` + `rows` (konfigurowalne przez `gamesCollection` i `gameDetailsCollection`).
 
+
+## 8. Plan obsługi czatu (wdrożenie bez TTL Policy) — instrukcja dla administratora
+Poniższa sekcja opisuje docelową obsługę czatu przy założeniu, że **nie używamy TTL Policy w Firebase**.
+
+### 8.1 Włączenie dostępu do czatu dla konkretnego gracza
+1. Otwórz aplikację z parametrem `?admin=1`.
+2. Kliknij zakładkę **Gracze**.
+3. Znajdź wiersz gracza, któremu chcesz nadać dostęp do czatu.
+4. W kolumnie uprawnień zaznacz pozycję **Czat** (uprawnienie `chatTab`).
+5. Poczekaj na autozapis danych.
+6. Poproś gracza, aby przeszedł do strefy gracza i zalogował się swoim PIN-em.
+7. Oczekiwany efekt: gracz z uprawnieniem `chatTab` widzi i otwiera zakładkę **Czat**.
+
+### 8.2 Ręczne usuwanie starych wiadomości (przycisk „Usuń starsze niż 30 dni”)
+1. Otwórz panel administratora (`?admin=1`).
+2. Kliknij zakładkę **Czat**.
+3. W sekcji zarządzania wiadomościami kliknij przycisk **Usuń starsze niż 30 dni**.
+4. Poczekaj na zakończenie operacji.
+5. Odczytaj komunikat statusu pod przyciskiem:
+   - np. „Usunięto 27 wiadomości starszych niż 30 dni”.
+6. Odśwież listę wiadomości.
+7. Oczekiwany efekt: wiadomości starsze niż 30 dni nie są już widoczne.
+
+### 8.3 Usuwanie pojedynczej wiadomości przez admina
+1. W panelu administratora wejdź do zakładki **Czat**.
+2. Przy wybranej wiadomości kliknij **Usuń**.
+3. Potwierdź operację (jeśli aplikacja pokaże okno potwierdzenia).
+4. Oczekiwany efekt:
+   - wiadomość znika od razu z listy admina,
+   - wiadomość znika też u użytkowników dzięki synchronizacji real-time.
+
+### 8.4 Wariant półautomatyczny (opcjonalny): czyszczenie przy wejściu na zakładkę Czat
+1. Administrator otwiera `?admin=1`.
+2. Klikając zakładkę **Czat**, uruchamia automatycznie proces czyszczenia wiadomości starszych niż 30 dni.
+3. Dodatkowy przycisk **Usuń starsze niż 30 dni** pozostaje dostępny jako akcja ręczna.
+4. Oczekiwany efekt: nawet bez pamiętania o ręcznym klikaniu baza jest regularnie czyszczona, gdy admin odwiedza zakładkę.
+
+### 8.5 Co sprawdzić po wdrożeniu
+1. Gracz bez uprawnienia `chatTab` nie może wejść do czatu mimo poprawnego PIN.
+2. Gracz z uprawnieniem `chatTab` może czytać i wysyłać wiadomości.
+3. Admin może usuwać pojedyncze wiadomości.
+4. Admin może masowo usuwać wiadomości starsze niż 30 dni.
+5. W Firebase Rules istnieje blok `match /chat_messages/{docId}` z uprawnieniami zgodnymi z projektem.
