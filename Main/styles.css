@@ -471,6 +471,10 @@ h1 {
   gap: var(--gap-3);
 }
 
+#adminGamesTab .admin-games-layout {
+  grid-template-columns: 220px minmax(0, 1fr) 260px;
+}
+
 .admin-games-sidebar,
 .admin-games-content {
   display: grid;
@@ -511,6 +515,34 @@ h1 {
 .admin-games-section {
   display: grid;
   gap: 10px;
+}
+
+.admin-games-players-stats-table {
+  min-width: 2300px;
+}
+
+.admin-games-players-stats-table input.admin-input {
+  min-width: 84px;
+}
+
+.admin-games-ranking-table {
+  min-width: 100%;
+}
+
+.admin-games-ranking-sidebar {
+  align-content: start;
+}
+
+.admin-games-ranking-row-gold {
+  background: rgba(212, 175, 55, 0.28);
+}
+
+.admin-games-ranking-row-green {
+  background: rgba(43, 227, 139, 0.25);
+}
+
+.admin-games-ranking-row-red {
+  background: rgba(255, 90, 95, 0.22);
 }
 
 .admin-games-link {
@@ -1158,6 +1190,10 @@ body.modal-open {
   }
 
   .admin-games-layout {
+    grid-template-columns: 1fr;
+  }
+
+  #adminGamesTab .admin-games-layout {
     grid-template-columns: 1fr;
   }
 

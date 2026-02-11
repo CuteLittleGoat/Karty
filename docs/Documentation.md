@@ -667,3 +667,71 @@ service cloud.firestore {
 - Admin i gracz z odpowiednim PIN/uprawnieniem mogą tworzyć i edytować `UserGames`.
 - „Gry do potwierdzenia” obejmują aktywne gry z `Tables` i `UserGames`.
 - Dane `UserGames` pozostają logicznie odseparowane od statystyk opartych o `Tables`.
+
+## 22) Rozbudowa „Gry admina” o tabelę statystyk graczy i panel rankingu
+
+### 22.1 Zmiany struktury HTML (`Main/index.html`)
+1. W sekcji `#adminGamesTab` pod istniejącą tabelą 2-kolumnową „Statystyki” dodano drugą tabelę:
+   - `tbody#adminGamesPlayersStatsBody`,
+   - 19 kolumn (od `Gracz` do `Wynik`).
+2. Po prawej stronie layoutu dodano nowy panel:
+   - kontener `aside.admin-games-ranking-sidebar`,
+   - tabela rankingu z `tbody#adminGamesRankingBody` i kolumnami `Miejsce`, `Gracz`, `Wynik`.
+
+### 22.2 Logika JS (`Main/app.js`) — agregacja i ranking
+1. Dodano stałą kolekcji Firestore:
+   - `ADMIN_GAMES_STATS_COLLECTION = "admin_games_stats"`.
+2. `initAdminGames()` pobiera nowe elementy DOM:
+   - `#adminGamesPlayersStatsBody`,
+   - `#adminGamesRankingBody`.
+3. Dodano stan `manualStatsByYear: Map<year, Map<playerName, manualFields>>`, który przechowuje pola edytowalne admina (`waga1..waga7`, `points`, `result`).
+4. Dodano subskrypcję `onSnapshot` kolekcji `admin_games_stats`:
+   - dokument roku przechowuje tablicę `rows`,
+   - każdy rekord ma `playerName` + pola ręczne,
+   - dane są renderowane po każdej synchronizacji.
+5. Dodano funkcję `hasCompletedEntryFee(row)`:
+   - gracz liczony jako obecny tylko wtedy, gdy pole `entryFee` nie jest puste.
+6. Dodano funkcję `getPlayersStatistics()` liczącą dane roczne:
+   - `Mistrzostwo`: suma checkboxów `championship`,
+   - `Ilość Spotkań`: liczba wystąpień gracza z uzupełnionym wpisowym,
+   - `(+/-)`: suma profitów,
+   - `Wypłata`: suma payout,
+   - `Wpłaty`: suma `entryFee + rebuy`,
+   - `Suma z rozegranych gier`: suma pul gier, w których gracz był obecny,
+   - `% udział`: `Math.ceil(meetings / gameCount * 100)`,
+   - `% Wszystkich gier`: `Math.ceil(payout / playedGamesPool * 100)`,
+   - `% Rozegranych gier`: `Math.ceil(payout / totalPool * 100)`.
+7. Dodano renderowanie tabeli rozszerzonych statystyk:
+   - kolumny obliczalne jako `readonly` (tekst),
+   - kolumny `Waga1..Waga7`, `Punkty`, `Wynik` jako inputy z autozapisem.
+8. Dodano `renderRankingTable()`:
+   - sortowanie malejąco po `Wynik` (remis: alfabetycznie po nazwie),
+   - numerowanie miejsc od 1,
+   - klasy kolorystyczne zależnie od miejsca.
+9. Ranking jest aktualizowany:
+   - po zmianie roku,
+   - po każdej zmianie danych szczegółów gry,
+   - po każdej zmianie pola `Wynik`.
+
+### 22.3 Trwałość danych ręcznych
+1. Pola ręczne statystyk zapisywane są do Firestore (`admin_games_stats/{rok}`) po debouncingu.
+2. Format dokumentu:
+   - `rows: [{ playerName, weight1, weight2, points, weight3, weight4, weight5, weight6, weight7, result }]`.
+3. Dzięki temu wartości nie znikają po odświeżeniu i są rozdzielone per rok.
+
+### 22.4 Warunki biznesowe zaimplementowane wprost
+1. Gracz bez uzupełnionego `Wpisowe` w „Szczegóły gry” nie jest liczony w tabeli rocznej.
+2. `%` w kolumnach procentowych są zawsze zaokrąglane w górę (`Math.ceil`) do pełnych liczb.
+3. Ranking jest roczny i bierze dane wyłącznie z aktywnego roku.
+
+### 22.5 Zmiany CSS (`Main/styles.css`)
+1. Dla `#adminGamesTab .admin-games-layout` ustawiono 3 kolumny:
+   - lewy panel lat,
+   - środkowa treść,
+   - prawy panel rankingu.
+2. Dodano szerokość tabeli statystyk graczy (`min-width: 2300px`) i minimalną szerokość inputów.
+3. Dodano klasy kolorów rankingu:
+   - `.admin-games-ranking-row-gold` (1–8),
+   - `.admin-games-ranking-row-green` (9–17),
+   - `.admin-games-ranking-row-red` (18+).
+4. W mobile (`max-width: 720px`) wymuszono jedną kolumnę również dla layoutu `#adminGamesTab`.
