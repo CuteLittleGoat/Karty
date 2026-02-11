@@ -25,7 +25,8 @@ Panel zawiera karty:
 - `adminRulesTab` (Regulamin),
 - `adminPlayersTab` (Gracze),
 - `adminTournamentsTab` (Turnieje),
-- `adminGamesTab` (Gry admina).
+- `adminGamesTab` (Gry admina),
+- `adminUserGamesTab` (Gry użytkowników).
 
 Zakładka `adminStatsTab` została usunięta z HTML.
 
@@ -535,3 +536,25 @@ Kolorystyka potwierdzenia wykorzystuje istniejący złoty motyw (`--gold`, `--go
   - czyszczenie pól PIN/statusu,
   - ponowne pokazanie bramki.
 - W `bootstrap()` dodano wywołanie `initUserGamesTab()` po `initUserConfirmations()`.
+
+## 12. Zakładka „Gry użytkowników” (panel administratora)
+
+### 12.1 Zmiany w strukturze UI (`Main/index.html`)
+- W pasku zakładek panelu admina dodano nowy przycisk `data-target="adminUserGamesTab"` z etykietą **„Gry użytkowników”**.
+- Dodano panel `#adminUserGamesTab` z kontenerem `.admin-user-games`, nagłówkiem sekcji i komunikatem „Strona w budowie”.
+- Nowa karta jest osadzona między istniejącymi zakładkami **„Gry admina”** i **„Gry do potwierdzenia”**, dzięki czemu logicznie grupuje obszary związane z grami.
+
+### 12.2 Integracja z mechanizmem odświeżania (`Main/app.js`)
+- Rejestracja `registerAdminRefreshHandler("adminUserGamesTab", async () => {})` dodaje nową kartę do wspólnego mechanizmu przycisku **Odśwież** w panelu administratora.
+- Efekt: globalny przycisk odświeżania rozpoznaje aktywną kartę „Gry użytkowników” i zwraca standardowy komunikat sukcesu odświeżenia karty.
+
+### 12.3 Warstwa stylów (`Main/styles.css`)
+- Dodano klasę `.admin-user-games` opartą o ten sam wzorzec wizualny co pozostałe sekcje administracyjne:
+  - `display: grid`,
+  - `gap: var(--gap-2)`,
+  - `padding: 16px`,
+  - ramka `1px solid var(--border2)`,
+  - tło noir `rgba(0, 0, 0, 0.32)`,
+  - zaokrąglenie `var(--radius-md)`.
+- Dzięki temu nowa zakładka pozostaje spójna wizualnie z modułami `Czat`, `Gracze` i `Gry do potwierdzenia`.
+

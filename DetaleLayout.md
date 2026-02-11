@@ -12,7 +12,7 @@
 - Czerwony: akcje destrukcyjne (`Usuń`).
 
 ## 3) Panel Administratora — aktualny układ
-- Zakładki: `Aktualności`, `Regulamin`, `Gracze`, `Turnieje`, `Gry admina`.
+- Zakładki: `Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Turnieje`, `Gry admina`, `Gry użytkowników`, `Gry do potwierdzenia`.
 - Usunięta osobna zakładka `Statystyki`.
 - Sekcja `Statystyki` została przeniesiona do wnętrza zakładki `Gry` (dolna tabela).
 
@@ -165,3 +165,14 @@
   - duży responsywny rozmiar (`clamp(36px, 7vw, 96px)`),
   - uppercase + rozszerzone kerning (`letter-spacing: 0.18em`),
   - kolor złoty (`var(--gold)`) i poświata (`var(--glow-gold)`).
+
+## 13) Zakładka „Gry użytkowników” — panel administratora
+- Do paska `.admin-panel-tabs` dodano nową pigułkę **Gry użytkowników** (`.admin-panel-tab`) pomiędzy „Gry admina” i „Gry do potwierdzenia”.
+- Wnętrze karty oparto o nową klasę `.admin-user-games`, która używa tego samego wzorca sekcji co inne moduły admina:
+  - ciemne tło `rgba(0, 0, 0, 0.32)`,
+  - ramka `1px solid var(--border2)`,
+  - zaokrąglenie `var(--radius-md)`,
+  - wewnętrzny odstęp `16px`,
+  - układ `grid` z odstępem `var(--gap-2)`.
+- Komunikat „Strona w budowie” pozostaje w stylu `.user-construction` (duży złoty napis), co utrzymuje wspólny język wizualny placeholderów w aplikacji.
+
