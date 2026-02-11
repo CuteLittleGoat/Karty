@@ -293,42 +293,44 @@ Błąd „nie działa Usuń w Gry / Dodaj w Szczegółach” wynikał z innego r
 
 
 ## 10. Zakładka „Regulamin” — implementacja techniczna
-### 9.1 Struktura HTML
+### 10.1 Struktura HTML
 - W panelu administratora dodano przycisk zakładki `data-target="adminRulesTab"`.
-- Dodano panel `#adminRulesTab` z komponentem `.admin-rules` zawierającym:
-  - `#adminRulesInput` (textarea),
-  - `#adminRulesEdit`,
-  - `#adminRulesSave`,
-  - `#adminRulesDelete`,
-  - `#adminRulesStatus`.
-- W strefie użytkownika dodano przycisk zakładki `data-target="rulesTab"` i panel `#rulesTab` z polem `#rulesOutput` (readonly) oraz statusem `#rulesStatus`.
+- Panel `#adminRulesTab` z komponentem `.admin-rules` zawiera teraz:
+  - `#adminRulesInput` (textarea edytowalny bezpośrednio, bez `readonly`),
+  - `#adminRulesStatus` (status autozapisu).
+- Usunięto przyciski akcji `#adminRulesEdit`, `#adminRulesSave`, `#adminRulesDelete`.
+- W strefie użytkownika pozostaje przycisk zakładki `data-target="rulesTab"` i panel `#rulesTab` z polem `#rulesOutput` (readonly) oraz statusem `#rulesStatus`.
 
-### 9.2 Zasady dostępu
+### 10.2 Zasady dostępu
 - Zakładka użytkownika „Regulamin” jest zawsze widoczna w `initUserTabs()` i nie używa bramki PIN.
 - Uprawnienia gracza (`permissions`) nadal kontrolują tylko zakładkę `nextGameTab`; regulamin nie jest częścią listy `AVAILABLE_PLAYER_TABS`.
 
-### 9.3 Logika admina (`initAdminRules`)
+### 10.3 Logika admina (`initAdminRules`)
 - Źródło danych: dokument Firestore `app_settings/rules`.
-- Odczyt: listener `onSnapshot` aktualizuje pole admina i stan statusu.
-- Tryb edycji:
-  - `Edytuj` przełącza textarea z `readonly` na tryb edycji i aktywuje przycisk `Zapisz`.
-- Zapis:
-  - `Zapisz` wykonuje `set(..., { merge: true })` z polami `text`, `updatedAt`, `source`.
-- Usunięcie:
-  - `Usuń` zapisuje pusty `text` do tego samego dokumentu (bez kasowania dokumentu), dzięki czemu użytkownicy od razu widzą brak treści.
-- Trwałość:
-  - dane są zapisane w Firestore, więc pozostają po restarcie przeglądarki i po odświeżeniu strony.
+- Odczyt: listener `onSnapshot` aktualizuje pole i status.
+- Edycja:
+  - admin klika bezpośrednio w `#adminRulesInput` i wpisuje treść,
+  - brak osobnego trybu „edytuj/zapisz” — zachowanie jest spójne z innymi polami administracyjnymi.
+- Zapis automatyczny:
+  - na zdarzeniu `input` uruchamiany jest `scheduleDebouncedUpdate("admin-rules-text", ...)`,
+  - po ~400 ms bez kolejnego wpisu wykonywany jest `set(..., { merge: true })` z polami `text`, `updatedAt`, `source`.
+- Synchronizacja z `onSnapshot`:
+  - jeśli pole jest aktywnie edytowane i zapis jest w toku (`isSaving`), snapshot nie nadpisuje wpisywanej treści,
+  - po potwierdzeniu danych z Firestore status wraca do „Regulamin jest aktualny.” albo „Brak zapisanej treści regulaminu.”.
+- Czyszczenie treści regulaminu:
+  - odbywa się przez ręczne usunięcie tekstu z pola; autozapis zapisuje pusty `text`.
 
-### 9.4 Logika użytkownika (`initRulesDisplay`)
-- Listener `onSnapshot` odczytuje ten sam dokument `app_settings/rules`.
+### 10.4 Logika użytkownika (`initRulesDisplay`)
+- Listener `onSnapshot` odczytuje dokument `app_settings/rules`.
 - Pole `#rulesOutput` zawsze jest tylko do odczytu i pokazuje:
   - treść regulaminu, albo
   - komunikat zastępczy „Administrator jeszcze nie dodał regulaminu.”, gdy `text` jest pusty.
 
-### 9.5 Warstwa stylów
-- Dodano nowe klasy:
+### 10.5 Warstwa stylów
+- Utrzymane klasy:
   - `.admin-rules`,
-  - `.admin-rules-actions`,
+  - `.admin-rules-actions` (kontener statusu),
   - `.latest-rules`.
-- Style zachowują istniejący motyw noir/gold/green i rozszerzają go o większe pole tekstowe regulaminu (`min-height: 170px`) oraz responsywne ułożenie akcji na mobile.
+- Styl textarea w zakładce admina i użytkownika nadal korzysta z motywu noir/gold/green z wysokością minimalną `170px`.
+- Usunięcie przycisków z sekcji `admin-rules-actions` upraszcza interfejs i pozostawia wyłącznie komunikaty statusu.
 
