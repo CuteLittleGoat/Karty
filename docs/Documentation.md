@@ -397,3 +397,92 @@ Wszystkie nowe komponenty używają istniejącej palety noir/gold/green i tych s
    - obliczenia `+/-`, `Pula`, `% puli`, sortowanie,
    - agregaty roczne w sekcji Statystyki (w zakładce Gry).
 4. Podłącz `firebase-app-compat` i `firebase-firestore-compat`.
+
+## 10. Moduł potwierdzeń obecności
+
+### 10.1 Zmiany w modelu danych Firestore
+- Dokument gry (`Tables/{gameId}`) ma pole:
+  - `isClosed: boolean` (domyślnie `false`).
+- Subkolekcja potwierdzeń:
+  - `Tables/{gameId}/confirmations/{playerId}`.
+- Dokument potwierdzenia zawiera:
+  - `playerId`,
+  - `playerName`,
+  - `confirmed: boolean`,
+  - `updatedBy: "player" | "admin"`,
+  - `updatedAt: serverTimestamp()`.
+
+### 10.2 Sortowanie dat rosnąco
+Dodano wspólny mechanizm:
+- `getDateSortValue(value)` — bezpieczna normalizacja daty,
+- `compareByGameDateAsc(a, b)` — sortowanie po `gameDate` ASC, następnie tie-break po `createdAt` i `name`.
+
+Mechanizm zastosowano w:
+- `initAdminTables()` — lista stołów,
+- `initAdminGames()` — lista gier w wybranym roku,
+- `initUserConfirmations()` i `initAdminConfirmations()` — listy gier do potwierdzeń.
+
+### 10.3 UI administratora: checkbox „CzyZamknięta”
+W `renderGamesTable()` (`initAdminGames`) dodano kolumnę checkbox:
+- odczyt: `closedInput.checked = Boolean(game.isClosed)`,
+- zapis: `update({ isClosed: closedInput.checked })`.
+
+Usuwanie gry czyści teraz także:
+- szczegóły (`rows`),
+- potwierdzenia (`confirmations`),
+- sam dokument gry.
+
+### 10.4 UI administratora: zakładka „Gry do potwierdzenia”
+Nowa inicjalizacja: `initAdminConfirmations()`.
+
+Działanie:
+1. Pobiera gry (`Tables`) i filtruje tylko `isClosed !== true`.
+2. Dla każdej gry pobiera zapisanych graczy z subkolekcji `rows`.
+3. Deduplikuje listę nazw graczy.
+4. Pobiera `confirmations` i mapuje statusy.
+5. Renderuje tabelę graczy z akcjami:
+   - `Potwierdź` → zapis `confirmed: true`,
+   - `Anuluj` → zapis `confirmed: false`.
+6. Dla potwierdzonych graczy nadaje klasę `.confirmed-row` (złote tło).
+
+Odświeżanie ręczne panelu admina jest podpięte przez:
+- `registerAdminRefreshHandler("adminConfirmationsTab", ...)`.
+
+### 10.5 UI użytkownika: zakładka „Gry do potwierdzenia”
+Nowa inicjalizacja: `initUserConfirmations()`.
+
+Działanie:
+1. PIN gate (`confirmationsPinGate`) oparty o sesję `sessionStorage`:
+   - `confirmationsPinVerified`,
+   - `confirmationsPlayerId`.
+2. Weryfikacja PIN sprawdza:
+   - poprawność 5 cyfr,
+   - uprawnienie `confirmationsTab` w `player.permissions`.
+3. Po wejściu ładowane są gry:
+   - tylko aktywne (`isClosed === false`),
+   - tylko takie, gdzie użytkownik znajduje się w `rows.playerName`.
+4. Dla każdej gry odczyt stanu z `confirmations/{playerId}`.
+5. Akcje w tabeli:
+   - **Potwierdź**: zapis `confirmed: true`,
+   - **Anuluj**: zapis `confirmed: false`.
+6. Przycisk **Odśwież** wykonuje odczyt z `{ source: "server" }`.
+
+### 10.6 Uprawnienia graczy
+Rozszerzono listę `AVAILABLE_PLAYER_TABS` o:
+- `confirmationsTab` (etykieta: „Gry do potwierdzenia”).
+
+Efekt:
+- administrator może nadawać/odbierać to uprawnienie przez modal uprawnień,
+- użytkownik bez tego uprawnienia nie przejdzie bramki PIN tej zakładki.
+
+### 10.7 Style i klasy CSS użyte przez moduł
+Dodane klasy:
+- `.confirmations-content`, `.confirmations-content.is-visible`,
+- `.confirmations-toolbar`,
+- `.confirmations-table`,
+- `.confirmations-actions`,
+- `.confirmed-row`,
+- `.admin-confirmations`, `.admin-confirmations-list`,
+- `.admin-confirmation-game`, `.admin-confirmation-game-meta`.
+
+Kolorystyka potwierdzenia wykorzystuje istniejący złoty motyw (`--gold`, `--gold-line`) przez `.confirmed-row`.

@@ -2,6 +2,8 @@ const PIN_LENGTH = 5;
 const PIN_STORAGE_KEY = "nextGamePinVerified";
 const CHAT_PIN_STORAGE_KEY = "chatPinVerified";
 const CHAT_PLAYER_ID_STORAGE_KEY = "chatPlayerId";
+const CONFIRMATIONS_PIN_STORAGE_KEY = "confirmationsPinVerified";
+const CONFIRMATIONS_PLAYER_ID_STORAGE_KEY = "confirmationsPlayerId";
 const PLAYER_ACCESS_COLLECTION = "app_settings";
 const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
@@ -14,6 +16,10 @@ const AVAILABLE_PLAYER_TABS = [
   {
     key: "chatTab",
     label: "Czat"
+  },
+  {
+    key: "confirmationsTab",
+    label: "Gry do potwierdzenia"
   }
 ];
 
@@ -27,6 +33,7 @@ const TABLES_COLLECTION_CONFIG_KEY = "tablesCollection";
 const GAMES_COLLECTION_CONFIG_KEY = "gamesCollection";
 const GAME_DETAILS_COLLECTION_CONFIG_KEY = "gameDetailsCollection";
 const TABLE_ROWS_COLLECTION = "rows";
+const GAME_CONFIRMATIONS_COLLECTION = "confirmations";
 const DEFAULT_TABLE_META = {
   gameType: "rodzaj gry",
   gameDate: "data"
@@ -62,6 +69,44 @@ const chatState = {
 const debounceTimers = new Map();
 const adminRefreshHandlers = new Map();
 const ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY = "adminGamesSelectedYear";
+
+const getDateSortValue = (value) => {
+  if (typeof value !== "string") {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const directMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (directMatch) {
+    const year = Number(directMatch[1]);
+    const month = Number(directMatch[2]);
+    const day = Number(directMatch[3]);
+    const parsed = new Date(year, month - 1, day).getTime();
+    return Number.isFinite(parsed) ? parsed : Number.POSITIVE_INFINITY;
+  }
+
+  const parsed = Date.parse(trimmed);
+  return Number.isFinite(parsed) ? parsed : Number.POSITIVE_INFINITY;
+};
+
+const compareByGameDateAsc = (a, b) => {
+  const dateDiff = getDateSortValue(a?.gameDate) - getDateSortValue(b?.gameDate);
+  if (dateDiff !== 0) {
+    return dateDiff;
+  }
+
+  const createdA = a?.createdAt?.toMillis?.() ?? 0;
+  const createdB = b?.createdAt?.toMillis?.() ?? 0;
+  if (createdA !== createdB) {
+    return createdA - createdB;
+  }
+
+  return String(a?.name ?? "").localeCompare(String(b?.name ?? ""), "pl");
+};
 
 const isFocusableFormControl = (element) => {
   return element instanceof HTMLInputElement
@@ -324,6 +369,28 @@ const setChatVerifiedPlayerId = (playerId) => {
 
 const getChatVerifiedPlayer = () => {
   const playerId = sessionStorage.getItem(CHAT_PLAYER_ID_STORAGE_KEY);
+  if (!playerId) {
+    return null;
+  }
+  return adminPlayersState.players.find((player) => player.id === playerId) ?? null;
+};
+
+const getConfirmationsPinGateState = () => sessionStorage.getItem(CONFIRMATIONS_PIN_STORAGE_KEY) === "1";
+
+const setConfirmationsPinGateState = (isVerified) => {
+  sessionStorage.setItem(CONFIRMATIONS_PIN_STORAGE_KEY, isVerified ? "1" : "0");
+};
+
+const setConfirmationsVerifiedPlayerId = (playerId) => {
+  if (playerId) {
+    sessionStorage.setItem(CONFIRMATIONS_PLAYER_ID_STORAGE_KEY, playerId);
+    return;
+  }
+  sessionStorage.removeItem(CONFIRMATIONS_PLAYER_ID_STORAGE_KEY);
+};
+
+const getConfirmationsVerifiedPlayer = () => {
+  const playerId = sessionStorage.getItem(CONFIRMATIONS_PLAYER_ID_STORAGE_KEY);
   if (!playerId) {
     return null;
   }
@@ -605,6 +672,374 @@ const initChatTab = () => {
   }
 };
 
+const updateConfirmationsVisibility = () => {
+  const gate = document.querySelector("#confirmationsPinGate");
+  const content = document.querySelector("#confirmationsContent");
+  if (!gate || !content) {
+    return;
+  }
+
+  const isVerified = getConfirmationsPinGateState();
+  gate.style.display = isVerified ? "none" : "block";
+  content.classList.toggle("is-visible", isVerified);
+};
+
+const initUserConfirmations = () => {
+  const input = document.querySelector("#confirmationsPinInput");
+  const submitButton = document.querySelector("#confirmationsPinSubmit");
+  const pinStatus = document.querySelector("#confirmationsPinStatus");
+  const refreshButton = document.querySelector("#confirmationsRefresh");
+  const status = document.querySelector("#confirmationsStatus");
+  const body = document.querySelector("#confirmationsBody");
+  const firebaseApp = getFirebaseApp();
+
+  if (!input || !submitButton || !pinStatus || !refreshButton || !status || !body) {
+    return;
+  }
+
+  if (!firebaseApp) {
+    submitButton.disabled = true;
+    refreshButton.disabled = true;
+    status.textContent = "Uzupełnij konfigurację Firebase, aby korzystać z potwierdzeń.";
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+  const gamesCollectionName = getGamesCollectionName();
+  const gameDetailsCollectionName = getGameDetailsCollectionName();
+
+  const readData = async (source = "default") => {
+    const verifiedPlayer = getConfirmationsVerifiedPlayer();
+    if (!verifiedPlayer || !isPlayerAllowedForTab(verifiedPlayer, "confirmationsTab")) {
+      status.textContent = "Twoja sesja wygasła. Zweryfikuj PIN ponownie.";
+      setConfirmationsPinGateState(false);
+      setConfirmationsVerifiedPlayerId("");
+      updateConfirmationsVisibility();
+      return;
+    }
+
+    status.textContent = source === "server" ? "Odświeżanie danych..." : "Pobieranie danych...";
+    body.innerHTML = "";
+
+    try {
+      const gamesSnapshot = await db.collection(gamesCollectionName).orderBy("createdAt", "asc").get(
+        source === "default" ? undefined : { source }
+      );
+      const games = gamesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((game) => !Boolean(game.isClosed))
+        .sort(compareByGameDateAsc);
+
+      const visibleGames = [];
+      for (const game of games) {
+        const rowsSnapshot = await db.collection(gamesCollectionName)
+          .doc(game.id)
+          .collection(gameDetailsCollectionName)
+          .get(source === "default" ? undefined : { source });
+
+        const hasPlayer = rowsSnapshot.docs.some((rowDoc) => {
+          const playerName = typeof rowDoc.data()?.playerName === "string" ? rowDoc.data().playerName.trim() : "";
+          return playerName && playerName === (verifiedPlayer.name || "").trim();
+        });
+
+        if (!hasPlayer) {
+          continue;
+        }
+
+        const confirmationDoc = await db.collection(gamesCollectionName)
+          .doc(game.id)
+          .collection(GAME_CONFIRMATIONS_COLLECTION)
+          .doc(verifiedPlayer.id)
+          .get(source === "default" ? undefined : { source });
+
+        visibleGames.push({
+          game,
+          confirmation: confirmationDoc.exists ? confirmationDoc.data() : null
+        });
+      }
+
+      if (!visibleGames.length) {
+        const emptyRow = document.createElement("tr");
+        const emptyCell = document.createElement("td");
+        emptyCell.colSpan = 4;
+        emptyCell.textContent = "Brak gier do potwierdzenia.";
+        emptyRow.appendChild(emptyCell);
+        body.appendChild(emptyRow);
+        status.textContent = "Brak aktywnych gier do potwierdzenia.";
+        return;
+      }
+
+      visibleGames.forEach(({ game, confirmation }) => {
+        const tr = document.createElement("tr");
+        if (confirmation?.confirmed) {
+          tr.classList.add("confirmed-row");
+        }
+
+        const gameTypeCell = document.createElement("td");
+        gameTypeCell.textContent = game.gameType || "-";
+
+        const dateCell = document.createElement("td");
+        dateCell.textContent = game.gameDate || "-";
+
+        const nameCell = document.createElement("td");
+        nameCell.textContent = game.name || "-";
+
+        const actionsCell = document.createElement("td");
+        const actionsWrap = document.createElement("div");
+        actionsWrap.className = "confirmations-actions";
+
+        const confirmButton = document.createElement("button");
+        confirmButton.type = "button";
+        confirmButton.className = "primary";
+        confirmButton.textContent = "Potwierdź";
+        confirmButton.addEventListener("click", async () => {
+          await db.collection(gamesCollectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(verifiedPlayer.id).set({
+            playerId: verifiedPlayer.id,
+            playerName: verifiedPlayer.name || "",
+            confirmed: true,
+            updatedBy: "player",
+            updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          tr.classList.add("confirmed-row");
+        });
+
+        const cancelButton = document.createElement("button");
+        cancelButton.type = "button";
+        cancelButton.className = "danger";
+        cancelButton.textContent = "Anuluj";
+        cancelButton.addEventListener("click", async () => {
+          await db.collection(gamesCollectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(verifiedPlayer.id).set({
+            playerId: verifiedPlayer.id,
+            playerName: verifiedPlayer.name || "",
+            confirmed: false,
+            updatedBy: "player",
+            updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          tr.classList.remove("confirmed-row");
+        });
+
+        actionsWrap.append(confirmButton, cancelButton);
+        actionsCell.appendChild(actionsWrap);
+        tr.append(gameTypeCell, dateCell, nameCell, actionsCell);
+        body.appendChild(tr);
+      });
+
+      status.textContent = `Załadowano ${visibleGames.length} gier.`;
+    } catch (error) {
+      status.textContent = "Nie udało się pobrać gier do potwierdzenia.";
+    }
+  };
+
+  const verifyPin = async () => {
+    const pinValue = sanitizePin(input.value);
+    if (!isPinValid(pinValue)) {
+      pinStatus.textContent = "Wpisz komplet 5 cyfr.";
+      return;
+    }
+
+    const player = adminPlayersState.playerByPin.get(pinValue);
+    if (player && isPlayerAllowedForTab(player, "confirmationsTab")) {
+      setConfirmationsPinGateState(true);
+      setConfirmationsVerifiedPlayerId(player.id);
+      pinStatus.textContent = `PIN poprawny. Witaj ${player.name || "graczu"}.`;
+      updateConfirmationsVisibility();
+      await readData();
+      return;
+    }
+
+    pinStatus.textContent = "Błędny PIN lub brak uprawnień do zakładki „Gry do potwierdzenia”.";
+  };
+
+  input.addEventListener("input", () => {
+    input.value = sanitizePin(input.value);
+  });
+
+  submitButton.addEventListener("click", () => {
+    void verifyPin();
+  });
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      void verifyPin();
+    }
+  });
+
+  refreshButton.addEventListener("click", async () => {
+    refreshButton.disabled = true;
+    await readData("server");
+    refreshButton.disabled = false;
+  });
+
+  updateConfirmationsVisibility();
+  if (getConfirmationsPinGateState() && getConfirmationsVerifiedPlayer()) {
+    void readData();
+  }
+};
+
+const initAdminConfirmations = () => {
+  const list = document.querySelector("#adminConfirmationsList");
+  const status = document.querySelector("#adminConfirmationsStatus");
+  const firebaseApp = getFirebaseApp();
+
+  if (!list || !status) {
+    return;
+  }
+
+  if (!firebaseApp) {
+    status.textContent = "Uzupełnij konfigurację Firebase, aby zarządzać potwierdzeniami.";
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+  const gamesCollectionName = getGamesCollectionName();
+  const gameDetailsCollectionName = getGameDetailsCollectionName();
+
+  const refreshData = async (source = "default") => {
+    list.innerHTML = "";
+    status.textContent = source === "server" ? "Odświeżanie danych..." : "Pobieranie danych...";
+
+    try {
+      const gamesSnapshot = await db.collection(gamesCollectionName).orderBy("createdAt", "asc").get(
+        source === "default" ? undefined : { source }
+      );
+
+      const games = gamesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        .filter((game) => !Boolean(game.isClosed))
+        .sort(compareByGameDateAsc);
+
+      if (!games.length) {
+        status.textContent = "Brak aktywnych gier do potwierdzenia.";
+        return;
+      }
+
+      for (const game of games) {
+        const wrapper = document.createElement("section");
+        wrapper.className = "admin-confirmation-game";
+
+        const title = document.createElement("h4");
+        title.textContent = game.name || "Bez nazwy";
+
+        const meta = document.createElement("p");
+        meta.className = "admin-confirmation-game-meta";
+        meta.textContent = `Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"}`;
+
+        const tableScroll = document.createElement("div");
+        tableScroll.className = "admin-table-scroll";
+        const table = document.createElement("table");
+        table.className = "admin-data-table";
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Gracz</th>
+              <th>Status</th>
+              <th>Akcje</th>
+            </tr>
+          </thead>
+        `;
+        const tbody = document.createElement("tbody");
+
+        const rowsSnapshot = await db.collection(gamesCollectionName).doc(game.id).collection(gameDetailsCollectionName).get(
+          source === "default" ? undefined : { source }
+        );
+        const playerNames = Array.from(new Set(rowsSnapshot.docs
+          .map((doc) => (typeof doc.data()?.playerName === "string" ? doc.data().playerName.trim() : ""))
+          .filter(Boolean)));
+
+        if (!playerNames.length) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 3;
+          td.textContent = "Brak zapisanych graczy.";
+          tr.appendChild(td);
+          tbody.appendChild(tr);
+        } else {
+          const confirmationSnapshot = await db.collection(gamesCollectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).get(
+            source === "default" ? undefined : { source }
+          );
+          const confirmationsByName = new Map();
+          confirmationSnapshot.docs.forEach((doc) => {
+            const data = doc.data();
+            const playerName = typeof data.playerName === "string" ? data.playerName.trim() : "";
+            if (playerName) {
+              confirmationsByName.set(playerName, { ...data, id: doc.id });
+            }
+          });
+
+          playerNames.forEach((playerName) => {
+            const tr = document.createElement("tr");
+            const confirmation = confirmationsByName.get(playerName) ?? null;
+            const matchedPlayer = adminPlayersState.players.find((player) => (player.name || "").trim() === playerName);
+            const confirmationDocId = matchedPlayer?.id || confirmation?.id || playerName;
+            if (confirmation?.confirmed) {
+              tr.classList.add("confirmed-row");
+            }
+
+            const nameCell = document.createElement("td");
+            nameCell.textContent = playerName;
+
+            const statusCell = document.createElement("td");
+            statusCell.textContent = confirmation?.confirmed ? "Potwierdzono" : "Niepotwierdzono";
+
+            const actionsCell = document.createElement("td");
+            const actionsWrap = document.createElement("div");
+            actionsWrap.className = "confirmations-actions";
+
+            const confirmButton = document.createElement("button");
+            confirmButton.type = "button";
+            confirmButton.className = "primary";
+            confirmButton.textContent = "Potwierdź";
+            confirmButton.addEventListener("click", async () => {
+              await db.collection(gamesCollectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(confirmationDocId).set({
+                playerId: confirmationDocId,
+                playerName,
+                confirmed: true,
+                updatedBy: "admin",
+                updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+              }, { merge: true });
+              tr.classList.add("confirmed-row");
+              statusCell.textContent = "Potwierdzono";
+            });
+
+            const cancelButton = document.createElement("button");
+            cancelButton.type = "button";
+            cancelButton.className = "danger";
+            cancelButton.textContent = "Anuluj";
+            cancelButton.addEventListener("click", async () => {
+              await db.collection(gamesCollectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(confirmationDocId).set({
+                playerId: confirmationDocId,
+                playerName,
+                confirmed: false,
+                updatedBy: "admin",
+                updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+              }, { merge: true });
+              tr.classList.remove("confirmed-row");
+              statusCell.textContent = "Niepotwierdzono";
+            });
+
+            actionsWrap.append(confirmButton, cancelButton);
+            actionsCell.appendChild(actionsWrap);
+            tr.append(nameCell, statusCell, actionsCell);
+            tbody.appendChild(tr);
+          });
+        }
+
+        table.appendChild(tbody);
+        tableScroll.appendChild(table);
+        wrapper.append(title, meta, tableScroll);
+        list.appendChild(wrapper);
+      }
+
+      status.textContent = `Załadowano ${games.length} aktywnych gier.`;
+    } catch (error) {
+      status.textContent = "Nie udało się pobrać listy potwierdzeń.";
+    }
+  };
+
+  void refreshData();
+  registerAdminRefreshHandler("adminConfirmationsTab", async () => {
+    await refreshData("server");
+  });
+};
+
 const initUserTabs = () => {
   const tabButtons = document.querySelectorAll(".tab-button");
   const panels = document.querySelectorAll(".tab-panel");
@@ -654,6 +1089,19 @@ const initUserTabs = () => {
         chatState.unsubscribe = null;
       }
       updateChatVisibility();
+    }
+
+    if (target === "confirmationsTab") {
+      setConfirmationsPinGateState(false);
+      setConfirmationsVerifiedPlayerId("");
+      const confirmationsPinInput = document.querySelector("#confirmationsPinInput");
+      const confirmationsPinStatus = document.querySelector("#confirmationsPinStatus");
+      if (confirmationsPinInput) {
+        confirmationsPinInput.value = "";
+      }
+      if (confirmationsPinStatus) {
+        confirmationsPinStatus.textContent = "";
+      }
     }
 
     if (targetButton) {
@@ -1330,8 +1778,9 @@ const initAdminTables = () => {
       .get({ source: "server" });
 
     const tables = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    adminTablesState.tableList = tables;
-    adminTablesState.tables = new Map(tables.map((table) => [table.id, table]));
+    const sortedTables = [...tables].sort(compareByGameDateAsc);
+    adminTablesState.tableList = sortedTables;
+    adminTablesState.tables = new Map(sortedTables.map((table) => [table.id, table]));
 
     const rowsByTable = new Map();
     await Promise.all(
@@ -1568,10 +2017,11 @@ const initAdminTables = () => {
     .onSnapshot(
       (snapshot) => {
         const tables = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        adminTablesState.tableList = tables;
-        adminTablesState.tables = new Map(tables.map((table) => [table.id, table]));
+        const sortedTables = [...tables].sort(compareByGameDateAsc);
+        adminTablesState.tableList = sortedTables;
+        adminTablesState.tables = new Map(sortedTables.map((table) => [table.id, table]));
 
-        const activeIds = new Set(tables.map((table) => table.id));
+        const activeIds = new Set(sortedTables.map((table) => table.id));
         adminTablesState.rowUnsubscribers.forEach((unsubscribe, tableId) => {
           if (!activeIds.has(tableId)) {
             unsubscribe();
@@ -1580,7 +2030,7 @@ const initAdminTables = () => {
           }
         });
 
-        tables.forEach((table) => {
+        sortedTables.forEach((table) => {
           if (adminTablesState.rowUnsubscribers.has(table.id)) {
             return;
           }
@@ -1693,7 +2143,7 @@ const initAdminGames = () => {
     }
     return state.games
       .filter((game) => extractYearFromDate(game.gameDate) === state.selectedYear)
-      .sort((a, b) => String(b.gameDate ?? "").localeCompare(String(a.gameDate ?? ""), "pl"));
+      .sort(compareByGameDateAsc);
   };
 
   const getDetailRows = (gameId) => {
@@ -1852,6 +2302,15 @@ const initAdminGames = () => {
       nameWrap.append(nameInput, detailsButton);
       nameCell.appendChild(nameWrap);
 
+      const closedCell = document.createElement("td");
+      const closedInput = document.createElement("input");
+      closedInput.type = "checkbox";
+      closedInput.checked = Boolean(game.isClosed);
+      closedInput.addEventListener("change", () => {
+        void db.collection(gamesCollectionName).doc(game.id).update({ isClosed: closedInput.checked });
+      });
+      closedCell.appendChild(closedInput);
+
       const deleteCell = document.createElement("td");
       const deleteButton = document.createElement("button");
       deleteButton.type = "button";
@@ -1860,8 +2319,12 @@ const initAdminGames = () => {
       deleteButton.addEventListener("click", async () => {
         const gameRef = db.collection(gamesCollectionName).doc(game.id);
         const detailsSnapshot = await gameRef.collection(gameDetailsCollectionName).get();
+        const confirmationsSnapshot = await gameRef.collection(GAME_CONFIRMATIONS_COLLECTION).get();
         const batch = db.batch();
         detailsSnapshot.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        confirmationsSnapshot.forEach((doc) => {
           batch.delete(doc.ref);
         });
         batch.delete(gameRef);
@@ -1869,7 +2332,7 @@ const initAdminGames = () => {
       });
       deleteCell.appendChild(deleteButton);
 
-      row.append(gameTypeCell, dateCell, nameCell, deleteCell);
+      row.append(gameTypeCell, dateCell, nameCell, closedCell, deleteCell);
       gamesTableBody.appendChild(row);
     });
 
@@ -2158,6 +2621,7 @@ const initAdminGames = () => {
         gameType: "Cashout",
         gameDate,
         name,
+        isClosed: false,
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
       });
       status.textContent = `Dodano grę \"${name}\" z datą ${gameDate}.`;
@@ -2436,9 +2900,11 @@ const bootstrap = async () => {
   initAdminRules();
   initAdminTables();
   initAdminGames();
+  initAdminConfirmations();
   initAdminPlayers();
   initPinGate();
   initChatTab();
+  initUserConfirmations();
   initLatestMessage();
   initRulesDisplay();
   initInstructionModal();

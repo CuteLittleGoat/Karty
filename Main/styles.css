@@ -1154,3 +1154,68 @@ body.modal-open {
     padding: 16px;
   }
 }
+
+.confirmations-content {
+  display: none;
+  gap: var(--gap-2);
+}
+
+.confirmations-content.is-visible {
+  display: grid;
+}
+
+.confirmations-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-2);
+}
+
+.confirmations-table {
+  min-width: 760px;
+}
+
+.confirmations-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.confirmed-row {
+  background: rgba(212, 175, 55, 0.2);
+  box-shadow: inset 0 0 0 1px var(--gold-line);
+}
+
+.admin-confirmations {
+  display: grid;
+  gap: var(--gap-2);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.admin-confirmations-list {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-confirmation-game {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.28);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.admin-confirmation-game h4 {
+  margin: 0;
+  font-family: var(--font-subtitle);
+  font-size: 18px;
+}
+
+.admin-confirmation-game-meta {
+  color: var(--muted);
+  font-size: var(--fs-small);
+}

@@ -331,3 +331,63 @@ service cloud.firestore {
   }
 }
 ```
+
+---
+
+## 9. Nowa funkcja: „Gry do potwierdzenia” + checkbox „CzyZamknięta”
+
+### 9.1 Administrator — „Tabele Gier”
+1. Otwórz `.../Main/index.html?admin=1`.
+2. Wejdź w zakładkę **Gry**.
+3. W tabeli **Tabele Gier** zobaczysz nową kolumnę **CzyZamknięta**.
+4. W każdej grze kliknij checkbox:
+   - **odznaczony** = gra aktywna do potwierdzania,
+   - **zaznaczony** = gra zamknięta (znika z obu widoków „Gry do potwierdzenia”).
+5. Checkbox można przełączać dowolną liczbę razy.
+
+### 9.2 Administrator — zakładka „Gry do potwierdzenia”
+1. W panelu admina kliknij zakładkę **Gry do potwierdzenia**.
+2. Zobaczysz listę tylko aktywnych gier (`CzyZamknięta` odznaczone).
+3. Pod każdą grą widoczna jest tabela graczy zapisanych w **Szczegóły** tej gry (kolumna „Gracz”).
+4. W kolumnie **Status**:
+   - `Potwierdzono` = obecność zatwierdzona,
+   - `Niepotwierdzono` = brak potwierdzenia.
+5. W kolumnie **Akcje** kliknij:
+   - **Potwierdź** — ustawia status na potwierdzony,
+   - **Anuluj** — cofa potwierdzenie.
+6. Wiersz z potwierdzoną obecnością jest podświetlany na złoto.
+7. Aby zobaczyć najnowsze dane po zmianach gracza, kliknij globalny przycisk **Odśwież** (na górze panelu admina).
+
+### 9.3 Użytkownik — zakładka „Gry do potwierdzenia”
+1. Otwórz aplikację bez `?admin=1`.
+2. Kliknij zakładkę **Gry do potwierdzenia**.
+3. Wpisz 5-cyfrowy PIN gracza, który ma uprawnienie **Gry do potwierdzenia**.
+4. Kliknij **Otwórz**.
+5. Zobaczysz tylko gry spełniające warunki:
+   - gracz występuje w **Szczegóły gry** (kolumna „Gracz”),
+   - gra ma odznaczone **CzyZamknięta**.
+6. W tabeli widoczne są kolumny:
+   - **Rodzaj Gry**,
+   - **Data**,
+   - **Nazwa**,
+   - **Potwierdzenie** (akcje).
+7. W kolumnie **Potwierdzenie**:
+   - kliknij **Potwierdź** → wiersz robi się złoty,
+   - kliknij **Anuluj** → wiersz wraca do normalnego wyglądu.
+8. Możesz wielokrotnie przełączać stan **Potwierdź/Anuluj**.
+9. Kliknij **Odśwież**, aby pobrać aktualny stan z Firestore „na twardo” (z serwera).
+
+### 9.4 Sortowanie po dacie (najwcześniejsza na górze)
+Sortowanie rosnące po dacie (`gameDate`) działa teraz w:
+- **Tabele Gier** (admin),
+- **Gry do potwierdzenia** (admin),
+- **Gry do potwierdzenia** (użytkownik),
+- **Turnieje** (karty stołów są renderowane rosnąco po dacie pola `gameDate`).
+
+### 9.5 Firebase — czy trzeba zmieniać konfigurację?
+Obecny projekt działa bez migracji backendu.
+
+Jeżeli masz restrykcyjne reguły Firestore, upewnij się, że dostępna jest też subkolekcja:
+- `Tables/{tableId}/confirmations/{playerId}`
+
+W tej subkolekcji zapisywany jest stan potwierdzenia obecności (`confirmed`, `updatedAt`, `updatedBy`, `playerName`, `playerId`).
