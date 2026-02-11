@@ -322,6 +322,26 @@ const getGameDetailsCollectionName = () => {
   return configured || GAME_DETAILS_COLLECTION;
 };
 
+const getActiveGamesForConfirmations = async (db, gamesCollectionName, source = "default") => {
+  const queryOptions = source === "default" ? undefined : { source };
+  const collectionRef = db.collection(gamesCollectionName);
+
+  const toSortedActiveGames = (snapshot) => {
+    return snapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((game) => !Boolean(game.isClosed))
+      .sort(compareByGameDateAsc);
+  };
+
+  try {
+    const orderedSnapshot = await collectionRef.orderBy("createdAt", "asc").get(queryOptions);
+    return toSortedActiveGames(orderedSnapshot);
+  } catch (orderedError) {
+    const fallbackSnapshot = await collectionRef.get(queryOptions);
+    return toSortedActiveGames(fallbackSnapshot);
+  }
+};
+
 
 const formatFirestoreError = (error) => {
   if (!error) {
@@ -750,12 +770,7 @@ const initUserConfirmations = () => {
     body.innerHTML = "";
 
     try {
-      const gamesSnapshot = await db.collection(gamesCollectionName).orderBy("createdAt", "asc").get(
-        source === "default" ? undefined : { source }
-      );
-      const games = gamesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter((game) => !Boolean(game.isClosed))
-        .sort(compareByGameDateAsc);
+      const games = await getActiveGamesForConfirmations(db, gamesCollectionName, source);
 
       const visibleGames = [];
       for (const game of games) {
@@ -989,13 +1004,7 @@ const initAdminConfirmations = () => {
     status.textContent = source === "server" ? "Odświeżanie danych..." : "Pobieranie danych...";
 
     try {
-      const gamesSnapshot = await db.collection(gamesCollectionName).orderBy("createdAt", "asc").get(
-        source === "default" ? undefined : { source }
-      );
-
-      const games = gamesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-        .filter((game) => !Boolean(game.isClosed))
-        .sort(compareByGameDateAsc);
+      const games = await getActiveGamesForConfirmations(db, gamesCollectionName, source);
 
       if (!games.length) {
         status.textContent = "Brak aktywnych gier do potwierdzenia.";

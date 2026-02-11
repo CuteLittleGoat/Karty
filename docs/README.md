@@ -393,6 +393,13 @@ Jeżeli masz restrykcyjne reguły Firestore, upewnij się, że dostępna jest te
 W tej subkolekcji zapisywany jest stan potwierdzenia obecności (`confirmed`, `updatedAt`, `updatedBy`, `playerName`, `playerId`).
 
 
+### 9.6 Co poprawiono w błędzie „Nie udało się pobrać listy potwierdzeń / gier do potwierdzenia”
+1. Widoki **admina** i **użytkownika** dla zakładki „Gry do potwierdzenia” mają teraz odporniejsze pobieranie listy gier.
+2. Aplikacja najpierw wykonuje odczyt z sortowaniem `orderBy(createdAt, asc)`.
+3. Jeżeli taki odczyt zostanie odrzucony przez reguły/zapytanie Firestore, aplikacja automatycznie robi drugi odczyt bez `orderBy`.
+4. Wynik fallbacku jest następnie sortowany lokalnie po dacie gry (`gameDate`), więc kolejność pozostaje poprawna.
+5. Dzięki temu zakładka nie kończy się od razu błędem i dane wracają w obu widokach.
+
 ## 9. Zakładka „Gry użytkowników” — dokładna obsługa (widok gracza)
 ### 9.1 Włączenie uprawnienia przez administratora
 1. Otwórz aplikację w trybie administratora (`?admin=1`).
