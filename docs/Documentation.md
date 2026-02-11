@@ -137,6 +137,14 @@ Obliczenia:
 - `% puli = round((payout / pool) * 100)`,
 - sortowanie tabeli podsumowania: malejąco po `% puli`.
 
+### 5.8 Zamykanie modali (UI po uproszczeniu)
+W modalach administracyjnych, które wcześniej posiadały dwa przyciski zamykania (ikona `×` oraz przycisk tekstowy `Zamknij`), pozostawiono wyłącznie ikonę `×` w prawym górnym rogu. Dotyczy to: `instructionModal`, `playerPermissionsModal`, `gameDetailsModal`.
+
+W `Main/app.js` usunięto referencje do elementów `#instructionCloseFooter`, `#playerPermissionsCloseFooter` i `#gameDetailsCloseFooter`, a logika zamykania korzysta teraz z:
+- kliknięcia `×`,
+- kliknięcia tła modala,
+- klawisza `Escape` (tam, gdzie było dostępne wcześniej).
+
 ### 5.9 Statystyki (wewnątrz zakładki Gry)
 Dolna tabela `Statystyki` pokazuje agregaty dla aktywnego roku:
 - liczba gier,

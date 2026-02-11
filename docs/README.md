@@ -104,6 +104,7 @@ Aplikacja zapamiętuje ostatnio kliknięty rok (po odświeżeniu strony nadal b�
 
 ### 4.3 Okno „Szczegóły gry”
 Po kliknięciu **Szczegóły** otwiera się modal z edytowalną tabelą.
+Zamykanie tego okna odbywa się wyłącznie ikoną **X** w prawym górnym rogu (przycisk „Zamknij” nie występuje).
 
 #### Dodanie gracza do szczegółów
 1. Kliknij **Szczegóły** przy wybranej grze.
@@ -235,7 +236,7 @@ Mechanizm działa dla pól tekstowych, pól liczbowych wpisywanych jako tekst, s
 2. Kliknij zakładkę **Gracze**.
 3. W wybranym wierszu kliknij przycisk **Uprawnienia**.
 4. W oknie „Uprawnienia gracza” zaznacz checkbox **Czat**.
-5. Kliknij **Zamknij**.
+5. Kliknij ikonę **X** w prawym górnym rogu okna.
 6. Poczekaj na zapis (status pod tabelą).
 7. Oczekiwany efekt: w kolumnie uprawnień gracza pojawia się znacznik **Czat**.
 
