@@ -1702,7 +1702,7 @@ const initAdminGames = () => {
       const entryFee = parseIntegerOrZero(row.entryFee);
       const rebuy = parseIntegerOrZero(row.rebuy);
       const payout = parseIntegerOrZero(row.payout);
-      const profit = entryFee + rebuy - payout;
+      const profit = payout - (entryFee + rebuy);
       return {
         ...row,
         entryFee,
@@ -2042,7 +2042,7 @@ const initAdminGames = () => {
       const payoutCell = createNumericCell("payout");
 
       const profitCell = document.createElement("td");
-      profitCell.textContent = String(parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy) - parseIntegerOrZero(row.payout));
+      profitCell.textContent = String(parseIntegerOrZero(row.payout) - (parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy)));
 
       const pointsCell = createNumericCell("points");
 

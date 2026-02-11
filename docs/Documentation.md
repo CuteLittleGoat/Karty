@@ -117,7 +117,7 @@ Tabela w modalu zawiera kolumny:
 
 #### Obliczanie +/-
 Dla każdego wiersza:
-- `profit = entryFee + rebuy - payout`.
+- `profit = payout - (entryFee + rebuy)`.
 Pole jest wyświetlane jako wartość obliczana, bez ręcznej edycji.
 
 #### Powiązanie pola Gracz z zakładką Gracze
