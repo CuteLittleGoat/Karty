@@ -1,5 +1,7 @@
 const PIN_LENGTH = 5;
 const PIN_STORAGE_KEY = "nextGamePinVerified";
+const CHAT_PIN_STORAGE_KEY = "chatPinVerified";
+const CHAT_PLAYER_ID_STORAGE_KEY = "chatPlayerId";
 const PLAYER_ACCESS_COLLECTION = "app_settings";
 const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
@@ -8,8 +10,15 @@ const AVAILABLE_PLAYER_TABS = [
   {
     key: "nextGameTab",
     label: "Najbliższa gra"
+  },
+  {
+    key: "chatTab",
+    label: "Czat"
   }
 ];
+
+const CHAT_COLLECTION = "chat_messages";
+const CHAT_RETENTION_DAYS = 30;
 
 const TABLES_COLLECTION = "Tables";
 const GAMES_COLLECTION = "Tables";
@@ -45,6 +54,10 @@ const adminPlayersState = {
   players: [],
   playerByPin: new Map(),
   editingPlayerId: null
+};
+const chatState = {
+  unsubscribe: null,
+  adminUnsubscribe: null
 };
 const debounceTimers = new Map();
 const adminRefreshHandlers = new Map();
@@ -295,6 +308,66 @@ const setPinGateState = (isVerified) => {
   sessionStorage.setItem(PIN_STORAGE_KEY, isVerified ? "1" : "0");
 };
 
+const getChatPinGateState = () => sessionStorage.getItem(CHAT_PIN_STORAGE_KEY) === "1";
+
+const setChatPinGateState = (isVerified) => {
+  sessionStorage.setItem(CHAT_PIN_STORAGE_KEY, isVerified ? "1" : "0");
+};
+
+const setChatVerifiedPlayerId = (playerId) => {
+  if (playerId) {
+    sessionStorage.setItem(CHAT_PLAYER_ID_STORAGE_KEY, playerId);
+    return;
+  }
+  sessionStorage.removeItem(CHAT_PLAYER_ID_STORAGE_KEY);
+};
+
+const getChatVerifiedPlayer = () => {
+  const playerId = sessionStorage.getItem(CHAT_PLAYER_ID_STORAGE_KEY);
+  if (!playerId) {
+    return null;
+  }
+  return adminPlayersState.players.find((player) => player.id === playerId) ?? null;
+};
+
+const addDays = (dateValue, days) => {
+  const baseDate = new Date(dateValue);
+  const shiftedDate = new Date(baseDate.getTime());
+  shiftedDate.setDate(shiftedDate.getDate() + days);
+  return shiftedDate;
+};
+
+const toFirestoreDate = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value.toDate === "function") {
+    return value.toDate();
+  }
+
+  if (value instanceof Date) {
+    return value;
+  }
+
+  return null;
+};
+
+const formatChatTimestamp = (value) => {
+  const dateValue = toFirestoreDate(value);
+  if (!dateValue) {
+    return "w trakcie wysyłki...";
+  }
+
+  return dateValue.toLocaleString("pl-PL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+};
+
 const isPlayerAllowedForTab = (player, tabKey) => {
   if (!player || !Array.isArray(player.permissions)) {
     return false;
@@ -355,6 +428,183 @@ const initPinGate = () => {
   updatePinVisibility();
 };
 
+const updateChatVisibility = () => {
+  const gate = document.querySelector("#chatPinGate");
+  const content = document.querySelector("#chatContent");
+  if (!gate || !content) {
+    return;
+  }
+
+  const isVerified = getChatPinGateState();
+  gate.style.display = isVerified ? "none" : "block";
+  content.classList.toggle("is-visible", isVerified);
+};
+
+const renderPlayerChatMessages = (documents) => {
+  const chatMessages = document.querySelector("#chatMessages");
+  if (!chatMessages) {
+    return;
+  }
+
+  chatMessages.innerHTML = "";
+  if (!documents.length) {
+    const empty = document.createElement("p");
+    empty.className = "chat-empty";
+    empty.textContent = "Brak wiadomości na czacie.";
+    chatMessages.appendChild(empty);
+    return;
+  }
+
+  documents.forEach((doc) => {
+    const data = doc.data();
+    const item = document.createElement("article");
+    item.className = "chat-message-item";
+
+    const header = document.createElement("header");
+    header.className = "chat-message-header";
+
+    const author = document.createElement("strong");
+    author.textContent = typeof data.authorName === "string" ? data.authorName : "Gracz";
+
+    const timestamp = document.createElement("span");
+    timestamp.className = "chat-message-date";
+    timestamp.textContent = formatChatTimestamp(data.createdAt);
+
+    const text = document.createElement("p");
+    text.className = "chat-message-text";
+    text.textContent = typeof data.text === "string" ? data.text : "";
+
+    header.appendChild(author);
+    header.appendChild(timestamp);
+    item.appendChild(header);
+    item.appendChild(text);
+    chatMessages.appendChild(item);
+  });
+
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+};
+
+const initChatTab = () => {
+  const input = document.querySelector("#chatPinInput");
+  const submitButton = document.querySelector("#chatPinSubmit");
+  const pinStatus = document.querySelector("#chatPinStatus");
+  const sendButton = document.querySelector("#chatMessageSend");
+  const messageInput = document.querySelector("#chatMessageInput");
+  const messageStatus = document.querySelector("#chatMessageStatus");
+  const firebaseApp = getFirebaseApp();
+
+  if (!input || !submitButton || !pinStatus || !sendButton || !messageInput || !messageStatus) {
+    return;
+  }
+
+  if (!firebaseApp) {
+    submitButton.disabled = true;
+    sendButton.disabled = true;
+    messageStatus.textContent = "Uzupełnij konfigurację Firebase, aby korzystać z czatu.";
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+
+  const stopSubscription = () => {
+    if (typeof chatState.unsubscribe === "function") {
+      chatState.unsubscribe();
+      chatState.unsubscribe = null;
+    }
+  };
+
+  const startSubscription = () => {
+    stopSubscription();
+    chatState.unsubscribe = db.collection(CHAT_COLLECTION)
+      .orderBy("createdAt", "asc")
+      .limit(200)
+      .onSnapshot(
+        (snapshot) => {
+          renderPlayerChatMessages(snapshot.docs);
+          messageStatus.textContent = "";
+        },
+        () => {
+          messageStatus.textContent = "Nie udało się pobrać wiadomości czatu.";
+        }
+      );
+  };
+
+  const verifyPin = () => {
+    const pinValue = sanitizePin(input.value);
+    if (!isPinValid(pinValue)) {
+      pinStatus.textContent = "Wpisz komplet 5 cyfr.";
+      return;
+    }
+
+    const player = adminPlayersState.playerByPin.get(pinValue);
+    if (player && isPlayerAllowedForTab(player, "chatTab")) {
+      setChatPinGateState(true);
+      setChatVerifiedPlayerId(player.id);
+      pinStatus.textContent = `PIN poprawny. Witaj ${player.name || "graczu"}.`;
+      updateChatVisibility();
+      startSubscription();
+      return;
+    }
+
+    pinStatus.textContent = "Błędny PIN lub brak uprawnień do zakładki „Czat”.";
+  };
+
+  input.addEventListener("input", () => {
+    input.value = sanitizePin(input.value);
+  });
+
+  submitButton.addEventListener("click", verifyPin);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      verifyPin();
+    }
+  });
+
+  sendButton.addEventListener("click", async () => {
+    const text = messageInput.value.trim();
+    const player = getChatVerifiedPlayer();
+
+    if (!getChatPinGateState() || !player || !isPlayerAllowedForTab(player, "chatTab")) {
+      messageStatus.textContent = "Twoja sesja czatu wygasła. Zweryfikuj PIN ponownie.";
+      setChatPinGateState(false);
+      setChatVerifiedPlayerId("");
+      stopSubscription();
+      updateChatVisibility();
+      return;
+    }
+
+    if (!text) {
+      messageStatus.textContent = "Wpisz treść wiadomości.";
+      return;
+    }
+
+    sendButton.disabled = true;
+    messageStatus.textContent = "Wysyłanie...";
+
+    try {
+      await db.collection(CHAT_COLLECTION).add({
+        text,
+        authorName: player.name || "Gracz",
+        authorId: player.id,
+        createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+        expireAt: firebaseApp.firestore.Timestamp.fromDate(addDays(new Date(), CHAT_RETENTION_DAYS)),
+        source: "web-player"
+      });
+      messageInput.value = "";
+      messageStatus.textContent = "Wiadomość wysłana.";
+    } catch (error) {
+      messageStatus.textContent = "Nie udało się wysłać wiadomości.";
+    } finally {
+      sendButton.disabled = false;
+    }
+  });
+
+  updateChatVisibility();
+  if (getChatPinGateState() && getChatVerifiedPlayer()) {
+    startSubscription();
+  }
+};
+
 const initUserTabs = () => {
   const tabButtons = document.querySelectorAll(".tab-button");
   const panels = document.querySelectorAll(".tab-panel");
@@ -386,6 +636,24 @@ const initUserTabs = () => {
         pinStatus.textContent = "";
       }
       updatePinVisibility();
+    }
+
+    if (target === "chatTab") {
+      setChatPinGateState(false);
+      setChatVerifiedPlayerId("");
+      const chatPinInput = document.querySelector("#chatPinInput");
+      const chatPinStatus = document.querySelector("#chatPinStatus");
+      if (chatPinInput) {
+        chatPinInput.value = "";
+      }
+      if (chatPinStatus) {
+        chatPinStatus.textContent = "";
+      }
+      if (typeof chatState.unsubscribe === "function") {
+        chatState.unsubscribe();
+        chatState.unsubscribe = null;
+      }
+      updateChatVisibility();
     }
 
     if (targetButton) {
@@ -910,6 +1178,129 @@ const initAdminMessaging = () => {
       status.textContent = "Nie udało się wysłać wiadomości. Sprawdź konfigurację.";
     } finally {
       sendButton.disabled = false;
+    }
+  });
+};
+
+const initAdminChat = () => {
+  const list = document.querySelector("#adminChatList");
+  const cleanupButton = document.querySelector("#adminChatCleanup");
+  const status = document.querySelector("#adminChatStatus");
+
+  if (!list || !cleanupButton || !status) {
+    return;
+  }
+
+  const firebaseApp = getFirebaseApp();
+  if (!firebaseApp) {
+    cleanupButton.disabled = true;
+    status.textContent = "Uzupełnij konfigurację Firebase, aby moderować czat.";
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+
+  const renderAdminMessages = (documents) => {
+    list.innerHTML = "";
+    if (!documents.length) {
+      const empty = document.createElement("p");
+      empty.className = "chat-empty";
+      empty.textContent = "Brak wiadomości czatu do moderacji.";
+      list.appendChild(empty);
+      return;
+    }
+
+    documents.forEach((doc) => {
+      const data = doc.data();
+      const row = document.createElement("article");
+      row.className = "admin-chat-item";
+
+      const meta = document.createElement("div");
+      meta.className = "admin-chat-meta";
+      meta.textContent = `${typeof data.authorName === "string" ? data.authorName : "Gracz"} • ${formatChatTimestamp(data.createdAt)}`;
+
+      const text = document.createElement("p");
+      text.className = "admin-chat-text";
+      text.textContent = typeof data.text === "string" ? data.text : "";
+
+      const actions = document.createElement("div");
+      actions.className = "admin-chat-item-actions";
+
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "danger admin-chat-delete";
+      deleteButton.textContent = "Usuń";
+      deleteButton.addEventListener("click", async () => {
+        deleteButton.disabled = true;
+        status.textContent = "Usuwanie wiadomości...";
+        try {
+          await db.collection(CHAT_COLLECTION).doc(doc.id).delete();
+          status.textContent = "Wiadomość usunięta.";
+        } catch (error) {
+          deleteButton.disabled = false;
+          status.textContent = "Nie udało się usunąć wiadomości.";
+        }
+      });
+
+      actions.appendChild(deleteButton);
+      row.appendChild(meta);
+      row.appendChild(text);
+      row.appendChild(actions);
+      list.appendChild(row);
+    });
+  };
+
+  const refreshChatData = async () => {
+    await db.collection(CHAT_COLLECTION).orderBy("createdAt", "desc").limit(200).get({ source: "server" });
+  };
+
+  registerAdminRefreshHandler("adminChatTab", refreshChatData);
+
+  if (typeof chatState.adminUnsubscribe === "function") {
+    chatState.adminUnsubscribe();
+  }
+
+  chatState.adminUnsubscribe = db.collection(CHAT_COLLECTION)
+    .orderBy("createdAt", "desc")
+    .limit(200)
+    .onSnapshot(
+      (snapshot) => {
+        renderAdminMessages(snapshot.docs);
+      },
+      () => {
+        status.textContent = "Nie udało się pobrać wiadomości czatu.";
+      }
+    );
+
+  cleanupButton.addEventListener("click", async () => {
+    cleanupButton.disabled = true;
+    status.textContent = "Czyszczenie wiadomości starszych niż 30 dni...";
+
+    let deletedCount = 0;
+    try {
+      const now = firebaseApp.firestore.Timestamp.now();
+      while (true) {
+        const expiredSnapshot = await db.collection(CHAT_COLLECTION)
+          .where("expireAt", "<=", now)
+          .limit(200)
+          .get();
+
+        if (expiredSnapshot.empty) {
+          break;
+        }
+
+        const batch = db.batch();
+        expiredSnapshot.docs.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+        deletedCount += expiredSnapshot.size;
+      }
+      status.textContent = `Usunięto ${deletedCount} wiadomości starszych niż 30 dni.`;
+    } catch (error) {
+      status.textContent = "Nie udało się wyczyścić starych wiadomości.";
+    } finally {
+      cleanupButton.disabled = false;
     }
   });
 };
@@ -2054,11 +2445,13 @@ const bootstrap = async () => {
   initAdminPanelRefresh();
   initUserTabs();
   initAdminMessaging();
+  initAdminChat();
   initAdminRules();
   initAdminTables();
   initAdminGames();
   initAdminPlayers();
   initPinGate();
+  initChatTab();
   initLatestMessage();
   initRulesDisplay();
   initInstructionModal();

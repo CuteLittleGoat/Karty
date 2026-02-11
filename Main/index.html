@@ -35,6 +35,7 @@
           </div>
           <div class="admin-panel-tabs" role="tablist" aria-label="Zakładki panelu administratora">
             <button class="admin-panel-tab is-active" type="button" data-target="adminNewsTab">Aktualności</button>
+            <button class="admin-panel-tab" type="button" data-target="adminChatTab">Czat</button>
             <button class="admin-panel-tab" type="button" data-target="adminRulesTab">Regulamin</button>
             <button class="admin-panel-tab" type="button" data-target="adminPlayersTab">Gracze</button>
             <button class="admin-panel-tab" type="button" data-target="adminTournamentsTab">Turnieje</button>
@@ -59,6 +60,19 @@
               </div>
             </div>
           </div>
+          </div>
+          <div id="adminChatTab" class="admin-panel-content" role="tabpanel">
+            <section class="admin-chat">
+              <div class="card-header">
+                <h3>Czat</h3>
+                <p>Moderuj wiadomości i usuwaj wpisy starsze niż 30 dni.</p>
+              </div>
+              <div class="admin-chat-actions">
+                <button id="adminChatCleanup" class="danger" type="button">Usuń starsze niż 30 dni</button>
+                <span id="adminChatStatus" class="status-text" aria-live="polite"></span>
+              </div>
+              <div id="adminChatList" class="admin-chat-list"></div>
+            </section>
           </div>
           <div id="adminRulesTab" class="admin-panel-content" role="tabpanel">
             <div class="admin-rules">
@@ -203,6 +217,9 @@
               <button class="tab-button" type="button" data-target="rulesTab">
                 Regulamin
               </button>
+              <button class="tab-button" type="button" data-target="chatTab">
+                Czat
+              </button>
             </div>
           </div>
           <div class="user-tab-content">
@@ -258,6 +275,43 @@
                   placeholder="Administrator jeszcze nie dodał regulaminu."
                 ></textarea>
                 <p id="rulesStatus" class="status-text" aria-live="polite"></p>
+              </div>
+            </div>
+            <div id="chatTab" class="tab-panel" role="tabpanel">
+              <div id="chatPinGate" class="pin-gate" aria-live="polite">
+                <div class="pin-card">
+                  <p class="pin-title">Wpisz PIN z uprawnieniem Czat, aby dołączyć do rozmowy.</p>
+                  <div class="pin-inputs">
+                    <input
+                      id="chatPinInput"
+                      type="tel"
+                      inputmode="numeric"
+                      pattern="[0-9]{5}"
+                      autocomplete="one-time-code"
+                      maxlength="5"
+                      minlength="5"
+                      placeholder="PIN (5 cyfr)"
+                    />
+                    <button id="chatPinSubmit" class="primary" type="button">Otwórz</button>
+                  </div>
+                  <p id="chatPinStatus" class="status-text"></p>
+                </div>
+              </div>
+              <div id="chatContent" class="chat-content">
+                <div id="chatMessages" class="chat-messages"></div>
+                <div class="chat-form">
+                  <label for="chatMessageInput">Twoja wiadomość</label>
+                  <textarea
+                    id="chatMessageInput"
+                    rows="3"
+                    maxlength="600"
+                    placeholder="Napisz wiadomość do graczy..."
+                  ></textarea>
+                  <div class="chat-form-actions">
+                    <button id="chatMessageSend" class="primary" type="button">Wyślij</button>
+                    <span id="chatMessageStatus" class="status-text" aria-live="polite"></span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
