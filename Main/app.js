@@ -42,6 +42,7 @@ const GAME_DETAILS_COLLECTION_CONFIG_KEY = "gameDetailsCollection";
 const USER_GAMES_COLLECTION_CONFIG_KEY = "userGamesCollection";
 const TABLE_ROWS_COLLECTION = "rows";
 const GAME_CONFIRMATIONS_COLLECTION = "confirmations";
+const ADMIN_GAMES_STATS_COLLECTION = "admin_games_stats";
 const DEFAULT_TABLE_META = {
   gameType: "rodzaj gry",
   gameDate: "data"
@@ -2711,6 +2712,8 @@ const initAdminGames = () => {
   const gamesTableBody = document.querySelector("#adminGamesTableBody");
   const summariesContainer = document.querySelector("#adminGamesSummaries");
   const statsBody = document.querySelector("#adminGamesStatsBody");
+  const playersStatsBody = document.querySelector("#adminGamesPlayersStatsBody");
+  const rankingBody = document.querySelector("#adminGamesRankingBody");
   const status = document.querySelector("#adminGamesStatus");
   const modal = document.querySelector("#gameDetailsModal");
   const modalMeta = document.querySelector("#gameDetailsMeta");
@@ -2718,7 +2721,7 @@ const initAdminGames = () => {
   const modalClose = document.querySelector("#gameDetailsClose");
   const modalAddRowButton = document.querySelector("#gameDetailsAddRow");
 
-  if (!yearsList || !gamesTableBody || !summariesContainer || !statsBody || !status || !addGameButton) {
+  if (!yearsList || !gamesTableBody || !summariesContainer || !statsBody || !playersStatsBody || !rankingBody || !status || !addGameButton) {
     return;
   }
 
@@ -2732,6 +2735,8 @@ const initAdminGames = () => {
   const db = firebaseApp.firestore();
   const gamesCollectionName = getGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
+  const manualStatsFields = ["weight1", "weight2", "points", "weight3", "weight4", "weight5", "weight6", "weight7", "result"];
+
   const state = {
     years: [],
     selectedYear: loadSavedSelectedGamesYear(),
@@ -2739,7 +2744,8 @@ const initAdminGames = () => {
     detailsByGame: new Map(),
     detailsUnsubscribers: new Map(),
     activeGameIdInModal: null,
-    playerOptions: []
+    playerOptions: [],
+    manualStatsByYear: new Map()
   };
 
   const closeModal = () => {
@@ -2780,6 +2786,11 @@ const initAdminGames = () => {
     });
   };
 
+  const hasCompletedEntryFee = (row) => {
+    const normalized = sanitizeIntegerInput(typeof row.entryFee === "number" ? `${row.entryFee}` : row.entryFee ?? "");
+    return Boolean(normalized) && normalized !== "-";
+  };
+
   const getGameSummaryMetrics = (gameId) => {
     const rows = getDetailRows(gameId);
     const pool = rows.reduce((sum, row) => sum + row.entryFee + row.rebuy, 0);
@@ -2796,6 +2807,130 @@ const initAdminGames = () => {
         poolSharePercent: pool === 0 ? 0 : Math.round((row.payout / pool) * 100)
       }))
     };
+  };
+
+  const getManualStatsForYear = (year) => {
+    const yearKey = String(year ?? "");
+    return state.manualStatsByYear.get(yearKey) ?? new Map();
+  };
+
+  const serializeManualStats = (year) => {
+    const yearStats = getManualStatsForYear(year);
+    return Array.from(yearStats.values())
+      .map((entry) => ({
+        playerName: entry.playerName,
+        weight1: entry.weight1 ?? "",
+        weight2: entry.weight2 ?? "",
+        points: entry.points ?? "",
+        weight3: entry.weight3 ?? "",
+        weight4: entry.weight4 ?? "",
+        weight5: entry.weight5 ?? "",
+        weight6: entry.weight6 ?? "",
+        weight7: entry.weight7 ?? "",
+        result: entry.result ?? ""
+      }))
+      .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"));
+  };
+
+  const persistManualStats = (year) => {
+    if (!year) {
+      return Promise.resolve();
+    }
+    return db.collection(ADMIN_GAMES_STATS_COLLECTION).doc(String(year)).set({ rows: serializeManualStats(year) }, { merge: true });
+  };
+
+  const getPlayersStatistics = () => {
+    const games = getGamesForSelectedYear();
+    const gameCount = games.length;
+    const totalPool = games.reduce((sum, game) => sum + getGameSummaryMetrics(game.id).pool, 0);
+    const playersMap = new Map();
+
+    games.forEach((game) => {
+      const rows = getDetailRows(game.id);
+      const gamePool = getGameSummaryMetrics(game.id).pool;
+      const playersCountedInGame = new Set();
+
+      rows.forEach((row) => {
+        const playerName = typeof row.playerName === "string" ? row.playerName.trim() : "";
+        if (!playerName || !hasCompletedEntryFee(row)) {
+          return;
+        }
+
+        if (!playersMap.has(playerName)) {
+          playersMap.set(playerName, {
+            playerName,
+            championshipCount: 0,
+            meetingsCount: 0,
+            plusMinusSum: 0,
+            payoutSum: 0,
+            depositsSum: 0,
+            playedGamesPoolSum: 0
+          });
+        }
+
+        const playerStats = playersMap.get(playerName);
+        playerStats.meetingsCount += 1;
+        playerStats.championshipCount += row.championship ? 1 : 0;
+        playerStats.plusMinusSum += row.profit;
+        playerStats.payoutSum += row.payout;
+        playerStats.depositsSum += row.entryFee + row.rebuy;
+
+        if (!playersCountedInGame.has(playerName)) {
+          playerStats.playedGamesPoolSum += gamePool;
+          playersCountedInGame.add(playerName);
+        }
+      });
+    });
+
+    const playerRows = Array.from(playersMap.values())
+      .map((row) => ({
+        ...row,
+        participationPercent: gameCount === 0 ? 0 : Math.ceil((row.meetingsCount / gameCount) * 100),
+        percentAllGames: row.playedGamesPoolSum === 0 ? 0 : Math.ceil((row.payoutSum / row.playedGamesPoolSum) * 100),
+        percentPlayedGames: totalPool === 0 ? 0 : Math.ceil((row.payoutSum / totalPool) * 100)
+      }))
+      .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"));
+
+    return {
+      gameCount,
+      totalPool,
+      playerRows
+    };
+  };
+
+  const renderRankingTable = (playerRows) => {
+    rankingBody.innerHTML = "";
+
+    if (!playerRows.length) {
+      const emptyRow = document.createElement("tr");
+      const emptyCell = document.createElement("td");
+      emptyCell.colSpan = 3;
+      emptyCell.textContent = "Brak danych rankingowych dla wybranego roku.";
+      emptyRow.appendChild(emptyCell);
+      rankingBody.appendChild(emptyRow);
+      return;
+    }
+
+    playerRows.forEach((entry, index) => {
+      const rank = index + 1;
+      const tr = document.createElement("tr");
+      if (rank <= 8) {
+        tr.classList.add("admin-games-ranking-row-gold");
+      } else if (rank <= 17) {
+        tr.classList.add("admin-games-ranking-row-green");
+      } else {
+        tr.classList.add("admin-games-ranking-row-red");
+      }
+
+      const rankCell = document.createElement("td");
+      rankCell.textContent = String(rank);
+      const playerCell = document.createElement("td");
+      playerCell.textContent = entry.playerName;
+      const resultCell = document.createElement("td");
+      resultCell.textContent = String(entry.resultValue);
+      tr.append(rankCell, playerCell, resultCell);
+      rankingBody.appendChild(tr);
+    });
   };
 
   const renderYears = () => {
@@ -3023,16 +3158,18 @@ const initAdminGames = () => {
 
   const renderStatsTable = () => {
     statsBody.innerHTML = "";
-    const games = getGamesForSelectedYear();
-    const gameCount = games.length;
-    const totalPool = games.reduce((sum, game) => sum + getGameSummaryMetrics(game.id).pool, 0);
+    playersStatsBody.innerHTML = "";
 
-    const rows = [
+    const statistics = getPlayersStatistics();
+    const gameCount = statistics.gameCount;
+    const totalPool = statistics.totalPool;
+
+    const summaryRows = [
       ["Liczba gier", String(gameCount)],
       ["Łączna pula", String(totalPool)]
     ];
 
-    rows.forEach(([label, value]) => {
+    summaryRows.forEach(([label, value]) => {
       const tr = document.createElement("tr");
       const labelCell = document.createElement("td");
       labelCell.textContent = label;
@@ -3041,6 +3178,120 @@ const initAdminGames = () => {
       tr.append(labelCell, valueCell);
       statsBody.appendChild(tr);
     });
+
+    const currentYearStats = getManualStatsForYear(state.selectedYear);
+
+    const createReadOnlyCell = (value) => {
+      const td = document.createElement("td");
+      td.textContent = String(value);
+      return td;
+    };
+
+    const createEditableCell = (playerName, key) => {
+      const td = document.createElement("td");
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "admin-input";
+      input.dataset.focusTarget = "admin-games-stats";
+      input.dataset.section = "games-stats";
+      input.dataset.tableId = String(state.selectedYear ?? "");
+      input.dataset.rowId = playerName;
+      input.dataset.columnKey = key;
+      const stored = currentYearStats.get(playerName);
+      input.value = stored?.[key] ?? "";
+      input.addEventListener("input", () => {
+        input.value = sanitizeIntegerInput(input.value);
+        if (!state.selectedYear) {
+          return;
+        }
+        if (!state.manualStatsByYear.has(String(state.selectedYear))) {
+          state.manualStatsByYear.set(String(state.selectedYear), new Map());
+        }
+        const yearMap = state.manualStatsByYear.get(String(state.selectedYear));
+        if (!yearMap.has(playerName)) {
+          const emptyRow = { playerName };
+          manualStatsFields.forEach((field) => {
+            emptyRow[field] = "";
+          });
+          yearMap.set(playerName, emptyRow);
+        }
+        const playerEntry = yearMap.get(playerName);
+        playerEntry[key] = input.value;
+
+        scheduleDebouncedUpdate(`admin-games-stats-${state.selectedYear}-${playerName}-${key}`, () => persistManualStats(state.selectedYear));
+        if (key === "result") {
+          const rankingRows = statistics.playerRows.map((row) => {
+            const localEntry = yearMap.get(row.playerName);
+            return {
+              ...row,
+              resultValue: parseIntegerOrZero(localEntry?.result ?? "")
+            };
+          }).sort((a, b) => {
+            if (b.resultValue !== a.resultValue) {
+              return b.resultValue - a.resultValue;
+            }
+            return a.playerName.localeCompare(b.playerName, "pl");
+          });
+          renderRankingTable(rankingRows);
+        }
+      });
+      td.appendChild(input);
+      return td;
+    };
+
+    if (!statistics.playerRows.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 19;
+      td.textContent = "Brak graczy z uzupełnionym wpisowym w wybranym roku.";
+      tr.appendChild(td);
+      playersStatsBody.appendChild(tr);
+      renderRankingTable([]);
+      return;
+    }
+
+    const rankingRows = [];
+
+    statistics.playerRows.forEach((row) => {
+      const tr = document.createElement("tr");
+      const manualEntry = currentYearStats.get(row.playerName) ?? {};
+      const resultValue = parseIntegerOrZero(manualEntry.result ?? "");
+      rankingRows.push({
+        ...row,
+        resultValue
+      });
+
+      tr.append(
+        createReadOnlyCell(row.playerName),
+        createReadOnlyCell(row.championshipCount),
+        createEditableCell(row.playerName, "weight1"),
+        createReadOnlyCell(row.meetingsCount),
+        createReadOnlyCell(`${row.participationPercent}%`),
+        createEditableCell(row.playerName, "weight2"),
+        createEditableCell(row.playerName, "points"),
+        createEditableCell(row.playerName, "weight3"),
+        createReadOnlyCell(row.plusMinusSum),
+        createEditableCell(row.playerName, "weight4"),
+        createReadOnlyCell(row.payoutSum),
+        createEditableCell(row.playerName, "weight5"),
+        createReadOnlyCell(row.depositsSum),
+        createEditableCell(row.playerName, "weight6"),
+        createReadOnlyCell(row.playedGamesPoolSum),
+        createReadOnlyCell(`${row.percentAllGames}%`),
+        createEditableCell(row.playerName, "weight7"),
+        createReadOnlyCell(`${row.percentPlayedGames}%`),
+        createEditableCell(row.playerName, "result")
+      );
+      playersStatsBody.appendChild(tr);
+    });
+
+    rankingRows.sort((a, b) => {
+      if (b.resultValue !== a.resultValue) {
+        return b.resultValue - a.resultValue;
+      }
+      return a.playerName.localeCompare(b.playerName, "pl");
+    });
+    renderRankingTable(rankingRows);
   };
 
   const renderModal = (gameId) => {
@@ -3184,6 +3435,28 @@ const initAdminGames = () => {
     renderStatsTable();
   };
 
+  db.collection(ADMIN_GAMES_STATS_COLLECTION).onSnapshot((snapshot) => {
+    state.manualStatsByYear.clear();
+    snapshot.forEach((doc) => {
+      const yearKey = String(doc.id);
+      const rows = Array.isArray(doc.data()?.rows) ? doc.data().rows : [];
+      const yearMap = new Map();
+      rows.forEach((entry) => {
+        const playerName = typeof entry?.playerName === "string" ? entry.playerName.trim() : "";
+        if (!playerName) {
+          return;
+        }
+        const parsedEntry = { playerName };
+        manualStatsFields.forEach((field) => {
+          parsedEntry[field] = typeof entry[field] === "string" || typeof entry[field] === "number" ? String(entry[field]) : "";
+        });
+        yearMap.set(playerName, parsedEntry);
+      });
+      state.manualStatsByYear.set(yearKey, yearMap);
+    });
+    renderStatsTable();
+  });
+
   db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
     const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
     state.playerOptions = players
@@ -3239,7 +3512,7 @@ const initAdminGames = () => {
         isClosed: false,
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
       });
-      status.textContent = `Dodano grę \"${name}\" z datą ${gameDate}.`;
+      status.textContent = `Dodano grę "${name}" z datą ${gameDate}.`;
     } catch (error) {
       const errorCode = error?.code;
       if (errorCode === "permission-denied") {

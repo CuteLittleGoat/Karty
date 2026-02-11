@@ -544,3 +544,42 @@ service cloud.firestore {
   }
 }
 ```
+
+### 4.8 Segment „Statystyki” — nowa tabela graczy (krok po kroku)
+Po dwóch górnych wierszach (`Liczba gier`, `Łączna pula`) znajdziesz teraz szeroką tabelę roczną. Dane są liczone tylko dla aktywnego roku z panelu **Lata**.
+
+1. Kliknij po lewej konkretny rok (np. `2026`).
+2. Przewiń sekcję do nagłówka **Statystyki**.
+3. Sprawdź dwa pierwsze wiersze:
+   - **Liczba gier** — ile gier jest w wybranym roku,
+   - **Łączna pula** — suma pul ze wszystkich gier roku.
+4. Niżej sprawdź tabelę graczy:
+   - **Gracz** — pojawia się tylko gracz, który ma uzupełnione **Wpisowe** w „Szczegóły gry” (puste wpisowe = nieobecność),
+   - **Mistrzostwo** — suma zaznaczeń checkboxa „Mistrzostwo” w roku,
+   - **Ilość Spotkań** — liczba gier z obecnością gracza (na podstawie wpisowego),
+   - **% udział** — `ceil(Ilość Spotkań / Liczba gier * 100)`,
+   - **(+/-)** — suma z kolumny `+/-` ze wszystkich gier roku,
+   - **Wypłata** — suma kolumny `Wypłata`,
+   - **Wpłaty** — suma `Wpisowe + Rebuy/Add-on`,
+   - **Suma z rozegranych gier** — suma puli gier, w których gracz był obecny,
+   - **% Wszystkich gier** — `ceil(Wypłata / Suma z rozegranych gier * 100)`,
+   - **% Rozegranych gier** — `ceil(Wypłata / Łączna pula * 100)`.
+5. Kolumny do ręcznego wpisania przez admina:
+   - `Waga1`, `Waga2`, `Punkty`, `Waga3`, `Waga4`, `Waga5`, `Waga6`, `Waga7`, `Wynik`.
+6. Kliknij w dowolną komórkę jednej z powyższych kolumn i wpisz liczbę.
+7. Po krótkiej chwili wartość zapisze się automatycznie i pozostanie po odświeżeniu strony.
+
+### 4.9 Panel „Ranking” po prawej stronie
+Obok sekcji treści „Gry admina” jest nowy panel **Ranking** (analogicznie do lewego panelu **Lata**).
+
+1. Kliknij rok po lewej stronie.
+2. W panelu po prawej sprawdź tabelę 3-kolumnową:
+   - **Miejsce**,
+   - **Gracz**,
+   - **Wynik**.
+3. Kolejność rankingu jest liczona malejąco po kolumnie **Wynik** z tabeli „Statystyki”.
+4. Po zmianie wartości `Wynik` w statystykach ranking odświeża się automatycznie.
+5. Kolorystyka miejsc:
+   - miejsca **1–8**: kolor złoty,
+   - miejsca **9–17**: kolor zielony,
+   - miejsca **18+**: kolor czerwony.

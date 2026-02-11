@@ -196,3 +196,27 @@
   - `#userGameDetailsModal`,
   - `#playerUserGameDetailsModal`.
 - Oba modale dziedziczą istniejący styl kart modalnych (`.modal-overlay`, `.modal-card`, `.modal-header`, `.modal-body`, `.admin-table-scroll`, `.admin-data-table`).
+
+## 15) „Gry admina” — tabela rozszerzonych statystyk i panel „Ranking”
+
+### 15.1 Układ 3-kolumnowy w `adminGamesTab`
+- Dla `#adminGamesTab .admin-games-layout` ustawiono trzy kolumny:
+  1. **Lata** (lewy sidebar),
+  2. **Treść** (środek),
+  3. **Ranking** (prawy sidebar).
+- Szerokości: `220px | minmax(0, 1fr) | 260px`.
+- W widoku mobilnym (`max-width: 720px`) układ przechodzi do jednej kolumny.
+
+### 15.2 Tabela szczegółowych statystyk graczy
+- Dodano klasę `.admin-games-players-stats-table` z `min-width: 2300px` dla komfortowego poziomego scrolla.
+- Pola edycyjne wewnątrz tej tabeli (`input.admin-input`) mają `min-width: 84px`.
+- Kolumny obejmują metryki obliczalne i pola ręczne (`Waga1..Waga7`, `Punkty`, `Wynik`).
+
+### 15.3 Panel „Ranking”
+- Prawy panel używa `.admin-games-ranking-sidebar` i dziedziczy styl bazowy `.admin-games-sidebar`.
+- Tabela rankingu `.admin-games-ranking-table` renderuje 3 kolumny: `Miejsce`, `Gracz`, `Wynik`.
+- Kolorowanie wierszy:
+  - `.admin-games-ranking-row-gold` — miejsca 1–8,
+  - `.admin-games-ranking-row-green` — miejsca 9–17,
+  - `.admin-games-ranking-row-red` — miejsca 18+.
+- Kolory są półtransparentne i utrzymują ciemny motyw aplikacji (noir + akcenty gold/green/red).
