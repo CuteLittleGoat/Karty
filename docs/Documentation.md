@@ -334,3 +334,73 @@ Błąd „nie działa Usuń w Gry / Dodaj w Szczegółach” wynikał z innego r
 - Styl textarea w zakładce admina i użytkownika nadal korzysta z motywu noir/gold/green z wysokością minimalną `170px`.
 - Usunięcie przycisków z sekcji `admin-rules-actions` upraszcza interfejs i pozostawia wyłącznie komunikaty statusu.
 
+## 11. Firebase — aktualna struktura danych i Rules (stan bieżący + rozszerzenie pod „Czat”)
+
+### 11.1. Aktualna struktura Firestore używana przez aplikację
+Obecny kod korzysta z następujących ścieżek:
+- `admin_messages` — wiadomości administratora (zakładka Aktualności),
+- `app_settings/player_access` — konfiguracja graczy (lista `players[]`, PIN, uprawnienia, `appEnabled`),
+- `app_settings/rules` — treść regulaminu,
+- `Tables/{tableId}` — rekordy turniejów i gier (zależnie od konfiguracji),
+- `Tables/{tableId}/rows/{rowId}` — szczegóły turnieju/gry,
+- `Collection1/{docId}` — historycznie uwzględniona kolekcja objęta regułami.
+
+### 11.2. Aktualne Rules Firestore (wariant produkcyjny)
+
+```js
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /admin_messages/{docId} {
+      allow read, write: if true;
+    }
+    match /app_settings/{docId} {
+      allow read, write: if true;
+    }
+    match /Tables/{tableId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+    }
+    match /Collection1/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+### 11.3. Rozszerzenie Rules wymagane dla wdrożenia czatu
+Po dodaniu funkcji „Czat” należy dodać dodatkowy blok:
+
+```js
+match /chat_messages/{docId} {
+  allow read, write: if true;
+}
+```
+
+### 11.4. Struktura danych planowana dla czatu
+Kolekcja: `chat_messages`.
+
+Dokument wiadomości:
+
+```json
+{
+  "text": "Cześć",
+  "authorName": "GraczA",
+  "authorId": "player-1700000000000",
+  "createdAt": "Timestamp",
+  "expireAt": "Timestamp",
+  "source": "web-player"
+}
+```
+
+### 11.5. Retencja wiadomości bez TTL Policy
+Decyzja projektowa: **bez Firebase TTL Policy**.
+
+Retencja „30 dni” jest realizowana przez logikę admina:
+1. ręczny przycisk „Usuń starsze niż 30 dni” (query po `expireAt <= now` + kasowanie partiami),
+2. opcjonalnie automatyczne uruchomienie tej samej procedury po wejściu admina na zakładkę „Czat”.
+
+Pole `expireAt` pozostaje wymagane — służy jako kryterium filtrowania do czyszczenia danych.
