@@ -291,7 +291,8 @@ Aktualnie wykorzystywane są kolekcje:
    - dokument `rules` z treścią regulaminu (`text`, `updatedAt`, `source`).
 3. `Tables`
    - dokumenty gier/turniejów (m.in. `gameType`, `gameDate`, `name`, `createdAt`),
-   - subkolekcja `rows` z wierszami szczegółów.
+   - subkolekcja `rows` z wierszami szczegółów,
+   - subkolekcja `confirmations` ze stanem potwierdzeń graczy (`confirmed`, `updatedAt`, `updatedBy`, `playerName`, `playerId`).
 4. `Collection1`
    - kolekcja historyczna pozostawiona w projekcie.
 5. `chat_messages`
@@ -317,6 +318,10 @@ service cloud.firestore {
       allow read, write: if true;
 
       match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
         allow read, write: if true;
       }
     }
@@ -385,9 +390,7 @@ Sortowanie rosnące po dacie (`gameDate`) działa teraz w:
 - **Turnieje** (karty stołów są renderowane rosnąco po dacie pola `gameDate`).
 
 ### 9.5 Firebase — czy trzeba zmieniać konfigurację?
-Obecny projekt działa bez migracji backendu.
-
-Jeżeli masz restrykcyjne reguły Firestore, upewnij się, że dostępna jest też subkolekcja:
+Obecny projekt działa bez migracji backendu. Aktualne reguły Firestore już zawierają dostęp do subkolekcji:
 - `Tables/{tableId}/confirmations/{playerId}`
 
 W tej subkolekcji zapisywany jest stan potwierdzenia obecności (`confirmed`, `updatedAt`, `updatedBy`, `playerName`, `playerId`).
