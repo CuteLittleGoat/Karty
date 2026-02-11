@@ -1875,40 +1875,23 @@ const initLatestMessage = () => {
 
 const initAdminRules = () => {
   const input = document.querySelector("#adminRulesInput");
-  const editButton = document.querySelector("#adminRulesEdit");
-  const saveButton = document.querySelector("#adminRulesSave");
-  const deleteButton = document.querySelector("#adminRulesDelete");
   const status = document.querySelector("#adminRulesStatus");
 
-  if (!input || !editButton || !saveButton || !deleteButton || !status) {
+  if (!input || !status) {
     return;
   }
 
   const firebaseApp = getFirebaseApp();
 
   if (!firebaseApp) {
-    editButton.disabled = true;
-    saveButton.disabled = true;
-    deleteButton.disabled = true;
+    input.disabled = true;
     status.textContent = "Uzupełnij konfigurację Firebase, aby edytować regulamin.";
     return;
   }
 
   const db = firebaseApp.firestore();
   const rulesDocRef = db.collection(PLAYER_ACCESS_COLLECTION).doc(RULES_DOCUMENT);
-  let isEditing = false;
-
-  const setEditingState = (nextState) => {
-    isEditing = nextState;
-    input.readOnly = !nextState;
-    editButton.disabled = nextState;
-    saveButton.disabled = !nextState;
-    deleteButton.disabled = false;
-    if (nextState) {
-      input.focus();
-      input.setSelectionRange(input.value.length, input.value.length);
-    }
-  };
+  let isSaving = false;
 
   registerAdminRefreshHandler("adminRulesTab", async () => {
     await rulesDocRef.get({ source: "server" });
@@ -1918,55 +1901,31 @@ const initAdminRules = () => {
     (snapshot) => {
       const data = snapshot.data();
       const rulesText = typeof data?.text === "string" ? data.text : RULES_DEFAULT_TEXT;
-      input.value = rulesText;
-      if (!isEditing) {
-        status.textContent = data?.text ? "Regulamin jest aktualny." : "Brak zapisanej treści regulaminu.";
+      if (document.activeElement !== input || !isSaving) {
+        input.value = rulesText;
       }
+      status.textContent = data?.text ? "Regulamin jest aktualny." : "Brak zapisanej treści regulaminu.";
+      isSaving = false;
     },
     () => {
       status.textContent = "Nie udało się pobrać regulaminu. Sprawdź konfigurację Firestore.";
     }
   );
 
-  editButton.addEventListener("click", () => {
-    setEditingState(true);
-    status.textContent = "Tryb edycji włączony.";
-  });
-
-  saveButton.addEventListener("click", async () => {
-    saveButton.disabled = true;
+  input.addEventListener("input", () => {
     status.textContent = "Zapisywanie regulaminu...";
-    try {
-      await rulesDocRef.set({
+    isSaving = true;
+    scheduleDebouncedUpdate("admin-rules-text", () => {
+      void rulesDocRef.set({
         text: input.value.trim(),
         updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
         source: "web-admin"
-      }, { merge: true });
-      status.textContent = "Regulamin zapisany.";
-      setEditingState(false);
-    } catch (error) {
-      status.textContent = "Nie udało się zapisać regulaminu.";
-      saveButton.disabled = false;
-    }
-  });
-
-  deleteButton.addEventListener("click", async () => {
-    deleteButton.disabled = true;
-    status.textContent = "Usuwanie regulaminu...";
-    try {
-      await rulesDocRef.set({
-        text: RULES_DEFAULT_TEXT,
-        updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
-        source: "web-admin"
-      }, { merge: true });
-      input.value = RULES_DEFAULT_TEXT;
-      setEditingState(false);
-      status.textContent = "Treść regulaminu została usunięta.";
-    } catch (error) {
-      status.textContent = "Nie udało się usunąć treści regulaminu.";
-    } finally {
-      deleteButton.disabled = false;
-    }
+      }, { merge: true })
+        .catch(() => {
+          isSaving = false;
+          status.textContent = "Nie udało się zapisać regulaminu.";
+        });
+    });
   });
 };
 

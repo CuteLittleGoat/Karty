@@ -74,8 +74,8 @@
 - Panel administratora:
   - nowy kontener `.admin-rules` oparty o ten sam język wizualny co `.admin-message` (ciemne tło, subtelna ramka, zaokrąglenia).
   - pole `textarea` ma zwiększoną wysokość minimalną (`170px`), aby wygodnie edytować dłuższy tekst zasad.
-  - przyciski akcji (`Edytuj`, `Zapisz`, `Usuń`) są grupowane w `.admin-rules-actions` z zawijaniem do nowej linii.
+  - sekcja `.admin-rules-actions` zawiera tylko komunikat statusu autozapisu (bez przycisków akcji).
 - Widok użytkownika:
   - zakładka `Regulamin` używa wariantu `.latest-rules` z takim samym typograficznym stylem jak `Aktualności`, ale z większym polem na treść.
 - Mobile (`max-width: 720px`):
-  - `.admin-rules-actions` przechodzi do układu kolumnowego dla wygodniejszego klikania przycisków.
+  - `.admin-rules-actions` zachowuje responsywne pozycjonowanie komunikatu statusu.
