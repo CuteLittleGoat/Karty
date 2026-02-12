@@ -73,7 +73,7 @@ const STATS_COLUMN_CONFIG = [
   { key: "meetingsCount", label: "Ilość Spotkań", editable: false, weight: false, value: (row) => row.meetingsCount },
   { key: "participationPercent", label: "% udział", editable: false, weight: false, value: (row) => `${row.participationPercent}%` },
   { key: "weight2", label: "Waga2", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight2", manual?.weight2) },
-  { key: "points", label: "Punkty", editable: true, weight: false, value: (row, manual) => manual?.points ?? "" },
+  { key: "points", label: "Punkty", editable: false, weight: false, value: (row) => row.pointsSum },
   { key: "weight3", label: "Waga3", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight3", manual?.weight3) },
   { key: "plusMinusSum", label: "(+/-)", editable: false, weight: false, value: (row) => row.plusMinusSum },
   { key: "weight4", label: "Waga4", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight4", manual?.weight4) },
@@ -85,7 +85,18 @@ const STATS_COLUMN_CONFIG = [
   { key: "percentAllGames", label: "% Wszystkich gier", editable: false, weight: false, value: (row) => `${row.percentAllGames}%` },
   { key: "weight7", label: "Waga7", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight7", manual?.weight7) },
   { key: "percentPlayedGames", label: "% Rozegranych gier", editable: false, weight: false, value: (row) => `${row.percentPlayedGames}%` },
-  { key: "result", label: "Wynik", editable: true, weight: false, value: (row, manual) => manual?.result ?? "" }
+  {
+    key: "result",
+    label: "Wynik",
+    editable: false,
+    weight: false,
+    value: (row, manual, getDefault, getComputedResultValue) => {
+      if (typeof getComputedResultValue !== "function") {
+        return "";
+      }
+      return getComputedResultValue(row, manual);
+    }
+  }
 ];
 
 const adminTablesState = {
@@ -3078,7 +3089,7 @@ const initStatisticsView = ({
   const db = firebaseApp.firestore();
   const gamesCollectionName = getGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
-  const manualStatsFields = ["weight1", "weight2", "points", "weight3", "weight4", "weight5", "weight6", "weight7", "result"];
+  const manualStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
   const weightStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
   const state = {
     years: [],
@@ -3189,6 +3200,7 @@ const initStatisticsView = ({
             playerName,
             championshipCount: 0,
             meetingsCount: 0,
+            pointsSum: 0,
             plusMinusSum: 0,
             payoutSum: 0,
             depositsSum: 0,
@@ -3199,6 +3211,7 @@ const initStatisticsView = ({
         const item = playersMap.get(playerName);
         item.meetingsCount += 1;
         item.championshipCount += row.championship ? 1 : 0;
+        item.pointsSum += parseIntegerOrZero(row.points);
         item.plusMinusSum += row.profit;
         item.payoutSum += row.payout;
         item.depositsSum += row.entryFee + row.rebuy;
@@ -3222,6 +3235,24 @@ const initStatisticsView = ({
         }))
         .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"))
     };
+  };
+
+  const getComputedResultValue = (row, manualEntry = {}) => {
+    const weight1 = parseIntegerOrZero(getDefaultManualFieldValue("weight1", manualEntry.weight1));
+    const weight2 = parseIntegerOrZero(getDefaultManualFieldValue("weight2", manualEntry.weight2));
+    const weight3 = parseIntegerOrZero(getDefaultManualFieldValue("weight3", manualEntry.weight3));
+    const weight4 = parseIntegerOrZero(getDefaultManualFieldValue("weight4", manualEntry.weight4));
+    const weight5 = parseIntegerOrZero(getDefaultManualFieldValue("weight5", manualEntry.weight5));
+    const weight6 = parseIntegerOrZero(getDefaultManualFieldValue("weight6", manualEntry.weight6));
+    const weight7 = parseIntegerOrZero(getDefaultManualFieldValue("weight7", manualEntry.weight7));
+
+    return (row.championshipCount * weight1)
+      + (row.participationPercent * weight2)
+      + (row.pointsSum * weight3)
+      + (row.plusMinusSum * weight4)
+      + (row.payoutSum * weight5)
+      + (row.depositsSum * weight6)
+      + (row.percentAllGames * weight7);
   };
 
   const renderYears = () => {
@@ -3313,7 +3344,7 @@ const initStatisticsView = ({
           const input = document.createElement("input");
           input.type = "text";
           input.className = "admin-input";
-          input.value = String(column.value(row, manualEntry, getDefaultManualFieldValue));
+          input.value = String(column.value(row, manualEntry, getDefaultManualFieldValue, getComputedResultValue));
           input.addEventListener("input", () => {
             input.value = sanitizeIntegerInput(input.value);
             if (!yearMap.has(row.playerName)) {
@@ -3327,10 +3358,11 @@ const initStatisticsView = ({
             });
             playerEntry[column.key] = input.value;
             scheduleDebouncedUpdate(`stats-shared-${yearKey}-${row.playerName}-${column.key}`, () => persistYearConfig(state.selectedYear));
+            renderStats();
           });
           td.appendChild(input);
         } else {
-          td.textContent = String(column.value(row, manualEntry, getDefaultManualFieldValue));
+          td.textContent = String(column.value(row, manualEntry, getDefaultManualFieldValue, getComputedResultValue));
         }
         tr.appendChild(td);
       });
@@ -3487,7 +3519,7 @@ const initStatisticsView = ({
       const manualEntry = yearMap.get(row.playerName) ?? {};
       return STATS_COLUMN_CONFIG
         .filter((column) => visibleColumns.includes(column.key))
-        .map((column) => column.value(row, manualEntry, getDefaultManualFieldValue));
+        .map((column) => column.value(row, manualEntry, getDefaultManualFieldValue, getComputedResultValue));
     });
 
     const worksheet = window.XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
@@ -3560,7 +3592,7 @@ const initAdminGames = () => {
   const db = firebaseApp.firestore();
   const gamesCollectionName = getGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
-  const manualStatsFields = ["weight1", "weight2", "points", "weight3", "weight4", "weight5", "weight6", "weight7"];
+  const manualStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
   const weightStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
   const weightHeaderButtons = Array.from(document.querySelectorAll(".admin-weight-bulk-button"));
 
@@ -4117,6 +4149,22 @@ const initAdminGames = () => {
       return td;
     };
 
+    const updateResultsAndRanking = (statisticsRows, yearMap) => {
+      const rankingRows = sortRankingRowsByResult(statisticsRows.map((statsRow) => {
+        const localEntry = yearMap.get(statsRow.playerName) ?? {};
+        const resultValue = getComputedResultValue(statsRow, localEntry);
+        const resultCell = playersStatsBody.querySelector(`[data-result-player="${window.CSS.escape(statsRow.playerName)}"]`);
+        if (resultCell) {
+          resultCell.textContent = String(resultValue);
+        }
+        return {
+          ...statsRow,
+          resultValue
+        };
+      }));
+      renderRankingTable(rankingRows);
+    };
+
     const createEditableCell = (playerName, key) => {
       const td = document.createElement("td");
       const input = document.createElement("input");
@@ -4142,14 +4190,7 @@ const initAdminGames = () => {
         playerEntry[key] = input.value;
 
         scheduleDebouncedUpdate(`admin-games-stats-${state.selectedYear}-${playerName}-${key}`, () => persistManualStats(state.selectedYear));
-        const rankingRows = sortRankingRowsByResult(statistics.playerRows.map((statsRow) => {
-          const localEntry = yearMap.get(statsRow.playerName) ?? {};
-          return {
-            ...statsRow,
-            resultValue: getComputedResultValue(statsRow, localEntry)
-          };
-        }));
-        renderRankingTable(rankingRows);
+        updateResultsAndRanking(statistics.playerRows, yearMap);
       });
       td.appendChild(input);
       return td;
@@ -4177,6 +4218,9 @@ const initAdminGames = () => {
         resultValue
       });
 
+      const resultCell = createReadOnlyCell(resultValue);
+      resultCell.dataset.resultPlayer = row.playerName;
+
       tr.append(
         createReadOnlyCell(row.playerName),
         createReadOnlyCell(row.championshipCount),
@@ -4196,7 +4240,7 @@ const initAdminGames = () => {
         createReadOnlyCell(`${row.percentAllGames}%`),
         createEditableCell(row.playerName, "weight7"),
         createReadOnlyCell(`${row.percentPlayedGames}%`),
-        createReadOnlyCell(resultValue)
+        resultCell
       );
       playersStatsBody.appendChild(tr);
     });
@@ -4521,7 +4565,11 @@ const initAdminGames = () => {
     });
   }
 
-  registerAdminRefreshHandler("adminGamesTab", async () => {});
+  registerAdminRefreshHandler("adminGamesTab", async () => {
+    renderGamesTable();
+    renderSummaries();
+    renderStatsTable();
+  });
   registerAdminRefreshHandler("adminUserGamesTab", async () => {});
 };
 

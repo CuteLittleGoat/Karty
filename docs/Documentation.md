@@ -449,3 +449,56 @@ Zmiana nie wymaga migracji struktury Firestore.
 - Administrator i użytkownik z uprawnieniem edycji mogą wielokrotnie seryjnie ustawiać wpisowe dla całej tabeli gry.
 - Podsumowania gier lepiej eksponują liderów po realnym wyniku finansowym (`+/-`).
 - Ranking po prawej stronie jest deterministycznie powiązany z bieżącymi wagami i metrykami statystyk.
+
+## Aktualizacja techniczna 2026-02-12 — odświeżanie „Wynik” i spójność tabel Statystyk
+
+### Zakres kodu
+Zmiany wykonano w `Main/app.js` w dwóch modułach:
+- `initAdminGames()` — tabela **Gry admina → Statystyki** + ranking,
+- `initStatisticsView()` — współdzielona logika tabeli **Statystyki** (admin/user).
+
+### 1) Ujednolicenie definicji kolumn statystyk (`STATS_COLUMN_CONFIG`)
+- Kolumna `points` została ustawiona jako read-only (`editable: false`) i pobiera wartość z `row.pointsSum`.
+- Kolumna `result` została ustawiona jako read-only (`editable: false`) i wylicza się przez przekazany callback `getComputedResultValue(...)`.
+
+Skutek:
+- nie ma już ręcznej edycji `Wynik` w tabeli statystyk,
+- obie tabele statystyk prezentują wynik z tego samego algorytmu.
+
+### 2) `initStatisticsView()` — usunięcie ręcznego `result`/`points` z warstwy danych manualnych
+- `manualStatsFields` zawiera teraz tylko wagi: `weight1..weight7`.
+- Dane manualne nie przechowują już ręcznych wartości `points` ani `result`.
+- `getPlayersStatistics()` rozszerzono o agregację `pointsSum` z wierszy gry (`row.points`).
+- Dodano lokalny kalkulator `getComputedResultValue(row, manualEntry)` z tym samym wzorem jak w `initAdminGames()`.
+- Render komórek i eksport XLSX przekazują `getComputedResultValue` do `STATS_COLUMN_CONFIG`, więc kolumna `Wynik` jest wyliczana także w eksporcie.
+
+Skutek:
+- zakładka **Statystyki** pokazuje te same wartości `Punkty` i `Wynik` co sekcja statystyk w **Gry admina**.
+
+### 3) `initAdminGames()` — natychmiastowe odświeżanie kolumny „Wynik”
+- W `renderStatsTable()` dodano funkcję `updateResultsAndRanking(statisticsRows, yearMap)`.
+- Funkcja po każdej zmianie wagi:
+  - przelicza `resultValue` dla każdego gracza,
+  - aktualizuje komórkę `data-result-player="<playerName>"` w tabeli,
+  - ponownie renderuje ranking na podstawie nowych wyników.
+- Komórki kolumny wynikowej otrzymały identyfikator przez `dataset.resultPlayer`.
+
+Skutek:
+- zmiana np. `Waga7` odświeża kolumnę `Wynik` bez przełączania zakładki,
+- ranking i kolumna `Wynik` aktualizują się synchronicznie.
+
+### 4) Obsługa przycisku „Odśwież” dla zakładki „Gry admina”
+- `registerAdminRefreshHandler("adminGamesTab", ...)` nie jest już pusty.
+- Handler wywołuje kolejno:
+  - `renderGamesTable()`,
+  - `renderSummaries()`,
+  - `renderStatsTable()`.
+
+Skutek:
+- kliknięcie **Odśwież** w panelu admina realnie odrysowuje również sekcję statystyk i ranking w zakładce **Gry admina**.
+
+### Backend (Firestore)
+- Format dokumentów w `admin_games_stats/{year}` pozostaje kompatybilny:
+  - `rows[]` nadal przechowuje `playerName` oraz `weight1..weight7`,
+  - brak potrzeby przechowywania ręcznego `result` i `points` (wartości są obliczane po stronie frontendu z danych gier).
+- Odczyt legacy danych (gdy dokument ma dodatkowe pola) nie powoduje błędu — pola nieużywane są ignorowane przez aktualny renderer.
