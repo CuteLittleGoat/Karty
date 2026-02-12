@@ -609,3 +609,26 @@ W obu zakładkach przyciski lat zostały wyrównane wizualnie do panelu **Rankin
 - każdy przycisk ma stałą, powtarzalną wysokość,
 - wysokość przycisku roku jest taka sama jak wysokość pojedynczego wiersza panelu **Ranking**,
 - aktywny rok nadal ma złote podświetlenie (`is-active`).
+
+---
+
+## 12. Dokumentacja układu kolumn i okien — `Kolumny.md`
+Jeżeli chcesz zmienić wygląd tabel lub modali, zacznij od pliku głównego:
+- `Kolumny.md` (w katalogu głównym repozytorium).
+
+Jak z niego korzystać krok po kroku:
+1. Otwórz `Kolumny.md`.
+2. Znajdź sekcję odpowiadającą miejscu, które chcesz zmienić, np.:
+   - **Panel Administratora → Zakładka „Gracze”**,
+   - **Panel Administratora → Zakładka „Gry admina”**,
+   - **Okna modalne (wyskakujące)**.
+3. Sprawdź w tabeli parametry kolumny/pola:
+   - minimalna i maksymalna szerokość,
+   - minimalna i maksymalna wysokość,
+   - wyrównanie,
+   - łamanie linii.
+4. Przejdź do `Main/styles.css` i edytuj odpowiednią klasę (np. `.players-table`, `.admin-games-players-stats-table`, `.modal-card`, `.confirmations-table`).
+5. Odśwież aplikację i sprawdź efekt wizualnie w danej zakładce.
+6. Jeśli zmieniasz styl elementu (rozmiary, kolory, font, spacing), zaktualizuj również `DetaleLayout.md`.
+
+Dzięki temu podejściu możesz modyfikować wygląd bez ręcznego szukania wszystkich kolumn po całym kodzie.
