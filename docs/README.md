@@ -1,228 +1,270 @@
-# Karty — Instrukcja użytkownika UI
+# Karty — Instrukcja użytkownika (UI)
 
-> Ten dokument opisuje **wyłącznie obsługę interfejsu**: co kliknąć, gdzie wpisać dane i jaki efekt powinien być widoczny na ekranie.
+> Ten dokument opisuje **wyłącznie obsługę interfejsu** aplikacji: co kliknąć, co wpisać i jaki efekt zobaczysz.
 
-## 1. Wejście do aplikacji
+## 1. Układ ekranu po wejściu do aplikacji
 
-1. Otwórz widok aplikacji w przeglądarce.
-2. Aby przejść do panelu administratora, dodaj do adresu strony `?admin=1`.
-3. Aby przejść do widoku gracza, użyj adresu bez parametru `?admin=1`.
+Po otwarciu strony zobaczysz układ podzielony na sekcje (karty).
 
----
+- Góra strony: nagłówek aplikacji i przyciski administracyjne.
+- Środek: siatka kart z funkcjami (administracja, gry, statystyki, czat, regulamin).
+- Wiele elementów pojawia się zależnie od tego, czy jesteś administratorem albo graczem z poprawnym PIN-em.
 
-## 2. Panel administratora — nawigacja
+## 2. Panel administratora — zakładki i nawigacja
 
-Po wejściu do panelu administratora widzisz zakładki:
-- **Aktualności**
-- **Czat**
-- **Regulamin**
-- **Gracze**
-- **Turnieje**
-- **Gry admina**
-- **Statystyki**
-- **Gry użytkowników**
-- **Gry do potwierdzenia**
+W karcie **„Panel Administratora”** na górze są zakładki.
 
-### Szybkie zasady poruszania się
-- Kliknięcie zakładki przełącza zawartość środka panelu.
-- Przycisk **Odśwież** (górna część panelu) ponownie ładuje dane widoczne w aktywnej zakładce.
-- Komunikaty statusu pod nagłówkami (np. „Zapisywanie...”, „Zapisano”) informują, czy akcja się udała.
+### Jak przełączać zakładki
+1. Kliknij nazwę zakładki (np. „Aktualności”, „Czat”, „Gracze”, „Turnieje”).
+2. Kliknięta zakładka podświetli się jako aktywna.
+3. Treść pod spodem zmieni się na odpowiedni moduł.
+
+### Przycisk „Odśwież”
+1. Wejdź do konkretnej zakładki panelu.
+2. Kliknij **„Odśwież”** w prawym górnym rogu panelu.
+3. Dane aktualnej zakładki zostaną ponownie pobrane i odświeżone.
 
 ---
 
-## 3. Zakładka „Aktualności”
+## 3. Aktualności (zakładka administratora)
 
-### Wysłanie wiadomości do graczy
-1. Wejdź w zakładkę **Aktualności**.
-2. Kliknij pole **Treść wiadomości**.
-3. Wpisz komunikat.
-4. Kliknij **Wyślij**.
-5. Sprawdź status obok przycisku — po poprawnym wysłaniu pojawia się potwierdzenie.
+### Publikacja wiadomości dla graczy
+1. Otwórz zakładkę **„Aktualności”**.
+2. W polu **„Treść wiadomości”** wpisz tekst komunikatu.
+3. Kliknij **„Wyślij”**.
+4. Komunikat statusu obok przycisku poinformuje o powodzeniu lub błędzie.
+5. Najnowsza wiadomość pojawi się użytkownikom w sekcji aktualności.
 
----
-
-## 4. Zakładka „Czat” (administrator)
-
-### Podgląd i sprzątanie wiadomości
-1. Kliknij zakładkę **Czat**.
-2. W sekcji listy sprawdź bieżące wiadomości.
-3. Aby usunąć stare wiadomości, kliknij **Usuń starsze niż 30 dni**.
-4. Potwierdź wynik po komunikacie statusu.
+**Edytowalne:** pole tekstowe wiadomości.  
+**Nieedytowalne:** pole statusu (informacja systemowa).
 
 ---
 
-## 5. Zakładka „Regulamin”
+## 4. Czat (administrator)
 
-### Edycja treści regulaminu
-1. Otwórz zakładkę **Regulamin**.
-2. Kliknij pole **Treść regulaminu**.
-3. Wpisz lub popraw tekst zasad.
-4. Kliknij **Zapisz**.
-5. Odczytaj status pod polem — powinien potwierdzić zapis.
+### Moderacja wiadomości
+1. Otwórz zakładkę **„Czat”**.
+2. Przejrzyj listę wpisów na czacie.
+3. Aby wyczyścić starsze wiadomości, kliknij **„Usuń starsze niż 30 dni”**.
+4. Sprawdź komunikat statusu obok przycisku.
 
----
-
-## 6. Zakładka „Gracze”
-
-### 6.1 Dodanie gracza
-1. Przejdź do zakładki **Gracze**.
-2. Kliknij **Dodaj** pod tabelą.
-3. W nowym wierszu ustaw:
-   - **Aplikacja** (checkbox) — kliknięcie włącza/wyłącza;
-   - **Nazwa** — wpisz nazwę gracza;
-   - **PIN** — wpisz 5 cyfr lub użyj przycisku **Losuj**.
-4. Poczekaj na komunikat statusu o zapisaniu.
-
-### 6.2 Edycja gracza
-1. Kliknij wybrane pole w wierszu gracza (Nazwa/PIN/Aplikacja).
-2. Zmień wartość.
-3. Sprawdź status zapisu.
-
-### 6.3 Uprawnienia gracza
-1. W wierszu gracza kliknij **Uprawnienia**.
-2. W modalu zaznacz lub odznacz zakładki dostępne dla gracza.
-3. Zamknij modal ikoną **X**.
-4. Zweryfikuj skrót uprawnień w tabeli graczy.
-
-### 6.4 Usunięcie gracza
-1. W wierszu gracza kliknij **Usuń**.
-2. Sprawdź, czy wiersz zniknął z tabeli.
+**Edytowalne:** brak klasycznych pól formularza; używasz przycisków akcji.  
+**Nieedytowalne:** lista historycznych wiadomości (podgląd moderacyjny).
 
 ---
 
-## 7. Zakładka „Turnieje”
+## 5. Regulamin (administrator)
 
-### Dodanie turnieju
-1. Otwórz **Turnieje**.
-2. Kliknij **Dodaj**.
-3. Uzupełnij pola w nowym wierszu (rodzaj, data, nazwa).
-4. Kliknij **Szczegóły**, aby wejść do listy uczestników i wyników.
+### Ustawianie zasad
+1. Otwórz zakładkę **„Regulamin”**.
+2. W polu **„Treść regulaminu”** wpisz pełny tekst zasad.
+3. Kliknij **„Zapisz”**.
+4. Odczytaj status zapisu obok przycisku.
+5. Treść regulaminu będzie widoczna dla użytkowników w sekcji regulaminu.
 
-### Edycja i usuwanie
-1. Zmieniaj dane bezpośrednio w komórkach tabeli.
-2. Aby skasować cały wpis turnieju, kliknij **Usuń** w tym wierszu.
-
-### Szczegóły turnieju (modal)
-1. Kliknij **Szczegóły** przy wybranym turnieju.
-2. Kliknij **Dodaj**, aby dodać nowy wiersz gracza.
-3. Uzupełnij pola (gracz, wpisowe, rebuy/add-on, wypłata, punkty, mistrzostwo).
-4. Aby usunąć wiersz gracza, kliknij **Usuń** w tym samym wierszu.
-5. Zamknij okno ikoną **X**.
+**Edytowalne:** duże pole tekstowe regulaminu.  
+**Nieedytowalne:** pole statusu.
 
 ---
 
-## 8. Zakładka „Gry admina”
+## 6. Gracze (administrator)
 
-Zakładka jest podzielona na 3 obszary:
-- lewa kolumna **Lata**,
-- środek z tabelą gier i statystykami,
-- prawa kolumna **Ranking**.
+W tej zakładce zarządzasz listą graczy, PIN-ami i uprawnieniami.
 
-### 8.1 Wybór roku
-1. W lewej kolumnie kliknij rok (np. `2026`).
-2. Tabela i statystyki automatycznie filtrują się do tego roku.
+### Dodanie gracza
+1. Otwórz zakładkę **„Gracze”**.
+2. Kliknij przycisk dodania nowego gracza (jeśli jest dostępny w widoku).
+3. Uzupełnij dane w nowym wierszu/formularzu:
+   - nazwa gracza,
+   - PIN,
+   - dostęp do aplikacji,
+   - uprawnienia zakładek.
+4. Zapisz zmiany przyciskiem w danym wierszu/sekcji.
 
-### 8.2 Dodanie gry
-1. Kliknij **Dodaj** w sekcji **Tabele Gier**.
-2. Nowy wiersz pojawia się od razu na liście.
-3. W razie potrzeby popraw pola: **Rodzaj Gry**, **Data**, **Nazwa**, **CzyZamknięta**.
+### Edycja gracza
+1. Znajdź gracza na liście.
+2. Zmień pola w jego wierszu.
+3. Zatwierdź zapis.
 
-### 8.3 Szczegóły gry
-1. Kliknij **Szczegóły** przy wybranej grze.
-2. W modalu kliknij **Dodaj**, aby dopisać gracza.
-3. Uzupełnij dane i zaznacz **Mistrzostwo**, jeśli dotyczy.
-4. Usuń pojedynczy wpis gracza przyciskiem **Usuń** w jego wierszu.
-5. Zamknij modal ikoną **X**.
+### Uprawnienia
+1. W wierszu gracza kliknij przycisk uprawnień.
+2. W oknie/modalu zaznacz lub odznacz dostępne zakładki.
+3. Zatwierdź zapis zmian.
 
-### 8.4 Zamknięcie gry
-1. W tabeli głównej zaznacz pole **CzyZamknięta** dla wybranej gry.
-2. Sprawdź, czy status i widoki powiązane pokazują grę jako zamkniętą.
-
-### 8.5 Ranking i statystyki
-1. Po zapisaniu danych przejdź wzrokiem do prawej kolumny **Ranking**.
-2. W środkowej dolnej sekcji odczytaj wartości statystyk i tabelę graczy.
-3. Dla kolumn „Waga1–Waga7” możesz używać przycisków w nagłówkach, by zbiorczo modyfikować wartości.
+**Edytowalne:** nazwa, PIN, checkbox „Aplikacja”, wybór uprawnień.  
+**Automatyczne/systemowe:** statusy zapisu i walidacja formatu PIN.
 
 ---
 
-## 9. Zakładka „Statystyki” (administrator)
+## 7. Turnieje (administrator)
 
-1. Otwórz zakładkę **Statystyki**.
-2. Wybierz rok z listy lat.
-3. Sprawdź tabelę rankingową i wartości zbiorcze.
-4. Porównaj wyniki z zakładką „Gry admina” — dane powinny być spójne.
+Zakładka służy do tworzenia i obsługi stołów/rozgrywek.
+
+### Dodanie stołu (gry)
+1. Otwórz zakładkę **„Turnieje”**.
+2. Kliknij przycisk dodawania gry/stołu.
+3. Uzupełnij formularz gry:
+   - data,
+   - nazwa,
+   - typ gry,
+   - status (otwarta/zamknięta — zależnie od interfejsu).
+4. Zapisz.
+
+### Otworzenie szczegółów gry
+1. Na liście kliknij wybraną grę.
+2. Otworzy się widok lub modal szczegółów.
+3. W szczegółach możesz dodawać i edytować wiersze graczy.
+
+### Dodanie gracza do konkretnej gry
+1. Wejdź w szczegóły gry.
+2. Kliknij dodawanie nowego wiersza.
+3. Uzupełnij pola finansowe i punktowe.
+4. Zapisz wiersz.
+
+### Usunięcie gry / wiersza
+1. Wybierz element (gra albo wiersz gracza).
+2. Kliknij przycisk usuwania.
+3. Potwierdź operację, jeśli pojawi się okno potwierdzenia.
+
+**Edytowalne:** pola formularza gry i wierszy.  
+**Automatyczne:** część wartości podsumowujących i obliczanych kolumn.
 
 ---
 
-## 10. Zakładka „Gry użytkowników” (administrator)
+## 8. Gry admina
 
-Obsługa jest analogiczna do „Gry admina”:
-1. Wybierz rok z lewego panelu.
-2. Kliknij **Dodaj**, aby utworzyć grę.
-3. Edytuj pola gry.
-4. Wejdź w **Szczegóły**, dodaj graczy, wypełnij wartości.
-5. Zamknij grę przez **CzyZamknięta**.
-6. Sprawdź tabelę statystyk i ranking.
+Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
+
+### Podstawowy przepływ
+1. Otwórz zakładkę **„Gry admina”**.
+2. Wybierz rok z listy/filtra.
+3. Wybierz grę z listy.
+4. Otwórz szczegóły i edytuj wiersze.
+
+### Które pola wpisujesz ręcznie
+- Nazwa gracza,
+- wpisowe,
+- rebuy,
+- wypłata,
+- część pól punktacji (zależnie od kolumny).
+
+### Które pola liczą się automatycznie
+- Podsumowania `+/-`,
+- agregaty i sumy tabel,
+- część kolumn statystycznych,
+- kolejność/ranking po przeliczeniu.
 
 ---
 
-## 11. Zakładka „Gry do potwierdzenia” (administrator)
+## 9. Statystyki
 
-1. Wejdź w **Gry do potwierdzenia**.
-2. Przeglądaj listę zgłoszonych/oczekujących gier.
-3. Otwórz pozycję i zweryfikuj szczegóły.
-4. Wykonaj akcję potwierdzenia lub odrzucenia zgodnie z dostępnymi przyciskami.
-5. Upewnij się, że status pozycji zmienił się na liście.
+### Jak korzystać
+1. Otwórz zakładkę **„Statystyki”**.
+2. Jeśli wymagany jest PIN, wpisz PIN i potwierdź.
+3. Wybierz rok (jeśli filtr jest widoczny).
+4. Przeglądaj tabelę wyników i ranking.
+
+### Interpretacja
+- Kolumny procentowe i wynikowe są wyliczane automatycznie.
+- Część wag/statystyk może być edytowalna wyłącznie w panelu administracyjnym.
+
+**Edytowalne (zależnie od roli):** wybrane wagi i pola konfiguracyjne.  
+**Nieedytowalne:** większość kolumn wynikowych.
 
 ---
 
-## 12. Strefa gracza (widok bez `?admin=1`)
+## 10. Gry użytkowników
 
-Gracz ma własne zakładki:
-- **Najbliższa gra**
-- **Czat**
-- **Gry do potwierdzenia**
-- **Gry użytkowników**
-- **Statystyki**
-- **Aktualności**
-- **Regulamin**
+### Dodanie własnej gry
+1. Otwórz zakładkę **„Gry użytkowników”**.
+2. Jeśli widzisz bramkę PIN, wpisz PIN i zatwierdź.
+3. Kliknij dodanie gry.
+4. Uzupełnij dane gry i zapisz.
 
-### 12.1 Wejście przez PIN
-1. Wejdź w zakładkę, która wymaga autoryzacji (np. „Najbliższa gra”, „Czat”).
-2. Wpisz PIN gracza.
-3. Kliknij **Otwórz**.
-4. Po poprawnej weryfikacji widok zakładki zostaje odblokowany.
+### Edycja własnej gry
+1. Wybierz rok i grę z listy.
+2. Otwórz szczegóły.
+3. Zmień dane wierszy i zapisz.
 
-### 12.2 Czat gracza
-1. Po wejściu do zakładki **Czat** kliknij pole wiadomości.
-2. Wpisz treść.
-3. Kliknij **Wyślij**.
-4. Sprawdź, czy wpis pojawił się na liście.
+### Co jest liczone automatycznie
+- Podsumowanie `+/-` per wiersz,
+- część pól podsumowań i sum.
 
-### 12.3 Gry do potwierdzenia
-1. Otwórz zakładkę **Gry do potwierdzenia**.
+---
+
+## 11. Gry do potwierdzenia
+
+### Potwierdzenie wyniku
+1. Otwórz zakładkę **„Gry do potwierdzenia”**.
+2. Przejdź bramkę PIN (jeśli wymagana).
+3. Z listy wybierz pozycję oczekującą.
+4. Kliknij akcję potwierdzenia lub odrzucenia.
+5. Sprawdź status po wykonaniu akcji.
+
+**Edytowalne:** decyzja potwierdzenia/odrzucenia i ewentualny komentarz (jeśli pole jest dostępne).  
+**Nieedytowalne:** dane źródłowe gry zgłoszonej do akceptacji.
+
+---
+
+## 12. Czat użytkownika
+
+### Wysyłanie wiadomości
+1. Otwórz zakładkę czatu użytkownika.
+2. Wpisz PIN (jeśli ekran wymaga autoryzacji).
+3. W polu wiadomości wpisz treść.
+4. Kliknij wyślij.
+5. Wiadomość pojawi się na liście czatu.
+
+**Edytowalne:** pole treści wiadomości.  
+**Nieedytowalne:** historyczne wiadomości innych użytkowników.
+
+---
+
+## 13. Bramki PIN — jak działają w UI
+
+W wybranych sekcjach aplikacja pokazuje formularz PIN.
+
+1. Wpisz 5 cyfr.
+2. Kliknij przycisk zatwierdzenia.
+3. Przy poprawnym PIN sekcja zostaje odblokowana.
+4. Przy błędnym PIN zobaczysz komunikat błędu.
+
+Każda sekcja może mieć własny stan odblokowania, więc odblokowanie jednego modułu nie zawsze odblokowuje wszystkie.
+
+---
+
+## 14. Najczęstsze scenariusze „krok po kroku”
+
+### A) Chcę dodać nowy stół i pierwszych graczy
+1. Panel administratora → **Turnieje**.
+2. Kliknij **dodaj grę/stół**.
+3. Wpisz datę i nazwę.
+4. Zapisz.
+5. Otwórz szczegóły nowej gry.
+6. Dodaj kolejne wiersze graczy i uzupełnij pola finansowe.
+7. Zapisz każdy wiersz.
+
+### B) Chcę zmienić stawkę/wartości gracza w istniejącej grze
+1. Panel administratora → **Gry admina** lub **Turnieje** (zależnie od miejsca, gdzie edytujesz).
 2. Wybierz grę z listy.
-3. Kliknij akcję potwierdzenia/odrzucenia przy swoim wpisie.
-4. Zweryfikuj zmianę statusu.
+3. Otwórz szczegóły.
+4. Edytuj pole wpisowego/rebuy/wypłaty.
+5. Zapisz.
+6. Sprawdź zaktualizowane kolumny obliczane (`+/-`, sumy).
 
-### 12.4 Gry użytkowników
-1. Otwórz zakładkę **Gry użytkowników**.
-2. Wybierz rok.
-3. Sprawdź listę gier i szczegóły.
-
-### 12.5 Statystyki gracza
-1. Otwórz **Statystyki**.
-2. Wybierz rok.
-3. Odczytaj własne wyniki oraz ranking.
-
-### 12.6 Aktualności i Regulamin
-1. Wejdź do zakładek **Aktualności** i **Regulamin**.
-2. Odczytaj opublikowane treści (bez edycji).
+### C) Chcę nadać nowemu graczowi dostęp tylko do wybranych zakładek
+1. Panel administratora → **Gracze**.
+2. Dodaj lub wybierz istniejącego gracza.
+3. Ustaw PIN i aktywność aplikacji.
+4. Otwórz okno uprawnień.
+5. Zaznacz tylko wymagane zakładki.
+6. Zapisz.
 
 ---
 
-## 13. Wskazówki UX
+## 15. Wskazówki użyteczności
 
-- Jeśli po kliknięciu przycisku nie widzisz zmian, najpierw sprawdź komunikat statusu obok sekcji.
-- Przy dłuższej edycji pól tekstowych kursor powinien pozostać w aktywnym polu.
-- Gdy chcesz wymusić ponowne pobranie danych widocznej zakładki administratora, użyj przycisku **Odśwież**.
+- Po każdej ważnej akcji sprawdzaj tekst statusu obok przycisków.
+- Jeśli nie widzisz sekcji, sprawdź czy nie wymaga PIN-u albo uprawnienia.
+- W tabelach najpierw zapisuj dane wierszy, dopiero potem przechodź do kolejnych zakładek.
+- Jeżeli ranking/statystyki wyglądają nieaktualnie, użyj przycisku **„Odśwież”**.
