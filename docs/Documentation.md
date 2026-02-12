@@ -1,436 +1,354 @@
-# Karty — pełna dokumentacja techniczna (backend/logika aplikacji)
+# Karty — Dokumentacja techniczna (frontend + backend Firebase)
 
-## 1. Zakres dokumentu
+## 1. Cel aplikacji
 
-Ten dokument opisuje logikę danych i działanie kodu aplikacji z perspektywy „backendu aplikacyjnego” realizowanego po stronie JavaScript + Firebase:
-- model danych,
-- kolekcje,
-- przepływy zapisu/odczytu,
-- walidacje,
-- obliczenia,
-- synchronizację real-time,
-- mechanizmy uprawnień i PIN.
+Aplikacja organizuje rozgrywki karciane w modelu:
+- panel administracyjny,
+- widoki użytkownika,
+- zarządzanie grami, statystykami, czatem, regulaminem,
+- autoryzacja sekcji PIN-em gracza,
+- zapis i odczyt danych z Firebase (Firestore).
 
-Dodatkowo zawiera mapę plików, powiązania z warstwą UI i opis stylów/fontów potrzebny do pełnego odtworzenia projektu.
-
----
-
-## 2. Struktura projektu i odpowiedzialność plików
-
-- `Main/index.html` — deklaracja wszystkich kontenerów widoków, tabel, modalnych okien i elementów sterujących.
-- `Main/styles.css` — pełna warstwa wizualna: układ, kolory, typografia, komponenty tabel, przyciski, responsywność.
-- `Main/app.js` — cała logika aplikacji: konfiguracja, dostęp do Firestore/Auth, walidacje, CRUD, obliczenia statystyk, nawigacja zakładek.
-- `config/firebase-config.js` — konfiguracja środowiska Firebase + nazwy kolekcji konfigurowalnych.
+Kod działa jako aplikacja webowa typu SPA w oparciu o:
+- `Main/index.html` (struktura),
+- `Main/styles.css` (warstwa wizualna),
+- `Main/app.js` (logika i integracje),
+- `config/firebase-config.js` (konfiguracja Firebase).
 
 ---
 
-## 3. Architektura logiczna (warstwa danych)
+## 2. Architektura i odpowiedzialność plików
 
-Aplikacja jest oparta o Firestore i subskrypcje `onSnapshot`, czyli tryb real-time.
-Najważniejsze domeny danych:
+## 2.1 `Main/index.html`
+Zawiera wszystkie sekcje interfejsu i kontenery dynamiczne:
+- panel administratora (zakładki: aktualności, czat, regulamin, gracze, turnieje, gry admina, statystyki, gry użytkowników, gry do potwierdzenia),
+- sekcje użytkownika (najbliższa gra, czat, statystyki, gry użytkowników, regulamin),
+- modale szczegółów i formularze wpisów.
 
-1. **Użytkownicy i dostęp**
-   - dokument z listą graczy, PIN-ami i uprawnieniami zakładek.
-2. **Komunikacja**
-   - aktualności od administratora,
-   - czat graczy.
-3. **Regulamin**
-   - tekst zasad publikowany przez administratora.
-4. **Rozgrywki**
-   - gry admina,
-   - gry użytkowników,
-   - szczegóły gier (wiersze graczy),
-   - potwierdzenia gier.
-5. **Statystyki i ranking**
-   - agregacje roczne,
-   - ręczne korekty wag/wyników,
-   - rankingi.
+Kod HTML deklaruje identyfikatory wykorzystywane przez JS do:
+- nasłuchiwania zdarzeń,
+- renderowania list,
+- aktualizacji statusów,
+- sterowania bramkami PIN.
 
----
+## 2.2 `Main/styles.css`
+Definiuje:
+- siatkę layoutu (`.grid`, `.card`, `.page`),
+- system typografii i wag fontów,
+- warianty przycisków (`.primary`, `.secondary`, `.danger`),
+- stany aktywne zakładek (`.is-active`),
+- style tabel, formularzy, modalów i statusów,
+- responsywność (media queries dla mniejszych ekranów).
 
-## 4. Stałe konfiguracyjne i klucze stanu
+## 2.3 `Main/app.js`
+Główny plik logiki aplikacji:
+- inicjalizacja Firebase,
+- warstwa dostępu do Firestore,
+- renderowanie tabel/list,
+- obsługa formularzy i walidacji,
+- obliczanie statystyk, rankingów i podsumowań finansowych,
+- separacja kontekstów admin/user,
+- mechanizmy debouncingu i odświeżania.
 
-W `Main/app.js` zdefiniowano stałe sterujące zachowaniem aplikacji:
-
-### 4.1 PIN i autoryzacja sesyjna
-- `PIN_LENGTH = 5` — długość PIN.
-- Klucze `sessionStorage` dla stref:
-  - `nextGamePinVerified`,
-  - `chatPinVerified`,
-  - `confirmationsPinVerified`,
-  - `userGamesPinVerified`,
-  - `statisticsPinVerified`,
-  - oraz klucze ID zalogowanego gracza dla czatu/potwierdzeń/gier/statystyk.
-
-### 4.2 Kolekcje bazowe
-- `PLAYER_ACCESS_COLLECTION = app_settings`
-- `PLAYER_ACCESS_DOCUMENT = player_access`
-- `RULES_DOCUMENT = rules`
-- `CHAT_COLLECTION = chat_messages`
-- `TABLES_COLLECTION = Tables`
-- `GAMES_COLLECTION = Tables`
-- `USER_GAMES_COLLECTION = UserGames`
-- `GAME_DETAILS_COLLECTION = rows`
-- `GAME_CONFIRMATIONS_COLLECTION = confirmations`
-- `ADMIN_GAMES_STATS_COLLECTION = admin_games_stats`
-
-### 4.3 Konfiguracja dynamiczna nazw kolekcji
-Nazwy mogą być nadpisane w `window.firebaseConfig` przez klucze:
-- `tablesCollection`,
-- `gamesCollection`,
-- `gameDetailsCollection`,
-- `userGamesCollection`.
-
-Funkcje `getTablesCollectionName`, `getGamesCollectionName`, `getGameDetailsCollectionName`, `getUserGamesCollectionName` zawsze zwracają nazwę końcową z fallbackiem do wartości domyślnych.
-
-### 4.4 Konfiguracja kolumn
-- `TABLE_COLUMNS` — schemat pól gracza używany w podsumowaniach tabelarycznych.
-- `STATS_COLUMN_CONFIG` — definicja kolumn statystyk graczy, z oznaczeniem:
-  - czy pole jest edytowalne,
-  - czy pole jest wagą,
-  - jak wyznaczana jest wartość wyświetlana.
+## 2.4 `config/firebase-config.js`
+Przechowuje konfigurację połączenia Firebase jako globalny obiekt używany podczas `firebase.initializeApp(...)`.
 
 ---
 
-## 5. Inicjalizacja aplikacji i uruchomienie modułów
+## 3. Backend: model danych Firestore
 
-### 5.1 `bootstrap()`
-Funkcja startowa uruchamiana po załadowaniu strony:
-1. Sprawdza tryb (`admin` / `player`) przez `getAdminMode()`.
-2. Inicjuje Firebase przez `getFirebaseApp()`.
-3. Rejestruje wszystkie moduły interfejsu i danych.
+> Poniższy model odzwierciedla sposób użycia kolekcji i dokumentów przez logikę aplikacji.
 
-### 5.2 Przełączanie trybu
-- `getAdminMode()` czyta query param `?admin=1`.
-- Na tej podstawie ukrywane/pokazywane są sekcje `admin-only` i `player-only`.
+## 3.1 Ustawienia aplikacji
+- Kolekcja: `app_settings`
+- Kluczowe dokumenty:
+  - `player_access` — lista graczy, PIN-y, uprawnienia, flaga aktywacji,
+  - dokumenty konfiguracyjne regulaminu / aktualności (zgodnie z modułami panelu).
 
-### 5.3 Rejestrowanie odświeżeń zakładek
-`registerAdminRefreshHandler(tabId, handler)` buduje mapę ręcznych akcji „Odśwież” dla aktywnej karty administratora.
+## 3.2 Czat
+- Kolekcja czatu (dedykowana dla wiadomości użytkowników).
+- Rekord wiadomości zawiera m.in.:
+  - `playerId`,
+  - `playerName`,
+  - `message`,
+  - `createdAt` (timestamp).
+- Administrator ma operacje moderacyjne (odczyt + usuwanie wpisów starszych niż retencja).
+
+## 3.3 Gry administracyjne i turniejowe
+- Kolekcje gier rozdzielone kontekstowo (np. „gry admina”, „turnieje”).
+- Dokument gry zawiera m.in.:
+  - `gameType`,
+  - `gameDate` (format `YYYY-MM-DD`),
+  - `name`,
+  - `isClosed`,
+  - `createdAt`.
+- Podkolekcja `rows` dla każdej gry:
+  - `playerName`,
+  - `entryFee`,
+  - `rebuy`,
+  - `payout`,
+  - `summary` (`+/-`),
+  - `points`,
+  - `championship`.
+
+## 3.4 Gry użytkowników
+- Analogiczny model gry + `rows`, obsługiwany przez wspólny menedżer.
+- Dodatkowa warstwa statusów do procesu potwierdzania przez administratora.
+
+## 3.5 Potwierdzenia
+- Dane gier aktywnych są agregowane z odpowiednich kolekcji.
+- Lista „do potwierdzenia” bazuje na filtrze statusu i kontekście źródła.
 
 ---
 
-## 6. Integracja z Firebase
+## 4. Inicjalizacja backendu i obsługa błędów
 
-### 6.1 `getFirebaseApp()`
-- Waliduje obecność `window.firebase` i `window.firebaseConfig`.
-- Inicjuje `firebase.initializeApp(...)` tylko raz.
-- Zwraca zainicjowaną instancję.
+## 4.1 Firebase bootstrap
+`getFirebaseApp()`:
+- sprawdza obecność `window.firebase` oraz konfiguracji,
+- inicjalizuje aplikację Firebase jednokrotnie,
+- zwraca instancję używaną przez moduły aplikacji.
 
-### 6.2 Formatowanie błędów
-`formatFirestoreError(error)` mapuje błędy na czytelne komunikaty dla statusów UI, rozróżniając m.in. `permission-denied`.
+## 4.2 Firestore error mapping
+`formatFirestoreError(error)`:
+- mapuje techniczne błędy Firestore do komunikatów czytelnych w UI,
+- uwzględnia przypadki typu `permission-denied`.
 
-### 6.3 Debounce zapisów
+## 4.3 Debounce zapisów
 `scheduleDebouncedUpdate(key, callback, delay)`:
-- opóźnia częste zapisy (np. podczas pisania),
-- minimalizuje liczbę zapisów do Firestore,
-- używa mapy `debounceTimers` per klucz logiczny.
+- ogranicza liczbę zapisów przy częstej edycji,
+- utrzymuje osobne timery dla różnych kluczy logicznych,
+- poprawia wydajność i minimalizuje ryzyko konfliktów zapisu.
 
 ---
 
-## 7. Model dostępu graczy (PIN + uprawnienia)
+## 5. Kontrola dostępu: PIN i uprawnienia
 
-## 7.1 Struktura pojedynczego gracza
-W dokumencie `app_settings/player_access` każdy wpis gracza zawiera co najmniej:
+## 5.1 Model gracza
+W `player_access` każdy rekord gracza obejmuje:
 - `id`,
 - `name`,
-- `pin`,
-- `permissions` (lista zakładek),
-- `appEnabled` (flaga checkboxa „Aplikacja”).
+- `pin` (5 cyfr),
+- `permissions` (lista uprawnień do zakładek),
+- `appEnabled` (aktywność konta).
 
-### 7.2 Walidacja i generowanie PIN
-- `sanitizePin(value)` — zostawia wyłącznie cyfry i tnie do 5 znaków.
-- `isPinValid(value)` — regex `^\d{5}$`.
-- `generateRandomPin()` — losuje 5-cyfrowy PIN.
+## 5.2 Walidacja PIN
+- `sanitizePin(value)` — filtr cyfr i limit długości,
+- `isPinValid(value)` — walidacja regex 5-cyfrowego kodu,
+- `generateRandomPin()` — generator PIN dla panelu admina.
 
-### 7.3 Sprawdzanie dostępu do zakładek
-`isPlayerAllowedForTab(player, tabKey)` decyduje, czy gracz ma prawo zobaczyć zakładkę po poprawnej autoryzacji PIN.
+## 5.3 Egzekwowanie uprawnień
+`isPlayerAllowedForTab(player, tabKey)`:
+- sprawdza, czy gracz ma dostęp do konkretnej zakładki,
+- działa po poprawnej autoryzacji PIN.
 
----
+## 5.4 Niezależne bramki PIN (stan sesji)
+Aplikacja trzyma odrębne stany odblokowania dla sekcji:
+- najbliższa gra,
+- czat,
+- statystyki,
+- gry użytkowników,
+- gry do potwierdzenia.
 
-## 8. Bramy PIN w strefie gracza
-
-Aplikacja ma niezależne bramy sesyjne na różne zakładki.
-
-### 8.1 Najbliższa gra
-- `getPinGateState()` / `setPinGateState()`.
-- `initPinGate()` obsługuje formularz PIN i odblokowanie treści.
-
-### 8.2 Czat
-- `getChatPinGateState()`, `setChatPinGateState()`, `setChatVerifiedPlayerId()`, `getChatVerifiedPlayer()`.
-- `initChatTab()` uruchamia logikę wejścia i publikacji wiadomości.
-
-### 8.3 Gry do potwierdzenia
-- Analogiczny zestaw metod `get/setConfirmations...`.
-- `initUserConfirmations()` steruje listą gier oczekujących potwierdzenia.
-
-### 8.4 Gry użytkowników
-- `get/setUserGames...`.
-- `initUserGamesTab()` + menedżer współdzielony.
-
-### 8.5 Statystyki
-- `get/setStatistics...`.
-- `initStatisticsTab()` kontroluje odblokowanie i filtrowanie danych.
+Dzięki temu autoryzacja w jednej sekcji nie implikuje automatycznie dostępu do wszystkich.
 
 ---
 
-## 9. Moduły administratora
+## 6. Moduły administracyjne — logika backendowa
 
-## 9.1 `initAdminPanelTabs()`
-- Przełączanie aktywnej zakładki panelu.
-- Synchronizacja klas `is-active` na przyciskach i kontenerach.
+## 6.1 Zakładki i odświeżanie
+- `initAdminPanelTabs()` steruje aktywną zakładką i widocznością paneli.
+- `initAdminPanelRefresh()` wywołuje dedykowane odświeżenie aktywnego modułu przez mapę handlerów.
 
-### 9.2 `initAdminPanelRefresh()`
-- Obsługuje globalny przycisk „Odśwież”.
-- Wywołuje handler aktywnej zakładki z `adminRefreshHandlers`.
+## 6.2 Aktualności
+`initAdminMessaging()`:
+- pobiera i zapisuje wiadomość administracyjną,
+- publikuje aktualność do widoku użytkownika.
 
-### 9.3 `initAdminMessaging()`
-- Obsługa publikacji aktualności.
-- Zapis wiadomości admina do dedykowanej kolekcji.
+## 6.3 Czat (moderacja)
+`initAdminChat()`:
+- pobiera listę wpisów,
+- czyści wpisy starsze niż skonfigurowany okres retencji.
 
-### 9.4 `initAdminChat()`
-- Widok moderacji czatu.
-- Lista wiadomości + akcja czyszczenia wpisów starszych niż `CHAT_RETENTION_DAYS`.
+## 6.4 Regulamin
+`initAdminRules()`:
+- odczyt treści regulaminu,
+- pełny zapis treści dokumentu po edycji.
 
-### 9.5 `initAdminRules()`
-- Odczyt i zapis dokumentu regulaminu.
-- Przycisk „Zapisz” zapisuje całą treść.
+## 6.5 Gracze
+`initAdminPlayers()`:
+- CRUD rekordów graczy,
+- walidacja PIN,
+- aktywacja/dezaktywacja `appEnabled`,
+- edycja listy `permissions` przez modal.
 
-### 9.6 `initAdminPlayers()`
-- CRUD graczy.
-- Edycja: nazwa, PIN, `appEnabled`.
-- Otwieranie modala uprawnień i zapis listy `permissions`.
+## 6.6 Turnieje
+`initAdminTables()`:
+- tworzenie gier,
+- edycja metadanych gry,
+- usuwanie gry,
+- zarządzanie wierszami `rows`.
 
-### 9.7 `initAdminTables()`
-- Zarządzanie turniejami (lista gier + modal szczegółów).
-- Operacje: dodaj/edytuj/usuń tabelę, dodaj/edytuj/usuń wiersz gracza.
+## 6.7 Gry admina
+`initAdminGames()`:
+- lista lat,
+- filtrowanie gier po roku,
+- modal szczegółów,
+- edycja danych finansowych i punktowych,
+- przeliczanie podsumowań i rankingów.
 
-### 9.8 `initAdminGames()`
-- Moduł „Gry admina” z pełną logiką:
-  - lista lat,
-  - tabela gier,
-  - modal szczegółów,
-  - statystyki,
-  - ranking,
-  - edycja wag i wyników.
+## 6.8 Gry użytkowników (admin)
+`initAdminUserGames()`:
+- wykorzystuje wspólną logikę menedżera,
+- daje adminowi pełen podgląd i kontrolę zgłoszeń.
 
-### 9.9 `initAdminUserGames()`
-- Analogiczny moduł dla „Gry użytkowników”, oparty o wspólny menedżer.
-
-### 9.10 `initAdminConfirmations()`
-- Obsługa listy i statusów potwierdzeń gier zgłoszonych przez użytkowników.
+## 6.9 Gry do potwierdzenia
+`initAdminConfirmations()`:
+- pobiera gry oczekujące,
+- obsługuje zmianę statusów potwierdzenia.
 
 ---
 
-## 10. Wspólny silnik gier użytkowników
+## 7. Moduły użytkownika — logika backendowa
 
-### `initUserGamesManager({...})`
-Abstrakcja obsługująca wspólną logikę dla:
-- adminowych gier użytkowników,
-- graczowych gier użytkowników.
+## 7.1 Najbliższa gra
+- `initPinGate()` uruchamia bramkę PIN.
+- Po autoryzacji użytkownik dostaje widok danych przypisanych do sekcji.
+
+## 7.2 Czat użytkownika
+`initChatTab()`:
+- bramka PIN,
+- wysyłka wiadomości,
+- odświeżanie listy.
+
+## 7.3 Gry użytkowników
+`initUserGamesTab()`:
+- wybór roku,
+- lista gier,
+- edycja detali,
+- spójne reguły walidacji i obliczeń jak po stronie admina.
+
+## 7.4 Gry do potwierdzenia
+`initUserConfirmations()`:
+- lista pozycji wymagających interakcji,
+- zapis decyzji i aktualizacja statusu.
+
+## 7.5 Statystyki użytkownika
+`initStatisticsTab()`:
+- autoryzacja,
+- filtr roku,
+- prezentacja tabeli i rankingu.
+
+---
+
+## 8. Wspólny silnik gier użytkowników
+
+`initUserGamesManager({...})` to warstwa współdzielona przez widoki admin i user.
 
 Zapewnia:
-- ładowanie list lat,
-- filtrowanie po roku,
-- obsługę listy gier i detali,
-- obliczanie podsumowań,
-- reużycie tych samych reguł walidacji/liczeń.
+- ujednolicone ładowanie lat,
+- listowanie gier,
+- otwieranie szczegółów,
+- zapis zmian,
+- walidację danych,
+- wyliczanie podsumowań i agregatów.
+
+To ogranicza duplikację kodu i utrzymuje spójne reguły biznesowe niezależnie od roli.
 
 ---
 
-## 11. Gry: model danych i operacje
+## 9. Silnik statystyk i ranking
 
-## 11.1 Struktura dokumentu gry
-Dokument gry zawiera m.in.:
-- `gameType` (`Cashout` / `Turniej`),
-- `gameDate` (`YYYY-MM-DD`),
-- `name`,
-- `isClosed`,
-- `createdAt`.
+## 9.1 Konfiguracja kolumn
+`STATS_COLUMN_CONFIG` opisuje dla każdej kolumny:
+- typ danych,
+- czy pole jest edytowalne,
+- czy uczestniczy jako waga,
+- wartości domyślne,
+- sposób formatowania procentów i wyników.
 
-### 11.2 Struktura wiersza szczegółów
-W subkolekcji `rows`:
-- `playerName`,
-- `entryFee`,
-- `rebuy`,
-- `payout`,
-- `summary` (`+/-`),
-- `points`,
-- `championship` (bool),
-- pola pomocnicze do agregacji.
+## 9.2 Obliczenia
+`initStatisticsView({...})` liczy m.in.:
+- liczbę gier,
+- frekwencję,
+- sumy wpłat/wypłat,
+- bilans `+/-`,
+- procenty globalne,
+- procenty względem rozegranych gier,
+- wynik końcowy do rankingu.
 
-### 11.3 Dodawanie gry
-- Data domyślna: `getFormattedCurrentDate()`.
-- Nazwa domyślna: `getNextGameNameForDate()`.
-- Numer w nazwie jest liczony przez `parseDefaultTableNumber()` + `getNextTableName()`.
+## 9.3 Ranking
+Ranking jest sortowany według wyniku końcowego i wyświetlany jako tabela miejsc.
 
-### 11.4 Sortowanie
-`compareByGameDateAsc()`:
-1. sort po `gameDate`,
-2. fallback po `createdAt`,
-3. fallback po nazwie (`localeCompare` dla `pl`).
-
-### 11.5 Lata i filtr roczny
-- `extractYearFromDate()` wyciąga rok.
-- `normalizeYearList()` usuwa duplikaty i sortuje lata.
-- Wybór roku zapisywany/odczytywany przez:
-  - `loadSavedSelectedGamesYear(storageKey)`,
-  - `saveSelectedGamesYear(year, storageKey)`.
-
-### 11.6 Potwierdzenia aktywnych gier
-- `getActiveGamesForConfirmations(...)`
-- `getActiveGamesForConfirmationsFromCollections(...)`
-
-Funkcje skanują wskazane kolekcje i zwracają gry aktywne do procesu potwierdzeń.
+## 9.4 Inicjalizacja wielu widoków
+`initStatisticsViews()` uruchamia warianty statystyk dla różnych kontekstów i dba o wspólną konfigurację.
 
 ---
 
-## 12. Statystyki i ranking
+## 10. Logika gier: nazewnictwo, daty, sortowanie
 
-### 12.1 `initStatisticsView({...})`
-Silnik wyliczania statystyk dla wybranego kontekstu i roku:
-- liczba spotkań,
-- % udziału,
-- suma wpłat/wypłat,
-- suma +/-,
-- suma puli rozegranych gier,
-- procenty globalne i procenty rozegranych gier,
-- wynik końcowy.
-
-### 12.2 Kolumny i wagi
-`STATS_COLUMN_CONFIG` steruje:
-- które pola są ręcznie edytowane,
-- które są wagami,
-- jakie wartości domyślne stosować,
-- jak prezentować kolumny procentowe.
-
-### 12.3 Ranking
-Ranking jest generowany na podstawie pola wynikowego gracza i prezentowany w tabeli miejsc.
-
-### 12.4 `initStatisticsViews()`
-Uruchamia zestaw widoków statystycznych (admin + user) i dba o spójność konfiguracji.
+- `getFormattedCurrentDate()` — data domyślna nowej gry.
+- `getNextGameNameForDate()` — automatyczna propozycja nazwy przy dodawaniu.
+- `parseDefaultTableNumber()` + `getNextTableName()` — wyznaczanie kolejnego numeru stołu.
+- `compareByGameDateAsc()` — sortowanie po dacie i fallbackach (`createdAt`, nazwa).
+- `extractYearFromDate()` — pobranie roku z daty gry.
+- `normalizeYearList()` — deduplikacja i sort listy lat.
+- `loadSavedSelectedGamesYear(...)` / `saveSelectedGamesYear(...)` — pamięć wyboru roku w storage.
 
 ---
 
-## 13. Czat
+## 11. Styl, fonty i zasady interfejsu
 
-### 13.1 Model wiadomości
-W kolekcji czatu przechowywane są dokumenty m.in. z:
-- `playerId`,
-- `playerName`,
-- `message`,
-- `createdAt`.
+Aplikacja korzysta z fontów Google:
+- Cinzel,
+- Cormorant Garamond,
+- Inter,
+- Rajdhani.
 
-### 13.2 Formatowanie czasu
-`formatChatTimestamp(value)` zwraca czytelną datę i godzinę wiadomości.
+Warstwa CSS buduje:
+- hierarchię nagłówków,
+- spójne odstępy i promienie kart,
+- jednolite kolory akcji (primary/secondary/danger),
+- stany statusów i ostrzeżeń,
+- czytelne tabele danych.
 
-### 13.3 Renderowanie listy
-`renderPlayerChatMessages(documents)`:
-- sortuje i buduje listę wpisów,
-- renderuje autora, czas i treść.
-
-### 13.4 Widoczność stref
-`updateChatVisibility()` przełącza ekran PIN vs lista wiadomości zależnie od stanu bramy.
+Szczegółowe wartości styli i kolorów są rozwijane w `DetaleLayout.md`.
 
 ---
 
-## 14. Gry do potwierdzenia
+## 12. Przepływy końcowe danych (end-to-end)
 
-### 14.1 Widoczność
-`updateConfirmationsVisibility()` steruje warstwą PIN i listą potwierdzeń.
+## 12.1 Dodanie gry przez admina
+1. UI zbiera dane formularza.
+2. Warstwa JS waliduje pola.
+3. Tworzony jest dokument gry w Firestore.
+4. W razie potrzeby tworzone są dokumenty `rows`.
+5. Widok listy odświeża się i sortuje wg reguł dat.
 
-### 14.2 Logika użytkownika
-`initUserConfirmations()`:
-- pobiera gry możliwe do potwierdzenia,
-- wiąże wpis gracza z jego tożsamością z bramy PIN,
-- zapisuje decyzję użytkownika.
+## 12.2 Edycja wiersza gracza
+1. Zmiana wartości finansowych/punktowych w UI.
+2. Debounced write do Firestore.
+3. Przeliczenie pól pochodnych (`summary`, agregaty, ranking).
+4. Render aktualnego stanu w tabeli.
 
-### 14.3 Logika administratora
-`initAdminConfirmations()`:
-- prezentuje zbiorczą listę odpowiedzi,
-- umożliwia kontrolę stanu potwierdzeń.
-
----
-
-## 15. Reguły liczbowe i walidacja danych
-
-### 15.1 Funkcje walidacyjne
-- `sanitizeIntegerInput(value)` — dopuszcza liczby całkowite i opcjonalny minus na początku.
-- `parseIntegerOrZero(value)` — niepoprawne/puste mapuje do `0`.
-- `normalizeNumber(value)` i `formatNumber(value)` — normalizacja i prezentacja wartości liczbowych.
-
-### 15.2 Obliczenia podstawowe
-- `summary (+/-) = payout - (entryFee + rebuy)`.
-- `% puli` i inne wartości procentowe wyliczane są na podstawie sum rocznych i pojedynczych gier.
+## 12.3 Uwierzytelnienie PIN i praca użytkownika
+1. Użytkownik podaje PIN.
+2. System porównuje PIN z rekordem `player_access`.
+3. Weryfikowane są `appEnabled` i `permissions`.
+4. Po sukcesie sekcja zostaje odblokowana i możliwa jest dalsza interakcja.
 
 ---
 
-## 16. Stabilizacja fokusu przy renderach real-time
+## 13. Wymagania do odtworzenia aplikacji przez innego dewelopera
 
-Problem: przy `onSnapshot` i przebudowie DOM użytkownik tracił fokus.
+Aby odtworzyć system 1:1, należy zapewnić:
+- identyczną strukturę DOM i identyfikatory z `index.html`,
+- te same klasy i semantykę styli z `styles.css`,
+- pełny zestaw funkcji inicjalizujących i helperów z `app.js`,
+- zgodny model kolekcji/dokumentów Firestore,
+- mapowanie błędów i komunikatów statusu,
+- obsługę bramek PIN per sekcja,
+- reguły obliczeń statystycznych i rankingowych,
+- wspólny menedżer gier użytkowników.
 
-Rozwiązanie:
-- `isFocusableFormControl(element)` — rozpoznawanie kontrolek,
-- `supportsSelectionRange(element)` — bezpieczne odtwarzanie kursora,
-- `getFocusedAdminInputState(container)` — zapis „odcisku” aktywnego pola,
-- `restoreFocusedAdminInputState(container, focusState)` — odtworzenie fokusu po renderze.
-
-Mechanizm działa w tabelach i modalach, gdzie elementy są odtwarzane dynamicznie.
-
----
-
-## 17. Daty i operacje pomocnicze
-
-- `getDateSortValue(value)` — zamienia string daty na wartość sortowalną.
-- `addDays(dateValue, days)` — przesuwanie daty o N dni.
-- `toFirestoreDate(value)` — normalizacja daty do typu akceptowalnego przy zapisie.
-
----
-
-## 18. Instrukcja i komunikaty statyczne
-
-`initInstructionModal()` obsługuje modal instrukcji administratora.
-
-`initLatestMessage()` i `initRulesDisplay()` odpowiadają za odczyt treści tylko do odczytu w strefie gracza.
-
----
-
-## 19. Warstwa wizualna potrzebna do odtworzenia projektu
-
-Mimo że logika jest backendowa, do wiernego odtworzenia aplikacji należy uwzględnić:
-
-### 19.1 Fonty
-- `Cinzel`
-- `Cormorant Garamond`
-- `Inter`
-- `Rajdhani`
-
-### 19.2 Styl i układ
-- motyw ciemny (noir),
-- kontrastowe akcenty złoto/zielone,
-- układ kart i paneli,
-- tabele z poziomym przewijaniem,
-- modale z zamknięciem ikoną `X`,
-- klasy aktywności zakładek (`is-active`),
-- stany przycisków (`primary`, `secondary`, `danger`).
-
----
-
-## 20. Jak odtworzyć aplikację 1:1 na podstawie dokumentacji
-
-1. Zbudować strukturę HTML sekcji admin i gracz z identycznymi identyfikatorami elementów.
-2. Odtworzyć style `styles.css` wraz z fontami i responsywnością.
-3. Zaimportować Firebase (App + Firestore + opcjonalnie Auth, jeśli środowisko tego wymaga).
-4. Skonfigurować `window.firebaseConfig` wraz z nazwami kolekcji.
-5. Wdrożyć wszystkie moduły inicjalizacyjne z `app.js` i uruchamiać je z `bootstrap()`.
-6. Włączyć `onSnapshot` dla list i detali oraz dopiąć logikę statusów.
-7. Zastosować debounce zapisów i mechanizm utrzymania fokusu.
-8. Odtworzyć algorytmy:
-   - nazewnictwo „Gra X”,
-   - filtrowanie po roku,
-   - liczenie statystyk,
-   - ranking,
-   - walidacje PIN i liczb,
-   - proces potwierdzeń.
-9. Przetestować scenariusze admin + gracz dla wszystkich zakładek.
-
-Dokument w tej postaci umożliwia odtworzenie całej logiki aplikacji bez odwołań do zewnętrznej wiedzy.
+Bez tych elementów aplikacja nie zachowa pełnej zgodności funkcjonalnej z bieżącą implementacją.
