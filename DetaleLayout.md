@@ -299,3 +299,18 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 - Wiersz jest renderowany **nad** `Pula: ...`, zgodnie z kolejnością informacji biznesowych.
 - Użyty styl pozostaje spójny z pozostałymi liniami metadanych: klasa `.status-text` (bez nowych kolorów i bez zmiany fontów).
 - Zmiana dotyczy dwóch widoków: panel administratora (`Gry admina`) oraz panel administratora dla gier użytkowników (`Gry użytkowników`).
+
+## 20) Aktualizacja 2026-02-12 — „Gry admina” / „Gry użytkowników”
+
+### 20.1 „Gry admina” → „Statystyki” → kolumna „Punkty”
+- Wiersze kolumny „Punkty” są teraz prezentowane jako tekst (komórka tabeli), a nie pole `input`.
+- Nie dodano nowych klas CSS ani nowych tokenów kolorów.
+- Użyto istniejącego wyglądu komórek tabel `.admin-games-players-stats-table`.
+
+### 20.2 „Podsumowanie gry” (Gry admina + Gry użytkowników)
+- Brak zmian wizualnych w stylach scrolla.
+- Zmiana dotyczy logiki renderowania: po odświeżeniu zachowywana jest pozycja pozioma paska `.admin-table-scroll`.
+
+### 20.3 „Szczegóły gry” w „Gry użytkowników”
+- Brak zmian w palecie kolorów, fontach i spacingu.
+- Dodano tylko metadane `data-*` dla kontroli fokusu (zmiana techniczna, bez wpływu na wygląd komponentów).
