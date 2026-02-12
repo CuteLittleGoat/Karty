@@ -195,12 +195,14 @@ Dzięki temu autoryzacja w jednej sekcji nie implikuje automatycznie dostępu do
 - filtrowanie gier po roku,
 - modal szczegółów,
 - edycja danych finansowych i punktowych,
-- przeliczanie podsumowań i rankingów.
+- przeliczanie podsumowań i rankingów,
+- render sekcji „Podsumowanie gry” zawiera metadane gry w kolejności: ostrzeżenie o rozbieżnościach (jeśli wystąpi), **Rodzaj gry**, **Pula**, następnie tabela graczy.
 
 ## 6.8 Gry użytkowników (admin)
 `initAdminUserGames()`:
 - wykorzystuje wspólną logikę menedżera,
-- daje adminowi pełen podgląd i kontrolę zgłoszeń.
+- daje adminowi pełen podgląd i kontrolę zgłoszeń,
+- renderuje w „Podsumowanie gry” ten sam układ metadanych co „Gry admina” (Rodzaj gry nad Pulą).
 
 ## 6.9 Gry do potwierdzenia
 `initAdminConfirmations()`:

@@ -1297,6 +1297,10 @@ const initUserGamesManager = ({
       poolInfo.className = "status-text";
       poolInfo.textContent = `Pula: ${metrics.pool}`;
 
+      const gameTypeInfo = document.createElement("p");
+      gameTypeInfo.className = "status-text";
+      gameTypeInfo.textContent = `Rodzaj gry: ${game.gameType || "-"}`;
+
       const tableScroll = document.createElement("div");
       tableScroll.className = "admin-table-scroll";
       const table = document.createElement("table");
@@ -1345,9 +1349,9 @@ const initUserGamesManager = ({
       tableScroll.appendChild(table);
 
       if (metrics.hasPayoutMismatch) {
-        wrapper.append(title, mismatchWarning, poolInfo, tableScroll);
+        wrapper.append(title, mismatchWarning, gameTypeInfo, poolInfo, tableScroll);
       } else {
-        wrapper.append(title, poolInfo, tableScroll);
+        wrapper.append(title, gameTypeInfo, poolInfo, tableScroll);
       }
       summariesContainer.appendChild(wrapper);
     });
@@ -3937,6 +3941,10 @@ const initAdminGames = () => {
       poolInfo.className = "status-text";
       poolInfo.textContent = `Pula: ${metrics.pool}`;
 
+      const gameTypeInfo = document.createElement("p");
+      gameTypeInfo.className = "status-text";
+      gameTypeInfo.textContent = `Rodzaj gry: ${game.gameType || "-"}`;
+
       const tableScroll = document.createElement("div");
       tableScroll.className = "admin-table-scroll";
       const table = document.createElement("table");
@@ -3985,9 +3993,9 @@ const initAdminGames = () => {
       tableScroll.appendChild(table);
 
       if (metrics.hasPayoutMismatch) {
-        wrapper.append(title, mismatchWarning, poolInfo, tableScroll);
+        wrapper.append(title, mismatchWarning, gameTypeInfo, poolInfo, tableScroll);
       } else {
-        wrapper.append(title, poolInfo, tableScroll);
+        wrapper.append(title, gameTypeInfo, poolInfo, tableScroll);
       }
       summariesContainer.appendChild(wrapper);
     });
