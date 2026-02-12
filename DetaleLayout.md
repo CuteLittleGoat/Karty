@@ -236,3 +236,28 @@
 - Ta sama wysokość jest użyta w panelu rankingu:
   - `.admin-games-ranking-table th, .admin-games-ranking-table td { height: var(--admin-games-panel-item-height); }`.
 - Dzięki temu pojedynczy przycisk roku i pojedynczy wiersz rankingu mają jednakową wysokość wizualną.
+
+## 17) Ostrzeżenie wizualne w „Podsumowanie gry” (Gry admina + Gry użytkowników)
+
+### 17.1 Położenie komunikatu
+W sekcji `.admin-game-summary` komunikat błędu sum jest renderowany:
+1. bezpośrednio pod nagłówkiem `h3` („Podsumowanie gry ...”),
+2. nad wierszem tekstowym „Pula: ...”.
+
+### 17.2 Styl komunikatu
+Komunikat używa klas:
+- bazowej: `.status-text`,
+- rozszerzającej: `.status-text-danger`.
+
+Definicja `.status-text-danger`:
+- `color: var(--danger);`
+- `font-weight: 600;`
+
+Źródło koloru:
+- token `--danger` (paleta czerwieni aplikacji, zgodna z przyciskami `.danger`).
+
+### 17.3 Spójność między zakładkami
+Ten sam styl i kolejność elementów obowiązuje w:
+- `#adminGamesSummaries` (Gry admina),
+- `#adminUserGamesSummaries` (Gry użytkowników — widok admina),
+- `#userGamesSummaries` (Gry użytkowników — widok gracza).

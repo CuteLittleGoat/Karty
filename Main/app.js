@@ -1018,6 +1018,7 @@ const initUserGamesManager = ({
   yearsListSelector,
   addGameButtonSelector,
   gamesTableBodySelector,
+  summariesContainerSelector,
   statusSelector,
   modalSelector,
   modalMetaSelector,
@@ -1031,6 +1032,7 @@ const initUserGamesManager = ({
   const yearsList = document.querySelector(yearsListSelector);
   const addGameButton = document.querySelector(addGameButtonSelector);
   const gamesTableBody = document.querySelector(gamesTableBodySelector);
+  const summariesContainer = document.querySelector(summariesContainerSelector);
   const status = document.querySelector(statusSelector);
   const modal = document.querySelector(modalSelector);
   const modalMeta = document.querySelector(modalMetaSelector);
@@ -1038,7 +1040,7 @@ const initUserGamesManager = ({
   const modalClose = document.querySelector(modalCloseSelector);
   const modalAddRowButton = document.querySelector(modalAddRowButtonSelector);
 
-  if (!yearsList || !gamesTableBody || !status || !addGameButton || !modal || !modalMeta || !modalBody || !modalAddRowButton) {
+  if (!yearsList || !gamesTableBody || !summariesContainer || !status || !addGameButton || !modal || !modalMeta || !modalBody || !modalAddRowButton) {
     return;
   }
 
@@ -1085,6 +1087,45 @@ const initUserGamesManager = ({
     synchronizeYearsFromGames();
   };
 
+  const getDetailRows = (gameId) => {
+    const rows = state.detailsByGame.get(gameId) ?? [];
+    return rows.map((row) => {
+      const entryFee = parseIntegerOrZero(row.entryFee);
+      const rebuy = parseIntegerOrZero(row.rebuy);
+      const payout = parseIntegerOrZero(row.payout);
+      return {
+        ...row,
+        entryFee,
+        rebuy,
+        payout,
+        profit: payout - (entryFee + rebuy),
+        points: parseIntegerOrZero(row.points),
+        championship: Boolean(row.championship)
+      };
+    });
+  };
+
+  const getGameSummaryMetrics = (gameId) => {
+    const rows = getDetailRows(gameId);
+    const pool = rows.reduce((sum, row) => sum + row.entryFee + row.rebuy, 0);
+    const payoutSum = rows.reduce((sum, row) => sum + row.payout, 0);
+    const sortedRows = [...rows].sort((a, b) => {
+      const percentA = pool === 0 ? 0 : Math.round((a.payout / pool) * 100);
+      const percentB = pool === 0 ? 0 : Math.round((b.payout / pool) * 100);
+      return percentB - percentA;
+    });
+
+    return {
+      pool,
+      payoutSum,
+      hasPayoutMismatch: payoutSum !== pool,
+      rows: sortedRows.map((row) => ({
+        ...row,
+        poolSharePercent: pool === 0 ? 0 : Math.round((row.payout / pool) * 100)
+      }))
+    };
+  };
+
   const renderYears = () => {
     yearsList.innerHTML = "";
     if (!state.years.length) {
@@ -1105,8 +1146,85 @@ const initUserGamesManager = ({
         saveSelectedGamesYear(state.selectedYear, selectedYearStorageKey);
         renderYears();
         renderGamesTable();
+        renderSummaries();
       });
       yearsList.appendChild(yearButton);
+    });
+  };
+
+  const renderSummaries = () => {
+    summariesContainer.innerHTML = "";
+    const games = getGamesForSelectedYear();
+
+    games.forEach((game) => {
+      const wrapper = document.createElement("section");
+      wrapper.className = "admin-games-section admin-game-summary";
+
+      const title = document.createElement("h3");
+      title.textContent = `Podsumowanie gry ${game.name || "Bez nazwy"}`;
+
+      const metrics = getGameSummaryMetrics(game.id);
+      const mismatchWarning = document.createElement("p");
+      mismatchWarning.className = "status-text status-text-danger";
+      mismatchWarning.textContent = "Nie zgadza się suma wypłat oraz wpisowych i rebuy/add-on";
+
+      const poolInfo = document.createElement("p");
+      poolInfo.className = "status-text";
+      poolInfo.textContent = `Pula: ${metrics.pool}`;
+
+      const tableScroll = document.createElement("div");
+      tableScroll.className = "admin-table-scroll";
+      const table = document.createElement("table");
+      table.className = "admin-data-table";
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Gracz</th>
+            <th>Wpisowe</th>
+            <th>Rebuy/Add-on</th>
+            <th>Wypłata</th>
+            <th>+/-</th>
+            <th>% puli</th>
+            <th>Punkty</th>
+            <th>Mistrzostwo</th>
+          </tr>
+        </thead>
+      `;
+      const tbody = document.createElement("tbody");
+
+      if (!metrics.rows.length) {
+        const emptyRow = document.createElement("tr");
+        const emptyCell = document.createElement("td");
+        emptyCell.colSpan = 8;
+        emptyCell.textContent = "Brak danych do podsumowania.";
+        emptyRow.appendChild(emptyCell);
+        tbody.appendChild(emptyRow);
+      } else {
+        metrics.rows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.playerName || ""}</td>
+            <td>${row.entryFee}</td>
+            <td>${row.rebuy}</td>
+            <td>${row.payout}</td>
+            <td>${row.profit}</td>
+            <td>${row.poolSharePercent}</td>
+            <td>${row.points}</td>
+            <td>${row.championship ? "✓" : ""}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      table.appendChild(tbody);
+      tableScroll.appendChild(table);
+
+      if (metrics.hasPayoutMismatch) {
+        wrapper.append(title, mismatchWarning, poolInfo, tableScroll);
+      } else {
+        wrapper.append(title, poolInfo, tableScroll);
+      }
+      summariesContainer.appendChild(wrapper);
     });
   };
 
@@ -1352,6 +1470,7 @@ const initUserGamesManager = ({
     saveSelectedGamesYear(state.selectedYear, selectedYearStorageKey);
     renderYears();
     renderGamesTable();
+    renderSummaries();
   };
 
   db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
@@ -1383,6 +1502,7 @@ const initUserGamesManager = ({
         if (state.activeGameIdInModal === game.id) {
           renderModal(game.id);
         }
+        renderSummaries();
       });
       state.detailsUnsubscribers.set(game.id, unsubscribe);
     });
@@ -1449,6 +1569,7 @@ const initAdminUserGames = () => {
     yearsListSelector: "#adminUserGamesYearsList",
     addGameButtonSelector: "#adminUserGamesAddGame",
     gamesTableBodySelector: "#adminUserGamesTableBody",
+    summariesContainerSelector: "#adminUserGamesSummaries",
     statusSelector: "#adminUserGamesStatus",
     modalSelector: "#userGameDetailsModal",
     modalMetaSelector: "#userGameDetailsMeta",
@@ -1469,6 +1590,7 @@ const initPlayerUserGames = () => {
     yearsListSelector: "#userGamesYearsList",
     addGameButtonSelector: "#userGamesAddGame",
     gamesTableBodySelector: "#userGamesTableBody",
+    summariesContainerSelector: "#userGamesSummaries",
     statusSelector: "#userGamesStatus",
     modalSelector: "#playerUserGameDetailsModal",
     modalMetaSelector: "#playerUserGameDetailsMeta",
@@ -2813,6 +2935,7 @@ const initAdminGames = () => {
   const getGameSummaryMetrics = (gameId) => {
     const rows = getDetailRows(gameId);
     const pool = rows.reduce((sum, row) => sum + row.entryFee + row.rebuy, 0);
+    const payoutSum = rows.reduce((sum, row) => sum + row.payout, 0);
     const sortedRows = [...rows].sort((a, b) => {
       const percentA = pool === 0 ? 0 : Math.round((a.payout / pool) * 100);
       const percentB = pool === 0 ? 0 : Math.round((b.payout / pool) * 100);
@@ -2821,6 +2944,8 @@ const initAdminGames = () => {
 
     return {
       pool,
+      payoutSum,
+      hasPayoutMismatch: payoutSum !== pool,
       rows: sortedRows.map((row) => ({
         ...row,
         poolSharePercent: pool === 0 ? 0 : Math.round((row.payout / pool) * 100)
@@ -3121,6 +3246,10 @@ const initAdminGames = () => {
       title.textContent = `Podsumowanie gry ${game.name || "Bez nazwy"}`;
 
       const metrics = getGameSummaryMetrics(game.id);
+      const mismatchWarning = document.createElement("p");
+      mismatchWarning.className = "status-text status-text-danger";
+      mismatchWarning.textContent = "Nie zgadza się suma wypłat oraz wpisowych i rebuy/add-on";
+
       const poolInfo = document.createElement("p");
       poolInfo.className = "status-text";
       poolInfo.textContent = `Pula: ${metrics.pool}`;
@@ -3171,7 +3300,12 @@ const initAdminGames = () => {
 
       table.appendChild(tbody);
       tableScroll.appendChild(table);
-      wrapper.append(title, poolInfo, tableScroll);
+
+      if (metrics.hasPayoutMismatch) {
+        wrapper.append(title, mismatchWarning, poolInfo, tableScroll);
+      } else {
+        wrapper.append(title, poolInfo, tableScroll);
+      }
       summariesContainer.appendChild(wrapper);
     });
   };

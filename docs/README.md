@@ -632,3 +632,40 @@ Jak z niego korzystać krok po kroku:
 6. Jeśli zmieniasz styl elementu (rozmiary, kolory, font, spacing), zaktualizuj również `DetaleLayout.md`.
 
 Dzięki temu podejściu możesz modyfikować wygląd bez ręcznego szukania wszystkich kolumn po całym kodzie.
+
+## 18. Ostrzeżenie o niespójnej sumie w „Podsumowanie gry” (Gry admina + Gry użytkowników)
+Nowe zachowanie zostało dodane w sekcji **Podsumowanie gry**.
+
+### Kiedy pojawia się ostrzeżenie?
+Ostrzeżenie pojawia się, gdy:
+- suma kolumny **Wypłata**
+**NIE** jest równa
+- sumie kolumn **Wpisowe + Rebuy/Add-on**.
+
+Reguła weryfikacji:
+- `Suma [Wypłata] = Suma([Wpisowe] + [Rebuy/Add-on])`.
+
+Jeżeli reguła nie jest spełniona, pod tytułem **Podsumowanie gry ...** pojawia się czerwony komunikat:
+- **„Nie zgadza się suma wypłat oraz wpisowych i rebuy/add-on”**
+
+Komunikat jest widoczny:
+- pod napisem **Podsumowanie gry ...**,
+- nad linią **Pula: ...**.
+
+### Jak ręcznie sprawdzić (krok po kroku)
+1. Wejdź do zakładki:
+   - **Panel administratora → Gry admina** albo
+   - **Panel administratora → Gry użytkowników** albo
+   - **Strefa gracza → Gry użytkowników**.
+2. Kliknij rok po lewej stronie, aby wyświetlić gry z danego roku.
+3. W tabeli kliknij przycisk **Szczegóły** przy wybranej grze.
+4. W modalu wpisz dane tak, aby celowo zrobić rozjazd sum, np.:
+   - Gracz A: `Wpisowe 100`, `Rebuy/Add-on 0`, `Wypłata 50`
+   - Gracz B: `Wpisowe 100`, `Rebuy/Add-on 0`, `Wypłata 80`
+   Wtedy:
+   - suma wpłat = `200`
+   - suma wypłat = `130`
+5. Zamknij modal.
+6. W sekcji **Podsumowanie gry ...** zobaczysz czerwone ostrzeżenie nad **Pula**.
+7. Otwórz ponownie **Szczegóły** i popraw wypłaty tak, aby suma wypłat była równa sumie wpłat (w przykładzie łącznie `200`).
+8. Po wyrównaniu wartości ostrzeżenie zniknie automatycznie.

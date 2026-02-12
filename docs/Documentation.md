@@ -851,3 +851,57 @@ Cel pliku:
 - umożliwienie szybkiej modyfikacji wyglądu kolumn bez ręcznego przeszukiwania całego kodu,
 - zapewnienie jednego miejsca referencyjnego do zmian szerokości/wysokości/wyrównań,
 - ułatwienie odtworzenia warstwy UI przez innego dewelopera wyłącznie na podstawie dokumentacji.
+
+## 25. Walidacja sum w sekcji „Podsumowanie gry” (Gry admina + Gry użytkowników)
+
+### 25.1 Zakres zmian
+Zmiana objęła trzy obszary interfejsu:
+1. **Gry admina** (`initAdminGames` → `renderSummaries`).
+2. **Gry użytkowników (widok admina)** (`initUserGamesManager` uruchamiany przez `initAdminUserGames`).
+3. **Gry użytkowników (widok gracza)** (`initUserGamesManager` uruchamiany przez `initPlayerUserGames`).
+
+Dla każdego podsumowania gry dodano regułę:
+- `Suma payout === Suma(entryFee + rebuy)`.
+
+### 25.2 Logika danych i obliczenia
+W metrykach podsumowania każdej gry liczone są teraz:
+- `pool` → suma `entryFee + rebuy` ze wszystkich wierszy,
+- `payoutSum` → suma `payout` ze wszystkich wierszy,
+- `hasPayoutMismatch` → flaga bool (`payoutSum !== pool`).
+
+Dane wejściowe do obliczeń są normalizowane przez `parseIntegerOrZero`, więc:
+- puste wartości i niekompletne wpisy nie przerywają obliczeń,
+- wartości liczbowe są porównywane jako liczby całkowite.
+
+### 25.3 Rendering ostrzeżenia
+W `renderSummaries` (admin i user-games manager) dodano element:
+- `p.status-text.status-text-danger` z tekstem:
+  - `Nie zgadza się suma wypłat oraz wpisowych i rebuy/add-on`.
+
+Element jest dołączany warunkowo wyłącznie gdy `hasPayoutMismatch === true`.
+Kolejność renderowania została ustawiona tak, aby spełnić wymaganie UX:
+1. tytuł `Podsumowanie gry ...`,
+2. czerwony komunikat (tylko przy błędzie sum),
+3. `Pula: ...`,
+4. tabela podsumowania.
+
+### 25.4 Rozszerzenie „Gry użytkowników” o sekcję podsumowań
+Aby zachować „ten sam sposób” działania jak w „Gry admina”, widoki gier użytkowników otrzymały kontenery podsumowań:
+- `#adminUserGamesSummaries` (panel admina),
+- `#userGamesSummaries` (panel gracza).
+
+`initUserGamesManager` przyjmuje nowy parametr:
+- `summariesContainerSelector`.
+
+Manager renderuje podsumowania analogiczne do „Gry admina”, w tym:
+- tabelę podsumowania,
+- `Pula`,
+- ostrzeżenie czerwonym fontem przy niespójności sum.
+
+### 25.5 Styl ostrzeżenia
+W `Main/styles.css` dodano klasę:
+- `.status-text-danger`:
+  - kolor: `var(--danger)`,
+  - grubość: `font-weight: 600`.
+
+Klasa rozszerza bazową typografię `.status-text` i jest używana wyłącznie do komunikatu o niespójności sum w podsumowaniach gier.
