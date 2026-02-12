@@ -268,6 +268,26 @@ h1 {
   background: rgba(0, 0, 0, 0.2);
 }
 
+
+.admin-weight-bulk-button {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-weight-bulk-button:hover,
+.admin-weight-bulk-button:focus-visible {
+  color: #f3cc63;
+  text-decoration: underline;
+}
+
 .admin-input {
   width: 100%;
   padding: 10px 12px;

@@ -905,3 +905,48 @@ W `Main/styles.css` dodano klasę:
   - grubość: `font-weight: 600`.
 
 Klasa rozszerza bazową typografię `.status-text` i jest używana wyłącznie do komunikatu o niespójności sum w podsumowaniach gier.
+
+## 26. „Gry admina” — przebudowa obsługi kolumn Waga1..Waga7 w sekcji „Statystyki”
+
+### 26.1 Zmiana struktury HTML nagłówków
+W tabeli `admin-games-players-stats-table` nagłówki `Waga1..Waga7` zostały zamienione z tekstu statycznego `<th>WagaX</th>` na przyciski:
+- `<button type="button" class="admin-weight-bulk-button" data-weight-key="weightX">WagaX</button>`.
+
+Dzięki temu każdy nagłówek stał się elementem interaktywnym wywołującym masową aktualizację wartości w danej kolumnie.
+
+### 26.2 Domyślne wartości wag
+W `initAdminGames()` dodano rozdzielenie pól ręcznych:
+- `manualStatsFields` (pełna lista pól ręcznych),
+- `weightStatsFields` (wyłącznie `weight1..weight7`).
+
+Dodana funkcja `getDefaultManualFieldValue(field, value)`:
+- dla pól z `weightStatsFields` zwraca domyślnie `"1"`, gdy brak wartości,
+- dla pozostałych pól (`points`, `result`) utrzymuje pusty string, jeśli brak danych.
+
+Zasada ta jest użyta w kilku miejscach:
+1. render inputów w tabeli (`createEditableCell`) — brak danych => waga pokazuje `1`;
+2. inicjalizacja nowego wpisu gracza (`ensureYearMapEntry`) — nowe rekordy dostają domyślne `1` dla wszystkich wag;
+3. odczyt snapshotu Firestore (`admin_games_stats`) — brak wag w dokumencie jest normalizowany do `1`;
+4. serializacja do Firestore (`serializeManualStats`) — zapisywane są ujednolicone wartości domyślne.
+
+### 26.3 Masowe ustawianie wartości kolumny
+Dodano obsługę kliknięć wszystkich przycisków `.admin-weight-bulk-button`:
+1. pobranie klucza z `data-weight-key`,
+2. otwarcie popupu `window.prompt(...)`,
+3. walidacja wejścia przez `sanitizeIntegerInput`,
+4. wywołanie `applyBulkWeightValue(weightKey, normalizedValue)`.
+
+Funkcja `applyBulkWeightValue`:
+- działa tylko dla wybranego roku (`state.selectedYear`),
+- pobiera aktywną listę graczy z `getPlayersStatistics()`,
+- dla każdego gracza zapewnia wpis przez `ensureYearMapEntry(...)`,
+- wpisuje nową wartość do wybranego pola `weightX`,
+- odświeża widok (`renderStatsTable()`),
+- zapisuje zmiany do Firestore (`persistManualStats(...)`).
+
+Mechanizm jest wielokrotnego użytku: każde kolejne kliknięcie i zatwierdzenie popupu nadpisuje kolumnę nową wartością.
+
+### 26.4 Wpływ na dane i kompatybilność
+- Zmiana jest kompatybilna wstecz z istniejącymi dokumentami `admin_games_stats/{rok}`.
+- Brak historycznych pól wag nie powoduje pustych inputów — UI i zapis wymuszają domyślną wartość `1`.
+- Pola `points` i `result` zachowują dotychczasowe zachowanie (brak domyślnego `1`).

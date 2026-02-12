@@ -669,3 +669,39 @@ Komunikat jest widoczny:
 6. W sekcji **Podsumowanie gry ...** zobaczysz czerwone ostrzeżenie nad **Pula**.
 7. Otwórz ponownie **Szczegóły** i popraw wypłaty tak, aby suma wypłat była równa sumie wpłat (w przykładzie łącznie `200`).
 8. Po wyrównaniu wartości ostrzeżenie zniknie automatycznie.
+
+## 19. „Gry admina” → „Statystyki” — masowe ustawianie wartości kolumn Waga1..Waga7
+W sekcji tabeli statystyk graczy kolumny **Waga1–Waga7** działają teraz w dwóch trybach jednocześnie:
+- dalej możesz ręcznie edytować pojedynczą komórkę w konkretnym wierszu,
+- dodatkowo możesz masowo ustawić całą kolumnę klikając nagłówek.
+
+### 19.1 Co zobaczysz po wejściu do sekcji
+1. Otwórz panel admina (`?admin=1`).
+2. Kliknij zakładkę **Gry admina**.
+3. Wybierz rok z lewej kolumny **Lata**.
+4. Przewiń do sekcji **Statystyki** i do szerokiej tabeli graczy.
+5. W kolumnach **Waga1..Waga7**:
+   - nagłówek jest przyciskiem (można go kliknąć),
+   - każda komórka ma domyślnie wpisaną wartość `1`.
+
+### 19.2 Jak ustawić jedną wartość dla całej kolumny (krok po kroku)
+Przykład dla **Waga3** (analogicznie działa Waga1, Waga2, ..., Waga7):
+1. Kliknij nagłówek **Waga3**.
+2. Pojawi się okienko (popup) z polem wpisania liczby.
+3. Wpisz np. `5` i zatwierdź.
+4. Efekt:
+   - wszystkie wiersze w kolumnie **Waga3** dostaną wartość `5`,
+   - poprzednie wartości w tej kolumnie zostaną nadpisane,
+   - zmiana zapisze się automatycznie.
+
+### 19.3 Kolejne zmiany tej samej kolumny
+1. Ponownie kliknij ten sam nagłówek (np. **Waga3**).
+2. Wpisz nową liczbę, np. `8`.
+3. Po zatwierdzeniu tabela od razu podmieni wartości w całej kolumnie na `8`.
+
+Zasada działania: **zawsze obowiązuje ostatnia wpisana wartość**.
+
+### 19.4 Ważne uwagi użytkowe
+- Jeżeli klikniesz **Anuluj** w popupie, tabela nie zmieni wartości.
+- Jeżeli wpiszesz wartość nienumeryczną, aplikacja pokaże komunikat o błędnej wartości i nie nadpisze kolumny.
+- Masowe ustawienie działa dla aktualnie wybranego roku.
