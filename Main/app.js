@@ -1076,6 +1076,15 @@ const initUserGamesManager = ({
     return state.games.filter((game) => extractYearFromDate(game.gameDate) === state.selectedYear).sort(compareByGameDateAsc);
   };
 
+  const syncYearsAfterLocalGameUpdate = (gameId, nextValues) => {
+    const targetGame = state.games.find((game) => game.id === gameId);
+    if (!targetGame) {
+      return;
+    }
+    Object.assign(targetGame, nextValues);
+    synchronizeYearsFromGames();
+  };
+
   const renderYears = () => {
     yearsList.innerHTML = "";
     if (!state.years.length) {
@@ -1159,6 +1168,7 @@ const initUserGamesManager = ({
           const otherGames = state.games.filter((entry) => entry.id !== game.id);
           updatePayload.name = getNextGameNameForDate(otherGames, nextDate);
         }
+        syncYearsAfterLocalGameUpdate(game.id, updatePayload);
         void db.collection(gamesCollectionName).doc(game.id).update(updatePayload);
       });
       dateCell.appendChild(dateInput);
@@ -2767,6 +2777,15 @@ const initAdminGames = () => {
       .sort(compareByGameDateAsc);
   };
 
+  const syncYearsAfterLocalGameUpdate = (gameId, nextValues) => {
+    const targetGame = state.games.find((game) => game.id === gameId);
+    if (!targetGame) {
+      return;
+    }
+    Object.assign(targetGame, nextValues);
+    synchronizeYearsFromGames();
+  };
+
   const getDetailRows = (gameId) => {
     const rows = state.detailsByGame.get(gameId) ?? [];
     return rows.map((row) => {
@@ -3022,6 +3041,7 @@ const initAdminGames = () => {
           const otherGames = state.games.filter((entry) => entry.id !== game.id);
           updatePayload.name = getNextGameNameForDate(otherGames, nextDate);
         }
+        syncYearsAfterLocalGameUpdate(game.id, updatePayload);
         void db.collection(gamesCollectionName).doc(game.id).update(updatePayload);
       });
       dateCell.appendChild(dateInput);

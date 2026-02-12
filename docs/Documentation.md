@@ -783,3 +783,39 @@ service cloud.firestore {
 - Treść regulaminu zapisuje się **wyłącznie** po kliknięciu `Zapisz`.
 - Pisanie w polu nie wywołuje już automatycznych zapisów, więc edycja jest stabilniejsza.
 - Końcowe spacje i układ tekstu wpisany przez administratora nie są automatycznie przycinane przez `trim()`.
+
+## 24) Poprawa synchronizacji panelu „Lata” + ujednolicenie wysokości przycisków lat
+
+### 24.1 Problem funkcjonalny
+W scenariuszu edycji `gameDate` (np. z `2026` na `2027`) użytkownik mógł chwilowo nie widzieć nowego przycisku roku w panelu **Lata** do czasu pełnej synchronizacji snapshotu z Firestore.
+
+### 24.2 Zmiany JavaScript (`Main/app.js`)
+Wprowadzono tę samą poprawkę w dwóch modułach:
+1. `initAdminGames()` (zakładka **Gry admina**),
+2. `initUserGamesManager()` (wspólna logika dla **Gry użytkowników** admina i gracza).
+
+Dodano lokalny helper:
+- `syncYearsAfterLocalGameUpdate(gameId, nextValues)`:
+  - wyszukuje rekord gry w `state.games`,
+  - aktualizuje go lokalnie przez `Object.assign(...)`,
+  - natychmiast wywołuje `synchronizeYearsFromGames()`.
+
+Helper jest uruchamiany w `dateInput.addEventListener("change", ...)` tuż przed zapisem do Firestore (`doc(...).update(updatePayload)`), dzięki czemu:
+- nowy rok pojawia się od razu na liście,
+- tabela i status przełączają się spójnie z nowymi danymi,
+- docelowy snapshot nadal pozostaje źródłem prawdy i potwierdza stan.
+
+### 24.3 Zmiany CSS (`Main/styles.css`)
+Aby spełnić wymaganie stałej wysokości i startu od góry:
+1. Dodano zmienną globalną:
+   - `--admin-games-panel-item-height: 41px`.
+2. Dla panelu bocznego lat ustawiono:
+   - `.admin-games-sidebar { align-content: start; }`.
+3. Dla listy lat ustawiono:
+   - `.admin-games-years-list { align-content: start; grid-auto-rows: var(--admin-games-panel-item-height); }`.
+4. Dla przycisku roku ustawiono:
+   - `.admin-games-year-button { height: 100%; }`.
+5. Dla tabeli rankingu ustawiono tę samą wysokość wierszy:
+   - `.admin-games-ranking-table th, .admin-games-ranking-table td { height: var(--admin-games-panel-item-height); }`.
+
+Efekt: przyciski lat w **Gry admina** i **Gry użytkowników** mają równą wysokość oraz są wizualnie zsynchronizowane z wysokością pojedynczego pola/wiersza w panelu **Ranking**.

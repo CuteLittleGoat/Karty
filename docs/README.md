@@ -582,3 +582,30 @@ Obok sekcji treści „Gry admina” jest nowy panel **Ranking** (analogicznie d
    - miejsca **1–8**: kolor złoty,
    - miejsca **9–17**: kolor zielony,
    - miejsca **18+**: kolor czerwony.
+
+## 17. Panel „Lata” — kontrola poprawności i nowy wygląd przycisków
+
+### 17.1 Szybki test: czy rok pojawia się natychmiast po zmianie daty gry (Gry admina)
+1. Wejdź do panelu administratora (`?admin=1`) i otwórz kartę **Gry admina**.
+2. W lewym panelu **Lata** kliknij rok, który aktualnie ma gry (np. `2026`).
+3. W tabeli po prawej kliknij pole **Data** w wybranym wierszu gry.
+4. Ustaw datę na rok, którego jeszcze nie ma na liście (np. `2027-01-15`).
+5. Nie odświeżaj strony — obserwuj lewy panel **Lata**.
+6. Oczekiwany efekt:
+   - zmieniona gra znika z listy roku `2026` (bo należy już do `2027`),
+   - przycisk roku `2027` pojawia się od razu w panelu **Lata**,
+   - po kliknięciu `2027` zobaczysz przeniesioną grę.
+
+### 17.2 Taki sam test dla karty „Gry użytkowników”
+1. W panelu administratora otwórz kartę **Gry użytkowników**.
+2. Kliknij rok po lewej i zmień datę jednej gry na rok, którego nie ma jeszcze na liście.
+3. Oczekiwany efekt identyczny jak w „Gry admina”:
+   - natychmiastowe pojawienie się nowego roku po lewej,
+   - możliwość kliknięcia nowego roku i zobaczenia przeniesionej gry.
+
+### 17.3 Zmiana wyglądu panelu „Lata” (Gry admina + Gry użytkowników)
+W obu zakładkach przyciski lat zostały wyrównane wizualnie do panelu **Ranking**:
+- lista lat startuje od samej góry panelu,
+- każdy przycisk ma stałą, powtarzalną wysokość,
+- wysokość przycisku roku jest taka sama jak wysokość pojedynczego wiersza panelu **Ranking**,
+- aktywny rok nadal ma złote podświetlenie (`is-active`).

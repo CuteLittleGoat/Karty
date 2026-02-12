@@ -40,6 +40,7 @@
   --font-subtitle: "Cormorant Garamond", "Georgia", serif;
   --font-panel: "Rajdhani", "Segoe UI", "Noto Sans", sans-serif;
   --font-text: "Inter", "Segoe UI", "Noto Sans", Arial, sans-serif;
+  --admin-games-panel-item-height: 41px;
 }
 
 * {
@@ -485,6 +486,10 @@ h1 {
   background: rgba(0, 0, 0, 0.32);
 }
 
+.admin-games-sidebar {
+  align-content: start;
+}
+
 .admin-games-sidebar-header {
   padding: 0;
   border: none;
@@ -498,10 +503,13 @@ h1 {
 .admin-games-years-list {
   display: grid;
   gap: 8px;
+  align-content: start;
+  grid-auto-rows: var(--admin-games-panel-item-height);
 }
 
 .admin-games-year-button {
   width: 100%;
+  height: 100%;
   justify-content: flex-start;
 }
 
@@ -527,6 +535,11 @@ h1 {
 
 .admin-games-ranking-table {
   min-width: 100%;
+}
+
+.admin-games-ranking-table th,
+.admin-games-ranking-table td {
+  height: var(--admin-games-panel-item-height);
 }
 
 .admin-games-ranking-sidebar {
