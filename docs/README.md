@@ -357,3 +357,39 @@ Kolumna **Wyniki** liczy się automatycznie według wzoru:
 1. W zakładce **Gry admina** spójrz na sekcję **Ranking** po prawej stronie.
 2. Ranking sortuje się automatycznie po kolumnie **Wyniki** z sekcji **Statystyki**.
 3. Po zmianie danych gry albo wag, kolejność rankingu aktualizuje się automatycznie od najwyższego wyniku do najniższego.
+
+## 18. Aktualizacja 2026-02-12 — synchronizacja „Wyniki” między „Gry admina” i „Statystyki”
+
+### 18.1 Gry admina → Statystyki → natychmiastowe odświeżanie kolumny „Wynik”
+1. Wejdź do **Panel administratora**.
+2. Otwórz zakładkę **Gry admina**.
+3. Wybierz rok z listy lat po lewej stronie.
+4. W sekcji **Statystyki** znajdź wiersz wybranego gracza.
+5. Zmień dowolną wagę, np. **Waga7**.
+6. Bez przełączania zakładki sprawdź ostatnią kolumnę **Wynik**.
+
+Efekt po aktualizacji UI:
+- kolumna **Wynik** odświeża się od razu po wpisaniu wartości,
+- ranking po prawej stronie odświeża się równocześnie,
+- przycisk **Odśwież** w panelu administratora przebudowuje także tabelę statystyk i ranking w zakładce **Gry admina**.
+
+### 18.2 Zakładka „Statystyki” → kolumna „Wynik” tylko do odczytu
+1. Otwórz zakładkę **Statystyki** (widok administracyjny).
+2. Wybierz rok.
+3. Znajdź kolumnę **Wynik**.
+4. Spróbuj kliknąć komórkę i wpisać ręcznie liczbę.
+
+Efekt po aktualizacji UI:
+- kolumna **Wynik** nie jest polem do wpisywania,
+- wartość jest liczona automatycznie na podstawie tych samych wag i danych co w **Gry admina → Statystyki**.
+
+### 18.3 Spójność obu tabel „Statystyki”
+Po zmianie wag w jednym miejscu:
+1. Zmień np. **Waga1/Waga7** w **Gry admina → Statystyki**.
+2. Przejdź do zakładki **Statystyki** dla tego samego roku.
+3. Porównaj kolumny gracza, zwłaszcza **Punkty** i **Wynik**.
+
+Efekt po aktualizacji UI:
+- obie tabele używają tych samych danych wejściowych i tego samego wzoru,
+- **Punkty** są prezentowane jako wartość wyliczona z gier (nie ręczne pole),
+- **Wynik** w obu tabelach ma tę samą wartość.
