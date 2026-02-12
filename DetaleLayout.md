@@ -220,3 +220,19 @@
   - `.admin-games-ranking-row-green` — miejsca 9–17,
   - `.admin-games-ranking-row-red` — miejsca 18+.
 - Kolory są półtransparentne i utrzymują ciemny motyw aplikacji (noir + akcenty gold/green/red).
+
+## 16) Panel „Lata” (Gry admina + Gry użytkowników) — aktualizacja layoutu
+
+### 16.1 Wyrównanie do górnej krawędzi
+- `.admin-games-sidebar` ma `align-content: start`, więc lista lat zawsze zaczyna się od góry panelu.
+- Dotyczy wszystkich widoków używających `admin-games-layout` (w tym `#adminGamesTab`, `#adminUserGamesTab` i część gracza `#userGamesTab`).
+
+### 16.2 Stała wysokość przycisków lat
+- Wprowadzono wspólną zmienną: `--admin-games-panel-item-height: 41px`.
+- `.admin-games-years-list` używa `grid-auto-rows: var(--admin-games-panel-item-height)`.
+- `.admin-games-year-button` ma `height: 100%`, więc każdy przycisk dokładnie wypełnia swój stały wiersz.
+
+### 16.3 Spójność z panelem „Ranking”
+- Ta sama wysokość jest użyta w panelu rankingu:
+  - `.admin-games-ranking-table th, .admin-games-ranking-table td { height: var(--admin-games-panel-item-height); }`.
+- Dzięki temu pojedynczy przycisk roku i pojedynczy wiersz rankingu mają jednakową wysokość wizualną.
