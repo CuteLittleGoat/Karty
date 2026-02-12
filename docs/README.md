@@ -428,3 +428,37 @@ mogą teraz zostać całkowicie wyczyszczone. Pole może pozostać puste — apl
 3. Oba pola startują jako puste, dzięki czemu możesz:
    - wpisać wartość od razu,
    - albo zostawić pole puste i uzupełnić je później.
+
+## 20. Aktualizacja 2026-02-12 — obecność gracza w „Podsumowanie gry” i statystykach
+
+### 20.1 Kiedy gracz jest liczony jako obecny
+W sekcjach:
+- **Gry admina → Podsumowanie gry**,
+- **Gry użytkowników → Podsumowanie gry**,
+- **Statystyki** powiązane z tymi grami,
+
+gracz jest teraz liczony jako obecny **tylko wtedy**, gdy w oknie **Szczegóły gry** ma w kolumnie **Wpisowe** wartość większą od `0`.
+
+Jeżeli pole **Wpisowe** jest:
+- puste,
+- równe `0`,
+
+taki wiersz jest traktowany jak **nieobecny** (nie jest uwzględniany w podsumowaniach i statystykach).
+
+### 20.2 Jak sprawdzić krok po kroku
+1. Wejdź do zakładki **Gry admina** albo **Gry użytkowników**.
+2. Otwórz wybraną grę przyciskiem **Szczegóły**.
+3. Dodaj gracza przyciskiem **Dodaj wiersz** (jeśli nie ma go jeszcze na liście).
+4. W kolumnie **Wpisowe** zostaw puste pole albo wpisz `0`.
+5. Zamknij okno szczegółów.
+6. Przejdź do sekcji **Podsumowanie gry**:
+   - ten gracz nie będzie widoczny w tabeli podsumowania,
+   - jego dane nie zwiększą wartości używanych w statystykach.
+7. Ponownie otwórz **Szczegóły** tej samej gry.
+8. Wpisz w kolumnie **Wpisowe** wartość dodatnią (np. `50`).
+9. Po odświeżeniu widoku gracz pojawi się w **Podsumowaniu gry** i zostanie uwzględniony w statystykach.
+
+### 20.3 Co to oznacza w praktyce
+- Dodanie samego wiersza gracza bez uzupełnienia **Wpisowego** nie wpływa już na rankingi i podsumowania.
+- Wpisowe `0` działa jak brak obecności.
+- Dopiero wpisowe większe od `0` oznacza realny udział gracza w danej grze.

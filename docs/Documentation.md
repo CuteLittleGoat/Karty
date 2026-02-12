@@ -572,3 +572,47 @@ Skutek:
 ### 17.4 Kompatybilność danych historycznych
 - Istniejące rekordy z wartością `"0"` działają bez zmian.
 - Rekordy z pustym stringiem są poprawnie renderowane jako puste pola i poprawnie liczone w agregacjach liczbowych.
+
+## 18. Zmiana logiki obecności gracza (Wpisowe > 0) w podsumowaniach i statystykach
+
+### Zakres
+Zmiana została wdrożona w `Main/app.js` w dwóch miejscach:
+- `initUserGamesManager(...)` (podsumowanie i statystyki dla „Gry użytkowników”),
+- `initAdminGames()` (podsumowanie i statystyki dla „Gry admina”).
+
+### 18.1 Reguła obecności
+Wspólna reguła biznesowa:
+- gracz jest traktowany jako obecny tylko wtedy, gdy `entryFee` (Wpisowe) po normalizacji jest liczbą **większą od 0**,
+- `entryFee` puste (`""`) lub `0` oznacza brak obecności w grze.
+
+Implementacja:
+- funkcja `hasCompletedEntryFee(row)` została zaostrzona;
+- poza sprawdzeniem, czy wartość istnieje, dodano warunek `parseIntegerOrZero(normalized) > 0`.
+
+### 18.2 Podsumowanie gry (tabela „Podsumowanie gry”)
+W obu modułach renderujących podsumowanie:
+- `getGameSummaryMetrics(gameId)` filtruje teraz wiersze do agregacji po regule obecności (`Wpisowe > 0`),
+- do tabeli podsumowania nie trafiają wiersze graczy z pustym lub zerowym wpisowym,
+- `pool`, `payoutSum`, `hasPayoutMismatch` i `% puli` liczone są wyłącznie na podstawie obecnych graczy.
+
+### 18.3 Statystyki graczy
+#### a) `initAdminGames()`
+- `getPlayersStatistics()` już korzystało z `hasCompletedEntryFee(row)` przy zliczaniu graczy;
+- po zmianie reguły funkcji, wpisowe `0` oraz puste nie są wliczane do:
+  - `meetingsCount`,
+  - `depositsSum`,
+  - `plusMinusSum`, `payoutSum`, `pointsSum`,
+  - `playedGamesPoolSum`.
+- `totalPool` pozostaje spójny, ponieważ jest liczony przez `getGameSummaryMetrics(game.id).pool`, które także filtruje nieobecnych.
+
+#### b) `initUserGamesManager(...)`
+- analogicznie zaostrzono `hasCompletedEntryFee(row)` do `Wpisowe > 0`,
+- dodatkowo `totalPool` i `gamePool` są liczone tylko po wierszach spełniających regułę obecności,
+- dzięki temu procenty (`percentAllGames`, `percentPlayedGames`) i agregaty depozytów nie uwzględniają graczy z pustym/zerowym wpisowym.
+
+### 18.4 Konsekwencje backendowe (Firestore)
+- Schemat dokumentów **nie zmienia się**:
+  - szczegóły gry nadal używają pól stringowych (`entryFee`, `rebuy`, `payout`, `points`, ...),
+  - dozwolone pozostaje `entryFee: ""`.
+- Zmiana dotyczy warstwy obliczeniowej po stronie frontendu (filtr obecności podczas agregacji).
+- Dane historyczne są kompatybilne; jedyna zmiana to interpretacja rekordów z `entryFee = "0"` lub `""` jako nieobecnych przy podsumowaniu/statystykach.
