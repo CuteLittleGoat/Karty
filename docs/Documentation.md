@@ -819,3 +819,35 @@ Aby spełnić wymaganie stałej wysokości i startu od góry:
    - `.admin-games-ranking-table th, .admin-games-ranking-table td { height: var(--admin-games-panel-item-height); }`.
 
 Efekt: przyciski lat w **Gry admina** i **Gry użytkowników** mają równą wysokość oraz są wizualnie zsynchronizowane z wysokością pojedynczego pola/wiersza w panelu **Ranking**.
+
+## 11. Specyfikacja kolumn i modali: `Kolumny.md`
+W katalogu głównym dodano plik `Kolumny.md`, który pełni rolę centralnej specyfikacji layoutu tabel i okien modalnych.
+
+Zakres pliku:
+- wszystkie statyczne tabele z `Main/index.html`,
+- tabele renderowane dynamicznie w `Main/app.js` (np. potwierdzenia i podsumowania gier),
+- wszystkie modale (`instructionModal`, `playerPermissionsModal`, `gameDetailsModal`, `userGameDetailsModal`, `playerUserGameDetailsModal`),
+- globalne reguły formatowania z `Main/styles.css` wpływające na kolumny (`.admin-data-table`, `.players-table`, `.summary-table`, `.confirmations-table`, `.admin-games-players-stats-table`, `.admin-games-ranking-table`).
+
+Model opisu zastosowany w `Kolumny.md`:
+- nazwa sekcji (panel/zakładka),
+- tabela kolumn:
+  - nazwa kolumny,
+  - min-height,
+  - min-width,
+  - max-height,
+  - max-width,
+  - wyrównanie,
+  - łamanie linii,
+- oddzielna specyfikacja parametrów modalnych (szerokości, wysokości, overflow, white-space).
+
+Założenia mapowania CSS -> dokumentacja:
+1. Jeżeli kolumna nie ma własnej klasy szerokości, dziedziczy reguły globalne `.admin-data-table`.
+2. Jeżeli istnieje dedykowana klasa (`.players-app-cell`, `.admin-games-players-stats-table`, `.confirmations-table`), jej wartości są nadrzędne i wpisane jawnie.
+3. Dla modali bazą jest `.modal-card`, a wariant małej karty to `.modal-card-sm`.
+4. Gdy CSS nie definiuje wartości `min/max`, w dokumentacji widnieje `brak`.
+
+Cel pliku:
+- umożliwienie szybkiej modyfikacji wyglądu kolumn bez ręcznego przeszukiwania całego kodu,
+- zapewnienie jednego miejsca referencyjnego do zmian szerokości/wysokości/wyrównań,
+- ułatwienie odtworzenia warstwy UI przez innego dewelopera wyłącznie na podstawie dokumentacji.
