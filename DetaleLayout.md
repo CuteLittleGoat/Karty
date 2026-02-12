@@ -293,3 +293,9 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
   - kontener `.stats-column-header` (flex, odstęp `8px`, wyrównanie pionowe do środka),
   - checkbox `.stats-column-visibility-checkbox` (`16x16 px`).
 - Zachowano dotychczasowe style tabel `.admin-games-players-stats-table` oraz poziomy scroll w `.admin-table-scroll` dla szerokich zestawów kolumn.
+
+## 19) „Gry admina” i „Gry użytkowników” — metadane w „Podsumowanie gry”
+- W sekcji `.admin-game-summary` dodano dodatkowy wiersz tekstowy `Rodzaj gry: ...`.
+- Wiersz jest renderowany **nad** `Pula: ...`, zgodnie z kolejnością informacji biznesowych.
+- Użyty styl pozostaje spójny z pozostałymi liniami metadanych: klasa `.status-text` (bez nowych kolorów i bez zmiany fontów).
+- Zmiana dotyczy dwóch widoków: panel administratora (`Gry admina`) oraz panel administratora dla gier użytkowników (`Gry użytkowników`).

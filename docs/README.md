@@ -190,6 +190,13 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 - Podsumowanie `+/-` per wiersz,
 - część pól podsumowań i sum.
 
+### Podsumowanie gry — jak odczytać
+1. W zakładce **„Gry admina”** lub **„Gry użytkowników”** wybierz rok z lewego panelu.
+2. Kliknij grę, którą chcesz przeanalizować.
+3. W sekcji **„Podsumowanie gry …”** odczytaj najpierw wiersz **„Rodzaj gry”** (np. `Cashout` albo `Turniej`).
+4. Tuż pod nim odczytaj wiersz **„Pula”**.
+5. Niżej sprawdź tabelę graczy i wartości finansowe.
+
 ---
 
 ## 11. Gry do potwierdzenia

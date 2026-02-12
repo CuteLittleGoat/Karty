@@ -241,3 +241,16 @@ Parametry sekcji:
 - Dla tabel krytyczne są trzy minima: **700px (Gracze)**, **760px (Potwierdzenia)**, **2300px (Statystyki graczy w Gry admina)**.
 - Wszystkie szczegółowe modale korzystają z tego samego wzorca: szeroka karta (`880px`) + ograniczenie wysokości (`82vh/720px`) + lokalny scroll treści.
 - Jeżeli chcesz precyzyjnie sterować szerokościami pojedynczych kolumn, najbezpieczniej dodać dedykowane klasy `th/td` dla danej tabeli (obecnie większość kolumn dziedziczy reguły globalne i szerokości wynikają z zawartości).
+
+## Podsumowanie gry (Gry admina + Gry użytkowników)
+
+### Blok metadanych nad tabelą graczy
+
+| Wiersz | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
+| --- | --- | --- | --- | --- | --- | --- |
+| Rodzaj gry | brak | brak | brak | brak | lewo | standard |
+| Pula | brak | brak | brak | brak | lewo | standard |
+
+Uwagi:
+- Wiersz **Rodzaj gry** jest renderowany bezpośrednio nad wierszem **Pula** w sekcji „Podsumowanie gry”.
+- Wartości są prezentowane jako tekst (`.status-text`) i nie wprowadzają zmian szerokości kolumn tabel danych.
