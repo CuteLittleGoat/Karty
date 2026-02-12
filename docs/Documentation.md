@@ -950,3 +950,47 @@ Mechanizm jest wielokrotnego użytku: każde kolejne kliknięcie i zatwierdzenie
 - Zmiana jest kompatybilna wstecz z istniejącymi dokumentami `admin_games_stats/{rok}`.
 - Brak historycznych pól wag nie powoduje pustych inputów — UI i zapis wymuszają domyślną wartość `1`.
 - Pola `points` i `result` zachowują dotychczasowe zachowanie (brak domyślnego `1`).
+
+## 27. Stabilizacja fokusu w tabeli „Gry użytkowników” (kolumna „Nazwa” + pola wiersza)
+
+### 27.1 Kontekst błędu
+W module `initUserGamesManager` render tabeli gier użytkowników wykonywał sekwencję:
+1. odczyt aktualnie aktywnego pola przez `getFocusedAdminInputState(gamesTableBody)`,
+2. przebudowanie `tbody`,
+3. próba przywrócenia fokusu przez `restoreFocusedAdminInputState(gamesTableBody, focusState)`.
+
+Problem występował, ponieważ pole `Nazwa` (oraz pozostałe pola wiersza) nie miało kompletu atrybutów `data-*` wymaganych przez mechanizm odtwarzania fokusu (`data-focus-target`, `data-section`, `data-table-id`, `data-column-key`). W efekcie po debounced zapisie i odświeżeniu z Firestore pole traciło fokus.
+
+### 27.2 Zaimplementowana zmiana
+W `renderGamesTable` dla zakładki „Gry użytkowników” dodano metadane fokusu do kontrolek:
+- `select` kolumny `Rodzaj Gry`:
+  - `data-focus-target="game-list"`
+  - `data-section="games-table"`
+  - `data-table-id=game.id`
+  - `data-column-key="gameType"`
+- `input[type="date"]` kolumny `Data`:
+  - `data-focus-target="game-list"`
+  - `data-section="games-table"`
+  - `data-table-id=game.id`
+  - `data-column-key="gameDate"`
+- `input[type="text"]` kolumny `Nazwa`:
+  - `data-focus-target="game-list"`
+  - `data-section="games-table"`
+  - `data-table-id=game.id`
+  - `data-column-key="name"`
+
+Mapowanie kluczy jest zgodne 1:1 z implementacją działającą wcześniej w `initAdminGames` (tabela „Gry admina”).
+
+### 27.3 Efekt działania
+Po zmianie:
+- przy wpisywaniu tekstu do kolumny `Nazwa` debounced update nadal zapisuje dane do Firestore,
+- po otrzymaniu snapshotu i re-renderze tabeli fokus zostaje przywrócony do właściwego pola,
+- zachowuje się również pozycja kursora (`selectionStart`, `selectionEnd`) dla pól tekstowych,
+- analogiczna odporność na utratę fokusu dotyczy też kolumn `Rodzaj Gry` i `Data`.
+
+### 27.4 Zakres techniczny
+Zmiana jest behawioralna (obsługa fokusu) i nie modyfikuje:
+- struktur kolekcji Firestore,
+- zasad walidacji,
+- stylów CSS, kolorów, fontów, layoutu.
+
