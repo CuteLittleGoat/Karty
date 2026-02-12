@@ -6,6 +6,8 @@ const CONFIRMATIONS_PIN_STORAGE_KEY = "confirmationsPinVerified";
 const CONFIRMATIONS_PLAYER_ID_STORAGE_KEY = "confirmationsPlayerId";
 const USER_GAMES_PIN_STORAGE_KEY = "userGamesPinVerified";
 const USER_GAMES_PLAYER_ID_STORAGE_KEY = "userGamesPlayerId";
+const STATISTICS_PIN_STORAGE_KEY = "statisticsPinVerified";
+const STATISTICS_PLAYER_ID_STORAGE_KEY = "statisticsPlayerId";
 const PLAYER_ACCESS_COLLECTION = "app_settings";
 const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
@@ -26,6 +28,10 @@ const AVAILABLE_PLAYER_TABS = [
   {
     key: "userGamesTab",
     label: "Gry użytkowników"
+  },
+  {
+    key: "statsTab",
+    label: "Statystyki"
   }
 ];
 
@@ -60,6 +66,28 @@ const TABLE_COLUMNS = [
   { key: "rebuyTotal", label: "suma rebuy" }
 ];
 
+const STATS_COLUMN_CONFIG = [
+  { key: "playerName", label: "Gracz", editable: false, weight: false, value: (row) => row.playerName },
+  { key: "championshipCount", label: "Mistrzostwo", editable: false, weight: false, value: (row) => row.championshipCount },
+  { key: "weight1", label: "Waga1", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight1", manual?.weight1) },
+  { key: "meetingsCount", label: "Ilość Spotkań", editable: false, weight: false, value: (row) => row.meetingsCount },
+  { key: "participationPercent", label: "% udział", editable: false, weight: false, value: (row) => `${row.participationPercent}%` },
+  { key: "weight2", label: "Waga2", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight2", manual?.weight2) },
+  { key: "points", label: "Punkty", editable: true, weight: false, value: (row, manual) => manual?.points ?? "" },
+  { key: "weight3", label: "Waga3", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight3", manual?.weight3) },
+  { key: "plusMinusSum", label: "(+/-)", editable: false, weight: false, value: (row) => row.plusMinusSum },
+  { key: "weight4", label: "Waga4", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight4", manual?.weight4) },
+  { key: "payoutSum", label: "Wypłata", editable: false, weight: false, value: (row) => row.payoutSum },
+  { key: "weight5", label: "Waga5", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight5", manual?.weight5) },
+  { key: "depositsSum", label: "Wpłaty", editable: false, weight: false, value: (row) => row.depositsSum },
+  { key: "weight6", label: "Waga6", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight6", manual?.weight6) },
+  { key: "playedGamesPoolSum", label: "Suma z rozegranych gier", editable: false, weight: false, value: (row) => row.playedGamesPoolSum },
+  { key: "percentAllGames", label: "% Wszystkich gier", editable: false, weight: false, value: (row) => `${row.percentAllGames}%` },
+  { key: "weight7", label: "Waga7", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight7", manual?.weight7) },
+  { key: "percentPlayedGames", label: "% Rozegranych gier", editable: false, weight: false, value: (row) => `${row.percentPlayedGames}%` },
+  { key: "result", label: "Wynik", editable: true, weight: false, value: (row, manual) => manual?.result ?? "" }
+];
+
 const adminTablesState = {
   tables: new Map(),
   rows: new Map(),
@@ -80,6 +108,8 @@ const adminRefreshHandlers = new Map();
 const ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY = "adminGamesSelectedYear";
 const ADMIN_USER_GAMES_SELECTED_YEAR_STORAGE_KEY = "adminUserGamesSelectedYear";
 const USER_GAMES_SELECTED_YEAR_STORAGE_KEY = "userGamesSelectedYear";
+const ADMIN_STATISTICS_SELECTED_YEAR_STORAGE_KEY = "adminStatisticsSelectedYear";
+const USER_STATISTICS_SELECTED_YEAR_STORAGE_KEY = "userStatisticsSelectedYear";
 
 const getDateSortValue = (value) => {
   if (typeof value !== "string") {
@@ -469,6 +499,28 @@ const setUserGamesVerifiedPlayerId = (playerId) => {
 
 const getUserGamesVerifiedPlayer = () => {
   const playerId = sessionStorage.getItem(USER_GAMES_PLAYER_ID_STORAGE_KEY);
+  if (!playerId) {
+    return null;
+  }
+  return adminPlayersState.players.find((player) => player.id === playerId) ?? null;
+};
+
+const getStatisticsPinGateState = () => sessionStorage.getItem(STATISTICS_PIN_STORAGE_KEY) === "1";
+
+const setStatisticsPinGateState = (isVerified) => {
+  sessionStorage.setItem(STATISTICS_PIN_STORAGE_KEY, isVerified ? "1" : "0");
+};
+
+const setStatisticsVerifiedPlayerId = (playerId) => {
+  if (playerId) {
+    sessionStorage.setItem(STATISTICS_PLAYER_ID_STORAGE_KEY, playerId);
+    return;
+  }
+  sessionStorage.removeItem(STATISTICS_PLAYER_ID_STORAGE_KEY);
+};
+
+const getStatisticsVerifiedPlayer = () => {
+  const playerId = sessionStorage.getItem(STATISTICS_PLAYER_ID_STORAGE_KEY);
   if (!playerId) {
     return null;
   }
@@ -1010,6 +1062,79 @@ const initUserGamesTab = () => {
       setUserGamesPinGateState(false);
       setUserGamesVerifiedPlayerId("");
       updateUserGamesVisibility();
+    }
+  }
+};
+
+const updateStatisticsVisibility = () => {
+  const gate = document.querySelector("#statisticsPinGate");
+  const content = document.querySelector("#statisticsContent");
+  if (!gate || !content) {
+    return;
+  }
+
+  if (getAdminMode()) {
+    gate.style.display = "none";
+    content.classList.add("is-visible");
+    return;
+  }
+
+  const isVerified = getStatisticsPinGateState();
+  gate.style.display = isVerified ? "none" : "block";
+  content.classList.toggle("is-visible", isVerified);
+};
+
+const initStatisticsTab = () => {
+  const input = document.querySelector("#statisticsPinInput");
+  const submitButton = document.querySelector("#statisticsPinSubmit");
+  const pinStatus = document.querySelector("#statisticsPinStatus");
+
+  if (!input || !submitButton || !pinStatus) {
+    return;
+  }
+
+  const verifyPin = () => {
+    const pinValue = sanitizePin(input.value);
+    if (!isPinValid(pinValue)) {
+      pinStatus.textContent = "Wpisz komplet 5 cyfr.";
+      return;
+    }
+
+    const player = adminPlayersState.playerByPin.get(pinValue);
+    if (player && isPlayerAllowedForTab(player, "statsTab")) {
+      setStatisticsPinGateState(true);
+      setStatisticsVerifiedPlayerId(player.id);
+      pinStatus.textContent = `PIN poprawny. Witaj ${player.name || "graczu"}.`;
+      updateStatisticsVisibility();
+      return;
+    }
+
+    pinStatus.textContent = "Błędny PIN lub brak uprawnień do zakładki „Statystyki”.";
+  };
+
+  input.addEventListener("input", () => {
+    input.value = sanitizePin(input.value);
+  });
+
+  submitButton.addEventListener("click", verifyPin);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      verifyPin();
+    }
+  });
+
+  updateStatisticsVisibility();
+
+  if (getAdminMode()) {
+    return;
+  }
+
+  if (getStatisticsPinGateState()) {
+    const verifiedPlayer = getStatisticsVerifiedPlayer();
+    if (!verifiedPlayer || !isPlayerAllowedForTab(verifiedPlayer, "statsTab")) {
+      setStatisticsPinGateState(false);
+      setStatisticsVerifiedPlayerId("");
+      updateStatisticsVisibility();
     }
   }
 };
@@ -1862,6 +1987,20 @@ const initUserTabs = () => {
         userGamesPinStatus.textContent = "";
       }
       updateUserGamesVisibility();
+    }
+
+    if (target === "statsTab" && !getAdminMode()) {
+      setStatisticsPinGateState(false);
+      setStatisticsVerifiedPlayerId("");
+      const statisticsPinInput = document.querySelector("#statisticsPinInput");
+      const statisticsPinStatus = document.querySelector("#statisticsPinStatus");
+      if (statisticsPinInput) {
+        statisticsPinInput.value = "";
+      }
+      if (statisticsPinStatus) {
+        statisticsPinStatus.textContent = "";
+      }
+      updateStatisticsVisibility();
     }
 
     if (targetButton) {
@@ -2847,6 +2986,490 @@ const initAdminTables = () => {
     } finally {
       addButton.disabled = false;
     }
+  });
+};
+
+const initStatisticsView = ({
+  yearsListSelector,
+  statsBodySelector,
+  playersStatsBodySelector,
+  statusSelector,
+  exportButtonSelector,
+  selectedYearStorageKey,
+  isAdminView,
+  yearButtonsClassName,
+  weightButtonsSelector
+}) => {
+  const yearsList = document.querySelector(yearsListSelector);
+  const statsBody = document.querySelector(statsBodySelector);
+  const playersStatsBody = document.querySelector(playersStatsBodySelector);
+  const status = document.querySelector(statusSelector);
+  const exportButton = document.querySelector(exportButtonSelector);
+  const firebaseApp = getFirebaseApp();
+
+  if (!yearsList || !statsBody || !playersStatsBody || !status || !exportButton) {
+    return;
+  }
+
+  if (!firebaseApp) {
+    status.textContent = "Uzupełnij konfigurację Firebase, aby wyświetlać statystyki.";
+    exportButton.disabled = true;
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+  const gamesCollectionName = getGamesCollectionName();
+  const gameDetailsCollectionName = getGameDetailsCollectionName();
+  const manualStatsFields = ["weight1", "weight2", "points", "weight3", "weight4", "weight5", "weight6", "weight7", "result"];
+  const weightStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
+  const state = {
+    years: [],
+    selectedYear: loadSavedSelectedGamesYear(selectedYearStorageKey),
+    games: [],
+    detailsByGame: new Map(),
+    detailUnsubscribers: new Map(),
+    manualStatsByYear: new Map(),
+    visibleColumnsByYear: new Map()
+  };
+
+  const getDefaultManualFieldValue = (field, value) => {
+    if (weightStatsFields.includes(field)) {
+      const normalized = typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
+      return normalized ? normalized : "1";
+    }
+    return typeof value === "string" || typeof value === "number" ? String(value) : "";
+  };
+
+  const getVisibleColumnsForYear = (year) => {
+    const yearKey = String(year ?? "");
+    const stored = state.visibleColumnsByYear.get(yearKey);
+    if (!Array.isArray(stored) || !stored.length) {
+      return STATS_COLUMN_CONFIG.map((column) => column.key);
+    }
+    const available = new Set(STATS_COLUMN_CONFIG.map((column) => column.key));
+    return stored.filter((key) => available.has(key));
+  };
+
+  const persistYearConfig = (year) => {
+    if (!Number.isInteger(year)) {
+      return Promise.resolve();
+    }
+
+    const yearKey = String(year);
+    const rows = Array.from((state.manualStatsByYear.get(yearKey) ?? new Map()).values());
+    const serializedRows = rows
+      .map((entry) => ({
+        playerName: entry.playerName,
+        weight1: getDefaultManualFieldValue("weight1", entry.weight1),
+        weight2: getDefaultManualFieldValue("weight2", entry.weight2),
+        points: entry.points ?? "",
+        weight3: getDefaultManualFieldValue("weight3", entry.weight3),
+        weight4: getDefaultManualFieldValue("weight4", entry.weight4),
+        weight5: getDefaultManualFieldValue("weight5", entry.weight5),
+        weight6: getDefaultManualFieldValue("weight6", entry.weight6),
+        weight7: getDefaultManualFieldValue("weight7", entry.weight7),
+        result: entry.result ?? ""
+      }))
+      .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"));
+
+    return db.collection(ADMIN_GAMES_STATS_COLLECTION).doc(yearKey).set({
+      rows: serializedRows,
+      visibleColumns: getVisibleColumnsForYear(year)
+    }, { merge: true });
+  };
+
+  const getGamesForSelectedYear = () => {
+    if (!state.selectedYear) {
+      return [];
+    }
+
+    return state.games
+      .filter((game) => extractYearFromDate(game.gameDate) === state.selectedYear)
+      .sort(compareByGameDateAsc);
+  };
+
+  const getDetailRows = (gameId) => {
+    const rows = state.detailsByGame.get(gameId) ?? [];
+    return rows.map((row) => {
+      const entryFee = parseIntegerOrZero(row.entryFee);
+      const rebuy = parseIntegerOrZero(row.rebuy);
+      const payout = parseIntegerOrZero(row.payout);
+      return {
+        ...row,
+        entryFee,
+        rebuy,
+        payout,
+        profit: payout - (entryFee + rebuy),
+        championship: Boolean(row.championship)
+      };
+    });
+  };
+
+  const hasCompletedEntryFee = (row) => {
+    const normalized = sanitizeIntegerInput(typeof row.entryFee === "number" ? `${row.entryFee}` : row.entryFee ?? "");
+    return Boolean(normalized) && normalized !== "-";
+  };
+
+  const getPlayersStatistics = () => {
+    const games = getGamesForSelectedYear();
+    const gameCount = games.length;
+    const totalPool = games.reduce((sum, game) => sum + getDetailRows(game.id).reduce((acc, row) => acc + row.entryFee + row.rebuy, 0), 0);
+    const playersMap = new Map();
+
+    games.forEach((game) => {
+      const rows = getDetailRows(game.id);
+      const gamePool = rows.reduce((acc, row) => acc + row.entryFee + row.rebuy, 0);
+      const counted = new Set();
+
+      rows.forEach((row) => {
+        const playerName = typeof row.playerName === "string" ? row.playerName.trim() : "";
+        if (!playerName || !hasCompletedEntryFee(row)) {
+          return;
+        }
+
+        if (!playersMap.has(playerName)) {
+          playersMap.set(playerName, {
+            playerName,
+            championshipCount: 0,
+            meetingsCount: 0,
+            plusMinusSum: 0,
+            payoutSum: 0,
+            depositsSum: 0,
+            playedGamesPoolSum: 0
+          });
+        }
+
+        const item = playersMap.get(playerName);
+        item.meetingsCount += 1;
+        item.championshipCount += row.championship ? 1 : 0;
+        item.plusMinusSum += row.profit;
+        item.payoutSum += row.payout;
+        item.depositsSum += row.entryFee + row.rebuy;
+
+        if (!counted.has(playerName)) {
+          item.playedGamesPoolSum += gamePool;
+          counted.add(playerName);
+        }
+      });
+    });
+
+    return {
+      gameCount,
+      totalPool,
+      playerRows: Array.from(playersMap.values())
+        .map((row) => ({
+          ...row,
+          participationPercent: gameCount === 0 ? 0 : Math.ceil((row.meetingsCount / gameCount) * 100),
+          percentAllGames: row.playedGamesPoolSum === 0 ? 0 : Math.ceil((row.payoutSum / row.playedGamesPoolSum) * 100),
+          percentPlayedGames: totalPool === 0 ? 0 : Math.ceil((row.payoutSum / totalPool) * 100)
+        }))
+        .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"))
+    };
+  };
+
+  const renderYears = () => {
+    yearsList.innerHTML = "";
+    if (!state.years.length) {
+      const info = document.createElement("p");
+      info.className = "status-text";
+      info.textContent = "Brak lat. Dodaj pierwszą grę, aby rok pojawił się automatycznie.";
+      yearsList.appendChild(info);
+      return;
+    }
+
+    state.years.forEach((year) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `${yearButtonsClassName} ${state.selectedYear === year ? "is-active" : ""}`.trim();
+      button.textContent = String(year);
+      button.addEventListener("click", () => {
+        state.selectedYear = year;
+        saveSelectedGamesYear(year, selectedYearStorageKey);
+        renderYears();
+        renderStats();
+      });
+      yearsList.appendChild(button);
+    });
+  };
+
+  const renderStats = () => {
+    statsBody.innerHTML = "";
+    playersStatsBody.innerHTML = "";
+
+    if (!state.selectedYear) {
+      status.textContent = "Wybierz rok z panelu po lewej stronie.";
+      return;
+    }
+
+    const statistics = getPlayersStatistics();
+    status.textContent = `Wybrany rok: ${state.selectedYear}. Liczba gier: ${statistics.gameCount}.`;
+    [["Liczba gier", statistics.gameCount], ["Łączna pula", statistics.totalPool]].forEach(([label, value]) => {
+      const tr = document.createElement("tr");
+      const labelCell = document.createElement("td");
+      labelCell.textContent = String(label);
+      const valueCell = document.createElement("td");
+      valueCell.textContent = String(value);
+      tr.append(labelCell, valueCell);
+      statsBody.appendChild(tr);
+    });
+
+    if (!statistics.playerRows.length) {
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = STATS_COLUMN_CONFIG.length;
+      td.textContent = "Brak graczy z uzupełnionym wpisowym w wybranym roku.";
+      tr.appendChild(td);
+      playersStatsBody.appendChild(tr);
+      return;
+    }
+
+    const yearKey = String(state.selectedYear);
+    if (!state.manualStatsByYear.has(yearKey)) {
+      state.manualStatsByYear.set(yearKey, new Map());
+    }
+    const yearMap = state.manualStatsByYear.get(yearKey);
+    const visibleColumns = isAdminView ? STATS_COLUMN_CONFIG.map((entry) => entry.key) : getVisibleColumnsForYear(state.selectedYear);
+
+    if (isAdminView) {
+      const activeVisibleColumns = new Set(getVisibleColumnsForYear(state.selectedYear));
+      const headerCheckboxes = playersStatsBody.closest("table")?.querySelectorAll(".stats-column-visibility-checkbox") ?? [];
+      headerCheckboxes.forEach((checkbox, index) => {
+        const column = STATS_COLUMN_CONFIG[index];
+        if (!column) {
+          return;
+        }
+        checkbox.checked = activeVisibleColumns.has(column.key);
+      });
+    }
+
+    statistics.playerRows.forEach((row) => {
+      const tr = document.createElement("tr");
+      const manualEntry = yearMap.get(row.playerName) ?? {};
+
+      STATS_COLUMN_CONFIG.forEach((column) => {
+        if (!visibleColumns.includes(column.key)) {
+          return;
+        }
+
+        const td = document.createElement("td");
+        if (column.editable && isAdminView) {
+          const input = document.createElement("input");
+          input.type = "text";
+          input.className = "admin-input";
+          input.value = String(column.value(row, manualEntry, getDefaultManualFieldValue));
+          input.addEventListener("input", () => {
+            input.value = sanitizeIntegerInput(input.value);
+            if (!yearMap.has(row.playerName)) {
+              yearMap.set(row.playerName, { playerName: row.playerName });
+            }
+            const playerEntry = yearMap.get(row.playerName);
+            manualStatsFields.forEach((field) => {
+              if (playerEntry[field] == null) {
+                playerEntry[field] = getDefaultManualFieldValue(field, "");
+              }
+            });
+            playerEntry[column.key] = input.value;
+            scheduleDebouncedUpdate(`stats-shared-${yearKey}-${row.playerName}-${column.key}`, () => persistYearConfig(state.selectedYear));
+          });
+          td.appendChild(input);
+        } else {
+          td.textContent = String(column.value(row, manualEntry, getDefaultManualFieldValue));
+        }
+        tr.appendChild(td);
+      });
+
+      playersStatsBody.appendChild(tr);
+    });
+  };
+
+  const synchronizeYears = () => {
+    state.years = normalizeYearList(state.games.map((game) => extractYearFromDate(game.gameDate)).filter((year) => Number.isInteger(year)));
+    if (!state.selectedYear || !state.years.includes(state.selectedYear)) {
+      state.selectedYear = state.years[0] ?? null;
+    }
+    saveSelectedGamesYear(state.selectedYear, selectedYearStorageKey);
+    renderYears();
+    renderStats();
+  };
+
+  db.collection(ADMIN_GAMES_STATS_COLLECTION).onSnapshot((snapshot) => {
+    state.manualStatsByYear.clear();
+    state.visibleColumnsByYear.clear();
+    snapshot.forEach((doc) => {
+      const yearKey = String(doc.id);
+      const rows = Array.isArray(doc.data()?.rows) ? doc.data().rows : [];
+      const visibleColumns = Array.isArray(doc.data()?.visibleColumns) ? doc.data().visibleColumns : STATS_COLUMN_CONFIG.map((column) => column.key);
+      state.visibleColumnsByYear.set(yearKey, visibleColumns);
+      const yearMap = new Map();
+      rows.forEach((entry) => {
+        const playerName = typeof entry?.playerName === "string" ? entry.playerName.trim() : "";
+        if (!playerName) {
+          return;
+        }
+        const parsed = { playerName };
+        manualStatsFields.forEach((field) => {
+          parsed[field] = getDefaultManualFieldValue(field, entry[field]);
+        });
+        yearMap.set(playerName, parsed);
+      });
+      state.manualStatsByYear.set(yearKey, yearMap);
+    });
+    renderStats();
+  });
+
+  db.collection(gamesCollectionName).orderBy("createdAt", "asc").onSnapshot((snapshot) => {
+    state.games = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const activeIds = new Set(state.games.map((game) => game.id));
+
+    state.detailUnsubscribers.forEach((unsubscribe, gameId) => {
+      if (!activeIds.has(gameId)) {
+        unsubscribe();
+        state.detailUnsubscribers.delete(gameId);
+        state.detailsByGame.delete(gameId);
+      }
+    });
+
+    state.games.forEach((game) => {
+      if (state.detailUnsubscribers.has(game.id)) {
+        return;
+      }
+      const unsubscribe = db.collection(gamesCollectionName).doc(game.id).collection(gameDetailsCollectionName).orderBy("createdAt", "asc").onSnapshot((rowsSnapshot) => {
+        state.detailsByGame.set(game.id, rowsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+        renderStats();
+      });
+      state.detailUnsubscribers.set(game.id, unsubscribe);
+    });
+
+    synchronizeYears();
+  });
+
+  if (isAdminView) {
+    const headerCells = playersStatsBody.closest("table")?.querySelectorAll("thead th") ?? [];
+    headerCells.forEach((cell, index) => {
+      const column = STATS_COLUMN_CONFIG[index];
+      if (!column) {
+        return;
+      }
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "stats-column-visibility-checkbox";
+      checkbox.checked = true;
+      checkbox.addEventListener("change", () => {
+        if (!state.selectedYear) {
+          return;
+        }
+        const yearKey = String(state.selectedYear);
+        const visible = new Set(getVisibleColumnsForYear(state.selectedYear));
+        if (checkbox.checked) {
+          visible.add(column.key);
+        } else {
+          visible.delete(column.key);
+        }
+        state.visibleColumnsByYear.set(yearKey, STATS_COLUMN_CONFIG.map((entry) => entry.key).filter((key) => visible.has(key)));
+        renderStats();
+        void persistYearConfig(state.selectedYear);
+      });
+      const wrapper = document.createElement("div");
+      wrapper.className = "stats-column-header";
+      while (cell.firstChild) {
+        wrapper.appendChild(cell.firstChild);
+      }
+      wrapper.appendChild(checkbox);
+      cell.appendChild(wrapper);
+    });
+
+    const weightButtons = document.querySelectorAll(weightButtonsSelector);
+    weightButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const weightKey = button.dataset.weightKey;
+        const promptValue = window.prompt(`Podaj wartość liczbową dla kolumny ${button.textContent}.`, "1");
+        if (!weightStatsFields.includes(weightKey) || promptValue === null || !state.selectedYear) {
+          return;
+        }
+        const normalized = sanitizeIntegerInput(promptValue);
+        if (!normalized || normalized === "-") {
+          status.textContent = "Podaj poprawną wartość liczbową dla wagi.";
+          return;
+        }
+        const statistics = getPlayersStatistics();
+        const yearKey = String(state.selectedYear);
+        if (!state.manualStatsByYear.has(yearKey)) {
+          state.manualStatsByYear.set(yearKey, new Map());
+        }
+        const yearMap = state.manualStatsByYear.get(yearKey);
+        statistics.playerRows.forEach((row) => {
+          if (!yearMap.has(row.playerName)) {
+            yearMap.set(row.playerName, { playerName: row.playerName });
+          }
+          const playerEntry = yearMap.get(row.playerName);
+          manualStatsFields.forEach((field) => {
+            if (playerEntry[field] == null) {
+              playerEntry[field] = getDefaultManualFieldValue(field, "");
+            }
+          });
+          playerEntry[weightKey] = normalized;
+        });
+        renderStats();
+        void persistYearConfig(state.selectedYear);
+      });
+    });
+  }
+
+  exportButton.addEventListener("click", () => {
+    if (!window.XLSX || !state.selectedYear) {
+      status.textContent = "Eksport XLSX jest chwilowo niedostępny.";
+      return;
+    }
+
+    const statistics = getPlayersStatistics();
+    const yearKey = String(state.selectedYear);
+    const yearMap = state.manualStatsByYear.get(yearKey) ?? new Map();
+    const visibleColumns = isAdminView ? STATS_COLUMN_CONFIG.map((column) => column.key) : getVisibleColumnsForYear(state.selectedYear);
+    const headers = STATS_COLUMN_CONFIG.filter((column) => visibleColumns.includes(column.key)).map((column) => column.label);
+    const dataRows = statistics.playerRows.map((row) => {
+      const manualEntry = yearMap.get(row.playerName) ?? {};
+      return STATS_COLUMN_CONFIG
+        .filter((column) => visibleColumns.includes(column.key))
+        .map((column) => column.value(row, manualEntry, getDefaultManualFieldValue));
+    });
+
+    const worksheet = window.XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+    const workbook = window.XLSX.utils.book_new();
+    window.XLSX.utils.book_append_sheet(workbook, worksheet, "Statystyki");
+
+    const now = new Date();
+    const hour = `${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`;
+    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const fileName = `${hour}_${date}_Statystyki_${state.selectedYear}.xlsx`;
+    window.XLSX.writeFile(workbook, fileName);
+  });
+};
+
+const initStatisticsViews = () => {
+  registerAdminRefreshHandler("adminStatisticsTab", async () => {});
+
+  initStatisticsView({
+    yearsListSelector: "#adminStatisticsYearsList",
+    statsBodySelector: "#adminStatisticsStatsBody",
+    playersStatsBodySelector: "#adminStatisticsPlayersStatsBody",
+    statusSelector: "#adminStatisticsStatus",
+    exportButtonSelector: "#adminStatisticsExport",
+    selectedYearStorageKey: ADMIN_STATISTICS_SELECTED_YEAR_STORAGE_KEY,
+    isAdminView: true,
+    yearButtonsClassName: "admin-games-year-button",
+    weightButtonsSelector: ".admin-statistics-weight-bulk-button"
+  });
+
+  initStatisticsView({
+    yearsListSelector: "#statisticsYearsList",
+    statsBodySelector: "#statisticsStatsBody",
+    playersStatsBodySelector: "#statisticsPlayersStatsBody",
+    statusSelector: "#statisticsStatus",
+    exportButtonSelector: "#statisticsExport",
+    selectedYearStorageKey: USER_STATISTICS_SELECTED_YEAR_STORAGE_KEY,
+    isAdminView: false,
+    yearButtonsClassName: "admin-games-year-button",
+    weightButtonsSelector: ""
   });
 };
 
@@ -4030,7 +4653,9 @@ const bootstrap = async () => {
   initChatTab();
   initUserConfirmations();
   initUserGamesTab();
+  initStatisticsTab();
   initPlayerUserGames();
+  initStatisticsViews();
   initLatestMessage();
   initRulesDisplay();
   initInstructionModal();

@@ -28,7 +28,7 @@ Panel zawiera karty:
 - `adminGamesTab` (Gry admina),
 - `adminUserGamesTab` (Gry użytkowników).
 
-Zakładka `adminStatsTab` została usunięta z HTML.
+Zakładka `adminStatisticsTab` działa jako osobna karta i współdzieli dane z sekcją statystyk w `adminGamesTab`.
 
 Przełączanie kart realizuje `initAdminPanelTabs()`.
 
@@ -1004,3 +1004,56 @@ Zmiana jest behawioralna (obsługa fokusu) i nie modyfikuje:
 - zasad walidacji,
 - stylów CSS, kolorów, fontów, layoutu.
 
+
+## Aktualizacja 2026-02-12 — nowa zakładka `Statystyki`
+### 1. Zmiany w UI (`Main/index.html`)
+- Dodano zakładkę administratora `adminStatisticsTab`.
+- Dodano zakładkę gracza `statsTab` z bramką PIN (`statisticsPinGate`) oraz kontenerem danych (`statisticsContent`).
+- Dodano przyciski `Eksportuj` dla obu widoków statystyk.
+- Dołączono bibliotekę SheetJS (`xlsx.full.min.js`) do eksportu `.xlsx`.
+
+### 2. Uprawnienia graczy (`Main/app.js`)
+- Rozszerzono `AVAILABLE_PLAYER_TABS` o nowy wpis:
+  - `key: "statsTab"`
+  - `label: "Statystyki"`
+- Dzięki temu modal „Uprawnienia” w zakładce Gracze automatycznie pokazuje nową pozycję checkbox.
+
+### 3. PIN-gate dla zakładki Statystyki
+- Dodano komplet stanu sesji i helperów:
+  - `STATISTICS_PIN_STORAGE_KEY`, `STATISTICS_PLAYER_ID_STORAGE_KEY`,
+  - `get/setStatisticsPinGateState`,
+  - `get/setStatisticsVerifiedPlayerId`.
+- `initStatisticsTab()` waliduje PIN i uprawnienie `statsTab`.
+- W trybie admina bramka PIN jest pomijana (widok zawsze otwarty).
+
+### 4. Silnik danych statystyk (wspólny)
+- Dodano `STATS_COLUMN_CONFIG` — definicję wszystkich kolumn tabeli statystyk (etykieta, edytowalność, mapowanie danych).
+- Dodano `initStatisticsView(...)` jako wspólny renderer dla:
+  - `adminStatisticsTab` (edycja + checkboxy kolumn),
+  - `statsTab` gracza (tylko odczyt).
+- Oba widoki czytają te same dane z:
+  - kolekcji gier (`gamesCollection` + `rows`),
+  - kolekcji `admin_games_stats` (ręczne pola i konfiguracja widoczności kolumn).
+
+### 5. Synchronizacja „Gry admina” ↔ „Statystyki”
+- Obie zakładki zapisują/odczytują roczne dane ręczne (`weight1..weight7`, `points`, `result`) z `admin_games_stats/{rok}`.
+- Dzięki temu modyfikacja po jednej stronie jest odzwierciedlana po stronie drugiej przez snapshot Firestore.
+
+### 6. Widoczność kolumn dla gracza
+- W widoku admina przy każdej kolumnie dodany jest checkbox (`.stats-column-visibility-checkbox`).
+- Stan checkboxów zapisywany jest w `admin_games_stats/{rok}.visibleColumns`.
+- W widoku gracza renderowane są wyłącznie kolumny zawarte w `visibleColumns` dla wybranego roku.
+- Dla braku konfiguracji domyślnie przyjmowane są wszystkie kolumny (stan „wszystko zaznaczone”).
+
+### 7. Zapamiętanie roku
+- Dodano oddzielne klucze localStorage:
+  - `ADMIN_STATISTICS_SELECTED_YEAR_STORAGE_KEY`,
+  - `USER_STATISTICS_SELECTED_YEAR_STORAGE_KEY`.
+- Ostatnio wybrany rok przywraca się niezależnie dla admina i gracza.
+
+### 8. Eksport XLSX
+- Przycisk `Eksportuj` buduje arkusz SheetJS na podstawie aktualnego widoku tabeli.
+- Nazwa pliku ma format:
+  - `[gg-mm-ss]_[rrrr-mm-dd]_Statystyki_[rok].xlsx`
+  - np. `09-50-42_2026-02-12_Statystyki_2026.xlsx`.
+- W widoku gracza eksport obejmuje tylko kolumny dozwolone przez admina.

@@ -40,6 +40,7 @@
             <button class="admin-panel-tab" type="button" data-target="adminPlayersTab">Gracze</button>
             <button class="admin-panel-tab" type="button" data-target="adminTournamentsTab">Turnieje</button>
             <button class="admin-panel-tab" type="button" data-target="adminGamesTab">Gry admina</button>
+            <button class="admin-panel-tab" type="button" data-target="adminStatisticsTab">Statystyki</button>
             <button class="admin-panel-tab" type="button" data-target="adminUserGamesTab">Gry użytkowników</button>
             <button class="admin-panel-tab" type="button" data-target="adminConfirmationsTab">Gry do potwierdzenia</button>
           </div>
@@ -283,6 +284,64 @@
               </section>
             </div>
           </div>
+          <div id="adminStatisticsTab" class="admin-panel-content" role="tabpanel">
+            <div class="admin-games-layout">
+              <aside class="admin-games-sidebar">
+                <div class="card-header admin-games-sidebar-header">
+                  <h3>Lata</h3>
+                </div>
+                <div id="adminStatisticsYearsList" class="admin-games-years-list"></div>
+              </aside>
+              <section class="admin-games-content">
+                <span id="adminStatisticsStatus" class="status-text" aria-live="polite"></span>
+                <div class="admin-games-section">
+                  <div class="card-header admin-tables-header">
+                    <h3>Statystyki</h3>
+                    <button id="adminStatisticsExport" class="secondary" type="button">Eksportuj</button>
+                  </div>
+                  <div class="admin-table-scroll">
+                    <table class="admin-data-table">
+                      <thead>
+                        <tr>
+                          <th>Opis</th>
+                          <th>Wartość</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminStatisticsStatsBody"></tbody>
+                    </table>
+                  </div>
+                  <div class="admin-table-scroll">
+                    <table class="admin-data-table admin-games-players-stats-table">
+                      <thead>
+                        <tr>
+                          <th>Gracz</th>
+                          <th>Mistrzostwo</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight1">Waga1</button></th>
+                          <th>Ilość Spotkań</th>
+                          <th>% udział</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight2">Waga2</button></th>
+                          <th>Punkty</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight3">Waga3</button></th>
+                          <th>(+/-)</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight4">Waga4</button></th>
+                          <th>Wypłata</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight5">Waga5</button></th>
+                          <th>Wpłaty</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight6">Waga6</button></th>
+                          <th>Suma z rozegranych gier</th>
+                          <th>% Wszystkich gier</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight7">Waga7</button></th>
+                          <th>% Rozegranych gier</th>
+                          <th>Wynik</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminStatisticsPlayersStatsBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
           <div id="adminConfirmationsTab" class="admin-panel-content" role="tabpanel">
             <section class="admin-confirmations">
               <div class="card-header">
@@ -318,6 +377,9 @@
               </button>
               <button class="tab-button" type="button" data-target="userGamesTab">
                 Gry użytkowników
+              </button>
+              <button class="tab-button" type="button" data-target="statsTab">
+                Statystyki
               </button>
             </div>
           </div>
@@ -508,6 +570,85 @@
                 </div>
               </div>
             </div>
+            <div id="statsTab" class="tab-panel" role="tabpanel">
+              <div id="statisticsPinGate" class="pin-gate" aria-live="polite">
+                <div class="pin-card">
+                  <p class="pin-title">Wpisz PIN z uprawnieniem Statystyki, aby wejść do tej sekcji.</p>
+                  <div class="pin-inputs">
+                    <input
+                      id="statisticsPinInput"
+                      type="tel"
+                      inputmode="numeric"
+                      pattern="[0-9]{5}"
+                      autocomplete="one-time-code"
+                      maxlength="5"
+                      minlength="5"
+                      placeholder="PIN (5 cyfr)"
+                    />
+                    <button id="statisticsPinSubmit" class="primary" type="button">Otwórz</button>
+                  </div>
+                  <p id="statisticsPinStatus" class="status-text"></p>
+                </div>
+              </div>
+              <div id="statisticsContent" class="user-games-content">
+                <div class="admin-games-layout">
+                  <aside class="admin-games-sidebar">
+                    <div class="card-header admin-games-sidebar-header">
+                      <h3>Lata</h3>
+                    </div>
+                    <div id="statisticsYearsList" class="admin-games-years-list"></div>
+                  </aside>
+                  <section class="admin-games-content">
+                    <span id="statisticsStatus" class="status-text" aria-live="polite"></span>
+                    <div class="admin-games-section">
+                      <div class="card-header admin-tables-header">
+                        <h3>Statystyki</h3>
+                        <button id="statisticsExport" class="secondary" type="button">Eksportuj</button>
+                      </div>
+                      <div class="admin-table-scroll">
+                        <table class="admin-data-table">
+                          <thead>
+                            <tr>
+                              <th>Opis</th>
+                              <th>Wartość</th>
+                            </tr>
+                          </thead>
+                          <tbody id="statisticsStatsBody"></tbody>
+                        </table>
+                      </div>
+                      <div class="admin-table-scroll">
+                        <table class="admin-data-table admin-games-players-stats-table">
+                          <thead>
+                            <tr>
+                              <th>Gracz</th>
+                              <th>Mistrzostwo</th>
+                              <th>Waga1</th>
+                              <th>Ilość Spotkań</th>
+                              <th>% udział</th>
+                              <th>Waga2</th>
+                              <th>Punkty</th>
+                              <th>Waga3</th>
+                              <th>(+/-)</th>
+                              <th>Waga4</th>
+                              <th>Wypłata</th>
+                              <th>Waga5</th>
+                              <th>Wpłaty</th>
+                              <th>Waga6</th>
+                              <th>Suma z rozegranych gier</th>
+                              <th>% Wszystkich gier</th>
+                              <th>Waga7</th>
+                              <th>% Rozegranych gier</th>
+                              <th>Wynik</th>
+                            </tr>
+                          </thead>
+                          <tbody id="statisticsPlayersStatsBody"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>
@@ -644,6 +785,7 @@
     <script src="../config/firebase-config.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
