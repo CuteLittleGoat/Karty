@@ -8,7 +8,8 @@
 8. Plik Documentation.md ma zawierać dokładne dane backendowe
 9. Każda zmiana dotycząca wyglądu jakiegoś elementu musi mieć odzwierciedlenie w zawartości pliku DetaleLayout.md
 10. Plik DetaleLayout.md to repozytorium użytych fontów, styli, kolorów itp.
-11. Jeżeli polecenie użytkownika nie dotyczy zmiany kodu a tylko analizy to wnioski zapisz w folderze Analizy w nowoutworzonym pliku o odekwatnej nazwie do przeprowadzanej analizy
-12. Jeżeli zapisujesz plik z wynikami analizy to w pliku uwzględnij prompt użytkownika, żeby zachować kontekst zapisanych odpowiedzi
-13. Folderu Analizy nie uwzględniaj w żadnych dokumentacjach i instrukcjach
-14. Ignoruj zawartość folderu MigracjaAndroid
+11. Jeżeli zmiana dotyczny wyglądu pod kątem szerokości kolumn, wyrównania itp to zaktualizuj plik Kolumny.md
+12. Jeżeli polecenie użytkownika nie dotyczy zmiany kodu a tylko analizy to wnioski zapisz w folderze Analizy w nowoutworzonym pliku o odekwatnej nazwie do przeprowadzanej analizy
+13. Jeżeli zapisujesz plik z wynikami analizy to w pliku uwzględnij prompt użytkownika, żeby zachować kontekst zapisanych odpowiedzi
+14. Folderu Analizy nie uwzględniaj w żadnych dokumentacjach i instrukcjach
+15. Ignoruj zawartość folderu MigracjaAndroid
