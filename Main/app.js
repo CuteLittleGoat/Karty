@@ -2868,6 +2868,8 @@ const initAdminGames = () => {
   const gamesCollectionName = getGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
   const manualStatsFields = ["weight1", "weight2", "points", "weight3", "weight4", "weight5", "weight6", "weight7", "result"];
+  const weightStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
+  const weightHeaderButtons = Array.from(document.querySelectorAll(".admin-weight-bulk-button"));
 
   const state = {
     years: [],
@@ -2958,22 +2960,68 @@ const initAdminGames = () => {
     return state.manualStatsByYear.get(yearKey) ?? new Map();
   };
 
+  const getDefaultManualFieldValue = (field, value) => {
+    if (weightStatsFields.includes(field)) {
+      const normalized = typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
+      return normalized ? normalized : "1";
+    }
+    return typeof value === "string" || typeof value === "number" ? String(value) : "";
+  };
+
   const serializeManualStats = (year) => {
     const yearStats = getManualStatsForYear(year);
     return Array.from(yearStats.values())
       .map((entry) => ({
         playerName: entry.playerName,
-        weight1: entry.weight1 ?? "",
-        weight2: entry.weight2 ?? "",
+        weight1: getDefaultManualFieldValue("weight1", entry.weight1),
+        weight2: getDefaultManualFieldValue("weight2", entry.weight2),
         points: entry.points ?? "",
-        weight3: entry.weight3 ?? "",
-        weight4: entry.weight4 ?? "",
-        weight5: entry.weight5 ?? "",
-        weight6: entry.weight6 ?? "",
-        weight7: entry.weight7 ?? "",
+        weight3: getDefaultManualFieldValue("weight3", entry.weight3),
+        weight4: getDefaultManualFieldValue("weight4", entry.weight4),
+        weight5: getDefaultManualFieldValue("weight5", entry.weight5),
+        weight6: getDefaultManualFieldValue("weight6", entry.weight6),
+        weight7: getDefaultManualFieldValue("weight7", entry.weight7),
         result: entry.result ?? ""
       }))
       .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"));
+  };
+
+  const ensureYearMapEntry = (yearMap, playerName) => {
+    if (!yearMap.has(playerName)) {
+      const emptyRow = { playerName };
+      manualStatsFields.forEach((field) => {
+        emptyRow[field] = getDefaultManualFieldValue(field, "");
+      });
+      yearMap.set(playerName, emptyRow);
+    }
+    return yearMap.get(playerName);
+  };
+
+  const applyBulkWeightValue = async (weightKey, nextValue) => {
+    if (!state.selectedYear) {
+      status.textContent = "Wybierz rok, aby ustawić wagę.";
+      return;
+    }
+
+    const statistics = getPlayersStatistics();
+    if (!statistics.playerRows.length) {
+      status.textContent = "Brak graczy w wybranym roku do aktualizacji wag.";
+      return;
+    }
+
+    const yearKey = String(state.selectedYear);
+    if (!state.manualStatsByYear.has(yearKey)) {
+      state.manualStatsByYear.set(yearKey, new Map());
+    }
+    const yearMap = state.manualStatsByYear.get(yearKey);
+    statistics.playerRows.forEach((row) => {
+      const playerEntry = ensureYearMapEntry(yearMap, row.playerName);
+      playerEntry[weightKey] = nextValue;
+    });
+
+    renderStatsTable();
+    await persistManualStats(state.selectedYear);
+    status.textContent = `Zaktualizowano ${weightKey.toUpperCase()} dla ${statistics.playerRows.length} graczy.`;
   };
 
   const persistManualStats = (year) => {
@@ -3352,7 +3400,7 @@ const initAdminGames = () => {
       input.dataset.rowId = playerName;
       input.dataset.columnKey = key;
       const stored = currentYearStats.get(playerName);
-      input.value = stored?.[key] ?? "";
+      input.value = getDefaultManualFieldValue(key, stored?.[key]);
       input.addEventListener("input", () => {
         input.value = sanitizeIntegerInput(input.value);
         if (!state.selectedYear) {
@@ -3362,14 +3410,7 @@ const initAdminGames = () => {
           state.manualStatsByYear.set(String(state.selectedYear), new Map());
         }
         const yearMap = state.manualStatsByYear.get(String(state.selectedYear));
-        if (!yearMap.has(playerName)) {
-          const emptyRow = { playerName };
-          manualStatsFields.forEach((field) => {
-            emptyRow[field] = "";
-          });
-          yearMap.set(playerName, emptyRow);
-        }
-        const playerEntry = yearMap.get(playerName);
+        const playerEntry = ensureYearMapEntry(yearMap, playerName);
         playerEntry[key] = input.value;
 
         scheduleDebouncedUpdate(`admin-games-stats-${state.selectedYear}-${playerName}-${key}`, () => persistManualStats(state.selectedYear));
@@ -3602,13 +3643,32 @@ const initAdminGames = () => {
         }
         const parsedEntry = { playerName };
         manualStatsFields.forEach((field) => {
-          parsedEntry[field] = typeof entry[field] === "string" || typeof entry[field] === "number" ? String(entry[field]) : "";
+          parsedEntry[field] = getDefaultManualFieldValue(field, entry[field]);
         });
         yearMap.set(playerName, parsedEntry);
       });
       state.manualStatsByYear.set(yearKey, yearMap);
     });
     renderStatsTable();
+  });
+
+  weightHeaderButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const weightKey = button.dataset.weightKey;
+      if (!weightStatsFields.includes(weightKey)) {
+        return;
+      }
+      const promptValue = window.prompt(`Podaj wartość liczbową dla kolumny ${button.textContent}.`, "1");
+      if (promptValue === null) {
+        return;
+      }
+      const normalizedValue = sanitizeIntegerInput(promptValue);
+      if (!normalizedValue || normalizedValue === "-") {
+        status.textContent = "Podaj poprawną wartość liczbową dla wagi.";
+        return;
+      }
+      void applyBulkWeightValue(weightKey, normalizedValue);
+    });
   });
 
   db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {

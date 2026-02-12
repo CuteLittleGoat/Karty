@@ -261,3 +261,22 @@ Ten sam styl i kolejność elementów obowiązuje w:
 - `#adminGamesSummaries` (Gry admina),
 - `#adminUserGamesSummaries` (Gry użytkowników — widok admina),
 - `#userGamesSummaries` (Gry użytkowników — widok gracza).
+
+## 18) „Gry admina” — wizualna zmiana nagłówków Waga1..Waga7
+
+### 18.1 Nagłówki kolumn jako przyciski
+W tabeli `.admin-games-players-stats-table` nagłówki `Waga1..Waga7` są renderowane jako przyciski `.admin-weight-bulk-button` umieszczone wewnątrz `th`.
+
+Parametry stylu `.admin-weight-bulk-button`:
+- `width: 100%` — przycisk zajmuje pełną szerokość komórki nagłówka,
+- `padding: 0`, `border: 0`, `background: transparent` — brak własnej „ramki przycisku”,
+- `color: inherit`, `font: inherit`, `letter-spacing: inherit`, `text-transform: inherit` — pełne dziedziczenie stylu nagłówka tabeli,
+- `text-align: left` — zgodność z wyrównaniem całej tabeli,
+- `cursor: pointer` — sygnalizacja interaktywności.
+
+### 18.2 Stan hover/focus
+Dla `.admin-weight-bulk-button:hover, .admin-weight-bulk-button:focus-visible`:
+- kolor tekstu przechodzi na `#f3cc63`,
+- pojawia się `text-decoration: underline`.
+
+Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalny i służy do masowej zmiany kolumny.
