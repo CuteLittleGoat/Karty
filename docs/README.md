@@ -310,3 +310,50 @@ Po zmianie pasek poziomy zachowuje bieżącą pozycję i nie „ucieka” automa
 4. Wpisuj dane ciągle przez kilka sekund.
 
 Po zmianie pola nie powinny tracić fokusu po autozapisie i odświeżeniu widoku.
+
+---
+
+## 17. Aktualizacja 2026-02-12 — „Gry admina” i „Gry użytkowników” (okno „Szczegóły”, statystyki i ranking)
+
+### 17.1 Okno „Szczegóły gry” → domyślne `0` w kolumnach „Wpisowe” i „Wypłata”
+1. Wejdź do zakładki **Gry admina** albo **Gry użytkowników**.
+2. W tabeli gier kliknij przycisk **Szczegóły** przy wybranej grze.
+3. W otwartym oknie sprawdź kolumny **Wpisowe** i **Wypłata**.
+4. Jeżeli pole było wcześniej puste, zobaczysz w nim od razu wartość **0**.
+5. Kliknij dowolną komórkę w tych kolumnach i wpisz nową liczbę — każda komórka dalej jest edytowalna ręcznie.
+
+### 17.2 Okno „Szczegóły gry” → masowa zmiana „Wpisowego” z nagłówka kolumny
+1. Otwórz okno **Szczegóły** dla wybranej gry.
+2. W nagłówku tabeli kliknij przycisk **Wpisowe** (to przycisk w nagłówku kolumny).
+3. Pojawi się okno podręczne z polem tekstowym.
+4. Wpisz wartość liczbową i zatwierdź.
+5. Wszystkie wiersze w kolumnie **Wpisowe** zostaną ustawione na tę samą wartość.
+6. Możesz powtarzać operację wielokrotnie — ostatnia zatwierdzona wartość pozostaje zapisana.
+
+> Funkcja działa w:
+> - zakładce **Gry admina**,
+> - zakładce **Gry użytkowników** w panelu admina,
+> - zakładce **Gry użytkowników** w strefie użytkownika (dla gracza z prawem edycji).
+
+### 17.3 Sekcja „Podsumowanie gry” → sortowanie po kolumnie `+/-`
+1. Wejdź do sekcji **Podsumowanie gry ...** pod tabelą gier.
+2. Sprawdź kolejność graczy w wierszach.
+3. Wiersze są teraz domyślnie ułożone malejąco po kolumnie **+/-**:
+   - najwyższy wynik `+/-` na górze,
+   - najniższy wynik `+/-` na dole.
+
+### 17.4 Sekcja „Statystyki” (Gry admina) → kolumna „Wyniki” jest liczona automatycznie
+1. Otwórz zakładkę **Gry admina**.
+2. Wybierz rok po lewej stronie.
+3. W sekcji **Statystyki** znajdź tabelę graczy.
+4. Ustawiaj wagi przez przyciski w nagłówkach **Waga1 ... Waga7** lub ręcznie per wiersz.
+5. Zobacz kolumnę **Wyniki** — nie wpisujesz tam już wartości ręcznie.
+
+Kolumna **Wyniki** liczy się automatycznie według wzoru:
+
+`Wyniki = (Mistrzostwo * Waga1) + (% udział * Waga2) + (Punkty * Waga3) + ((+/-) * Waga4) + (Wypłata * Waga5) + (Wpłaty * Waga6) + (% Wszystkich gier * Waga7)`
+
+### 17.5 Ranking po prawej stronie (Gry admina)
+1. W zakładce **Gry admina** spójrz na sekcję **Ranking** po prawej stronie.
+2. Ranking sortuje się automatycznie po kolumnie **Wyniki** z sekcji **Statystyki**.
+3. Po zmianie danych gry albo wag, kolejność rankingu aktualizuje się automatycznie od najwyższego wyniku do najniższego.

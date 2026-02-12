@@ -392,3 +392,60 @@ Zmiana nie wymaga migracji struktury Firestore.
 - nadal wykorzystywane są te same kolekcje i pola szczegółów gier,
 - `pointsSum` jest wartością wyliczaną runtime na froncie,
 - zapis do `ADMIN_GAMES_STATS_COLLECTION` pozostaje zgodny wstecznie.
+
+---
+
+## Aktualizacja techniczna 2026-02-12 — Gry admina / Gry użytkowników / Ranking
+
+### 1) `Main/app.js` — wspólne zarządzanie modalem szczegółów gry (`initUserGamesManager`)
+- Do konfiguracji menedżera dodano `modalEntryFeeBulkButtonSelector`.
+- Selektor jest mapowany na `modalEntryFeeBulkButton`, który obsługuje masową aktualizację `entryFee`.
+- W `createNumericCell` dla kluczy `entryFee` i `payout` dodano domyślne podstawienie `"0"`, gdy źródłowa wartość jest pusta.
+- W trakcie wpisywania danych dla `entryFee`/`payout` pusty input jest natychmiast normalizowany do `"0"`.
+- W `getGameSummaryMetrics` sortowanie `rows` zmieniono z `% puli` na `profit` malejąco (`b.profit - a.profit`).
+- Dodawanie nowego wiersza do szczegółów gry ustawia teraz:
+  - `entryFee: "0"`
+  - `payout: "0"`
+- Dodano masową operację ustawienia wpisowego:
+  1. `window.prompt` pobiera wartość,
+  2. `sanitizeIntegerInput` normalizuje tekst,
+  3. wykonywany jest `Promise.all(...update({ entryFee: normalized }))` dla wszystkich dokumentów w podkolekcji szczegółów gry.
+
+### 2) `Main/app.js` — Gry admina (`initAdminGames`)
+- Wyszukiwany jest przycisk bulk w modalu: `#gameDetailsModal .game-entry-fee-bulk-button`.
+- Sekcja podsumowań gry (`getGameSummaryMetrics`) sortuje wiersze po `profit` malejąco.
+- Dodano obliczanie wyniku statystycznego funkcją `getComputedResultValue(row, manualEntry)` z formułą:
+  - `(championshipCount * weight1)`
+  - `+ (participationPercent * weight2)`
+  - `+ (pointsSum * weight3)`
+  - `+ (plusMinusSum * weight4)`
+  - `+ (payoutSum * weight5)`
+  - `+ (depositsSum * weight6)`
+  - `+ (percentAllGames * weight7)`
+- Dodano `sortRankingRowsByResult(rows)` do centralnego sortowania rankingu.
+- Kolumna końcowa statystyk graczy została zmieniona z edytowalnej (`result`) na read-only (wartość obliczana).
+- Ranking po prawej renderuje się zawsze na podstawie obliczonego `resultValue` i sortowania malejącego.
+- W reakcji na zmianę wag ranking przeliczany jest natychmiast (bez czekania na pełny rerender).
+- Dodawanie wiersza do szczegółów gry ustawia domyślnie `entryFee: "0"` i `payout: "0"`.
+- Dodano bulk update wpisowego w modalu admina analogicznie jak w `initUserGamesManager`.
+
+### 3) `Main/index.html` — zmiany semantyki UI
+- W nagłówku tabeli statystyk graczy w zakładce „Gry admina” zmieniono etykietę końcowej kolumny z `Wynik` na `Wyniki`.
+- W trzech modalach szczegółów gry nagłówek kolumny `Wpisowe` jest teraz przyciskiem:
+  - `#userGameDetailsModal`
+  - `#playerUserGameDetailsModal`
+  - `#gameDetailsModal`
+- Każdy przycisk ma klasy:
+  - `admin-weight-bulk-button`
+  - `game-entry-fee-bulk-button`
+
+### 4) Spójność danych i Firestore
+- Zmiany wpisowego z przycisku bulk aktualizują każdy dokument szczegółu gry osobnym `update`.
+- Nie zmieniano ścieżek kolekcji ani struktury dokumentów.
+- Nie dodawano nowych kolekcji i nie modyfikowano reguł bezpieczeństwa w repozytorium.
+
+### 5) Wpływ na zachowanie UI
+- Użytkownik widzi mniej pustych pól liczbowych w modalu szczegółów (domyślne zera).
+- Administrator i użytkownik z uprawnieniem edycji mogą wielokrotnie seryjnie ustawiać wpisowe dla całej tabeli gry.
+- Podsumowania gier lepiej eksponują liderów po realnym wyniku finansowym (`+/-`).
+- Ranking po prawej stronie jest deterministycznie powiązany z bieżącymi wagami i metrykami statystyk.

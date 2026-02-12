@@ -1148,6 +1148,7 @@ const initUserGamesManager = ({
   modalSelector,
   modalMetaSelector,
   modalBodySelector,
+  modalEntryFeeBulkButtonSelector,
   modalCloseSelector,
   modalAddRowButtonSelector,
   selectedYearStorageKey,
@@ -1162,6 +1163,7 @@ const initUserGamesManager = ({
   const modal = document.querySelector(modalSelector);
   const modalMeta = document.querySelector(modalMetaSelector);
   const modalBody = document.querySelector(modalBodySelector);
+  const modalEntryFeeBulkButton = modalEntryFeeBulkButtonSelector ? document.querySelector(modalEntryFeeBulkButtonSelector) : null;
   const modalClose = document.querySelector(modalCloseSelector);
   const modalAddRowButton = document.querySelector(modalAddRowButtonSelector);
 
@@ -1234,11 +1236,7 @@ const initUserGamesManager = ({
     const rows = getDetailRows(gameId);
     const pool = rows.reduce((sum, row) => sum + row.entryFee + row.rebuy, 0);
     const payoutSum = rows.reduce((sum, row) => sum + row.payout, 0);
-    const sortedRows = [...rows].sort((a, b) => {
-      const percentA = pool === 0 ? 0 : Math.round((a.payout / pool) * 100);
-      const percentB = pool === 0 ? 0 : Math.round((b.payout / pool) * 100);
-      return percentB - percentA;
-    });
+    const sortedRows = [...rows].sort((a, b) => b.profit - a.profit);
 
     return {
       pool,
@@ -1566,11 +1564,16 @@ const initUserGamesManager = ({
         input.dataset.tableId = gameId;
         input.dataset.rowId = row.id;
         input.dataset.columnKey = key;
-        input.value = row[key] ?? "";
+        const requiresZeroDefault = key === "entryFee" || key === "payout";
+        const rawValue = row[key] ?? "";
+        input.value = requiresZeroDefault && String(rawValue).trim() === "" ? "0" : rawValue;
         input.disabled = !writeEnabled;
         input.addEventListener("input", () => {
           if (!canWrite()) return;
           input.value = sanitizeIntegerInput(input.value);
+          if (requiresZeroDefault && input.value === "") {
+            input.value = "0";
+          }
           scheduleDebouncedUpdate(`user-detail-${gameId}-${row.id}-${key}`, () => {
             void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ [key]: input.value });
           });
@@ -1704,14 +1707,42 @@ const initUserGamesManager = ({
     }
     await db.collection(gamesCollectionName).doc(state.activeGameIdInModal).collection(gameDetailsCollectionName).add({
       playerName: "",
-      entryFee: "",
+      entryFee: "0",
       rebuy: "",
-      payout: "",
+      payout: "0",
       points: "",
       championship: false,
       createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
     });
   });
+
+  if (modalEntryFeeBulkButton) {
+    modalEntryFeeBulkButton.addEventListener("click", async () => {
+      if (!canWrite()) {
+        return;
+      }
+      if (!state.activeGameIdInModal) {
+        status.textContent = "Otwórz szczegóły gry, aby zbiorczo ustawić wpisowe.";
+        return;
+      }
+      const promptValue = window.prompt("Podaj wartość wpisowego dla wszystkich graczy.", "0");
+      if (promptValue === null) {
+        return;
+      }
+      const normalized = sanitizeIntegerInput(promptValue);
+      if (!normalized || normalized === "-") {
+        status.textContent = "Podaj poprawną wartość liczbową wpisowego.";
+        return;
+      }
+      const rows = state.detailsByGame.get(state.activeGameIdInModal) ?? [];
+      await Promise.all(rows.map((row) => db.collection(gamesCollectionName)
+        .doc(state.activeGameIdInModal)
+        .collection(gameDetailsCollectionName)
+        .doc(row.id)
+        .update({ entryFee: normalized })));
+      status.textContent = `Ustawiono wpisowe ${normalized} dla ${rows.length} wierszy.`;
+    });
+  }
 
   modalClose.addEventListener("click", closeModal);
   modal.addEventListener("click", (event) => {
@@ -1736,6 +1767,7 @@ const initAdminUserGames = () => {
     modalSelector: "#userGameDetailsModal",
     modalMetaSelector: "#userGameDetailsMeta",
     modalBodySelector: "#userGameDetailsBody",
+    modalEntryFeeBulkButtonSelector: "#userGameDetailsModal .game-entry-fee-bulk-button",
     modalCloseSelector: "#userGameDetailsClose",
     modalAddRowButtonSelector: "#userGameDetailsAddRow",
     selectedYearStorageKey: ADMIN_USER_GAMES_SELECTED_YEAR_STORAGE_KEY,
@@ -1757,6 +1789,7 @@ const initPlayerUserGames = () => {
     modalSelector: "#playerUserGameDetailsModal",
     modalMetaSelector: "#playerUserGameDetailsMeta",
     modalBodySelector: "#playerUserGameDetailsBody",
+    modalEntryFeeBulkButtonSelector: "#playerUserGameDetailsModal .game-entry-fee-bulk-button",
     modalCloseSelector: "#playerUserGameDetailsClose",
     modalAddRowButtonSelector: "#playerUserGameDetailsAddRow",
     selectedYearStorageKey: USER_GAMES_SELECTED_YEAR_STORAGE_KEY,
@@ -3092,8 +3125,7 @@ const initStatisticsView = ({
         weight4: getDefaultManualFieldValue("weight4", entry.weight4),
         weight5: getDefaultManualFieldValue("weight5", entry.weight5),
         weight6: getDefaultManualFieldValue("weight6", entry.weight6),
-        weight7: getDefaultManualFieldValue("weight7", entry.weight7),
-        result: entry.result ?? ""
+        weight7: getDefaultManualFieldValue("weight7", entry.weight7)
       }))
       .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"));
 
@@ -3512,6 +3544,7 @@ const initAdminGames = () => {
   const modalBody = document.querySelector("#gameDetailsBody");
   const modalClose = document.querySelector("#gameDetailsClose");
   const modalAddRowButton = document.querySelector("#gameDetailsAddRow");
+  const modalEntryFeeBulkButton = document.querySelector("#gameDetailsModal .game-entry-fee-bulk-button");
 
   if (!yearsList || !gamesTableBody || !summariesContainer || !statsBody || !playersStatsBody || !rankingBody || !status || !addGameButton) {
     return;
@@ -3527,7 +3560,7 @@ const initAdminGames = () => {
   const db = firebaseApp.firestore();
   const gamesCollectionName = getGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
-  const manualStatsFields = ["weight1", "weight2", "points", "weight3", "weight4", "weight5", "weight6", "weight7", "result"];
+  const manualStatsFields = ["weight1", "weight2", "points", "weight3", "weight4", "weight5", "weight6", "weight7"];
   const weightStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
   const weightHeaderButtons = Array.from(document.querySelectorAll(".admin-weight-bulk-button"));
 
@@ -3598,11 +3631,7 @@ const initAdminGames = () => {
     const rows = getDetailRows(gameId);
     const pool = rows.reduce((sum, row) => sum + row.entryFee + row.rebuy, 0);
     const payoutSum = rows.reduce((sum, row) => sum + row.payout, 0);
-    const sortedRows = [...rows].sort((a, b) => {
-      const percentA = pool === 0 ? 0 : Math.round((a.payout / pool) * 100);
-      const percentB = pool === 0 ? 0 : Math.round((b.payout / pool) * 100);
-      return percentB - percentA;
-    });
+    const sortedRows = [...rows].sort((a, b) => b.profit - a.profit);
 
     return {
       pool,
@@ -3640,8 +3669,7 @@ const initAdminGames = () => {
         weight4: getDefaultManualFieldValue("weight4", entry.weight4),
         weight5: getDefaultManualFieldValue("weight5", entry.weight5),
         weight6: getDefaultManualFieldValue("weight6", entry.weight6),
-        weight7: getDefaultManualFieldValue("weight7", entry.weight7),
-        result: entry.result ?? ""
+        weight7: getDefaultManualFieldValue("weight7", entry.weight7)
       }))
       .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"));
   };
@@ -3750,6 +3778,34 @@ const initAdminGames = () => {
       totalPool,
       playerRows
     };
+  };
+
+  const getComputedResultValue = (row, manualEntry = {}) => {
+    const weight1 = parseIntegerOrZero(getDefaultManualFieldValue("weight1", manualEntry.weight1));
+    const weight2 = parseIntegerOrZero(getDefaultManualFieldValue("weight2", manualEntry.weight2));
+    const weight3 = parseIntegerOrZero(getDefaultManualFieldValue("weight3", manualEntry.weight3));
+    const weight4 = parseIntegerOrZero(getDefaultManualFieldValue("weight4", manualEntry.weight4));
+    const weight5 = parseIntegerOrZero(getDefaultManualFieldValue("weight5", manualEntry.weight5));
+    const weight6 = parseIntegerOrZero(getDefaultManualFieldValue("weight6", manualEntry.weight6));
+    const weight7 = parseIntegerOrZero(getDefaultManualFieldValue("weight7", manualEntry.weight7));
+
+    return (row.championshipCount * weight1)
+      + (row.participationPercent * weight2)
+      + (row.pointsSum * weight3)
+      + (row.plusMinusSum * weight4)
+      + (row.payoutSum * weight5)
+      + (row.depositsSum * weight6)
+      + (row.percentAllGames * weight7);
+  };
+
+  const sortRankingRowsByResult = (rows) => {
+    rows.sort((a, b) => {
+      if (b.resultValue !== a.resultValue) {
+        return b.resultValue - a.resultValue;
+      }
+      return a.playerName.localeCompare(b.playerName, "pl");
+    });
+    return rows;
   };
 
   const renderRankingTable = (playerRows) => {
@@ -4086,21 +4142,14 @@ const initAdminGames = () => {
         playerEntry[key] = input.value;
 
         scheduleDebouncedUpdate(`admin-games-stats-${state.selectedYear}-${playerName}-${key}`, () => persistManualStats(state.selectedYear));
-        if (key === "result") {
-          const rankingRows = statistics.playerRows.map((row) => {
-            const localEntry = yearMap.get(row.playerName);
-            return {
-              ...row,
-              resultValue: parseIntegerOrZero(localEntry?.result ?? "")
-            };
-          }).sort((a, b) => {
-            if (b.resultValue !== a.resultValue) {
-              return b.resultValue - a.resultValue;
-            }
-            return a.playerName.localeCompare(b.playerName, "pl");
-          });
-          renderRankingTable(rankingRows);
-        }
+        const rankingRows = sortRankingRowsByResult(statistics.playerRows.map((statsRow) => {
+          const localEntry = yearMap.get(statsRow.playerName) ?? {};
+          return {
+            ...statsRow,
+            resultValue: getComputedResultValue(statsRow, localEntry)
+          };
+        }));
+        renderRankingTable(rankingRows);
       });
       td.appendChild(input);
       return td;
@@ -4122,7 +4171,7 @@ const initAdminGames = () => {
     statistics.playerRows.forEach((row) => {
       const tr = document.createElement("tr");
       const manualEntry = currentYearStats.get(row.playerName) ?? {};
-      const resultValue = parseIntegerOrZero(manualEntry.result ?? "");
+      const resultValue = getComputedResultValue(row, manualEntry);
       rankingRows.push({
         ...row,
         resultValue
@@ -4147,18 +4196,12 @@ const initAdminGames = () => {
         createReadOnlyCell(`${row.percentAllGames}%`),
         createEditableCell(row.playerName, "weight7"),
         createReadOnlyCell(`${row.percentPlayedGames}%`),
-        createEditableCell(row.playerName, "result")
+        createReadOnlyCell(resultValue)
       );
       playersStatsBody.appendChild(tr);
     });
 
-    rankingRows.sort((a, b) => {
-      if (b.resultValue !== a.resultValue) {
-        return b.resultValue - a.resultValue;
-      }
-      return a.playerName.localeCompare(b.playerName, "pl");
-    });
-    renderRankingTable(rankingRows);
+    renderRankingTable(sortRankingRowsByResult(rankingRows));
   };
 
   const renderModal = (gameId) => {
@@ -4222,9 +4265,14 @@ const initAdminGames = () => {
         input.dataset.tableId = gameId;
         input.dataset.rowId = row.id;
         input.dataset.columnKey = key;
-        input.value = row[key] ?? "";
+        const requiresZeroDefault = key === "entryFee" || key === "payout";
+        const rawValue = row[key] ?? "";
+        input.value = requiresZeroDefault && String(rawValue).trim() === "" ? "0" : rawValue;
         input.addEventListener("input", () => {
           input.value = sanitizeIntegerInput(input.value);
+          if (requiresZeroDefault && input.value === "") {
+            input.value = "0";
+          }
           scheduleDebouncedUpdate(`detail-${gameId}-${row.id}-${key}`, () => {
             void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ [key]: input.value });
           });
@@ -4425,13 +4473,38 @@ const initAdminGames = () => {
       }
       await db.collection(gamesCollectionName).doc(state.activeGameIdInModal).collection(gameDetailsCollectionName).add({
         playerName: "",
-        entryFee: "",
+        entryFee: "0",
         rebuy: "",
-        payout: "",
+        payout: "0",
         points: "",
         championship: false,
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
       });
+    });
+  }
+
+  if (modalEntryFeeBulkButton) {
+    modalEntryFeeBulkButton.addEventListener("click", async () => {
+      if (!state.activeGameIdInModal) {
+        status.textContent = "Otwórz szczegóły gry, aby zbiorczo ustawić wpisowe.";
+        return;
+      }
+      const promptValue = window.prompt("Podaj wartość wpisowego dla wszystkich graczy.", "0");
+      if (promptValue === null) {
+        return;
+      }
+      const normalized = sanitizeIntegerInput(promptValue);
+      if (!normalized || normalized === "-") {
+        status.textContent = "Podaj poprawną wartość liczbową wpisowego.";
+        return;
+      }
+      const rows = state.detailsByGame.get(state.activeGameIdInModal) ?? [];
+      await Promise.all(rows.map((row) => db.collection(gamesCollectionName)
+        .doc(state.activeGameIdInModal)
+        .collection(gameDetailsCollectionName)
+        .doc(row.id)
+        .update({ entryFee: normalized })));
+      status.textContent = `Ustawiono wpisowe ${normalized} dla ${rows.length} wierszy.`;
     });
   }
 
