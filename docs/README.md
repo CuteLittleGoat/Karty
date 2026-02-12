@@ -404,3 +404,27 @@ Efekt po aktualizacji UI:
 - obie tabele używają tych samych danych wejściowych i tego samego wzoru,
 - **Punkty** są prezentowane jako wartość wyliczona z gier (nie ręczne pole),
 - **Wynik** w obu tabelach ma tę samą wartość.
+
+## 19. Aktualizacja 2026-02-12 — okno „Szczegóły gry”: puste „Wpisowe” i „Wypłata”
+
+### 19.1 Co się zmieniło w UI
+W oknie **„Szczegóły gry”** (zarówno w zakładce **„Gry admina”**, jak i **„Gry użytkowników”**) pola:
+- **Wpisowe**,
+- **Wypłata**
+
+mogą teraz zostać całkowicie wyczyszczone. Pole może pozostać puste — aplikacja nie wpisuje już automatycznie `0`.
+
+### 19.2 Jak to sprawdzić krok po kroku
+1. Wejdź do zakładki **„Gry admina”** albo **„Gry użytkowników”**.
+2. Przy wybranej grze kliknij przycisk **„Szczegóły”**.
+3. W tabeli kliknij komórkę w kolumnie **„Wpisowe”** lub **„Wypłata”**.
+4. Usuń całą zawartość pola klawiszem `Backspace` lub `Delete`.
+5. Kliknij w inne pole (albo przejdź do innego wiersza).
+6. Zwróć uwagę, że pole pozostaje puste i nie wraca automatycznie wartość `0`.
+
+### 19.3 Dodawanie nowego wiersza
+1. W oknie **„Szczegóły gry”** kliknij **„Dodaj wiersz”**.
+2. Sprawdź nowy wiersz w kolumnach **„Wpisowe”** i **„Wypłata”**.
+3. Oba pola startują jako puste, dzięki czemu możesz:
+   - wpisać wartość od razu,
+   - albo zostawić pole puste i uzupełnić je później.
