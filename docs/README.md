@@ -176,22 +176,21 @@ Mechanizm działa dla pól tekstowych, pól liczbowych wpisywanych jako tekst, s
 
 
 ## 5A. Zakładka „Regulamin”
-### 5A.1 Widok administratora (edycja kliknięciem w pole, autozapis)
+### 5A.1 Widok administratora (edycja ręczna + przycisk „Zapisz”)
 1. Otwórz aplikację z parametrem `?admin=1`.
 2. W panelu administratora kliknij zakładkę **Regulamin** (pomiędzy „Aktualności” i „Gracze”).
-3. Zobaczysz jedno pole **Treść regulaminu** (bez przycisków „Edytuj”, „Zapisz” i „Usuń”).
+3. Zobaczysz pole **Treść regulaminu** oraz przycisk **Zapisz**.
 4. Aby wprowadzić nową treść:
    - kliknij bezpośrednio w pole tekstowe,
    - wpisz pełny tekst zasad (możesz użyć wielu akapitów),
-   - przestań pisać na chwilę — zapis wykona się automatycznie.
+   - po zakończeniu edycji kliknij przycisk **Zapisz** pod polem.
 5. Oczekiwany efekt:
    - status pokaże „Zapisywanie regulaminu...”, a po odświeżeniu danych „Regulamin jest aktualny.”,
-   - treść zostaje zapisana w Firestore i pozostaje po odświeżeniu strony oraz po restarcie przeglądarki,
-   - ponowne kliknięcie w pole pozwala edytować wcześniej zapisany wpis (tak samo jak inne pola administracyjne).
+   - treść zostaje zapisana w Firestore dopiero po kliknięciu **Zapisz**,
+   - wpisywanie nie powoduje już automatycznego zapisu ani cofania kursora.
 6. Aby wyczyścić regulamin:
-   - kliknij w pole tekstowe,
-   - usuń zawartość,
-   - autozapis zapisze pustą treść.
+   - usuń zawartość pola tekstowego,
+   - kliknij **Zapisz** (pusta treść zostanie zapisana).
 
 ### 5A.2 Widok użytkownika (tylko odczyt, bez PIN)
 1. Otwórz aplikację bez `?admin=1`.

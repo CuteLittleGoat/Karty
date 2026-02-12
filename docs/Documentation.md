@@ -735,3 +735,51 @@ service cloud.firestore {
    - `.admin-games-ranking-row-green` (9–17),
    - `.admin-games-ranking-row-red` (18+).
 4. W mobile (`max-width: 720px`) wymuszono jedną kolumnę również dla layoutu `#adminGamesTab`.
+
+## 23) Zmiana zapisu w zakładce „Regulamin” (panel administratora)
+
+### 23.1 Problem i cel
+- Dotychczas `initAdminRules()` zapisywał regulamin podczas każdego zdarzenia `input` (przez `scheduleDebouncedUpdate(...)`).
+- Przy intensywnym pisaniu i równoległych aktualizacjach `onSnapshot(...)` mogło dochodzić do niepożądanego efektu:
+  - chwilowego „cofnięcia” kursora,
+  - utraty ostatniego znaku białego (np. końcowej spacji),
+  - odczucia „walki” pola tekstowego z synchronizacją danych.
+- Celem zmiany było przejście na jawny zapis po akcji użytkownika.
+
+### 23.2 Zmiany HTML (`Main/index.html`)
+- W sekcji akcji zakładki `#adminRulesTab` dodano nowy przycisk:
+  - `button#adminRulesSave.primary` z etykietą `Zapisz`.
+- Struktura `.admin-rules-actions` zawiera teraz:
+  1. przycisk `Zapisz`,
+  2. komunikat statusu `#adminRulesStatus`.
+
+### 23.3 Zmiany JavaScript (`Main/app.js`, `initAdminRules()`)
+1. **Nowe odwołanie do DOM:**
+   - pobierany jest element `#adminRulesSave`.
+2. **Walidacja inicjalizacji:**
+   - funkcja kończy działanie, jeśli brakuje `input`, `saveButton` lub `status`.
+3. **Obsługa braku Firebase:**
+   - poza `input.disabled = true` ustawiane jest też `saveButton.disabled = true`.
+4. **Subskrypcja `onSnapshot`:**
+   - nadal odświeża pole po zmianach z bazy,
+   - po poprawnym odczycie odblokowuje przycisk (`saveButton.disabled = false`),
+   - ustawia status „Regulamin jest aktualny.” lub „Brak zapisanej treści regulaminu.”.
+5. **Zmiana modelu zapisu:**
+   - usunięto zapis na zdarzenie `input` i mechanizm debouncingu dla regulaminu,
+   - dodano zapis na kliknięcie `saveButton`.
+6. **Przebieg zapisu po kliknięciu „Zapisz”:**
+   - jeśli trwa zapis (`isSaving`), kliknięcie jest ignorowane,
+   - ustawiany jest status „Zapisywanie regulaminu...”,
+   - przycisk jest tymczasowo blokowany,
+   - wykonywany jest `rulesDocRef.set({...}, { merge: true })` z polami:
+     - `text: input.value` (bez `trim()`),
+     - `updatedAt: serverTimestamp()`,
+     - `source: "web-admin"`.
+7. **Obsługa błędu:**
+   - przy niepowodzeniu zapis odblokowuje przycisk,
+   - status zmienia się na „Nie udało się zapisać regulaminu.”.
+
+### 23.4 Konsekwencje funkcjonalne
+- Treść regulaminu zapisuje się **wyłącznie** po kliknięciu `Zapisz`.
+- Pisanie w polu nie wywołuje już automatycznych zapisów, więc edycja jest stabilniejsza.
+- Końcowe spacje i układ tekstu wpisany przez administratora nie są automatycznie przycinane przez `trim()`.
