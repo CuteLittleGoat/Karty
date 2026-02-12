@@ -231,6 +231,124 @@ const restoreFocusedAdminInputState = (container, focusState) => {
   }
 };
 
+const comparePlayerStatsByPlusMinusDesc = (a, b) => {
+  const plusMinusDiff = Number(b?.plusMinusSum ?? 0) - Number(a?.plusMinusSum ?? 0);
+  if (plusMinusDiff !== 0) {
+    return plusMinusDiff;
+  }
+  return String(a?.playerName ?? "").localeCompare(String(b?.playerName ?? ""), "pl");
+};
+
+const getSummaryNotesModalController = (() => {
+  let cachedController = null;
+
+  return () => {
+    if (cachedController) {
+      return cachedController;
+    }
+
+    const modal = document.querySelector("#summaryNotesModal");
+    const title = document.querySelector("#summaryNotesTitle");
+    const textarea = document.querySelector("#summaryNotesInput");
+    const status = document.querySelector("#summaryNotesStatus");
+    const saveButton = document.querySelector("#summaryNotesSave");
+    const clearButton = document.querySelector("#summaryNotesClear");
+    const closeButton = document.querySelector("#summaryNotesClose");
+
+    if (!modal || !title || !textarea || !status || !saveButton || !clearButton || !closeButton) {
+      cachedController = {
+        open: () => {}
+      };
+      return cachedController;
+    }
+
+    const state = {
+      gameId: "",
+      gameName: "",
+      notes: "",
+      canWrite: false,
+      onSave: null,
+      triggerButton: null
+    };
+
+    const closeModal = () => {
+      modal.classList.remove("is-visible");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+      if (state.triggerButton instanceof HTMLElement) {
+        state.triggerButton.focus();
+      }
+      state.triggerButton = null;
+    };
+
+    const open = ({ gameId, gameName, notes, canWrite, onSave, triggerButton }) => {
+      state.gameId = String(gameId ?? "");
+      state.gameName = String(gameName ?? "Bez nazwy");
+      state.notes = typeof notes === "string" ? notes : "";
+      state.canWrite = Boolean(canWrite);
+      state.onSave = typeof onSave === "function" ? onSave : null;
+      state.triggerButton = triggerButton instanceof HTMLElement ? triggerButton : null;
+
+      title.textContent = `Notatki: ${state.gameName}`;
+      textarea.value = state.notes;
+      textarea.disabled = !state.canWrite;
+      saveButton.disabled = !state.canWrite;
+      clearButton.disabled = !state.canWrite;
+      status.textContent = state.canWrite ? "" : "Brak uprawnień do edycji notatek.";
+
+      modal.classList.add("is-visible");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      textarea.focus();
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    };
+
+    const persist = async (value) => {
+      if (!state.canWrite || !state.onSave) {
+        return;
+      }
+      saveButton.disabled = true;
+      clearButton.disabled = true;
+      status.textContent = "Zapisywanie...";
+      try {
+        await state.onSave({ gameId: state.gameId, notes: value });
+        state.notes = value;
+        textarea.value = value;
+        status.textContent = "Notatki zapisane.";
+      } catch (error) {
+        status.textContent = "Nie udało się zapisać notatek.";
+      } finally {
+        saveButton.disabled = !state.canWrite;
+        clearButton.disabled = !state.canWrite;
+      }
+    };
+
+    saveButton.addEventListener("click", () => {
+      void persist(textarea.value);
+    });
+
+    clearButton.addEventListener("click", () => {
+      void persist("");
+    });
+
+    closeButton.addEventListener("click", closeModal);
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && modal.classList.contains("is-visible")) {
+        closeModal();
+      }
+    });
+
+    cachedController = { open };
+    return cachedController;
+  };
+})();
+
 const registerAdminRefreshHandler = (tabId, handler) => {
   if (!tabId || typeof handler !== "function") {
     return;
@@ -1202,6 +1320,8 @@ const initUserGamesManager = ({
     playerOptions: []
   };
 
+  const summaryNotesModal = getSummaryNotesModalController();
+
   const closeModal = () => {
     state.activeGameIdInModal = null;
     modal.classList.remove("is-visible");
@@ -1298,8 +1418,33 @@ const initUserGamesManager = ({
       const wrapper = document.createElement("section");
       wrapper.className = "admin-games-section admin-game-summary";
 
+      const heading = document.createElement("div");
+      heading.className = "admin-game-summary-heading";
+
+      const notesButton = document.createElement("button");
+      notesButton.type = "button";
+      notesButton.className = "secondary";
+      notesButton.textContent = "Notatki";
+      notesButton.addEventListener("click", () => {
+        summaryNotesModal.open({
+          gameId: game.id,
+          gameName: game.name || "Bez nazwy",
+          notes: typeof game.notes === "string" ? game.notes : "",
+          canWrite: canWrite(),
+          onSave: async ({ notes }) => {
+            await db.collection(gamesCollectionName).doc(game.id).update({ notes });
+            const target = state.games.find((entry) => entry.id === game.id);
+            if (target) {
+              target.notes = notes;
+            }
+          },
+          triggerButton: notesButton
+        });
+      });
+
       const title = document.createElement("h3");
       title.textContent = `Podsumowanie gry ${game.name || "Bez nazwy"}`;
+      heading.append(notesButton, title);
 
       const metrics = getGameSummaryMetrics(game.id);
       const mismatchWarning = document.createElement("p");
@@ -1364,9 +1509,9 @@ const initUserGamesManager = ({
       tableScroll.scrollLeft = previousScrollLeftByGameId.get(game.id) ?? 0;
 
       if (metrics.hasPayoutMismatch) {
-        wrapper.append(title, mismatchWarning, gameTypeInfo, poolInfo, tableScroll);
+        wrapper.append(heading, mismatchWarning, gameTypeInfo, poolInfo, tableScroll);
       } else {
-        wrapper.append(title, gameTypeInfo, poolInfo, tableScroll);
+        wrapper.append(heading, gameTypeInfo, poolInfo, tableScroll);
       }
       summariesContainer.appendChild(wrapper);
     });
@@ -3233,7 +3378,7 @@ const initStatisticsView = ({
           percentAllGames: row.playedGamesPoolSum === 0 ? 0 : Math.ceil((row.payoutSum / row.playedGamesPoolSum) * 100),
           percentPlayedGames: totalPool === 0 ? 0 : Math.ceil((row.payoutSum / totalPool) * 100)
         }))
-        .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"))
+        .sort(comparePlayerStatsByPlusMinusDesc)
     };
   };
 
@@ -3607,6 +3752,8 @@ const initAdminGames = () => {
     manualStatsByYear: new Map()
   };
 
+  const summaryNotesModal = getSummaryNotesModalController();
+
   const closeModal = () => {
     if (!modal) {
       return;
@@ -3803,7 +3950,7 @@ const initAdminGames = () => {
         percentAllGames: row.playedGamesPoolSum === 0 ? 0 : Math.ceil((row.payoutSum / row.playedGamesPoolSum) * 100),
         percentPlayedGames: totalPool === 0 ? 0 : Math.ceil((row.payoutSum / totalPool) * 100)
       }))
-      .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"));
+      .sort(comparePlayerStatsByPlusMinusDesc);
 
     return {
       gameCount,
@@ -4044,8 +4191,33 @@ const initAdminGames = () => {
       const wrapper = document.createElement("section");
       wrapper.className = "admin-games-section admin-game-summary";
 
+      const heading = document.createElement("div");
+      heading.className = "admin-game-summary-heading";
+
+      const notesButton = document.createElement("button");
+      notesButton.type = "button";
+      notesButton.className = "secondary";
+      notesButton.textContent = "Notatki";
+      notesButton.addEventListener("click", () => {
+        summaryNotesModal.open({
+          gameId: game.id,
+          gameName: game.name || "Bez nazwy",
+          notes: typeof game.notes === "string" ? game.notes : "",
+          canWrite: true,
+          onSave: async ({ notes }) => {
+            await db.collection(gamesCollectionName).doc(game.id).update({ notes });
+            const target = state.games.find((entry) => entry.id === game.id);
+            if (target) {
+              target.notes = notes;
+            }
+          },
+          triggerButton: notesButton
+        });
+      });
+
       const title = document.createElement("h3");
       title.textContent = `Podsumowanie gry ${game.name || "Bez nazwy"}`;
+      heading.append(notesButton, title);
 
       const metrics = getGameSummaryMetrics(game.id);
       const mismatchWarning = document.createElement("p");
@@ -4110,9 +4282,9 @@ const initAdminGames = () => {
       tableScroll.scrollLeft = previousScrollLeftByGameId.get(game.id) ?? 0;
 
       if (metrics.hasPayoutMismatch) {
-        wrapper.append(title, mismatchWarning, gameTypeInfo, poolInfo, tableScroll);
+        wrapper.append(heading, mismatchWarning, gameTypeInfo, poolInfo, tableScroll);
       } else {
-        wrapper.append(title, gameTypeInfo, poolInfo, tableScroll);
+        wrapper.append(heading, gameTypeInfo, poolInfo, tableScroll);
       }
       summariesContainer.appendChild(wrapper);
     });

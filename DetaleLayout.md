@@ -338,3 +338,19 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 - Nie dodano nowych palet kolorystycznych.
 - Nie dodano nowych klas kolorystycznych.
 - Zastosowano istniejące style komponentowe przycisków tabelarycznych.
+
+
+## 16) „Podsumowanie gry” — przycisk Notatki i modal
+- W nagłówku każdej karty podsumowania dodano kontener `.admin-game-summary-heading`:
+  - układ poziomy `display:flex`,
+  - wyrównanie pionowe `align-items:center`,
+  - odstęp `gap:10px`.
+- W tym samym wierszu, **przed tytułem** `Podsumowanie gry ...`, znajduje się przycisk `Notatki` (wariant wizualny `.secondary`).
+- Dodano modal `#summaryNotesModal` (wariant `.modal-card-sm`) z:
+  - polem tekstowym `.admin-textarea`,
+  - przyciskiem `Zapisz` (`.primary`),
+  - przyciskiem `Usuń` (`.danger`).
+- `.admin-textarea` zachowuje motyw noir/gold:
+  - ciemne tło,
+  - subtelna ramka,
+  - focus ring w kolorze złotym.

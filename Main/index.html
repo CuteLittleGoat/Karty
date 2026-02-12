@@ -654,6 +654,24 @@
       </main>
     </div>
 
+
+    <div id="summaryNotesModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="summaryNotesTitle">
+        <div class="modal-header">
+          <h3 id="summaryNotesTitle">Notatki</h3>
+          <button id="summaryNotesClose" class="icon-button" type="button" aria-label="Zamknij okno">×</button>
+        </div>
+        <div class="modal-body">
+          <textarea id="summaryNotesInput" class="admin-textarea" rows="8" placeholder="Wpisz notatki do podsumowania gry..."></textarea>
+          <p id="summaryNotesStatus" class="status-text" aria-live="polite"></p>
+        </div>
+        <div class="modal-footer">
+          <button id="summaryNotesSave" class="primary" type="button">Zapisz</button>
+          <button id="summaryNotesClear" class="danger" type="button">Usuń</button>
+        </div>
+      </div>
+    </div>
+
     <div id="instructionModal" class="modal-overlay" aria-hidden="true">
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="instructionTitle">
         <div class="modal-header">
