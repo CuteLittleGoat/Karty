@@ -16,7 +16,7 @@ W panelu są zakładki:
 - **Gry admina**
 - **Gry użytkowników**
 
-Zakładka **Statystyki** (osobna karta) została usunięta — statystyki są teraz częścią zakładki **Gry admina**.
+Zakładka **Statystyki** jest dostępna jako osobna karta oraz równolegle synchronizuje dane z sekcją statystyk w **Gry admina**.
 
 ---
 
@@ -722,3 +722,33 @@ Zasada działania: **zawsze obowiązuje ostatnia wpisana wartość**.
 ### 19.2 Zakres tej poprawki
 - Zachowanie kolumny **Nazwa** w zakładce **Gry użytkowników** zostało ujednolicone z działaniem znanym z zakładki **Gry admina** (ten sam mechanizm identyfikacji pola podczas odświeżenia widoku).
 - Dodatkowo ten sam mechanizm przypisano także do pól **Rodzaj Gry** i **Data** w tej samej tabeli, aby wszystkie edytowalne pola wiersza zachowywały się spójnie podczas synchronizacji.
+
+## Aktualizacja 2026-02-12 — zakładka „Statystyki”
+### Administrator (`?admin=1`)
+1. Wejdź do **Panel Administratora**.
+2. Kliknij zakładkę **Statystyki** (między „Gry admina” i „Gry użytkowników”).
+3. W lewym panelu **Lata** kliknij rok, dla którego chcesz pracować.
+4. W sekcji **Statystyki**:
+   - pola `Waga1..Waga7`, `Punkty`, `Wynik` są edytowalne,
+   - każde pole zmienia od razu dane w tym samym roku.
+5. Aby hurtowo ustawić wagę, kliknij nagłówek `WagaX`, wpisz liczbę i zatwierdź.
+6. Nad każdą kolumną jest checkbox widoczności:
+   - zaznaczony = kolumna będzie widoczna dla gracza,
+   - odznaczony = kolumna ukryta dla gracza,
+   - ustawienia są niezależne dla każdego roku.
+7. Kliknij **Eksportuj**, aby pobrać plik `.xlsx`.
+
+### Gracz (bez `?admin=1`)
+1. W strefie gracza kliknij zakładkę **Statystyki**.
+2. Wpisz PIN gracza z uprawnieniem **Statystyki** i kliknij **Otwórz**.
+3. Kliknij rok po lewej stronie.
+4. Tabela jest tylko do podglądu (bez edycji).
+5. Gracz widzi tylko te kolumny, które administrator zostawił zaznaczone checkboxami.
+6. Przycisk **Eksportuj** pobiera widok gracza do `.xlsx`.
+
+### Synchronizacja z „Gry admina”
+- Edycja pól statystyk w **Gry admina** i w nowej zakładce **Statystyki** zapisuje te same dane roczne.
+- Jeśli zmienisz `Punkty`/`Waga`/`Wynik` w jednej zakładce, po odświeżeniu snapshotu identyczna wartość pojawi się w drugiej.
+- Ostatnio wybrany rok zapamiętuje się osobno dla:
+  - widoku admina w zakładce Statystyki,
+  - widoku gracza w zakładce Statystyki.

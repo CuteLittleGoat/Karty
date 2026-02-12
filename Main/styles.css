@@ -567,6 +567,18 @@ h1 {
   min-width: 84px;
 }
 
+.stats-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stats-column-visibility-checkbox {
+  width: 16px;
+  height: 16px;
+}
+
 .admin-games-ranking-table {
   min-width: 100%;
 }

@@ -13,8 +13,7 @@
 
 ## 3) Panel Administratora — aktualny układ
 - Zakładki: `Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Turnieje`, `Gry admina`, `Gry użytkowników`, `Gry do potwierdzenia`.
-- Usunięta osobna zakładka `Statystyki`.
-- Sekcja `Statystyki` została przeniesiona do wnętrza zakładki `Gry` (dolna tabela).
+- Osobna zakładka `Statystyki` jest dostępna równolegle do sekcji `Statystyki` w zakładce `Gry admina`.
 
 ## 4) Zakładka Gry — szczegóły wizualne
 ### 4.1 Layout
@@ -285,3 +284,12 @@ Dla `.admin-weight-bulk-button:hover, .admin-weight-bulk-button:focus-visible`:
 Dodatkowo dla `:focus-visible` ustawiono `outline: none`, aby styl fokusu był kontrolowany przez neonowy obrys.
 
 Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i służy do masowej zmiany kolumny.
+
+## Aktualizacja layoutu 2026-02-12 — zakładka „Statystyki”
+- Przywrócono osobną zakładkę administratora **Statystyki** w pasku zakładek panelu.
+- Dodano zakładkę gracza **Statystyki** w pasku `user-tabs`.
+- W nagłówku sekcji statystyk dodano przycisk `Eksportuj` (styl `secondary`, zgodny z istniejącymi przyciskami panelu).
+- W nagłówkach tabel statystyk (widok admina) dodano checkboxy widoczności kolumn:
+  - kontener `.stats-column-header` (flex, odstęp `8px`, wyrównanie pionowe do środka),
+  - checkbox `.stats-column-visibility-checkbox` (`16x16 px`).
+- Zachowano dotychczasowe style tabel `.admin-games-players-stats-table` oraz poziomy scroll w `.admin-table-scroll` dla szerokich zestawów kolumn.
