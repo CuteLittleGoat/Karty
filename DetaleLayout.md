@@ -314,3 +314,27 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 ### 20.3 „Szczegóły gry” w „Gry użytkowników”
 - Brak zmian w palecie kolorów, fontach i spacingu.
 - Dodano tylko metadane `data-*` dla kontroli fokusu (zmiana techniczna, bez wpływu na wygląd komponentów).
+
+---
+
+## Aktualizacja UI 2026-02-12 — przyciskowe nagłówki „Wpisowe” i etykieta „Wyniki”
+
+### Zakres
+- `Main/index.html`
+- Modale:
+  - `#gameDetailsModal`
+  - `#userGameDetailsModal`
+  - `#playerUserGameDetailsModal`
+
+### Zmiany wizualne
+1. Nagłówek kolumny **Wpisowe** w modalach szczegółów gry został zamieniony z tekstu statycznego na przycisk.
+2. Przycisk korzysta z istniejącej klasy `admin-weight-bulk-button`, więc:
+   - zachowuje aktualny styl przycisków nagłówków (spójny wygląd z przyciskami Waga1–Waga7),
+   - zachowuje aktualny font, promienie, obramowanie i stany interakcji zgodne z obecnym style guide projektu.
+3. W tabeli statystyk graczy (Gry admina) zmieniono tekst nagłówka końcowej kolumny z **Wynik** na **Wyniki** (zmiana semantyczna etykiety bez zmiany geometrii kolumny).
+
+### Typografia i kolory
+- Nie dodano nowych fontów.
+- Nie dodano nowych palet kolorystycznych.
+- Nie dodano nowych klas kolorystycznych.
+- Zastosowano istniejące style komponentowe przycisków tabelarycznych.
