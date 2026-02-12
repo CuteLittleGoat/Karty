@@ -705,3 +705,21 @@ Zasada działania: **zawsze obowiązuje ostatnia wpisana wartość**.
 - Jeżeli klikniesz **Anuluj** w popupie, tabela nie zmieni wartości.
 - Jeżeli wpiszesz wartość nienumeryczną, aplikacja pokaże komunikat o błędnej wartości i nie nadpisze kolumny.
 - Masowe ustawienie działa dla aktualnie wybranego roku.
+
+## 19. Poprawka fokusu w kolumnie „Nazwa” (zakładka „Gry użytkowników”)
+### 19.1 Jak sprawdzić, że problem został usunięty
+1. Wejdź do panelu administratora (`?admin=1`).
+2. Kliknij zakładkę **Gry użytkowników**.
+3. Wybierz rok po lewej stronie, aby pojawiła się tabela gier.
+4. W kolumnie **Nazwa** kliknij dowolne pole tekstowe.
+5. Wpisz ciąg znaków, np. `Test gry użytkownika 123`, bez ponownego klikania w pole.
+6. Odczekaj minimum 1–2 sekundy (w tle wykonuje się automatyczny zapis do Firestore).
+7. Oczekiwany efekt po poprawce:
+   - pole **nie traci fokusu**,
+   - kursor pozostaje w polu,
+   - można dalej pisać bez ponownego klikania.
+
+### 19.2 Zakres tej poprawki
+- Zachowanie kolumny **Nazwa** w zakładce **Gry użytkowników** zostało ujednolicone z działaniem znanym z zakładki **Gry admina** (ten sam mechanizm identyfikacji pola podczas odświeżenia widoku).
+- Dodatkowo ten sam mechanizm przypisano także do pól **Rodzaj Gry** i **Data** w tej samej tabeli, aby wszystkie edytowalne pola wiersza zachowywały się spójnie podczas synchronizacji.
+
