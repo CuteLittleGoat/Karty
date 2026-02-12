@@ -759,6 +759,11 @@ h1 {
   color: var(--muted);
 }
 
+.status-text-danger {
+  color: var(--danger);
+  font-weight: 600;
+}
+
 button {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
