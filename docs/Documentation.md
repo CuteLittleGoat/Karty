@@ -538,3 +538,37 @@ Skutek:
   - `.admin-game-summary-heading` (przycisk + tytuł w jednej linii),
   - `.admin-textarea` (+ styl `:focus`) dla pola notatek.
 
+
+## 17. Zmiana logiki pól liczbowych w modalu „Szczegóły gry” (Wpisowe/Wypłata)
+
+### Zakres
+Zmiana obejmuje oba miejsca użycia modala „Szczegóły gry”:
+- `Gry admina` (`initAdminGames()`),
+- `Gry użytkowników` (`initUserGamesManager(...)` — widok admina i użytkownika z uprawnieniem edycji).
+
+### 17.1 Render inputów `entryFee` i `payout`
+W obu implementacjach `createNumericCell(key)` usunięto mechanizm wymuszający `0` dla pustych wartości:
+- usunięto warunek `requiresZeroDefault` dla `entryFee`/`payout`,
+- usunięto podmianę pustego inputu na `"0"` przy renderze,
+- usunięto automatyczne przywracanie `"0"` podczas `input` event.
+
+Skutek:
+- użytkownik może skasować całą zawartość pola,
+- pole pozostaje puste i taka wartość jest zapisywana do dokumentu Firestore.
+
+### 17.2 Tworzenie nowych wierszy (`Dodaj wiersz`)
+W payloadzie tworzącym nowy rekord szczegółów gry:
+- `entryFee` zmieniono z `"0"` na `""`,
+- `payout` zmieniono z `"0"` na `""`.
+
+Skutek:
+- nowo dodane wiersze startują z pustymi polami `Wpisowe` i `Wypłata`.
+
+### 17.3 Konsekwencje backendowe (Firestore)
+- Kolekcja szczegółów gry nadal przechowuje pola jako stringi (`entryFee`, `rebuy`, `payout`, `points`).
+- Po zmianie dopuszczalny jest pusty string `""` w `entryFee` i `payout`.
+- Obliczenia (`+/-`, podsumowania, statystyki) pozostają stabilne, ponieważ warstwa obliczeniowa używa parserów typu `parseIntegerOrZero(...)`, które traktują pustą wartość jak `0`.
+
+### 17.4 Kompatybilność danych historycznych
+- Istniejące rekordy z wartością `"0"` działają bez zmian.
+- Rekordy z pustym stringiem są poprawnie renderowane jako puste pola i poprawnie liczone w agregacjach liczbowych.

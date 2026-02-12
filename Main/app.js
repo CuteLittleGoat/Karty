@@ -1720,16 +1720,12 @@ const initUserGamesManager = ({
         input.dataset.tableId = gameId;
         input.dataset.rowId = row.id;
         input.dataset.columnKey = key;
-        const requiresZeroDefault = key === "entryFee" || key === "payout";
         const rawValue = row[key] ?? "";
-        input.value = requiresZeroDefault && String(rawValue).trim() === "" ? "0" : rawValue;
+        input.value = rawValue;
         input.disabled = !writeEnabled;
         input.addEventListener("input", () => {
           if (!canWrite()) return;
           input.value = sanitizeIntegerInput(input.value);
-          if (requiresZeroDefault && input.value === "") {
-            input.value = "0";
-          }
           scheduleDebouncedUpdate(`user-detail-${gameId}-${row.id}-${key}`, () => {
             void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ [key]: input.value });
           });
@@ -1863,9 +1859,9 @@ const initUserGamesManager = ({
     }
     await db.collection(gamesCollectionName).doc(state.activeGameIdInModal).collection(gameDetailsCollectionName).add({
       playerName: "",
-      entryFee: "0",
+      entryFee: "",
       rebuy: "",
-      payout: "0",
+      payout: "",
       points: "",
       championship: false,
       createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
@@ -4481,14 +4477,10 @@ const initAdminGames = () => {
         input.dataset.tableId = gameId;
         input.dataset.rowId = row.id;
         input.dataset.columnKey = key;
-        const requiresZeroDefault = key === "entryFee" || key === "payout";
         const rawValue = row[key] ?? "";
-        input.value = requiresZeroDefault && String(rawValue).trim() === "" ? "0" : rawValue;
+        input.value = rawValue;
         input.addEventListener("input", () => {
           input.value = sanitizeIntegerInput(input.value);
-          if (requiresZeroDefault && input.value === "") {
-            input.value = "0";
-          }
           scheduleDebouncedUpdate(`detail-${gameId}-${row.id}-${key}`, () => {
             void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ [key]: input.value });
           });
@@ -4689,9 +4681,9 @@ const initAdminGames = () => {
       }
       await db.collection(gamesCollectionName).doc(state.activeGameIdInModal).collection(gameDetailsCollectionName).add({
         playerName: "",
-        entryFee: "0",
+        entryFee: "",
         rebuy: "",
-        payout: "0",
+        payout: "",
         points: "",
         championship: false,
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
