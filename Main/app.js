@@ -1278,6 +1278,10 @@ const initUserGamesManager = ({
   };
 
   const renderSummaries = () => {
+    const previousScrollLeftByGameId = new Map();
+    summariesContainer.querySelectorAll("[data-summary-game-id]").forEach((element) => {
+      previousScrollLeftByGameId.set(element.dataset.summaryGameId ?? "", element.scrollLeft);
+    });
     summariesContainer.innerHTML = "";
     const games = getGamesForSelectedYear();
 
@@ -1303,6 +1307,7 @@ const initUserGamesManager = ({
 
       const tableScroll = document.createElement("div");
       tableScroll.className = "admin-table-scroll";
+      tableScroll.dataset.summaryGameId = game.id;
       const table = document.createElement("table");
       table.className = "admin-data-table";
       table.innerHTML = `
@@ -1347,6 +1352,7 @@ const initUserGamesManager = ({
 
       table.appendChild(tbody);
       tableScroll.appendChild(table);
+      tableScroll.scrollLeft = previousScrollLeftByGameId.get(game.id) ?? 0;
 
       if (metrics.hasPayoutMismatch) {
         wrapper.append(title, mismatchWarning, gameTypeInfo, poolInfo, tableScroll);
@@ -1517,6 +1523,11 @@ const initUserGamesManager = ({
       const playerCell = document.createElement("td");
       const playerSelect = document.createElement("select");
       playerSelect.className = "admin-input";
+      playerSelect.dataset.focusTarget = "game-details-row";
+      playerSelect.dataset.section = "games-modal";
+      playerSelect.dataset.tableId = gameId;
+      playerSelect.dataset.rowId = row.id;
+      playerSelect.dataset.columnKey = "playerName";
       const currentPlayerName = typeof row.playerName === "string" ? row.playerName : "";
       const options = [...state.playerOptions];
       const emptyOption = document.createElement("option");
@@ -1550,6 +1561,11 @@ const initUserGamesManager = ({
         const input = document.createElement("input");
         input.type = "text";
         input.className = "admin-input";
+        input.dataset.focusTarget = "game-details-row";
+        input.dataset.section = "games-modal";
+        input.dataset.tableId = gameId;
+        input.dataset.rowId = row.id;
+        input.dataset.columnKey = key;
         input.value = row[key] ?? "";
         input.disabled = !writeEnabled;
         input.addEventListener("input", () => {
@@ -1575,6 +1591,11 @@ const initUserGamesManager = ({
       const championshipCell = document.createElement("td");
       const championshipInput = document.createElement("input");
       championshipInput.type = "checkbox";
+      championshipInput.dataset.focusTarget = "game-details-row";
+      championshipInput.dataset.section = "games-modal";
+      championshipInput.dataset.tableId = gameId;
+      championshipInput.dataset.rowId = row.id;
+      championshipInput.dataset.columnKey = "championship";
       championshipInput.checked = Boolean(row.championship);
       championshipInput.disabled = !writeEnabled;
       championshipInput.addEventListener("change", () => {
@@ -3692,6 +3713,7 @@ const initAdminGames = () => {
             playerName,
             championshipCount: 0,
             meetingsCount: 0,
+            pointsSum: 0,
             plusMinusSum: 0,
             payoutSum: 0,
             depositsSum: 0,
@@ -3702,6 +3724,7 @@ const initAdminGames = () => {
         const playerStats = playersMap.get(playerName);
         playerStats.meetingsCount += 1;
         playerStats.championshipCount += row.championship ? 1 : 0;
+        playerStats.pointsSum += row.points;
         playerStats.plusMinusSum += row.profit;
         playerStats.payoutSum += row.payout;
         playerStats.depositsSum += row.entryFee + row.rebuy;
@@ -3922,6 +3945,10 @@ const initAdminGames = () => {
   };
 
   const renderSummaries = () => {
+    const previousScrollLeftByGameId = new Map();
+    summariesContainer.querySelectorAll("[data-summary-game-id]").forEach((element) => {
+      previousScrollLeftByGameId.set(element.dataset.summaryGameId ?? "", element.scrollLeft);
+    });
     summariesContainer.innerHTML = "";
     const games = getGamesForSelectedYear();
 
@@ -3947,6 +3974,7 @@ const initAdminGames = () => {
 
       const tableScroll = document.createElement("div");
       tableScroll.className = "admin-table-scroll";
+      tableScroll.dataset.summaryGameId = game.id;
       const table = document.createElement("table");
       table.className = "admin-data-table";
       table.innerHTML = `
@@ -3991,6 +4019,7 @@ const initAdminGames = () => {
 
       table.appendChild(tbody);
       tableScroll.appendChild(table);
+      tableScroll.scrollLeft = previousScrollLeftByGameId.get(game.id) ?? 0;
 
       if (metrics.hasPayoutMismatch) {
         wrapper.append(title, mismatchWarning, gameTypeInfo, poolInfo, tableScroll);
@@ -4106,7 +4135,7 @@ const initAdminGames = () => {
         createReadOnlyCell(row.meetingsCount),
         createReadOnlyCell(`${row.participationPercent}%`),
         createEditableCell(row.playerName, "weight2"),
-        createEditableCell(row.playerName, "points"),
+        createReadOnlyCell(row.pointsSum),
         createEditableCell(row.playerName, "weight3"),
         createReadOnlyCell(row.plusMinusSum),
         createEditableCell(row.playerName, "weight4"),

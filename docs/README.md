@@ -275,3 +275,38 @@ Każda sekcja może mieć własny stan odblokowania, więc odblokowanie jednego 
 - Jeśli nie widzisz sekcji, sprawdź czy nie wymaga PIN-u albo uprawnienia.
 - W tabelach najpierw zapisuj dane wierszy, dopiero potem przechodź do kolejnych zakładek.
 - Jeżeli ranking/statystyki wyglądają nieaktualnie, użyj przycisku **„Odśwież”**.
+
+---
+
+## 16. Aktualizacja 2026-02-12 — Gry admina i Gry użytkowników
+
+### 16.1 Gry admina → sekcja „Statystyki” → kolumna „Punkty”
+1. Wejdź w **Panel administratora**.
+2. Kliknij zakładkę **„Gry admina”**.
+3. Wybierz rok z panelu po lewej stronie.
+4. Przewiń do sekcji **„Statystyki”**.
+5. W tabeli graczy znajdź kolumnę **„Punkty”**.
+
+Od teraz kolumna **„Punkty”** jest liczona automatycznie: to suma punktów gracza ze wszystkich gier w wybranym roku (z danych wpisanych w „Szczegóły” poszczególnych gier).
+
+### 16.2 Gry admina → „Podsumowanie gry” → stabilne przewijanie poziome
+1. W zakładce **„Gry admina”** przejdź do sekcji **„Podsumowanie gry ...”**.
+2. Przesuń tabelę poziomo (lewo/prawo).
+3. Edytuj dane gry (np. w „Szczegóły”) i poczekaj na autozapis.
+
+Po zmianie pozycja poziomego scrolla nie wraca już samoczynnie do skrajnie lewej strony.
+
+### 16.3 Gry użytkowników → „Podsumowanie gry” → stabilne przewijanie poziome
+1. Wejdź do zakładki **„Gry użytkowników”** (w panelu admina albo w widoku użytkownika).
+2. W sekcji **„Podsumowanie gry ...”** przewiń tabelę poziomo.
+3. Wprowadź zmianę w danych gry i poczekaj na odświeżenie.
+
+Po zmianie pasek poziomy zachowuje bieżącą pozycję i nie „ucieka” automatycznie w lewo.
+
+### 16.4 Gry użytkowników → okno „Szczegóły gry” → poprawa utrzymywania fokusu
+1. Otwórz zakładkę **„Gry użytkowników”**.
+2. Kliknij przycisk **„Szczegóły”** przy dowolnej grze.
+3. Edytuj pola wiersza (np. gracz, wpisowe, rebuy/add-on, wypłata, punkty, mistrzostwo).
+4. Wpisuj dane ciągle przez kilka sekund.
+
+Po zmianie pola nie powinny tracić fokusu po autozapisie i odświeżeniu widoku.

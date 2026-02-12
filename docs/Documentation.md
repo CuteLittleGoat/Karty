@@ -354,3 +354,41 @@ Aby odtworzyć system 1:1, należy zapewnić:
 - wspólny menedżer gier użytkowników.
 
 Bez tych elementów aplikacja nie zachowa pełnej zgodności funkcjonalnej z bieżącą implementacją.
+
+---
+
+## 14. Aktualizacja 2026-02-12 — Gry admina / Gry użytkowników
+
+### 14.1 `initAdminGames()` — kolumna „Punkty” liczona automatycznie
+W module `initAdminGames()` zmieniono agregację statystyk graczy:
+- w `getPlayersStatistics()` dodano pole `pointsSum` dla każdego gracza,
+- `pointsSum` jest sumą `row.points` z wszystkich rekordów szczegółów gier (`getDetailRows(game.id)`) gracza,
+- w `renderStatsTable()` kolumna „Punkty” została przepięta z pola edytowalnego (`createEditableCell(..., "points")`) na komórkę tylko do odczytu (`createReadOnlyCell(row.pointsSum)`).
+
+Efekt: w zakładce **Gry admina → Statystyki** wartość punktów nie pochodzi już z ręcznego wpisu, tylko z realnych danych meczowych gracza.
+
+### 14.2 Utrzymanie poziomego scrolla w „Podsumowanie gry”
+W dwóch renderach podsumowań (`initUserGamesManager()` oraz `initAdminGames()`) dodano mechanizm zachowania pozycji scrolla:
+1. przed `summariesContainer.innerHTML = ""` zbierane są poprzednie wartości `scrollLeft` z elementów oznaczonych `data-summary-game-id`,
+2. nowo tworzone kontenery `.admin-table-scroll` dostają `data-summary-game-id = game.id`,
+3. po zbudowaniu tabeli przywracane jest `tableScroll.scrollLeft` z zapamiętanej mapy.
+
+Dzięki temu re-render po snapshot/autozapisie nie resetuje poziomego paska na lewą krawędź.
+
+### 14.3 `initUserGamesManager()` — poprawa przywracania fokusu w modalu „Szczegóły gry”
+W `renderModal(gameId)` dodano komplet metadanych fokusu (`data-*`) dla pól wcześniej podatnych na utratę aktywności:
+- select gracza: `data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`,
+- wejścia liczbowe (`entryFee`, `rebuy`, `payout`, `points`): ten sam zestaw metadanych,
+- checkbox `championship`: ten sam zestaw metadanych.
+
+Metadane są kompatybilne z istniejącymi helperami:
+- `getFocusedAdminInputState(container)`,
+- `restoreFocusedAdminInputState(container, focusState)`.
+
+Skutek: po debounce + onSnapshot modal jest przebudowywany, ale fokus i pozycja kursora są odtwarzane dla edytowanego pola.
+
+### 14.4 Backend / dane
+Zmiana nie wymaga migracji struktury Firestore.
+- nadal wykorzystywane są te same kolekcje i pola szczegółów gier,
+- `pointsSum` jest wartością wyliczaną runtime na froncie,
+- zapis do `ADMIN_GAMES_STATS_COLLECTION` pozostaje zgodny wstecznie.
