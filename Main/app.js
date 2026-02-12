@@ -3611,9 +3611,10 @@ const initLatestMessage = () => {
 
 const initAdminRules = () => {
   const input = document.querySelector("#adminRulesInput");
+  const saveButton = document.querySelector("#adminRulesSave");
   const status = document.querySelector("#adminRulesStatus");
 
-  if (!input || !status) {
+  if (!input || !saveButton || !status) {
     return;
   }
 
@@ -3621,6 +3622,7 @@ const initAdminRules = () => {
 
   if (!firebaseApp) {
     input.disabled = true;
+    saveButton.disabled = true;
     status.textContent = "Uzupełnij konfigurację Firebase, aby edytować regulamin.";
     return;
   }
@@ -3641,6 +3643,7 @@ const initAdminRules = () => {
         input.value = rulesText;
       }
       status.textContent = data?.text ? "Regulamin jest aktualny." : "Brak zapisanej treści regulaminu.";
+      saveButton.disabled = false;
       isSaving = false;
     },
     () => {
@@ -3648,20 +3651,25 @@ const initAdminRules = () => {
     }
   );
 
-  input.addEventListener("input", () => {
+  saveButton.addEventListener("click", () => {
+    if (isSaving) {
+      return;
+    }
+
     status.textContent = "Zapisywanie regulaminu...";
     isSaving = true;
-    scheduleDebouncedUpdate("admin-rules-text", () => {
-      void rulesDocRef.set({
-        text: input.value.trim(),
-        updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
-        source: "web-admin"
-      }, { merge: true })
-        .catch(() => {
-          isSaving = false;
-          status.textContent = "Nie udało się zapisać regulaminu.";
-        });
-    });
+    saveButton.disabled = true;
+
+    void rulesDocRef.set({
+      text: input.value,
+      updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+      source: "web-admin"
+    }, { merge: true })
+      .catch(() => {
+        isSaving = false;
+        saveButton.disabled = false;
+        status.textContent = "Nie udało się zapisać regulaminu.";
+      });
   });
 };
 
