@@ -270,22 +270,36 @@ h1 {
 
 
 .admin-weight-bulk-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  letter-spacing: inherit;
-  text-transform: inherit;
-  text-align: left;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid rgba(43, 227, 139, 0.45);
+  border-radius: var(--radius-sm);
+  background: rgba(43, 227, 139, 0.14);
+  color: rgba(237, 235, 230, 0.92);
+  font-family: var(--font-panel);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  box-shadow: var(--glow-neon);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   cursor: pointer;
 }
 
 .admin-weight-bulk-button:hover,
 .admin-weight-bulk-button:focus-visible {
-  color: #f3cc63;
-  text-decoration: underline;
+  transform: translateY(-1px);
+  border-color: rgba(43, 227, 139, 0.7);
+  box-shadow: 0 0 0 2px rgba(43, 227, 139, 0.22), var(--glow-neon);
+}
+
+.admin-weight-bulk-button:focus-visible {
+  outline: none;
 }
 
 .admin-input {
