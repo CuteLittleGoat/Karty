@@ -912,7 +912,7 @@ Klasa rozszerza bazową typografię `.status-text` i jest używana wyłącznie d
 W tabeli `admin-games-players-stats-table` nagłówki `Waga1..Waga7` zostały zamienione z tekstu statycznego `<th>WagaX</th>` na przyciski:
 - `<button type="button" class="admin-weight-bulk-button" data-weight-key="weightX">WagaX</button>`.
 
-Dzięki temu każdy nagłówek stał się elementem interaktywnym wywołującym masową aktualizację wartości w danej kolumnie.
+Dzięki temu każdy nagłówek stał się elementem interaktywnym wywołującym masową aktualizację wartości w danej kolumnie i jednocześnie otrzymał wygląd spójny z zielonymi przyciskami akcji panelu admina (rodzina wizualna przycisków `secondary`).
 
 ### 26.2 Domyślne wartości wag
 W `initAdminGames()` dodano rozdzielenie pól ręcznych:
@@ -950,6 +950,16 @@ Mechanizm jest wielokrotnego użytku: każde kolejne kliknięcie i zatwierdzenie
 - Zmiana jest kompatybilna wstecz z istniejącymi dokumentami `admin_games_stats/{rok}`.
 - Brak historycznych pól wag nie powoduje pustych inputów — UI i zapis wymuszają domyślną wartość `1`.
 - Pola `points` i `result` zachowują dotychczasowe zachowanie (brak domyślnego `1`).
+
+### 26.5 Styl przycisków `Waga1..Waga7`
+Klasa `.admin-weight-bulk-button` została przebudowana tak, aby nagłówki wag wyglądały jak klikalne przyciski akcji:
+- układ: `display: inline-flex`, centrowanie treści, `width: 100%`, `min-height: 34px`,
+- bryła: `padding: 6px 10px`, `border-radius: var(--radius-sm)`,
+- kolorystyka: `background: rgba(43, 227, 139, 0.14)`, `border: 1px solid rgba(43, 227, 139, 0.45)`,
+- typografia: `font-family: var(--font-panel)`, `font-size: 11px`, `font-weight: 600`, `text-transform: uppercase`,
+- efekt aktywności: `box-shadow: var(--glow-neon)` oraz animacja przesunięcia i wzmocnienia obrysu w `:hover` / `:focus-visible`.
+
+Ta zmiana dotyczy wyłącznie warstwy wizualnej — logika masowego wpisywania wartości do kolumn pozostaje bez zmian.
 
 ## 27. Stabilizacja fokusu w tabeli „Gry użytkowników” (kolumna „Nazwa” + pola wiersza)
 

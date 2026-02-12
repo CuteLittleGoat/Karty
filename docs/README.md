@@ -681,7 +681,7 @@ W sekcji tabeli statystyk graczy kolumny **Waga1–Waga7** działają teraz w dw
 3. Wybierz rok z lewej kolumny **Lata**.
 4. Przewiń do sekcji **Statystyki** i do szerokiej tabeli graczy.
 5. W kolumnach **Waga1..Waga7**:
-   - nagłówek jest przyciskiem (można go kliknąć),
+   - nagłówek jest wyraźnym przyciskiem wizualnie zgodnym z zielonymi przyciskami akcji (jak **Odśwież** / **Instrukcja**),
    - każda komórka ma domyślnie wpisaną wartość `1`.
 
 ### 19.2 Jak ustawić jedną wartość dla całej kolumny (krok po kroku)
@@ -722,4 +722,3 @@ Zasada działania: **zawsze obowiązuje ostatnia wpisana wartość**.
 ### 19.2 Zakres tej poprawki
 - Zachowanie kolumny **Nazwa** w zakładce **Gry użytkowników** zostało ujednolicone z działaniem znanym z zakładki **Gry admina** (ten sam mechanizm identyfikacji pola podczas odświeżenia widoku).
 - Dodatkowo ten sam mechanizm przypisano także do pól **Rodzaj Gry** i **Data** w tej samej tabeli, aby wszystkie edytowalne pola wiersza zachowywały się spójnie podczas synchronizacji.
-

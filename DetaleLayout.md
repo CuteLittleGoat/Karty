@@ -267,16 +267,21 @@ Ten sam styl i kolejność elementów obowiązuje w:
 ### 18.1 Nagłówki kolumn jako przyciski
 W tabeli `.admin-games-players-stats-table` nagłówki `Waga1..Waga7` są renderowane jako przyciski `.admin-weight-bulk-button` umieszczone wewnątrz `th`.
 
-Parametry stylu `.admin-weight-bulk-button`:
-- `width: 100%` — przycisk zajmuje pełną szerokość komórki nagłówka,
-- `padding: 0`, `border: 0`, `background: transparent` — brak własnej „ramki przycisku”,
-- `color: inherit`, `font: inherit`, `letter-spacing: inherit`, `text-transform: inherit` — pełne dziedziczenie stylu nagłówka tabeli,
-- `text-align: left` — zgodność z wyrównaniem całej tabeli,
-- `cursor: pointer` — sygnalizacja interaktywności.
+Parametry stylu `.admin-weight-bulk-button` (wariant wizualny zbliżony do przycisków `secondary`, np. „Odśwież” i „Instrukcja”):
+- layout: `display: inline-flex`, `align-items: center`, `justify-content: center`,
+- rozmiar: `width: 100%`, `min-height: 34px`, `padding: 6px 10px`,
+- obramowanie i tło: `border: 1px solid rgba(43, 227, 139, 0.45)`, `border-radius: var(--radius-sm)`, `background: rgba(43, 227, 139, 0.14)`,
+- typografia: `font-family: var(--font-panel)`, `font-size: 11px`, `font-weight: 600`, `letter-spacing: 0.1em`, `text-transform: uppercase`,
+- kolor tekstu: `rgba(237, 235, 230, 0.92)`,
+- światło: `box-shadow: var(--glow-neon)`,
+- interaktywność: `cursor: pointer`, `transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease`.
 
 ### 18.2 Stan hover/focus
 Dla `.admin-weight-bulk-button:hover, .admin-weight-bulk-button:focus-visible`:
-- kolor tekstu przechodzi na `#f3cc63`,
-- pojawia się `text-decoration: underline`.
+- przycisk unosi się o `-1px` (`transform: translateY(-1px)`),
+- obrys wzmacnia się do `border-color: rgba(43, 227, 139, 0.7)`,
+- cień przechodzi na `box-shadow: 0 0 0 2px rgba(43, 227, 139, 0.22), var(--glow-neon)`.
 
-Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalny i służy do masowej zmiany kolumny.
+Dodatkowo dla `:focus-visible` ustawiono `outline: none`, aby styl fokusu był kontrolowany przez neonowy obrys.
+
+Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i służy do masowej zmiany kolumny.
