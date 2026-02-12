@@ -644,6 +644,37 @@ h1 {
   background: rgba(0, 0, 0, 0.24);
 }
 
+
+.admin-game-summary-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-game-summary-heading h3 {
+  margin: 0;
+}
+
+.admin-textarea {
+  width: 100%;
+  min-height: 180px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text);
+  padding: 10px 12px;
+  font-family: var(--font-text);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.admin-textarea:focus {
+  outline: none;
+  border-color: rgba(212, 175, 55, 0.6);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.16);
+}
+
 .admin-players {
   display: grid;
   gap: var(--gap-2);

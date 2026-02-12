@@ -137,9 +137,19 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 
 ### Podstawowy przepływ
 1. Otwórz zakładkę **„Gry admina”**.
-2. Wybierz rok z listy/filtra.
-3. Wybierz grę z listy.
-4. Otwórz szczegóły i edytuj wiersze.
+2. W lewym panelu **„Lata”** kliknij rok, dla którego chcesz pracować.
+3. W sekcji **„Tabele Gier”** kliknij wiersz gry i w kolumnie **„Nazwa”** użyj przycisku **„Szczegóły”**, aby wejść do pełnej edycji graczy.
+4. W modalu szczegółów zmieniaj wartości i zamknij okno przyciskiem `×`.
+
+
+### Podsumowanie gry — przycisk „Notatki”
+1. W zakładce **„Gry admina”** wybierz rok po lewej stronie.
+2. Przejdź do karty **„Podsumowanie gry ...”** dla wybranej pozycji.
+3. W tej samej linii, przed tytułem **„Podsumowanie gry ...”**, kliknij przycisk **„Notatki”**.
+4. Otworzy się osobne okno z polem tekstowym.
+5. Wpisz notatkę i kliknij **„Zapisz”** — treść zostanie zapamiętana dla tej gry.
+6. Jeśli chcesz wyczyścić notatkę, kliknij **„Usuń”** (pole zostanie zapisane jako puste).
+7. Zamknij okno przyciskiem `×`, kliknięciem poza oknem lub klawiszem `Esc`.
 
 ### Które pola wpisujesz ręcznie
 - Nazwa gracza,
@@ -160,9 +170,10 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 
 ### Jak korzystać
 1. Otwórz zakładkę **„Statystyki”**.
-2. Jeśli wymagany jest PIN, wpisz PIN i potwierdź.
-3. Wybierz rok (jeśli filtr jest widoczny).
-4. Przeglądaj tabelę wyników i ranking.
+2. Jeśli wymagany jest PIN, wpisz PIN i kliknij **„Otwórz”**.
+3. W lewym panelu **„Lata”** kliknij rok.
+4. Sprawdź tabelę graczy — wiersze są domyślnie ustawione malejąco po kolumnie **„(+/-)”** (najwyższy wynik na górze, najniższy na dole).
+5. Taki sam porządek zobaczysz też w sekcji **„Statystyki”** na karcie **„Gry admina”**.
 
 ### Interpretacja
 - Kolumny procentowe i wynikowe są wyliczane automatycznie.
