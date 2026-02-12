@@ -1,754 +1,228 @@
-# Karty — instrukcja użytkownika (administrator + gracz)
+# Karty — Instrukcja użytkownika UI
 
-## 1. Uruchomienie aplikacji
-1. Otwórz `Main/index.html` w przeglądarce.
-2. Aby wejść do panelu administratora, dopisz `?admin=1` do adresu, np. `.../Main/index.html?admin=1`.
-3. Bez `?admin=1` widoczna jest tylko strefa użytkownika.
+> Ten dokument opisuje **wyłącznie obsługę interfejsu**: co kliknąć, gdzie wpisać dane i jaki efekt powinien być widoczny na ekranie.
+
+## 1. Wejście do aplikacji
+
+1. Otwórz widok aplikacji w przeglądarce.
+2. Aby przejść do panelu administratora, dodaj do adresu strony `?admin=1`.
+3. Aby przejść do widoku gracza, użyj adresu bez parametru `?admin=1`.
 
 ---
 
-## 2. Panel Administratora — szybki opis zakładek
-W panelu są zakładki:
+## 2. Panel administratora — nawigacja
+
+Po wejściu do panelu administratora widzisz zakładki:
 - **Aktualności**
+- **Czat**
 - **Regulamin**
 - **Gracze**
 - **Turnieje**
 - **Gry admina**
+- **Statystyki**
 - **Gry użytkowników**
+- **Gry do potwierdzenia**
 
-Zakładka **Statystyki** jest dostępna jako osobna karta oraz równolegle synchronizuje dane z sekcją statystyk w **Gry admina**.
-
----
-
-## 3. Zakładka „Gracze” — co i gdzie kliknąć
-### 3.1 Dodanie gracza
-1. Kliknij zakładkę **Gracze**.
-2. Kliknij przycisk **Dodaj** pod tabelą.
-3. W nowym wierszu najpierw znajdź kolumnę **Aplikacja** (pierwsza z lewej) i ustaw checkbox:
-   - zaznaczony = gracz ma oznaczenie aktywne w aplikacji,
-   - odznaczony = gracz ma oznaczenie nieaktywne.
-4. Kliknij pole **Nazwa** i wpisz imię/nick.
-5. Kliknij pole **PIN** i wpisz 5 cyfr albo kliknij **Losuj**.
-6. Poczekaj chwilę na automatyczny zapis (status pod nagłówkiem może pokazać informację o zapisie).
-
-### 3.2 Usunięcie gracza
-1. W wierszu gracza kliknij **Usuń**.
-2. Wpis gracza znika z listy.
-
-> Ważne dla zakładki Gry: jeśli gracz był już użyty w „Szczegółach gry”, jego nazwa pozostaje historycznie we wpisie, ale po usunięciu z zakładki Gracze nie będzie dostępna do nowego wyboru z listy.
+### Szybkie zasady poruszania się
+- Kliknięcie zakładki przełącza zawartość środka panelu.
+- Przycisk **Odśwież** (górna część panelu) ponownie ładuje dane widoczne w aktywnej zakładce.
+- Komunikaty statusu pod nagłówkami (np. „Zapisywanie...”, „Zapisano”) informują, czy akcja się udała.
 
 ---
 
+## 3. Zakładka „Aktualności”
 
-### 3.3 Kolumna „Aplikacja” — dokładna obsługa checkboxa
-1. Wejdź do zakładki **Gracze** w panelu administratora.
-2. W tabeli znajdź pierwszą kolumnę z lewej o nazwie **Aplikacja**.
-3. W wybranym wierszu kliknij checkbox:
-   - kliknięcie zaznacza pole,
-   - kolejne kliknięcie odznacza pole.
-4. Po zmianie nic więcej nie trzeba zatwierdzać — stan zapisuje się automatycznie w bazie Firestore.
-5. Sprawdzenie trwałości ustawienia:
-   - odśwież kartę przeglądarki (`Ctrl+R`),
-   - zamknij przeglądarkę i uruchom ją ponownie,
-   - wróć do `.../Main/index.html?admin=1` → **Gracze**.
-6. Oczekiwany efekt: checkbox dla każdego gracza zachowuje ostatni zapisany stan (zaznaczony/odznaczony).
-
-> Uwaga: zmiana checkboxa w kolumnie **Aplikacja** nie modyfikuje PIN-u, nazwy, uprawnień ani żadnych obliczeń w pozostałych zakładkach.
-
----
-
-### 3.4 Stabilność kursora podczas wpisywania (ważne)
-1. Wejdź do **Gracze**.
-2. Kliknij pole **Nazwa** albo **PIN** dowolnego gracza.
-3. Wpisuj tekst/cyfry ciągiem (bez dodatkowego klikania po każdej literze).
-4. Oczekiwany efekt po poprawce: aktywne pole pozostaje zaznaczone (zachowuje fokus), a kursor zostaje w tym samym miejscu nawet wtedy, gdy dane właśnie synchronizują się z bazą Firestore.
-
-Działa to także, gdy równolegle zapisuje się inny wiersz i tabela jest odświeżana.
-
----
-
-## 4. Zakładka „Gry” — pełna instrukcja krok po kroku
-Zakładka ma teraz 3 obszary:
-1. **Lewa kolumna „Lata”**.
-2. **Górny segment „Tabele Gier”**.
-3. **Dolny segment „Statystyki”**.
-
-Dodatkowo pod tabelą gier pojawiają się sekcje **„Podsumowanie gry [nazwa]”** dla każdej gry z wybranego roku.
-
-### 4.1 Lewy panel „Lata” (działa automatycznie)
-W tej wersji **nie ma już przycisków „Dodaj rok” i „Usuń rok”**.
-
-Rok pojawia się automatycznie, gdy w tabeli gier istnieje wpis z datą z tego roku.
-- jeśli dodasz grę z datą `2026-02-11`, po lewej pojawi się przycisk `2026`,
-- jeśli później dodasz grę z datą `2027-10-10`, pojawi się także przycisk `2027`.
-
-Usuwanie roku też jest automatyczne: gdy skasujesz ostatnią grę z danego roku, przycisk tego roku znika z panelu.
-
-Aplikacja zapamiętuje ostatnio kliknięty rok (po odświeżeniu strony nadal będzie aktywny ten sam rok, jeśli nadal istnieje w danych).
-
-### 4.2 Segment „Tabele Gier” (góra)
-#### Dodanie nowej gry
-1. Kliknij przycisk **Dodaj** w nagłówku „Tabele Gier”.
-2. System natychmiast tworzy nowy wpis z datą **dzisiejszą** (`rrrr-MM-dd`, zgodnie z zegarem urządzenia).
-3. Aplikacja tworzy nowy wiersz z domyślnymi wartościami:
-   - **Rodzaj Gry**: `Cashout`.
-   - **Data**: bieżąca data (`rrrr-MM-dd`).
-   - **Nazwa**: `Gra X`, gdzie `X` to pierwszy wolny numer dla tej konkretnej daty (np. gdy istnieją `Gra 1` i `Gra 3`, nowa nazwa to `Gra 2`).
-4. Po poprawnym zapisie zobaczysz komunikat statusu „Dodano grę ...”. Jeśli zapis się nie uda (np. brak uprawnień Firestore), pojawi się precyzyjny komunikat błędu.
-
-#### Edycja wiersza gry
-1. W kolumnie **Rodzaj Gry** wybierz z listy `Cashout` lub `Turniej`.
-2. W kolumnie **Data** kliknij pole daty i wybierz dzień.
-3. W kolumnie **Nazwa** wpisz własną nazwę gry.
-4. Kliknij **Szczegóły**, aby otworzyć okno szczegółów tej gry.
-5. Kliknij **Usuń** (po prawej), aby skasować cały wiersz gry.
-
-### 4.3 Okno „Szczegóły gry”
-Po kliknięciu **Szczegóły** otwiera się modal z edytowalną tabelą.
-Zamykanie tego okna odbywa się wyłącznie ikoną **X** w prawym górnym rogu (przycisk „Zamknij” nie występuje).
-
-#### Dodanie gracza do szczegółów
-1. Kliknij **Szczegóły** przy wybranej grze.
-2. W oknie kliknij **Dodaj** (pod tabelą).
-3. W nowym wierszu uzupełnij kolumny:
-   - **Gracz**: wybór z listy graczy z zakładki „Gracze”.
-   - **Wpisowe**: tylko cyfry (dozwolony minus na początku).
-   - **Rebuy/Add-on**: tylko cyfry (dozwolony minus na początku).
-   - **Wypłata**: tylko cyfry (dozwolony minus na początku).
-   - **+/-**: pole liczone automatycznie (`Wypłata - (Wpisowe + Rebuy/Add-on)`).
-   - **Punkty**: tylko cyfry (dozwolony minus na początku).
-   - **Mistrzostwo**: checkbox.
-4. Aby usunąć wiersz gracza ze szczegółów, kliknij **Usuń** w tym wierszu.
-
-#### Zachowanie usuniętych graczy
-- Jeśli administrator usunie gracza w zakładce „Gracze”, nazwa we wcześniej zapisanych szczegółach nie jest kasowana.
-- Taki gracz nie jest dostępny na liście rozwijanej do nowego wyboru.
-
-### 4.4 Segment „Podsumowanie gry [nazwa]”
-Pod każdą grą renderuje się osobny segment podsumowania.
-
-W segmencie:
-1. Linia **Pula** = suma wszystkich wartości `Wpisowe + Rebuy/Add-on` ze szczegółów danej gry.
-2. Tabela z kolumnami:
-   - Gracz
-   - Wpisowe
-   - Rebuy/Add-on
-   - Wypłata
-   - +/-
-   - % puli
-   - Punkty
-   - Mistrzostwo
-3. Kolumna **% puli** liczona jest jako `round((Wypłata / Pula) * 100)`.
-4. Sortowanie wierszy: malejąco po **% puli**.
-
-### 4.5 Segment „Statystyki” (dół)
-Sekcja pokazuje zbiorcze wartości dla aktywnego roku, m.in.:
-- liczba gier,
-- łączna pula.
-
-### 4.6 Najważniejsza zmiana architektury
-Zakładka **Gry** działa niezależnie od zakładki **Turnieje**:
-- dane i lista lat są liczone wyłącznie z dat wpisanych w zakładce **Gry**,
-- lata nie są już dodawane ręcznie — panel lat jest generowany automatycznie z kolekcji gier,
-- zakładka Gry nie pobiera danych z Turniejów.
-
----
-
-### 4.7 Stabilność wpisywania w zakładce „Gry” i w „Szczegółach gry”
-Po tej poprawce nie trzeba już ponownie klikać w pole po każdej synchronizacji danych:
-
-1. W tabeli gier kliknij **Nazwa** i wpisuj długi tekst.
-2. Bez klikania przejdź strzałkami w tekście i dopisuj kolejne znaki.
-3. Zmień w tym samym wierszu **Data** lub **Rodzaj Gry**.
-4. Kliknij **Szczegóły** i w modalu wpisuj wartości w kolumnach: **Wpisowe**, **Rebuy/Add-on**, **Wypłata**, **Punkty**.
-5. Oczekiwany efekt: fokus i pozycja kursora są automatycznie przywracane po każdym przebudowaniu widoku, więc piszesz ciągiem bez zrywania podświetlenia pola.
-
-Mechanizm działa dla pól tekstowych, pól liczbowych wpisywanych jako tekst, selectów i checkboxa „Mistrzostwo” w szczegółach gry.
-
----
-
-## 5. Aktualności
+### Wysłanie wiadomości do graczy
 1. Wejdź w zakładkę **Aktualności**.
-2. Wpisz wiadomość.
-3. Kliknij **Wyślij**.
-
----
-
-
-## 5A. Zakładka „Regulamin”
-### 5A.1 Widok administratora (edycja ręczna + przycisk „Zapisz”)
-1. Otwórz aplikację z parametrem `?admin=1`.
-2. W panelu administratora kliknij zakładkę **Regulamin** (pomiędzy „Aktualności” i „Gracze”).
-3. Zobaczysz pole **Treść regulaminu** oraz przycisk **Zapisz**.
-4. Aby wprowadzić nową treść:
-   - kliknij bezpośrednio w pole tekstowe,
-   - wpisz pełny tekst zasad (możesz użyć wielu akapitów),
-   - po zakończeniu edycji kliknij przycisk **Zapisz** pod polem.
-5. Oczekiwany efekt:
-   - status pokaże „Zapisywanie regulaminu...”, a po odświeżeniu danych „Regulamin jest aktualny.”,
-   - treść zostaje zapisana w Firestore dopiero po kliknięciu **Zapisz**,
-   - wpisywanie nie powoduje już automatycznego zapisu ani cofania kursora.
-6. Aby wyczyścić regulamin:
-   - usuń zawartość pola tekstowego,
-   - kliknij **Zapisz** (pusta treść zostanie zapisana).
-
-### 5A.2 Widok użytkownika (tylko odczyt, bez PIN)
-1. Otwórz aplikację bez `?admin=1`.
-2. W sekcji „Strefa gracza” kliknij zakładkę **Regulamin**.
-3. Treść regulaminu jest wyświetlana w polu tylko do odczytu.
-4. Ta zakładka jest dostępna zawsze:
-   - nie wymaga wpisania PIN,
-   - nie zależy od uprawnień konfigurowanych w zakładce „Gracze”.
-
-## 6. Strefa gracza
-1. Otwórz stronę bez `?admin=1`.
-2. W zakładce „Najbliższa gra” wpisz PIN i kliknij **Otwórz**.
-3. W zakładce „Aktualności” odczytasz najnowszą wiadomość administratora.
-4. W zakładce „Regulamin” odczytasz aktualne zasady zapisane przez administratora (bez opcji edycji).
-
-## 7. Firebase — konfiguracja konieczna, żeby działały przyciski „Dodaj” i „Usuń” w zakładce Gry
-1. Otwórz plik `config/firebase-config.js`.
-2. Upewnij się, że ustawienia mają dokładnie takie wartości (z wielkością liter):
-   - `gamesCollection: "Tables"`
-   - `gameDetailsCollection: "rows"`
-3. Wejdź do Firebase Console → Firestore Database → Rules i sprawdź, że masz blok:
-   - `match /Tables/{tableId} { allow read, write: if true; ... }`
-   - oraz zagnieżdżony blok: `match /rows/{rowId} { allow read, write: if true; }`
-4. Kliknij **Publish** w regułach (jeśli cokolwiek zmieniasz).
-5. Wróć do aplikacji i odśwież stronę (`Ctrl+R`).
-6. Wejdź w `?admin=1` → zakładka **Gry** i sprawdź po kolei:
-   - kliknij **Dodaj** w tabeli gier,
-   - kliknij **Szczegóły** dla dowolnej gry i kliknij **Dodaj** w modalu,
-   - kliknij **Usuń** dla wiersza szczegółów,
-   - kliknij **Usuń** dla całej gry.
-7. Oczekiwany efekt: wszystkie operacje zapisu/usuwania wykonują się bez błędu uprawnień.
-
-### Dlaczego to naprawia błąd
-- Pierwszy błąd dotyczył zapisu do kolekcji `Games`, której nie obejmowały reguły.
-- Drugi błąd dotyczył zapisu/usuwania w subkolekcji `details`, podczas gdy reguły dopuszczały subkolekcję `rows`.
-- Aplikacja została ustawiona tak, aby zakładka **Gry** używała `Tables` + `rows` (konfigurowalne przez `gamesCollection` i `gameDetailsCollection`).
-
-
-## 8. Czat — szczegółowa instrukcja obsługi (wdrożenie bez TTL Policy)
-
-### 8.1 Nadanie uprawnienia „Czat” dla gracza (admin)
-1. Otwórz aplikację w trybie administratora (`?admin=1`).
-2. Kliknij zakładkę **Gracze**.
-3. W wybranym wierszu kliknij przycisk **Uprawnienia**.
-4. W oknie „Uprawnienia gracza” zaznacz checkbox **Czat**.
-5. Kliknij ikonę **X** w prawym górnym rogu okna.
-6. Poczekaj na zapis (status pod tabelą).
-7. Oczekiwany efekt: w kolumnie uprawnień gracza pojawia się znacznik **Czat**.
-
-### 8.2 Wejście gracza do czatu (PIN + uprawnienie)
-1. Otwórz aplikację bez `?admin=1`.
-2. W panelu „Strefa gracza” kliknij zakładkę **Czat**.
-3. W polu PIN wpisz dokładnie 5 cyfr przypisanych do gracza.
-4. Kliknij **Otwórz**.
-5. Oczekiwane komunikaty:
-   - sukces: „PIN poprawny. Witaj ...” i otwarcie listy wiadomości,
-   - błąd: „Błędny PIN lub brak uprawnień do zakładki „Czat”.”.
-
-### 8.3 Wysyłka wiadomości przez gracza
-1. Wejdź do zakładki **Czat** i przejdź bramkę PIN.
-2. W sekcji „Twoja wiadomość” kliknij pole tekstowe.
-3. Wpisz treść wiadomości (do 600 znaków).
+2. Kliknij pole **Treść wiadomości**.
+3. Wpisz komunikat.
 4. Kliknij **Wyślij**.
-5. Oczekiwany efekt:
-   - status „Wysyłanie...”, następnie „Wiadomość wysłana.”,
-   - wiadomość od razu pojawia się na liście wszystkim użytkownikom czatu (real-time).
-
-### 8.4 Moderacja czatu w panelu administratora
-1. Otwórz aplikację z `?admin=1`.
-2. Kliknij zakładkę **Czat** w panelu administratora.
-3. W liście widzisz autora, datę i treść wiadomości.
-4. Aby skasować pojedynczą wiadomość, kliknij **Usuń** przy tej wiadomości.
-5. Oczekiwany efekt: wpis natychmiast znika z listy (u admina i graczy).
-
-### 8.5 Usuwanie wiadomości starszych niż 30 dni (manual, bez TTL Policy)
-1. Otwórz `?admin=1` → zakładka **Czat**.
-2. Kliknij przycisk **Usuń starsze niż 30 dni**.
-3. Poczekaj na zakończenie operacji (aplikacja usuwa rekordy partiami).
-4. Odczytaj status pod przyciskiem, np. „Usunięto 12 wiadomości starszych niż 30 dni.”.
-5. Oczekiwany efekt: w bazie nie pozostają rekordy z `expireAt <= teraz`.
-
-### 8.6 Co sprawdzić po wdrożeniu czatu
-1. Gracz bez uprawnienia `chatTab` nie wejdzie na czat mimo poprawnego PIN.
-2. Gracz z `chatTab` widzi wiadomości i może wysyłać nowe.
-3. Administrator usuwa pojedyncze wiadomości.
-4. Administrator uruchamia masowe czyszczenie starszych wpisów.
-
-## 9. Firebase — aktualna struktura bazy i aktualne Rules
-
-### 9.1 Struktura Firestore (kolekcje i dokumenty)
-Aktualnie wykorzystywane są kolekcje:
-1. `admin_messages`
-   - dokumenty komunikatów admina,
-   - pola: `message`, `createdAt`, `source`.
-2. `app_settings`
-   - dokument `next_game` z polem `pin`,
-   - dokument `player_access` z tablicą `players[]` (obiekty m.in. `id`, `name`, `pin`, `permissions`, `appEnabled`),
-   - dokument `rules` z treścią regulaminu (`text`, `updatedAt`, `source`).
-3. `Tables`
-   - dokumenty gier/turniejów (m.in. `gameType`, `gameDate`, `name`, `createdAt`),
-   - subkolekcja `rows` z wierszami szczegółów,
-   - subkolekcja `confirmations` ze stanem potwierdzeń graczy (`confirmed`, `updatedAt`, `updatedBy`, `playerName`, `playerId`).
-4. `Collection1`
-   - kolekcja historyczna pozostawiona w projekcie.
-5. `chat_messages`
-   - dokumenty czatu,
-   - pola: `text`, `authorName`, `authorId`, `createdAt`, `expireAt`, `source`.
-6. `players`
-   - dokument techniczny/historyczny `players` z polami zbiorczymi (`Cash`, `GamesPlayed`, `GamesWon`, itp.).
-
-### 9.2 Aktualne Firestore Rules
-```js
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /admin_messages/{docId} {
-      allow read, write: if true;
-    }
-
-    match /app_settings/{docId} {
-      allow read, write: if true;
-    }
-
-    match /Tables/{tableId} {
-      allow read, write: if true;
-
-      match /rows/{rowId} {
-        allow read, write: if true;
-      }
-
-      match /confirmations/{playerId} {
-        allow read, write: if true;
-      }
-    }
-
-    match /Collection1/{docId} {
-      allow read, write: if true;
-    }
-
-    match /chat_messages/{docId} {
-      allow read, write: if true;
-    }
-  }
-}
-```
+5. Sprawdź status obok przycisku — po poprawnym wysłaniu pojawia się potwierdzenie.
 
 ---
 
-## 9. Nowa funkcja: „Gry do potwierdzenia” + checkbox „CzyZamknięta”
+## 4. Zakładka „Czat” (administrator)
 
-### 9.1 Administrator — „Tabele Gier”
-1. Otwórz `.../Main/index.html?admin=1`.
-2. Wejdź w zakładkę **Gry**.
-3. W tabeli **Tabele Gier** zobaczysz nową kolumnę **CzyZamknięta**.
-4. W każdej grze kliknij checkbox:
-   - **odznaczony** = gra aktywna do potwierdzania,
-   - **zaznaczony** = gra zamknięta (znika z obu widoków „Gry do potwierdzenia”).
-5. Checkbox można przełączać dowolną liczbę razy.
-
-### 9.2 Administrator — zakładka „Gry do potwierdzenia”
-1. W panelu admina kliknij zakładkę **Gry do potwierdzenia**.
-2. Zobaczysz listę tylko aktywnych gier (`CzyZamknięta` odznaczone).
-3. Pod każdą grą widoczna jest tabela graczy zapisanych w **Szczegóły** tej gry (kolumna „Gracz”).
-4. W kolumnie **Status**:
-   - `Potwierdzono` = obecność zatwierdzona,
-   - `Niepotwierdzono` = brak potwierdzenia.
-5. W kolumnie **Akcje** kliknij:
-   - **Potwierdź** — ustawia status na potwierdzony,
-   - **Anuluj** — cofa potwierdzenie.
-6. Wiersz z potwierdzoną obecnością jest podświetlany na złoto.
-7. Aby zobaczyć najnowsze dane po zmianach gracza, kliknij globalny przycisk **Odśwież** (na górze panelu admina).
-
-### 9.3 Użytkownik — zakładka „Gry do potwierdzenia”
-1. Otwórz aplikację bez `?admin=1`.
-2. Kliknij zakładkę **Gry do potwierdzenia**.
-3. Wpisz 5-cyfrowy PIN gracza, który ma uprawnienie **Gry do potwierdzenia**.
-4. Kliknij **Otwórz**.
-5. Zobaczysz tylko gry spełniające warunki:
-   - gracz występuje w **Szczegóły gry** (kolumna „Gracz”),
-   - gra ma odznaczone **CzyZamknięta**.
-6. W tabeli widoczne są kolumny:
-   - **Rodzaj Gry**,
-   - **Data**,
-   - **Nazwa**,
-   - **Potwierdzenie** (akcje).
-7. W kolumnie **Potwierdzenie**:
-   - kliknij **Potwierdź** → wiersz robi się złoty,
-   - kliknij **Anuluj** → wiersz wraca do normalnego wyglądu.
-8. Możesz wielokrotnie przełączać stan **Potwierdź/Anuluj**.
-9. Kliknij **Odśwież**, aby pobrać aktualny stan z Firestore „na twardo” (z serwera).
-
-### 9.4 Sortowanie po dacie (najwcześniejsza na górze)
-Sortowanie rosnące po dacie (`gameDate`) działa teraz w:
-- **Tabele Gier** (admin),
-- **Gry do potwierdzenia** (admin),
-- **Gry do potwierdzenia** (użytkownik),
-- **Turnieje** (karty stołów są renderowane rosnąco po dacie pola `gameDate`).
-
-### 9.5 Firebase — czy trzeba zmieniać konfigurację?
-Obecny projekt działa bez migracji backendu. Aktualne reguły Firestore już zawierają dostęp do subkolekcji:
-- `Tables/{tableId}/confirmations/{playerId}`
-
-W tej subkolekcji zapisywany jest stan potwierdzenia obecności (`confirmed`, `updatedAt`, `updatedBy`, `playerName`, `playerId`).
-
-
-### 9.6 Co poprawiono w błędzie „Nie udało się pobrać listy potwierdzeń / gier do potwierdzenia”
-1. Widoki **admina** i **użytkownika** dla zakładki „Gry do potwierdzenia” mają teraz odporniejsze pobieranie listy gier.
-2. Aplikacja najpierw wykonuje odczyt z sortowaniem `orderBy(createdAt, asc)`.
-3. Jeżeli taki odczyt zostanie odrzucony przez reguły/zapytanie Firestore, aplikacja automatycznie robi drugi odczyt bez `orderBy`.
-4. Wynik fallbacku jest następnie sortowany lokalnie po dacie gry (`gameDate`), więc kolejność pozostaje poprawna.
-5. Dzięki temu zakładka nie kończy się od razu błędem i dane wracają w obu widokach.
-
-## 9. Zakładka „Gry użytkowników” — dokładna obsługa (widok gracza)
-### 9.1 Włączenie uprawnienia przez administratora
-1. Otwórz aplikację w trybie administratora (`?admin=1`).
-2. Kliknij zakładkę **Gracze**.
-3. W wierszu wybranego gracza kliknij **Edytuj** w kolumnie **Uprawnienia**.
-4. W oknie „Uprawnienia gracza” zaznacz pozycję **Gry użytkowników**.
-5. Zamknij okno przyciskiem **X**.
-6. Poczekaj na automatyczny zapis (status pod tabelą graczy).
-
-### 9.2 Wejście gracza do zakładki
-1. Otwórz aplikację bez `?admin=1`.
-2. W sekcji **Strefa gracza** kliknij zakładkę **Gry użytkowników**.
-3. W polu PIN wpisz dokładnie 5 cyfr przypisanych do gracza, który ma uprawnienie **Gry użytkowników**.
-4. Kliknij **Otwórz**.
-5. Oczekiwany efekt:
-   - poprawny PIN + poprawne uprawnienie: pojawia się duży napis **„Strona w budowie”**,
-   - błędny PIN lub brak uprawnienia: widoczny komunikat o braku dostępu.
-
-### 9.3 Ważna uwaga o przełączaniu zakładek
-Po wejściu na inną kartę i ponownym kliknięciu **Gry użytkowników** aplikacja ponownie poprosi o PIN (sesja dostępu tej zakładki jest resetowana przy każdym wejściu).
-
-## 10. Zakładka „Gry użytkowników” — dokładna obsługa (widok administratora)
-### 10.1 Wejście do zakładki
-1. Otwórz aplikację w trybie administratora: `.../Main/index.html?admin=1`.
-2. W panelu **Panel Administratora** kliknij zakładkę **Gry użytkowników** (między kartami „Gry admina” i „Gry do potwierdzenia”).
-3. Oczekiwany efekt: w części roboczej panelu zobaczysz nagłówek **Gry użytkowników** i opis „Sekcja administracyjna przeznaczona do obsługi gier użytkowników.”
-
-### 10.2 Odświeżanie zakładki
-1. Będąc na karcie **Gry użytkowników** kliknij globalny przycisk **Odśwież** w prawym górnym rogu panelu administratora.
-2. Oczekiwany efekt: status obok przycisku pokazuje komunikat o odświeżeniu danych aktywnej karty.
-3. Zakładka jest przygotowana jako osobne miejsce na dalszą administrację danymi gier użytkowników (na tym etapie zawiera widok informacyjny).
-
+### Podgląd i sprzątanie wiadomości
+1. Kliknij zakładkę **Czat**.
+2. W sekcji listy sprawdź bieżące wiadomości.
+3. Aby usunąć stare wiadomości, kliknij **Usuń starsze niż 30 dni**.
+4. Potwierdź wynik po komunikacie statusu.
 
 ---
 
-## 16. Zakładka „Gry użytkowników” — pełna instrukcja po wdrożeniu
+## 5. Zakładka „Regulamin”
 
-### 16.1 Dla gracza (strefa gracza)
-1. Wejdź do zakładki **Gry użytkowników**.
-2. W sekcji PIN wpisz 5-cyfrowy kod gracza, który ma uprawnienie **Gry użytkowników**.
+### Edycja treści regulaminu
+1. Otwórz zakładkę **Regulamin**.
+2. Kliknij pole **Treść regulaminu**.
+3. Wpisz lub popraw tekst zasad.
+4. Kliknij **Zapisz**.
+5. Odczytaj status pod polem — powinien potwierdzić zapis.
+
+---
+
+## 6. Zakładka „Gracze”
+
+### 6.1 Dodanie gracza
+1. Przejdź do zakładki **Gracze**.
+2. Kliknij **Dodaj** pod tabelą.
+3. W nowym wierszu ustaw:
+   - **Aplikacja** (checkbox) — kliknięcie włącza/wyłącza;
+   - **Nazwa** — wpisz nazwę gracza;
+   - **PIN** — wpisz 5 cyfr lub użyj przycisku **Losuj**.
+4. Poczekaj na komunikat statusu o zapisaniu.
+
+### 6.2 Edycja gracza
+1. Kliknij wybrane pole w wierszu gracza (Nazwa/PIN/Aplikacja).
+2. Zmień wartość.
+3. Sprawdź status zapisu.
+
+### 6.3 Uprawnienia gracza
+1. W wierszu gracza kliknij **Uprawnienia**.
+2. W modalu zaznacz lub odznacz zakładki dostępne dla gracza.
+3. Zamknij modal ikoną **X**.
+4. Zweryfikuj skrót uprawnień w tabeli graczy.
+
+### 6.4 Usunięcie gracza
+1. W wierszu gracza kliknij **Usuń**.
+2. Sprawdź, czy wiersz zniknął z tabeli.
+
+---
+
+## 7. Zakładka „Turnieje”
+
+### Dodanie turnieju
+1. Otwórz **Turnieje**.
+2. Kliknij **Dodaj**.
+3. Uzupełnij pola w nowym wierszu (rodzaj, data, nazwa).
+4. Kliknij **Szczegóły**, aby wejść do listy uczestników i wyników.
+
+### Edycja i usuwanie
+1. Zmieniaj dane bezpośrednio w komórkach tabeli.
+2. Aby skasować cały wpis turnieju, kliknij **Usuń** w tym wierszu.
+
+### Szczegóły turnieju (modal)
+1. Kliknij **Szczegóły** przy wybranym turnieju.
+2. Kliknij **Dodaj**, aby dodać nowy wiersz gracza.
+3. Uzupełnij pola (gracz, wpisowe, rebuy/add-on, wypłata, punkty, mistrzostwo).
+4. Aby usunąć wiersz gracza, kliknij **Usuń** w tym samym wierszu.
+5. Zamknij okno ikoną **X**.
+
+---
+
+## 8. Zakładka „Gry admina”
+
+Zakładka jest podzielona na 3 obszary:
+- lewa kolumna **Lata**,
+- środek z tabelą gier i statystykami,
+- prawa kolumna **Ranking**.
+
+### 8.1 Wybór roku
+1. W lewej kolumnie kliknij rok (np. `2026`).
+2. Tabela i statystyki automatycznie filtrują się do tego roku.
+
+### 8.2 Dodanie gry
+1. Kliknij **Dodaj** w sekcji **Tabele Gier**.
+2. Nowy wiersz pojawia się od razu na liście.
+3. W razie potrzeby popraw pola: **Rodzaj Gry**, **Data**, **Nazwa**, **CzyZamknięta**.
+
+### 8.3 Szczegóły gry
+1. Kliknij **Szczegóły** przy wybranej grze.
+2. W modalu kliknij **Dodaj**, aby dopisać gracza.
+3. Uzupełnij dane i zaznacz **Mistrzostwo**, jeśli dotyczy.
+4. Usuń pojedynczy wpis gracza przyciskiem **Usuń** w jego wierszu.
+5. Zamknij modal ikoną **X**.
+
+### 8.4 Zamknięcie gry
+1. W tabeli głównej zaznacz pole **CzyZamknięta** dla wybranej gry.
+2. Sprawdź, czy status i widoki powiązane pokazują grę jako zamkniętą.
+
+### 8.5 Ranking i statystyki
+1. Po zapisaniu danych przejdź wzrokiem do prawej kolumny **Ranking**.
+2. W środkowej dolnej sekcji odczytaj wartości statystyk i tabelę graczy.
+3. Dla kolumn „Waga1–Waga7” możesz używać przycisków w nagłówkach, by zbiorczo modyfikować wartości.
+
+---
+
+## 9. Zakładka „Statystyki” (administrator)
+
+1. Otwórz zakładkę **Statystyki**.
+2. Wybierz rok z listy lat.
+3. Sprawdź tabelę rankingową i wartości zbiorcze.
+4. Porównaj wyniki z zakładką „Gry admina” — dane powinny być spójne.
+
+---
+
+## 10. Zakładka „Gry użytkowników” (administrator)
+
+Obsługa jest analogiczna do „Gry admina”:
+1. Wybierz rok z lewego panelu.
+2. Kliknij **Dodaj**, aby utworzyć grę.
+3. Edytuj pola gry.
+4. Wejdź w **Szczegóły**, dodaj graczy, wypełnij wartości.
+5. Zamknij grę przez **CzyZamknięta**.
+6. Sprawdź tabelę statystyk i ranking.
+
+---
+
+## 11. Zakładka „Gry do potwierdzenia” (administrator)
+
+1. Wejdź w **Gry do potwierdzenia**.
+2. Przeglądaj listę zgłoszonych/oczekujących gier.
+3. Otwórz pozycję i zweryfikuj szczegóły.
+4. Wykonaj akcję potwierdzenia lub odrzucenia zgodnie z dostępnymi przyciskami.
+5. Upewnij się, że status pozycji zmienił się na liście.
+
+---
+
+## 12. Strefa gracza (widok bez `?admin=1`)
+
+Gracz ma własne zakładki:
+- **Najbliższa gra**
+- **Czat**
+- **Gry do potwierdzenia**
+- **Gry użytkowników**
+- **Statystyki**
+- **Aktualności**
+- **Regulamin**
+
+### 12.1 Wejście przez PIN
+1. Wejdź w zakładkę, która wymaga autoryzacji (np. „Najbliższa gra”, „Czat”).
+2. Wpisz PIN gracza.
 3. Kliknij **Otwórz**.
-4. Po poprawnej autoryzacji zobaczysz:
-   - panel lat po lewej,
-   - tabelę gier użytkowników po prawej,
-   - przycisk **Dodaj**.
+4. Po poprawnej weryfikacji widok zakładki zostaje odblokowany.
 
-#### Dodanie nowej gry użytkownika
-1. Kliknij **Dodaj**.
-2. Aplikacja utworzy wpis z bieżącą datą i nazwą `Gra X` (najbliższy wolny numer w danym dniu).
-3. W nowym wierszu możesz zmienić:
-   - **Rodzaj Gry** (`Cashout` / `Turniej`),
-   - **Data**,
-   - **Nazwa**,
-   - **CzyZamknięta** (checkbox).
+### 12.2 Czat gracza
+1. Po wejściu do zakładki **Czat** kliknij pole wiadomości.
+2. Wpisz treść.
+3. Kliknij **Wyślij**.
+4. Sprawdź, czy wpis pojawił się na liście.
 
-#### Dodanie szczegółów (graczy i stawek)
-1. W wybranej grze kliknij **Szczegóły**.
-2. W modalu kliknij **Dodaj** (pod tabelą), aby dodać wiersz gracza.
-3. Uzupełnij pola:
-   - **Gracz** (z listy graczy),
-   - **Wpisowe**,
-   - **Rebuy/Add-on**,
-   - **Wypłata**,
-   - **Punkty**,
-   - **Mistrzostwo**.
-4. Kolumna **+/-** wylicza się automatycznie.
-5. Aby usunąć pojedynczy wiersz gracza, kliknij **Usuń** w tym wierszu.
-6. Aby zamknąć modal, kliknij **×** w prawym górnym rogu.
+### 12.3 Gry do potwierdzenia
+1. Otwórz zakładkę **Gry do potwierdzenia**.
+2. Wybierz grę z listy.
+3. Kliknij akcję potwierdzenia/odrzucenia przy swoim wpisie.
+4. Zweryfikuj zmianę statusu.
 
-#### Usuwanie gry użytkownika
-1. W tabeli gier kliknij **Usuń** w wybranym wierszu gry.
-2. Usunięta zostanie gra oraz jej `rows` i `confirmations`.
+### 12.4 Gry użytkowników
+1. Otwórz zakładkę **Gry użytkowników**.
+2. Wybierz rok.
+3. Sprawdź listę gier i szczegóły.
 
-### 16.2 Dla administratora (panel admina)
-1. Wejdź do `?admin=1`.
-2. Kliknij zakładkę **Gry użytkowników**.
-3. Dostępne są identyczne akcje jak dla gracza, ale bez PIN-gate:
-   - dodawanie gry,
-   - edycja typu/dat/nazwy,
-   - checkbox **CzyZamknięta**,
-   - wejście w **Szczegóły**,
-   - usuwanie gry i wierszy.
+### 12.5 Statystyki gracza
+1. Otwórz **Statystyki**.
+2. Wybierz rok.
+3. Odczytaj własne wyniki oraz ranking.
 
-### 16.3 Potwierdzenia obecności (po zmianie)
-- Zakładka **Gry do potwierdzenia** (gracz i admin) agreguje teraz aktywne gry z dwóch kolekcji:
-  - `Tables`,
-  - `UserGames`.
-- Jeżeli gracz zostanie dodany do `UserGames/{gameId}/rows`, zobaczy tę grę w „Gry do potwierdzenia” (o ile ma uprawnienie do tej zakładki).
-- Administrator może potwierdzać/anulować obecności również dla gier z `UserGames`.
-
-### 16.4 Aktualne Firestore Rules (zgodne z nową strukturą)
-Użyj poniższej wersji w Firebase Console → Firestore Database → Rules:
-
-```txt
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    match /admin_messages/{docId} {
-      allow read, write: if true;
-    }
-
-    match /app_settings/{docId} {
-      allow read, write: if true;
-    }
-
-    match /Tables/{tableId} {
-      allow read, write: if true;
-
-      match /rows/{rowId} {
-        allow read, write: if true;
-      }
-
-      match /confirmations/{playerId} {
-        allow read, write: if true;
-      }
-    }
-
-    match /UserGames/{gameId} {
-      allow read, write: if true;
-
-      match /rows/{rowId} {
-        allow read, write: if true;
-      }
-
-      match /confirmations/{playerId} {
-        allow read, write: if true;
-      }
-    }
-
-    match /Collection1/{docId} {
-      allow read, write: if true;
-    }
-
-    match /chat_messages/{docId} {
-      allow read, write: if true;
-    }
-  }
-}
-```
-
-### 4.8 Segment „Statystyki” — nowa tabela graczy (krok po kroku)
-Po dwóch górnych wierszach (`Liczba gier`, `Łączna pula`) znajdziesz teraz szeroką tabelę roczną. Dane są liczone tylko dla aktywnego roku z panelu **Lata**.
-
-1. Kliknij po lewej konkretny rok (np. `2026`).
-2. Przewiń sekcję do nagłówka **Statystyki**.
-3. Sprawdź dwa pierwsze wiersze:
-   - **Liczba gier** — ile gier jest w wybranym roku,
-   - **Łączna pula** — suma pul ze wszystkich gier roku.
-4. Niżej sprawdź tabelę graczy:
-   - **Gracz** — pojawia się tylko gracz, który ma uzupełnione **Wpisowe** w „Szczegóły gry” (puste wpisowe = nieobecność),
-   - **Mistrzostwo** — suma zaznaczeń checkboxa „Mistrzostwo” w roku,
-   - **Ilość Spotkań** — liczba gier z obecnością gracza (na podstawie wpisowego),
-   - **% udział** — `ceil(Ilość Spotkań / Liczba gier * 100)`,
-   - **(+/-)** — suma z kolumny `+/-` ze wszystkich gier roku,
-   - **Wypłata** — suma kolumny `Wypłata`,
-   - **Wpłaty** — suma `Wpisowe + Rebuy/Add-on`,
-   - **Suma z rozegranych gier** — suma puli gier, w których gracz był obecny,
-   - **% Wszystkich gier** — `ceil(Wypłata / Suma z rozegranych gier * 100)`,
-   - **% Rozegranych gier** — `ceil(Wypłata / Łączna pula * 100)`.
-5. Kolumny do ręcznego wpisania przez admina:
-   - `Waga1`, `Waga2`, `Punkty`, `Waga3`, `Waga4`, `Waga5`, `Waga6`, `Waga7`, `Wynik`.
-6. Kliknij w dowolną komórkę jednej z powyższych kolumn i wpisz liczbę.
-7. Po krótkiej chwili wartość zapisze się automatycznie i pozostanie po odświeżeniu strony.
-
-### 4.9 Panel „Ranking” po prawej stronie
-Obok sekcji treści „Gry admina” jest nowy panel **Ranking** (analogicznie do lewego panelu **Lata**).
-
-1. Kliknij rok po lewej stronie.
-2. W panelu po prawej sprawdź tabelę 3-kolumnową:
-   - **Miejsce**,
-   - **Gracz**,
-   - **Wynik**.
-3. Kolejność rankingu jest liczona malejąco po kolumnie **Wynik** z tabeli „Statystyki”.
-4. Po zmianie wartości `Wynik` w statystykach ranking odświeża się automatycznie.
-5. Kolorystyka miejsc:
-   - miejsca **1–8**: kolor złoty,
-   - miejsca **9–17**: kolor zielony,
-   - miejsca **18+**: kolor czerwony.
-
-## 17. Panel „Lata” — kontrola poprawności i nowy wygląd przycisków
-
-### 17.1 Szybki test: czy rok pojawia się natychmiast po zmianie daty gry (Gry admina)
-1. Wejdź do panelu administratora (`?admin=1`) i otwórz kartę **Gry admina**.
-2. W lewym panelu **Lata** kliknij rok, który aktualnie ma gry (np. `2026`).
-3. W tabeli po prawej kliknij pole **Data** w wybranym wierszu gry.
-4. Ustaw datę na rok, którego jeszcze nie ma na liście (np. `2027-01-15`).
-5. Nie odświeżaj strony — obserwuj lewy panel **Lata**.
-6. Oczekiwany efekt:
-   - zmieniona gra znika z listy roku `2026` (bo należy już do `2027`),
-   - przycisk roku `2027` pojawia się od razu w panelu **Lata**,
-   - po kliknięciu `2027` zobaczysz przeniesioną grę.
-
-### 17.2 Taki sam test dla karty „Gry użytkowników”
-1. W panelu administratora otwórz kartę **Gry użytkowników**.
-2. Kliknij rok po lewej i zmień datę jednej gry na rok, którego nie ma jeszcze na liście.
-3. Oczekiwany efekt identyczny jak w „Gry admina”:
-   - natychmiastowe pojawienie się nowego roku po lewej,
-   - możliwość kliknięcia nowego roku i zobaczenia przeniesionej gry.
-
-### 17.3 Zmiana wyglądu panelu „Lata” (Gry admina + Gry użytkowników)
-W obu zakładkach przyciski lat zostały wyrównane wizualnie do panelu **Ranking**:
-- lista lat startuje od samej góry panelu,
-- każdy przycisk ma stałą, powtarzalną wysokość,
-- wysokość przycisku roku jest taka sama jak wysokość pojedynczego wiersza panelu **Ranking**,
-- aktywny rok nadal ma złote podświetlenie (`is-active`).
+### 12.6 Aktualności i Regulamin
+1. Wejdź do zakładek **Aktualności** i **Regulamin**.
+2. Odczytaj opublikowane treści (bez edycji).
 
 ---
 
-## 12. Dokumentacja układu kolumn i okien — `Kolumny.md`
-Jeżeli chcesz zmienić wygląd tabel lub modali, zacznij od pliku głównego:
-- `Kolumny.md` (w katalogu głównym repozytorium).
+## 13. Wskazówki UX
 
-Jak z niego korzystać krok po kroku:
-1. Otwórz `Kolumny.md`.
-2. Znajdź sekcję odpowiadającą miejscu, które chcesz zmienić, np.:
-   - **Panel Administratora → Zakładka „Gracze”**,
-   - **Panel Administratora → Zakładka „Gry admina”**,
-   - **Okna modalne (wyskakujące)**.
-3. Sprawdź w tabeli parametry kolumny/pola:
-   - minimalna i maksymalna szerokość,
-   - minimalna i maksymalna wysokość,
-   - wyrównanie,
-   - łamanie linii.
-4. Przejdź do `Main/styles.css` i edytuj odpowiednią klasę (np. `.players-table`, `.admin-games-players-stats-table`, `.modal-card`, `.confirmations-table`).
-5. Odśwież aplikację i sprawdź efekt wizualnie w danej zakładce.
-6. Jeśli zmieniasz styl elementu (rozmiary, kolory, font, spacing), zaktualizuj również `DetaleLayout.md`.
-
-Dzięki temu podejściu możesz modyfikować wygląd bez ręcznego szukania wszystkich kolumn po całym kodzie.
-
-## 18. Ostrzeżenie o niespójnej sumie w „Podsumowanie gry” (Gry admina + Gry użytkowników)
-Nowe zachowanie zostało dodane w sekcji **Podsumowanie gry**.
-
-### Kiedy pojawia się ostrzeżenie?
-Ostrzeżenie pojawia się, gdy:
-- suma kolumny **Wypłata**
-**NIE** jest równa
-- sumie kolumn **Wpisowe + Rebuy/Add-on**.
-
-Reguła weryfikacji:
-- `Suma [Wypłata] = Suma([Wpisowe] + [Rebuy/Add-on])`.
-
-Jeżeli reguła nie jest spełniona, pod tytułem **Podsumowanie gry ...** pojawia się czerwony komunikat:
-- **„Nie zgadza się suma wypłat oraz wpisowych i rebuy/add-on”**
-
-Komunikat jest widoczny:
-- pod napisem **Podsumowanie gry ...**,
-- nad linią **Pula: ...**.
-
-### Jak ręcznie sprawdzić (krok po kroku)
-1. Wejdź do zakładki:
-   - **Panel administratora → Gry admina** albo
-   - **Panel administratora → Gry użytkowników** albo
-   - **Strefa gracza → Gry użytkowników**.
-2. Kliknij rok po lewej stronie, aby wyświetlić gry z danego roku.
-3. W tabeli kliknij przycisk **Szczegóły** przy wybranej grze.
-4. W modalu wpisz dane tak, aby celowo zrobić rozjazd sum, np.:
-   - Gracz A: `Wpisowe 100`, `Rebuy/Add-on 0`, `Wypłata 50`
-   - Gracz B: `Wpisowe 100`, `Rebuy/Add-on 0`, `Wypłata 80`
-   Wtedy:
-   - suma wpłat = `200`
-   - suma wypłat = `130`
-5. Zamknij modal.
-6. W sekcji **Podsumowanie gry ...** zobaczysz czerwone ostrzeżenie nad **Pula**.
-7. Otwórz ponownie **Szczegóły** i popraw wypłaty tak, aby suma wypłat była równa sumie wpłat (w przykładzie łącznie `200`).
-8. Po wyrównaniu wartości ostrzeżenie zniknie automatycznie.
-
-## 19. „Gry admina” → „Statystyki” — masowe ustawianie wartości kolumn Waga1..Waga7
-W sekcji tabeli statystyk graczy kolumny **Waga1–Waga7** działają teraz w dwóch trybach jednocześnie:
-- dalej możesz ręcznie edytować pojedynczą komórkę w konkretnym wierszu,
-- dodatkowo możesz masowo ustawić całą kolumnę klikając nagłówek.
-
-### 19.1 Co zobaczysz po wejściu do sekcji
-1. Otwórz panel admina (`?admin=1`).
-2. Kliknij zakładkę **Gry admina**.
-3. Wybierz rok z lewej kolumny **Lata**.
-4. Przewiń do sekcji **Statystyki** i do szerokiej tabeli graczy.
-5. W kolumnach **Waga1..Waga7**:
-   - nagłówek jest wyraźnym przyciskiem wizualnie zgodnym z zielonymi przyciskami akcji (jak **Odśwież** / **Instrukcja**),
-   - każda komórka ma domyślnie wpisaną wartość `1`.
-
-### 19.2 Jak ustawić jedną wartość dla całej kolumny (krok po kroku)
-Przykład dla **Waga3** (analogicznie działa Waga1, Waga2, ..., Waga7):
-1. Kliknij nagłówek **Waga3**.
-2. Pojawi się okienko (popup) z polem wpisania liczby.
-3. Wpisz np. `5` i zatwierdź.
-4. Efekt:
-   - wszystkie wiersze w kolumnie **Waga3** dostaną wartość `5`,
-   - poprzednie wartości w tej kolumnie zostaną nadpisane,
-   - zmiana zapisze się automatycznie.
-
-### 19.3 Kolejne zmiany tej samej kolumny
-1. Ponownie kliknij ten sam nagłówek (np. **Waga3**).
-2. Wpisz nową liczbę, np. `8`.
-3. Po zatwierdzeniu tabela od razu podmieni wartości w całej kolumnie na `8`.
-
-Zasada działania: **zawsze obowiązuje ostatnia wpisana wartość**.
-
-### 19.4 Ważne uwagi użytkowe
-- Jeżeli klikniesz **Anuluj** w popupie, tabela nie zmieni wartości.
-- Jeżeli wpiszesz wartość nienumeryczną, aplikacja pokaże komunikat o błędnej wartości i nie nadpisze kolumny.
-- Masowe ustawienie działa dla aktualnie wybranego roku.
-
-## 19. Poprawka fokusu w kolumnie „Nazwa” (zakładka „Gry użytkowników”)
-### 19.1 Jak sprawdzić, że problem został usunięty
-1. Wejdź do panelu administratora (`?admin=1`).
-2. Kliknij zakładkę **Gry użytkowników**.
-3. Wybierz rok po lewej stronie, aby pojawiła się tabela gier.
-4. W kolumnie **Nazwa** kliknij dowolne pole tekstowe.
-5. Wpisz ciąg znaków, np. `Test gry użytkownika 123`, bez ponownego klikania w pole.
-6. Odczekaj minimum 1–2 sekundy (w tle wykonuje się automatyczny zapis do Firestore).
-7. Oczekiwany efekt po poprawce:
-   - pole **nie traci fokusu**,
-   - kursor pozostaje w polu,
-   - można dalej pisać bez ponownego klikania.
-
-### 19.2 Zakres tej poprawki
-- Zachowanie kolumny **Nazwa** w zakładce **Gry użytkowników** zostało ujednolicone z działaniem znanym z zakładki **Gry admina** (ten sam mechanizm identyfikacji pola podczas odświeżenia widoku).
-- Dodatkowo ten sam mechanizm przypisano także do pól **Rodzaj Gry** i **Data** w tej samej tabeli, aby wszystkie edytowalne pola wiersza zachowywały się spójnie podczas synchronizacji.
-
-## Aktualizacja 2026-02-12 — zakładka „Statystyki”
-### Administrator (`?admin=1`)
-1. Wejdź do **Panel Administratora**.
-2. Kliknij zakładkę **Statystyki** (między „Gry admina” i „Gry użytkowników”).
-3. W lewym panelu **Lata** kliknij rok, dla którego chcesz pracować.
-4. W sekcji **Statystyki**:
-   - pola `Waga1..Waga7`, `Punkty`, `Wynik` są edytowalne,
-   - każde pole zmienia od razu dane w tym samym roku.
-5. Aby hurtowo ustawić wagę, kliknij nagłówek `WagaX`, wpisz liczbę i zatwierdź.
-6. Nad każdą kolumną jest checkbox widoczności:
-   - zaznaczony = kolumna będzie widoczna dla gracza,
-   - odznaczony = kolumna ukryta dla gracza,
-   - ustawienia są niezależne dla każdego roku.
-7. Kliknij **Eksportuj**, aby pobrać plik `.xlsx`.
-
-### Gracz (bez `?admin=1`)
-1. W strefie gracza kliknij zakładkę **Statystyki**.
-2. Wpisz PIN gracza z uprawnieniem **Statystyki** i kliknij **Otwórz**.
-3. Kliknij rok po lewej stronie.
-4. Tabela jest tylko do podglądu (bez edycji).
-5. Gracz widzi tylko te kolumny, które administrator zostawił zaznaczone checkboxami.
-6. Przycisk **Eksportuj** pobiera widok gracza do `.xlsx`.
-
-### Synchronizacja z „Gry admina”
-- Edycja pól statystyk w **Gry admina** i w nowej zakładce **Statystyki** zapisuje te same dane roczne.
-- Jeśli zmienisz `Punkty`/`Waga`/`Wynik` w jednej zakładce, po odświeżeniu snapshotu identyczna wartość pojawi się w drugiej.
-- Ostatnio wybrany rok zapamiętuje się osobno dla:
-  - widoku admina w zakładce Statystyki,
-  - widoku gracza w zakładce Statystyki.
+- Jeśli po kliknięciu przycisku nie widzisz zmian, najpierw sprawdź komunikat statusu obok sekcji.
+- Przy dłuższej edycji pól tekstowych kursor powinien pozostać w aktywnym polu.
+- Gdy chcesz wymusić ponowne pobranie danych widocznej zakładki administratora, użyj przycisku **Odśwież**.
