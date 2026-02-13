@@ -345,7 +345,7 @@ Po zmianie pola nie powinny tracić fokusu po autozapisie i odświeżeniu widoku
 
 Kolumna **Wyniki** liczy się automatycznie według wzoru:
 
-`Wyniki = (Mistrzostwo * Waga1) + (% udział * Waga2) + (Punkty * Waga3) + ((+/-) * Waga4) + (Wypłata * Waga5) + (Wpłaty * Waga6) + (% Wszystkich gier * Waga7)`
+`Wyniki = (Mistrzostwo * Waga1) + (% udział * Waga2) + (Punkty * Waga3) + ((+/-) * Waga4) + (Wypłata * Waga5) + (Wpłaty * Waga6) + (% Rozegranych gier * Waga7)`
 
 ### 17.5 Ranking po prawej stronie (Gry admina)
 1. W zakładce **Gry admina** spójrz na sekcję **Ranking** po prawej stronie.
@@ -445,3 +445,39 @@ taki wiersz jest traktowany jak **nieobecny** (nie jest uwzględniany w podsumow
 - Dodanie samego wiersza gracza bez uzupełnienia **Wpisowego** nie wpływa już na rankingi i podsumowania.
 - Wpisowe `0` działa jak brak obecności.
 - Dopiero wpisowe większe od `0` oznacza realny udział gracza w danej grze.
+
+## 21. Aktualizacja 2026-02-13 — Statystyki w „Strefa Gracza” (widok admina i gracza)
+
+### 21.1 „Strefa Gracza” w trybie `?admin=1` ma działać identycznie jak zwykły widok gracza
+1. Otwórz aplikację z adresem zawierającym `?admin=1`.
+2. Przewiń na dół do sekcji **Strefa Gracza**.
+3. Kliknij zakładkę **Statystyki**.
+4. Aplikacja zawsze pokazuje pole PIN (tak samo jak bez `?admin=1`).
+5. Wpisz poprawny PIN gracza z uprawnieniem **Statystyki** i kliknij **Otwórz**.
+
+Efekt:
+- panel testowy w adminie odwzorowuje realny widok użytkownika 1:1,
+- bez PIN nie ma dostępu do tabeli Statystyki,
+- łatwiej przetestować nowe funkcje dokładnie w takich warunkach, jak u końcowego gracza.
+
+### 21.2 Zapamiętywanie checkboxów kolumn Statystyk
+1. Wejdź do górnego panelu admina → zakładka **Statystyki**.
+2. Wybierz rok z lewego panelu **Lata**.
+3. W nagłówku tabeli odznacz wybrane checkboxy kolumn.
+4. Odśwież stronę (F5) i ponownie wybierz ten sam rok.
+
+Efekt:
+- checkboxy wracają do ostatnio zapisanego stanu,
+- widok gracza w zakładce **Statystyki** pokazuje tylko kolumny wybrane przez administratora,
+- po zmianie roku widzisz osobny, poprawnie zapamiętany zestaw kolumn dla tego roku.
+
+### 21.3 Zmiana nazw dwóch kolumn (bez zmiany obliczeń)
+W tabelach:
+- **Gry admina → Statystyki**,
+- **Statystyki** (w Strefie Gracza),
+
+zamieniono tylko nazwy nagłówków:
+- teraz najpierw jest **% Rozegranych gier**,
+- a dalej **% Wszystkich gier**.
+
+Sposób liczenia wartości pozostał bez zmian.

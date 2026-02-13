@@ -255,3 +255,26 @@ Dodano sekcję potwierdzającą:
 
 - **Było**: PIN + uprawnienia sprawdzane tylko lokalnie przy inicjalizacji zakładki; brak automatycznej synchronizacji po zmianach uprawnień; user mógł mieć niespójne nagłówki vs dane po ukryciu kolumn.
 - **Jest**: centralna synchronizacja dostępu, natychmiastowa reakcja na zmiany w `Gracze`, spójne ukrywanie kolumn (nagłówek + dane), poprawny `colSpan` pustego stanu, kompletna dokumentacja UI/techniczna/layout/kolumny.
+
+---
+
+## Aktualizacja wdrożeniowa 2026-02-13 (po zgłoszeniu dot. „Strefa Gracza” i trwałości checkboxów)
+
+### 1) Problem: „Strefa Gracza” w `?admin=1` omijała PIN dla zakładki Statystyki
+- **Było:** w `updateStatisticsVisibility()` i `synchronizeStatisticsAccessState()` warunek `getAdminMode()` od razu wpuszczał do `#statisticsContent`.
+- **Po zmianie:** usunięto bypass admin mode — logika PIN jest wspólna dla zwykłego użytkownika i panelu testowego „Strefa Gracza” na dole w trybie admin.
+- **Dodatkowo:** w `initUserTabs()` reset sesji dla `statsTab` działa zawsze (niezależnie od `getAdminMode()`).
+
+### 2) Problem: checkboxy kolumn nie wracały po ponownym uruchomieniu
+- **Było:** checkboxy nagłówków inicjalizowały się jako `checked=true`, bez synchronizacji ich stanu z `visibleColumns` po odczycie roku/snapshotu.
+- **Po zmianie:** dodano mapę `adminColumnVisibilityCheckboxes` i w każdym `renderStats()` checkboxy są ustawiane na podstawie `getVisibleColumnsForYear(selectedYear)`.
+- **Zapis backendowy:** pozostaje bez zmian (`admin_games_stats/{year}.visibleColumns`, `set(..., { merge: true })`).
+
+### 3) Zamiana nazw kolumn procentowych (bez zmiany obliczeń)
+- Zmieniono etykiety w `STATS_COLUMN_CONFIG` i nagłówkach HTML tabel statystyk:
+  - `% Wszystkich gier` ↔ `% Rozegranych gier` (zamiana miejsc nazw).
+- Formuły liczenia nie zostały zmienione.
+
+### 4) Firebase — czy była konieczna modyfikacja?
+- **Nie.** Dla poprawki trwałości checkboxów nie była potrzebna migracja danych ani zmiana schematu.
+- Utrzymano istniejący model dokumentów `admin_games_stats/{year}` z polami `rows` i `visibleColumns`.

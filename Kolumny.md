@@ -76,9 +76,9 @@ Parametry sekcji:
 | Wpłaty | brak | min 84px dla inputów | brak | brak | lewo | standard |
 | Waga6 | brak | min 84px dla inputów | brak | brak | lewo | standard |
 | Suma z rozegranych gier | brak | min 84px dla inputów | brak | brak | lewo | standard |
-| % Wszystkich gier | brak | min 84px dla inputów | brak | brak | lewo | standard |
-| Waga7 | brak | min 84px dla inputów | brak | brak | lewo | standard |
 | % Rozegranych gier | brak | min 84px dla inputów | brak | brak | lewo | standard |
+| Waga7 | brak | min 84px dla inputów | brak | brak | lewo | standard |
+| % Wszystkich gier | brak | min 84px dla inputów | brak | brak | lewo | standard |
 | Wynik | brak | min 84px dla inputów | brak | brak | lewo | standard |
 
 Parametry sekcji:
@@ -246,3 +246,13 @@ Uwagi:
 - Administrator steruje widocznością przez checkboxy w nagłówkach widoku admina.
 - Po odznaczeniu kolumny użytkownik nie widzi tej kolumny ani w nagłówku, ani w danych.
 - Parametry szerokości i wyrównania pojedynczych kolumn pozostają bez zmian; zmienia się tylko to, które kolumny są renderowane.
+
+## Aktualizacja 2026-02-13 — etykiety kolumn procentowych w Statystykach
+- Zmieniono nazwy (zamiana miejsc) dwóch nagłówków procentowych w tabelach statystyk:
+  - `% Wszystkich gier` → `% Rozegranych gier`,
+  - `% Rozegranych gier` → `% Wszystkich gier`.
+- Dotyczy to tabel:
+  - `Gry admina -> Statystyki`,
+  - `Admin -> Statystyki`,
+  - `Strefa Gracza -> Statystyki`.
+- Zmiana nie modyfikuje szerokości, wyrównania i łamania kolumn — aktualne parametry geometrii pozostają bez zmian.
