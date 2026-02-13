@@ -1444,8 +1444,16 @@ const initUserGamesManager = ({
     });
   };
 
+  const hasIncludedSummaryOrStatsData = (row) => {
+    const normalizedEntryFee = sanitizeIntegerInput(typeof row.entryFee === "number" ? `${row.entryFee}` : row.entryFee ?? "");
+    const normalizedPoints = sanitizeIntegerInput(typeof row.points === "number" ? `${row.points}` : row.points ?? "");
+    const hasEntryFee = Boolean(normalizedEntryFee) && normalizedEntryFee !== "-" && parseIntegerOrZero(normalizedEntryFee) > 0;
+    const hasPoints = Boolean(normalizedPoints) && normalizedPoints !== "-";
+    return hasEntryFee || hasPoints;
+  };
+
   const getGameSummaryMetrics = (gameId) => {
-    const rows = getDetailRows(gameId).filter((row) => parseIntegerOrZero(row.entryFee) > 0);
+    const rows = getDetailRows(gameId).filter((row) => hasIncludedSummaryOrStatsData(row));
     const pool = rows.reduce((sum, row) => sum + row.entryFee + row.rebuy, 0);
     const payoutSum = rows.reduce((sum, row) => sum + row.payout, 0);
     const sortedRows = [...rows].sort((a, b) => b.profit - a.profit);
@@ -3240,29 +3248,32 @@ const initStatisticsView = ({
     });
   };
 
-  const hasCompletedEntryFee = (row) => {
-    const normalized = sanitizeIntegerInput(typeof row.entryFee === "number" ? `${row.entryFee}` : row.entryFee ?? "");
-    return Boolean(normalized) && normalized !== "-" && parseIntegerOrZero(normalized) > 0;
+  const hasIncludedSummaryOrStatsData = (row) => {
+    const normalizedEntryFee = sanitizeIntegerInput(typeof row.entryFee === "number" ? `${row.entryFee}` : row.entryFee ?? "");
+    const normalizedPoints = sanitizeIntegerInput(typeof row.points === "number" ? `${row.points}` : row.points ?? "");
+    const hasEntryFee = Boolean(normalizedEntryFee) && normalizedEntryFee !== "-" && parseIntegerOrZero(normalizedEntryFee) > 0;
+    const hasPoints = Boolean(normalizedPoints) && normalizedPoints !== "-";
+    return hasEntryFee || hasPoints;
   };
 
   const getPlayersStatistics = () => {
     const games = getGamesForSelectedYear();
     const gameCount = games.length;
     const totalPool = games.reduce((sum, game) => sum + getDetailRows(game.id)
-      .filter((row) => hasCompletedEntryFee(row))
+      .filter((row) => hasIncludedSummaryOrStatsData(row))
       .reduce((acc, row) => acc + row.entryFee + row.rebuy, 0), 0);
     const playersMap = new Map();
 
     games.forEach((game) => {
       const rows = getDetailRows(game.id);
       const gamePool = rows
-        .filter((row) => hasCompletedEntryFee(row))
+        .filter((row) => hasIncludedSummaryOrStatsData(row))
         .reduce((acc, row) => acc + row.entryFee + row.rebuy, 0);
       const counted = new Set();
 
       rows.forEach((row) => {
         const playerName = typeof row.playerName === "string" ? row.playerName.trim() : "";
-        if (!playerName || !hasCompletedEntryFee(row)) {
+        if (!playerName || !hasIncludedSummaryOrStatsData(row)) {
           return;
         }
 
@@ -3819,13 +3830,16 @@ const initAdminGames = () => {
     });
   };
 
-  const hasCompletedEntryFee = (row) => {
-    const normalized = sanitizeIntegerInput(typeof row.entryFee === "number" ? `${row.entryFee}` : row.entryFee ?? "");
-    return Boolean(normalized) && normalized !== "-" && parseIntegerOrZero(normalized) > 0;
+  const hasIncludedSummaryOrStatsData = (row) => {
+    const normalizedEntryFee = sanitizeIntegerInput(typeof row.entryFee === "number" ? `${row.entryFee}` : row.entryFee ?? "");
+    const normalizedPoints = sanitizeIntegerInput(typeof row.points === "number" ? `${row.points}` : row.points ?? "");
+    const hasEntryFee = Boolean(normalizedEntryFee) && normalizedEntryFee !== "-" && parseIntegerOrZero(normalizedEntryFee) > 0;
+    const hasPoints = Boolean(normalizedPoints) && normalizedPoints !== "-";
+    return hasEntryFee || hasPoints;
   };
 
   const getGameSummaryMetrics = (gameId) => {
-    const rows = getDetailRows(gameId).filter((row) => hasCompletedEntryFee(row));
+    const rows = getDetailRows(gameId).filter((row) => hasIncludedSummaryOrStatsData(row));
     const pool = rows.reduce((sum, row) => sum + row.entryFee + row.rebuy, 0);
     const payoutSum = rows.reduce((sum, row) => sum + row.payout, 0);
     const sortedRows = [...rows].sort((a, b) => b.profit - a.profit);
@@ -3929,7 +3943,7 @@ const initAdminGames = () => {
 
       rows.forEach((row) => {
         const playerName = typeof row.playerName === "string" ? row.playerName.trim() : "";
-        if (!playerName || !hasCompletedEntryFee(row)) {
+        if (!playerName || !hasIncludedSummaryOrStatsData(row)) {
           return;
         }
 
