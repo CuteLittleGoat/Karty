@@ -299,3 +299,142 @@ z podziałem na:
 - `snapshots` (historia).
 
 Taki model spełnia wymagania niezależności obu kalkulatorów, zapisu wszystkich danych do Firebase i dalszego rozwoju bez częstych migracji schematu.
+
+---
+
+## 9. Drzewko konfiguracji kolekcji (do wdrożenia w Firebase)
+
+Poniżej masz gotowe, kompletne drzewko „co kliknąć i co utworzyć”, bazując na obecnej strukturze ze screenów.
+
+### 9.1 Co zrobić z `Collection1`
+
+- `Collection1` wygląda na testową i nieużywaną przez aplikację (placeholderowe pola `field1...field20`).
+- Rekomendacja:
+  - **nie używać** jej do nowych funkcji,
+  - zostawić tymczasowo tylko do czasu potwierdzenia,
+  - po potwierdzeniu braku użycia usunąć całą kolekcję.
+
+### 9.2 Docelowe top-level collections (stan po rozbudowie)
+
+```text
+(default)
+├─ Tables
+├─ UserGames
+├─ admin_games_stats
+├─ admin_messages
+├─ app_settings
+├─ chat_messages
+├─ players
+└─ calculators                       // NOWA kolekcja główna
+   ├─ tournament                     // DocumentID: stałe "tournament"
+   │  ├─ name: string                // "KalkulatorTournament"
+   │  ├─ isActive: boolean
+   │  ├─ createdAt: timestamp
+   │  ├─ updatedAt: timestamp
+   │  ├─ definitions                 // subcollection
+   │  │  └─ {versionId}              // DocumentID: np. "v1" lub auto-ID
+   │  │     ├─ version: number
+   │  │     ├─ status: string        // draft|active|archived
+   │  │     ├─ tables: array<object>
+   │  │     ├─ globalVariablesSchema: array<object>
+   │  │     ├─ createdBy: string
+   │  │     ├─ createdAt: timestamp
+   │  │     └─ updatedAt: timestamp
+   │  └─ sessions                    // subcollection
+   │     └─ {sessionId}              // DocumentID: auto-ID
+   │        ├─ name: string
+   │        ├─ definitionVersionId: string
+   │        ├─ status: string        // draft|finalized|archived
+   │        ├─ sourceGameId: string|null
+   │        ├─ playersSource: string // "app_settings/player_access"
+   │        ├─ createdBy: string
+   │        ├─ updatedBy: string
+   │        ├─ createdAt: timestamp
+   │        ├─ updatedAt: timestamp
+   │        ├─ finalizedAt: timestamp|null
+   │        ├─ variables             // subcollection
+   │        │  └─ current            // DocumentID: stałe "current"
+   │        │     ├─ values: map
+   │        │     ├─ updatedAt: timestamp
+   │        │     └─ updatedBy: string
+   │        ├─ tables                // subcollection
+   │        │  └─ {tableKey}         // DocumentID: np. "entries", "summary"
+   │        │     └─ rows            // subcollection
+   │        │        └─ {rowId}      // DocumentID: auto-ID
+   │        │           ├─ playerId: string|null
+   │        │           ├─ playerNameSnapshot: string|null
+   │        │           ├─ order: number
+   │        │           ├─ manual: map
+   │        │           ├─ computed: map
+   │        │           ├─ validation: map
+   │        │           ├─ createdAt: timestamp
+   │        │           ├─ updatedAt: timestamp
+   │        │           └─ updatedBy: string
+   │        └─ snapshots             // subcollection (opcjonalnie)
+   │           └─ {snapshotId}       // DocumentID: auto-ID
+   │              ├─ createdAt: timestamp
+   │              ├─ createdBy: string
+   │              └─ payload: map
+   └─ cash                           // DocumentID: stałe "cash"
+      ├─ name: string                // "KalkulatorCash"
+      ├─ isActive: boolean
+      ├─ createdAt: timestamp
+      ├─ updatedAt: timestamp
+      ├─ definitions
+      │  └─ {versionId}              // analogicznie jak tournament
+      └─ sessions
+         └─ {sessionId}              // analogicznie jak tournament
+```
+
+### 9.3 Szybki wariant „2 oddzielne kolekcje” (alternatywa)
+
+Jeśli wolisz dokładnie jak w przykładzie „Collection: KalkulatorTournament”, to możesz użyć takiego uproszczenia:
+
+```text
+(default)
+├─ KalkulatorTournament              // Collection
+│  └─ {docId}                        // DocumentID: auto-ID
+│     ├─ name: string
+│     ├─ createdAt: timestamp
+│     ├─ updatedAt: timestamp
+│     ├─ status: string
+│     ├─ variables: map
+│     └─ rows: array|map
+└─ KalkulatorCash                    // Collection
+   └─ {docId}                        // DocumentID: auto-ID
+      ├─ name: string
+      ├─ createdAt: timestamp
+      ├─ updatedAt: timestamp
+      ├─ status: string
+      ├─ variables: map
+      └─ rows: array|map
+```
+
+To jest prostsze na start, ale trudniejsze do skalowania i wersjonowania definicji pól.
+
+### 9.4 Instrukcja klik po kliku (Firebase Console)
+
+1. Wejdź: **Firestore Database → Data**.
+2. Kliknij **Start collection**.
+3. Wpisz `calculators` jako **Collection ID**.
+4. Utwórz pierwszy dokument:
+   - **Document ID**: `tournament`
+   - pola: `name`, `isActive`, `createdAt`, `updatedAt`.
+5. W dokumencie `tournament` kliknij **Start collection** i utwórz subcollection `definitions`.
+6. W `definitions` dodaj dokument `v1` (lub auto-ID) z polami wersji.
+7. Wróć do dokumentu `tournament`, utwórz subcollection `sessions`.
+8. W `sessions` dodawaj dokumenty z auto-ID (każda sesja kalkulacji).
+9. W każdej sesji dodaj subcollections: `variables`, `tables`, opcjonalnie `snapshots`.
+10. Powtórz kroki 4–9 dla dokumentu `cash`.
+11. `Collection1` pozostaw tylko do czasu potwierdzenia, że nic z niej nie czyta; potem usuń.
+
+### 9.5 Minimalny zestaw typów pól (checklista)
+
+- **string**: `name`, `status`, `createdBy`, `updatedBy`, `definitionVersionId`, `playerId`, `playerNameSnapshot`.
+- **boolean**: `isActive`.
+- **number**: `version`, `order`.
+- **timestamp**: `createdAt`, `updatedAt`, `finalizedAt`.
+- **map**: `manual`, `computed`, `validation`, `values`, `payload`.
+- **array<object>**: `tables`, `globalVariablesSchema`.
+
+To drzewko jest zgodne z wcześniejszą rekomendacją analizy i rozpisuje pełną strukturę do odtworzenia konfiguracji w Firestore.
