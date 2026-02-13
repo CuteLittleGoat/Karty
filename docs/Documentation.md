@@ -1215,3 +1215,78 @@ Efekt: dane i kolejność rankingu są spójne pomiędzy zakładkami **Statystyk
   - podkolekcja `rows` z danymi graczy,
   - kolekcja `admin_games_stats` (wagi ręczne `weight1..weight7` na dokument roku).
 - Dzięki temu nie powstaje osobna, niezależna ścieżka obliczeń rankingu.
+
+## 26. Aktualizacja 2026-02-13 — zakładka „Kalkulator” (admin)
+
+### 26.1 Zakres zmian w kodzie
+Zmiana objęła trzy pliki frontendowe:
+- `Main/index.html` — dodanie nowej zakładki admina `Kalkulator` i kontenerów dla 5 tabel.
+- `Main/app.js` — dodanie nowego modułu `initAdminCalculator()`.
+- `Main/styles.css` — style layoutu kalkulatora oraz ujednolicenie wyglądu pól `select`.
+
+### 26.2 Struktura UI zakładki
+W panelu admina dodano nowy przycisk zakładki:
+- `data-target="adminCalculatorTab"`.
+
+Nowy panel zawiera:
+- status `#adminCalculatorStatus`,
+- lewy przełącznik trybu:
+  - `data-calculator-mode="tournament"`,
+  - `data-calculator-mode="cash"`,
+- 5 kontenerów tabel:
+  - `#adminCalculatorTable1` ... `#adminCalculatorTable5`.
+
+### 26.3 Logika JS (`initAdminCalculator`)
+Moduł tworzy dwa niezależne stany lokalne UI:
+- `state.tournament`,
+- `state.cash`.
+
+Każdy stan zawiera szkielety danych:
+- `table1Rows` (dynamiczne wiersze z polami `buyIn`, `rebuy`),
+- `table2Rows` (wiersze wyboru graczy + `eliminated`),
+- `table3Row` (`rake`),
+- `table5Rows` (`winPercent`).
+
+Renderowane tabele:
+1. **Tabela1**: `Suma`, `Buy-In`, `Rebuy`, `Liczba Rebuy`, `Akcje`.
+   - `Dodaj` widoczny tylko w ostatnim wierszu.
+   - `Usuń` (czerwony) po prawej wiersza.
+2. **Tabela2**: `LP`, `Gracz`, `Buy-In`, `Rebuy`, `Eliminated`.
+   - `Gracz` = lista rozwijana.
+3. **Tabela3**: `Rake`, `Wpisowe`, `Rebuy`, `Pot`.
+4. **Tabela4**: `LP`, `Miejsce`, `Ranking`.
+5. **Tabela5**: `LP`, `%wygranej`, `Gracz`, `Kwota`, `Ranking`, `Rebuy1..Rebuy10`.
+
+Zasada pól:
+- pola wpisywane ręcznie = `input` aktywny,
+- pola obliczane = `input disabled` z wartością `"x"`.
+
+### 26.4 Integracja z Firebase (lista graczy)
+Lista graczy dla rozwijanego pola `Gracz` pobierana jest w czasie rzeczywistym z:
+- kolekcja: `app_settings`,
+- dokument: `player_access`,
+- tablica: `players[]`.
+
+Wykorzystany snapshot:
+- `firebaseApp.firestore().collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot(...)`.
+
+Dzięki temu liczba i nazwy opcji są zawsze zgodne z aktualną listą graczy w panelu admina.
+
+### 26.5 Rules / struktura Firebase względem kalkulatora
+Wdrożona zmiana nie zapisuje jeszcze danych tabel kalkulatora do gałęzi:
+- `calculators/{type}/sessions/{sessionId}/tables/*`.
+
+Aktualnie moduł:
+- korzysta z Firebase wyłącznie do odczytu listy graczy (snapshot),
+- nie łączy logiki z modułem „Gry do potwierdzenia”
+- pozostaje zgodny z etapowym podejściem wdrożenia jako etap UI-szkieletu.
+
+### 26.6 Ujednolicenie stylu `select`
+Dodano globalne reguły CSS dla pól wyboru:
+- `select.admin-input`,
+- `select`,
+- `.admin-data-table select`.
+
+Cel:
+- usunięcie szarego, systemowego tła,
+- zbliżenie wyglądu dropdownów do stylu pól `.admin-input` w całej aplikacji.

@@ -695,3 +695,42 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 
 - Zweryfikowano spójność instrukcji dla zakładek: **Gry admina**, **Gry użytkowników**, **Gry do potwierdzenia**, **Statystyki** i **Czat**.
 - Kolejność kliknięć oraz nazwy przycisków w tym dokumencie odpowiadają aktualnemu interfejsowi aplikacji.
+
+## 27. Kalkulator (Panel Administratora)
+
+> Zakładka **„Kalkulator”** jest dostępna tylko w widoku administratora.
+
+### 27.1 Wejście do zakładki
+1. Wejdź do aplikacji w trybie administratora.
+2. W karcie **„Panel Administratora”** kliknij zakładkę **„Kalkulator”**.
+3. Na ekranie zobaczysz:
+   - lewy panel przełączania trybu: **Tournament** / **Cash**,
+   - po prawej zestaw 5 tabel (Tabela1–Tabela5).
+
+### 27.2 Przełączanie Tournament / Cash
+1. Kliknij po lewej **„Tournament”** albo **„Cash”**.
+2. Aktywny przycisk jest podświetlony.
+3. Oba tryby mają taki sam układ tabel, ale każdy tryb przechowuje osobny stan pól w UI.
+
+### 27.3 Tabela1 — dodawanie i usuwanie wierszy
+1. Otwórz zakładkę **Kalkulator**.
+2. W sekcji **Tabela1** wypełniaj pola:
+   - **Buy-In**,
+   - **Rebuy**.
+3. Pod ostatnim zajętym wierszem kliknij **„Dodaj”**, aby utworzyć kolejny wiersz.
+4. Po prawej stronie wiersza kliknij czerwony przycisk **„Usuń”**, aby usunąć ten wiersz.
+5. Gdy zostaje tylko jeden wiersz, przycisk **„Usuń”** jest zablokowany.
+
+### 27.4 Tabela2 — wybór gracza z listy
+1. W sekcji **Tabela2** kliknij pole **„Gracz”**.
+2. Rozwinie się lista graczy pobierana z aktualnej listy w zakładce **„Gracze”**.
+3. Wybierz nazwę gracza z listy.
+4. Pole **Eliminated** możesz zaznaczyć/odznaczyć ręcznie.
+
+### 27.5 Pola edytowalne i nieedytowalne
+- **Edytowalne**: pola tekstowe (np. Buy-In, Rebuy, Rake, %wygranej) oraz checkbox **Eliminated**.
+- **Nieedytowalne (obliczane przez aplikację)**: pola z wpisem **„x”** — są zablokowane do klikania/edycji.
+
+### 27.6 Spójna kolorystyka list rozwijanych
+- Wszystkie pola wyboru (listy rozwijane) mają teraz spójną kolorystykę z resztą aplikacji.
+- Dotyczy to zarówno nowych pól w zakładce **Kalkulator**, jak i istniejących pól wyboru w innych sekcjach.
