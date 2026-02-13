@@ -360,3 +360,11 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 - Mechanizm używa istniejących nagłówków `thead th` i dynamicznie przełącza `display` dla komórek nieobecnych w `visibleColumns`.
 - Nie dodano nowych fontów, kolorów ani tokenów stylu.
 - Zachowano dotychczasowe klasy layoutu (`.admin-games-players-stats-table`, `.admin-table-scroll`, `.stats-column-header`, `.stats-column-visibility-checkbox`).
+
+## 22) Aktualizacja layoutu 2026-02-13 — Strefa Gracza w adminie + etykiety procentów
+- Sekcja **Strefa Gracza → Statystyki** w trybie `?admin=1` zachowuje ten sam przepływ wizualny co zwykły widok gracza: najpierw karta PIN (`.pin-gate`), dopiero po autoryzacji treść (`#statisticsContent`).
+- Dzięki temu panel testowy na dole ekranu nie pokazuje „automatycznie odblokowanej” tabeli statystyk.
+- W trzech tabelach statystyk zamieniono miejscami etykiety nagłówków procentowych:
+  - wcześniej: `% Wszystkich gier` potem `% Rozegranych gier`,
+  - teraz: `% Rozegranych gier` potem `% Wszystkich gier`.
+- Nie dodano nowych klas CSS, fontów, kolorów ani tokenów spacing.

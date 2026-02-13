@@ -657,3 +657,52 @@ Nie zmieniono schematu dokumentu, utrzymana kompatybilność:
   - `visibleColumns` — `string[]` z kluczami z `STATS_COLUMN_CONFIG`.
 
 Nie dodano migracji ani nowych kolekcji — wykorzystano istniejące pola i aktualny mechanizm `set(..., { merge: true })`.
+
+## 21. Aktualizacja 2026-02-13 — Statystyki: spójność „Strefa Gracza”, trwałość kolumn i zamiana etykiet
+
+### 21.1 Spójność działania „Strefa Gracza” w trybie admin (`?admin=1`)
+W `Main/app.js` usunięto wyjątek, który omijał bramkę PIN dla zakładki `statsTab`, gdy aplikacja działała w admin mode.
+
+Zmiany techniczne:
+- `updateStatisticsVisibility()` nie traktuje już `getAdminMode()` jako bypassu PIN dla dolnej sekcji „Strefa Gracza”.
+- `synchronizeStatisticsAccessState()` działa tak samo niezależnie od parametru `?admin=1`.
+- W `initUserTabs()` reset sesji `statsTab` wykonuje się zawsze po wejściu w zakładkę (również w trybie admin), co wymusza testowanie ścieżki identycznej jak u użytkownika.
+
+Efekt:
+- „Strefa Gracza” jest funkcjonalnie 1:1 z widokiem bez `?admin=1`.
+
+### 21.2 Trwałość i odtwarzanie stanu checkboxów kolumn Statystyk
+W `initStatisticsView(...)` (gałąź `isAdminView`) dodano mapę referencji do checkboxów kolumn (`adminColumnVisibilityCheckboxes`) i synchronizację ich stanu przy każdym `renderStats()`.
+
+Mechanizm:
+1. Snapshot z `admin_games_stats/{year}.visibleColumns` ładuje konfigurację kolumn per rok do `state.visibleColumnsByYear`.
+2. `renderStats()` odczytuje aktywny rok i ustawia `checkbox.checked` zgodnie z `getVisibleColumnsForYear(state.selectedYear)`.
+3. Zmiana checkboxa zapisuje konfigurację przez `persistYearConfig(year)` do Firestore (`set(..., { merge: true })`).
+
+Efekt:
+- po restarcie aplikacji checkboxy i widoczność kolumn wracają do zapisanej konfiguracji,
+- konfiguracja jest niezależna per rok.
+
+### 21.3 Zamiana nazw kolumn procentowych (bez zmiany obliczeń)
+W `STATS_COLUMN_CONFIG` zamieniono wyłącznie etykiety:
+- `percentAllGames`: z „% Wszystkich gier” na „% Rozegranych gier”,
+- `percentPlayedGames`: z „% Rozegranych gier” na „% Wszystkich gier”.
+
+Równolegle zaktualizowano nagłówki HTML tabel:
+- `Gry admina -> Statystyki`,
+- `Admin -> zakładka Statystyki`,
+- `Strefa Gracza -> Statystyki`.
+
+Formuły obliczeń pozostają bez zmian:
+- `percentAllGames = ceil(payoutSum / playedGamesPoolSum * 100)`,
+- `percentPlayedGames = ceil(payoutSum / totalPool * 100)`.
+
+### 21.4 Backend/Firebase
+Nie była wymagana migracja schematu Firestore.
+
+Nadal wykorzystywany jest dokument per rok:
+- kolekcja: `admin_games_stats`,
+- dokument: `{year}`,
+- pola: `rows`, `visibleColumns`.
+
+Zmiana dotyczy wyłącznie poprawnego odtwarzania i prezentacji już zapisywanego pola `visibleColumns`.

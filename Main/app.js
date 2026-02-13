@@ -82,9 +82,9 @@ const STATS_COLUMN_CONFIG = [
   { key: "depositsSum", label: "Wpłaty", editable: false, weight: false, value: (row) => row.depositsSum },
   { key: "weight6", label: "Waga6", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight6", manual?.weight6) },
   { key: "playedGamesPoolSum", label: "Suma z rozegranych gier", editable: false, weight: false, value: (row) => row.playedGamesPoolSum },
-  { key: "percentAllGames", label: "% Wszystkich gier", editable: false, weight: false, value: (row) => `${row.percentAllGames}%` },
+  { key: "percentAllGames", label: "% Rozegranych gier", editable: false, weight: false, value: (row) => `${row.percentAllGames}%` },
   { key: "weight7", label: "Waga7", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight7", manual?.weight7) },
-  { key: "percentPlayedGames", label: "% Rozegranych gier", editable: false, weight: false, value: (row) => `${row.percentPlayedGames}%` },
+  { key: "percentPlayedGames", label: "% Wszystkich gier", editable: false, weight: false, value: (row) => `${row.percentPlayedGames}%` },
   {
     key: "result",
     label: "Wynik",
@@ -1196,23 +1196,12 @@ const updateStatisticsVisibility = () => {
     return;
   }
 
-  if (getAdminMode()) {
-    gate.style.display = "none";
-    content.classList.add("is-visible");
-    return;
-  }
-
   const isVerified = getStatisticsPinGateState();
   gate.style.display = isVerified ? "none" : "block";
   content.classList.toggle("is-visible", isVerified);
 };
 
 const synchronizeStatisticsAccessState = () => {
-  if (getAdminMode()) {
-    updateStatisticsVisibility();
-    return;
-  }
-
   if (!getStatisticsPinGateState()) {
     updateStatisticsVisibility();
     return;
@@ -1267,10 +1256,6 @@ const initStatisticsTab = () => {
   });
 
   updateStatisticsVisibility();
-
-  if (getAdminMode()) {
-    return;
-  }
 
   synchronizeStatisticsAccessState();
 };
@@ -2206,7 +2191,7 @@ const initUserTabs = () => {
       updateUserGamesVisibility();
     }
 
-    if (target === "statsTab" && !getAdminMode()) {
+    if (target === "statsTab") {
       setStatisticsPinGateState(false);
       setStatisticsVerifiedPlayerId("");
       const statisticsPinInput = document.querySelector("#statisticsPinInput");
@@ -2909,6 +2894,7 @@ const initStatisticsView = ({
     visibleColumnsByYear: new Map()
   };
   const playersStatsHeaderCells = playersStatsBody.closest("table")?.querySelectorAll("thead th") ?? [];
+  const adminColumnVisibilityCheckboxes = new Map();
 
   const getDefaultManualFieldValue = (field, value) => {
     if (weightStatsFields.includes(field)) {
@@ -3105,6 +3091,16 @@ const initStatisticsView = ({
     const statistics = getPlayersStatistics();
     const visibleColumns = isAdminView ? STATS_COLUMN_CONFIG.map((entry) => entry.key) : getVisibleColumnsForYear(state.selectedYear);
 
+    if (isAdminView) {
+      const visibleInSelectedYear = getVisibleColumnsForYear(state.selectedYear);
+      STATS_COLUMN_CONFIG.forEach((column) => {
+        const checkbox = adminColumnVisibilityCheckboxes.get(column.key);
+        if (checkbox) {
+          checkbox.checked = visibleInSelectedYear.includes(column.key);
+        }
+      });
+    }
+
     if (!isAdminView) {
       playersStatsHeaderCells.forEach((cell, index) => {
         const column = STATS_COLUMN_CONFIG[index];
@@ -3266,7 +3262,8 @@ const initStatisticsView = ({
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.className = "stats-column-visibility-checkbox";
-      checkbox.checked = true;
+      checkbox.checked = getVisibleColumnsForYear(state.selectedYear).includes(column.key);
+      adminColumnVisibilityCheckboxes.set(column.key, checkbox);
       checkbox.addEventListener("change", () => {
         if (!state.selectedYear) {
           return;
