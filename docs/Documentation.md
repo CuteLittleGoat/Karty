@@ -21,7 +21,7 @@ Kod działa jako aplikacja webowa typu SPA w oparciu o:
 
 ## 2.1 `Main/index.html`
 Zawiera wszystkie sekcje interfejsu i kontenery dynamiczne:
-- panel administratora (zakładki: aktualności, czat, regulamin, gracze, turnieje, gry admina, statystyki, gry użytkowników, gry do potwierdzenia),
+- panel administratora (zakładki: aktualności, czat, regulamin, gracze, gry admina, statystyki, gry użytkowników, gry do potwierdzenia),
 - sekcje użytkownika (najbliższa gra, czat, statystyki, gry użytkowników, regulamin),
 - modale szczegółów i formularze wpisów.
 
@@ -75,7 +75,7 @@ Przechowuje konfigurację połączenia Firebase jako globalny obiekt używany po
 - Administrator ma operacje moderacyjne (odczyt + usuwanie wpisów starszych niż retencja).
 
 ## 3.3 Gry administracyjne i turniejowe
-- Kolekcje gier rozdzielone kontekstowo (np. „gry admina”, „turnieje”).
+- Kolekcje gier rozdzielone kontekstowo (np. „gry admina”, „gry użytkowników”).
 - Dokument gry zawiera m.in.:
   - `gameType`,
   - `gameDate` (format `YYYY-MM-DD`),
@@ -183,14 +183,7 @@ Dzięki temu autoryzacja w jednej sekcji nie implikuje automatycznie dostępu do
 - aktywacja/dezaktywacja `appEnabled`,
 - edycja listy `permissions` przez modal.
 
-## 6.6 Turnieje
-`initAdminTables()`:
-- tworzenie gier,
-- edycja metadanych gry,
-- usuwanie gry,
-- zarządzanie wierszami `rows`.
-
-## 6.7 Gry admina
+## 6.6 Gry admina
 `initAdminGames()`:
 - lista lat,
 - filtrowanie gier po roku,
@@ -199,13 +192,13 @@ Dzięki temu autoryzacja w jednej sekcji nie implikuje automatycznie dostępu do
 - przeliczanie podsumowań i rankingów,
 - render sekcji „Podsumowanie gry” zawiera metadane gry w kolejności: ostrzeżenie o rozbieżnościach (jeśli wystąpi), **Rodzaj gry**, **Pula**, następnie tabela graczy.
 
-## 6.8 Gry użytkowników (admin)
+## 6.7 Gry użytkowników (admin)
 `initAdminUserGames()`:
 - wykorzystuje wspólną logikę menedżera,
 - daje adminowi pełen podgląd i kontrolę zgłoszeń,
 - renderuje w „Podsumowanie gry” ten sam układ metadanych co „Gry admina” (Rodzaj gry nad Pulą).
 
-## 6.9 Gry do potwierdzenia
+## 6.8 Gry do potwierdzenia
 `initAdminConfirmations()`:
 - pobiera gry oczekujące,
 - obsługuje zmianę statusów potwierdzenia.

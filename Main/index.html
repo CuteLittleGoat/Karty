@@ -38,7 +38,6 @@
             <button class="admin-panel-tab" type="button" data-target="adminChatTab">Czat</button>
             <button class="admin-panel-tab" type="button" data-target="adminRulesTab">Regulamin</button>
             <button class="admin-panel-tab" type="button" data-target="adminPlayersTab">Gracze</button>
-            <button class="admin-panel-tab" type="button" data-target="adminTournamentsTab">Turnieje</button>
             <button class="admin-panel-tab" type="button" data-target="adminGamesTab">Gry admina</button>
             <button class="admin-panel-tab" type="button" data-target="adminStatisticsTab">Statystyki</button>
             <button class="admin-panel-tab" type="button" data-target="adminUserGamesTab">Gry użytkowników</button>
@@ -118,42 +117,6 @@
               </div>
               <div class="admin-table-actions">
                 <button id="adminAddPlayer" class="secondary" type="button">Dodaj</button>
-              </div>
-            </div>
-          </div>
-          <div id="adminTournamentsTab" class="admin-panel-content" role="tabpanel">
-            <div class="admin-tournaments">
-              <div class="card-header admin-tables-header">
-                <div>
-                  <h3>Turnieje</h3>
-                  <p>Dodawaj kolejne rozgrywki i uzupełniaj dane w tabelach.</p>
-                </div>
-                <button id="adminAddTable" class="primary" type="button">Dodaj</button>
-              </div>
-              <span id="adminTablesStatus" class="status-text" aria-live="polite"></span>
-              <div id="adminTablesList" class="admin-tables-list"></div>
-              <div class="admin-summary">
-                <h3>Podsumowanie</h3>
-                <div class="admin-table-scroll">
-                  <table class="admin-data-table summary-table">
-                    <thead>
-                      <tr>
-                        <th>Suma Gier</th>
-                        <th>Łączna pula</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <input id="summaryGameCount" class="admin-input" type="text" readonly />
-                        </td>
-                        <td>
-                          <input id="summaryTotalPool" class="admin-input" type="text" readonly />
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
               </div>
             </div>
           </div>

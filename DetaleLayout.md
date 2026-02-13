@@ -12,7 +12,7 @@
 - Czerwony: akcje destrukcyjne (`Usuń`).
 
 ## 3) Panel Administratora — aktualny układ
-- Zakładki: `Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Turnieje`, `Gry admina`, `Gry użytkowników`, `Gry do potwierdzenia`.
+- Zakładki: `Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Gry admina`, `Gry użytkowników`, `Gry do potwierdzenia`.
 - Osobna zakładka `Statystyki` jest dostępna równolegle do sekcji `Statystyki` w zakładce `Gry admina`.
 
 ## 4) Zakładka Gry — szczegóły wizualne
