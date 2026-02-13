@@ -324,6 +324,13 @@ select,
   border: 1px solid var(--border);
 }
 
+select.admin-input option,
+select option,
+.admin-data-table select option {
+  background-color: #031f1b;
+  color: var(--ink);
+}
+
 select.admin-input:disabled,
 select:disabled,
 .admin-data-table select:disabled {

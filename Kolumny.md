@@ -241,13 +241,13 @@ Uwagi:
 - Wiersz **Rodzaj gry** jest renderowany bezpośrednio nad wierszem **Pula** w sekcji „Podsumowanie gry”.
 - Wartości są prezentowane jako tekst (`.status-text`) i nie wprowadzają zmian szerokości kolumn tabel danych.
 
-## Aktualizacja 2026-02-13 — dynamiczna widoczność kolumn w „Statystyki”
+## Dynamiczna widoczność kolumn w „Statystyki”
 - Dotyczy tabeli statystyk graczy (`.admin-games-players-stats-table`) w widoku użytkownika.
 - Administrator steruje widocznością przez checkboxy w nagłówkach widoku admina.
 - Po odznaczeniu kolumny użytkownik nie widzi tej kolumny ani w nagłówku, ani w danych.
 - Parametry szerokości i wyrównania pojedynczych kolumn pozostają bez zmian; zmienia się tylko to, które kolumny są renderowane.
 
-## Aktualizacja 2026-02-13 — etykiety kolumn procentowych w Statystykach
+## Etykiety kolumn procentowych w Statystykach
 - Zmieniono nazwy (zamiana miejsc) dwóch nagłówków procentowych w tabelach statystyk:
   - `% Wszystkich gier` → `% Rozegranych gier`,
   - `% Rozegranych gier` → `% Wszystkich gier`.
@@ -267,7 +267,6 @@ Uwagi:
 | Buy-In | brak | brak | brak | brak | lewo | standard |
 | Rebuy | brak | brak | brak | brak | lewo | standard |
 | Liczba Rebuy | brak | brak | brak | brak | lewo | standard |
-| Akcje | brak | wg zawartości | brak | brak | lewo | standard |
 
 ### Tabela2
 
@@ -278,6 +277,7 @@ Uwagi:
 | Buy-In | brak | brak | brak | brak | lewo | standard |
 | Rebuy | brak | brak | brak | brak | lewo | standard |
 | Eliminated | brak | brak | brak | brak | lewo | standard |
+| Akcje | brak | wg zawartości | brak | brak | lewo | standard |
 
 ### Tabela3
 
