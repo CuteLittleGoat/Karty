@@ -481,3 +481,39 @@ zamieniono tylko nazwy nagłówków:
 - a dalej **% Wszystkich gier**.
 
 Sposób liczenia wartości pozostał bez zmian.
+
+## 22. Aktualizacja 2026-02-13 — Checkboxy kolumn w Statystykach (nowe domyślne ustawienia + trwałość)
+
+### 22.1 Domyślny stan checkboxów po wejściu na nowy rok
+1. Otwórz **Panel Administratora** → zakładka **Statystyki**.
+2. Wybierz rok, który nie miał jeszcze zapisanej konfiguracji kolumn.
+3. Sprawdź checkboxy w nagłówkach tabeli graczy.
+
+Efekt domyślny:
+- zaznaczone są wszystkie kolumny użytkowe (np. Gracz, Mistrzostwo, Ilość Spotkań, Punkty, Wypłata, Wynik),
+- domyślnie **odznaczone** są tylko kolumny: **Waga1, Waga2, Waga3, Waga4, Waga5, Waga6, Waga7**.
+
+### 22.2 Ręczne ukrywanie/pokazywanie kolumn użytkownikowi
+1. W tej samej zakładce **Statystyki** (admin) wybierz rok.
+2. W nagłówku interesującej kolumny kliknij checkbox:
+   - kliknięcie usuwa zaznaczenie → kolumna będzie ukryta dla użytkownika,
+   - ponowne kliknięcie zaznacza → kolumna będzie widoczna dla użytkownika.
+3. Zmiany wykonuj dla każdej kolumny niezależnie.
+
+### 22.3 Zapis ustawień checkboxów po restarcie aplikacji
+1. W zakładce admina **Statystyki** ustaw własny układ checkboxów (np. zostaw tylko 3 kolumny albo odznacz wszystkie).
+2. Odśwież stronę (`F5`) lub zamknij i ponownie otwórz aplikację.
+3. Wróć do tego samego roku w zakładce **Statystyki**.
+
+Efekt:
+- aplikacja przywraca dokładnie ten sam stan zaznaczeń,
+- dotyczy to również skrajnego przypadku, gdy wszystkie checkboxy były odznaczone.
+
+### 22.4 Co zobaczy użytkownik w swojej zakładce „Statystyki”
+1. Otwórz dolną sekcję użytkownika → zakładka **Statystyki**.
+2. Przejdź PIN-em przez dostęp.
+3. Odczytaj tabelę graczy.
+
+Efekt:
+- użytkownik widzi tylko te kolumny, które administrator zostawił zaznaczone dla danego roku,
+- jeśli administrator odznaczył wszystkie kolumny, tabela użytkownika nie pokazuje kolumn danych.

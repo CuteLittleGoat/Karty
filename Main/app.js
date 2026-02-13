@@ -98,6 +98,9 @@ const STATS_COLUMN_CONFIG = [
     }
   }
 ];
+const DEFAULT_VISIBLE_STATS_COLUMNS = STATS_COLUMN_CONFIG
+  .filter((column) => !column.weight)
+  .map((column) => column.key);
 
 const adminPlayersState = {
   players: [],
@@ -2907,8 +2910,8 @@ const initStatisticsView = ({
   const getVisibleColumnsForYear = (year) => {
     const yearKey = String(year ?? "");
     const stored = state.visibleColumnsByYear.get(yearKey);
-    if (!Array.isArray(stored) || !stored.length) {
-      return STATS_COLUMN_CONFIG.map((column) => column.key);
+    if (!Array.isArray(stored)) {
+      return DEFAULT_VISIBLE_STATS_COLUMNS;
     }
     const available = new Set(STATS_COLUMN_CONFIG.map((column) => column.key));
     return stored.filter((key) => available.has(key));
@@ -3204,10 +3207,19 @@ const initStatisticsView = ({
   db.collection(ADMIN_GAMES_STATS_COLLECTION).onSnapshot((snapshot) => {
     state.manualStatsByYear.clear();
     state.visibleColumnsByYear.clear();
+    const missingVisibilityConfigYears = [];
+
     snapshot.forEach((doc) => {
       const yearKey = String(doc.id);
-      const rows = Array.isArray(doc.data()?.rows) ? doc.data().rows : [];
-      const visibleColumns = Array.isArray(doc.data()?.visibleColumns) ? doc.data().visibleColumns : STATS_COLUMN_CONFIG.map((column) => column.key);
+      const data = doc.data() ?? {};
+      const rows = Array.isArray(data.rows) ? data.rows : [];
+      const hasVisibleColumns = Array.isArray(data.visibleColumns);
+      const visibleColumns = hasVisibleColumns ? data.visibleColumns : DEFAULT_VISIBLE_STATS_COLUMNS;
+
+      if (!hasVisibleColumns) {
+        missingVisibilityConfigYears.push(yearKey);
+      }
+
       state.visibleColumnsByYear.set(yearKey, visibleColumns);
       const yearMap = new Map();
       rows.forEach((entry) => {
@@ -3223,6 +3235,18 @@ const initStatisticsView = ({
       });
       state.manualStatsByYear.set(yearKey, yearMap);
     });
+
+    if (missingVisibilityConfigYears.length) {
+      Promise.allSettled(missingVisibilityConfigYears.map((yearKey) => db.collection(ADMIN_GAMES_STATS_COLLECTION).doc(yearKey).set({
+        visibleColumns: DEFAULT_VISIBLE_STATS_COLUMNS
+      }, { merge: true }))).then((results) => {
+        const hasRejected = results.some((result) => result.status === "rejected");
+        if (hasRejected) {
+          status.textContent = "Nie udało się zapisać domyślnej konfiguracji kolumn dla części lat.";
+        }
+      });
+    }
+
     renderStats();
   });
 
@@ -3277,7 +3301,9 @@ const initStatisticsView = ({
         }
         state.visibleColumnsByYear.set(yearKey, STATS_COLUMN_CONFIG.map((entry) => entry.key).filter((key) => visible.has(key)));
         renderStats();
-        void persistYearConfig(state.selectedYear);
+        void persistYearConfig(state.selectedYear).catch(() => {
+          status.textContent = "Nie udało się zapisać widoczności kolumn. Spróbuj ponownie.";
+        });
       });
       const wrapper = document.createElement("div");
       wrapper.className = "stats-column-header";

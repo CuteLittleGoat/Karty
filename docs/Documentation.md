@@ -706,3 +706,58 @@ Nadal wykorzystywany jest dokument per rok:
 - pola: `rows`, `visibleColumns`.
 
 Zmiana dotyczy wyłącznie poprawnego odtwarzania i prezentacji już zapisywanego pola `visibleColumns`.
+
+## 22. Aktualizacja 2026-02-13 — Statystyki: trwałe checkboxy kolumn i nowy domyślny zestaw widoczności
+
+### 22.1 Zakres kodu
+Zmiany wdrożono w `Main/app.js` w obrębie:
+- definicji konfiguracji kolumn statystyk (`STATS_COLUMN_CONFIG`),
+- funkcji `getVisibleColumnsForYear(year)`,
+- snapshotu `admin_games_stats` w `initStatisticsView(...)`,
+- handlera `change` checkboxów `.stats-column-visibility-checkbox`.
+
+### 22.2 Nowy domyślny zestaw kolumn
+Dodano stałą:
+- `DEFAULT_VISIBLE_STATS_COLUMNS = STATS_COLUMN_CONFIG.filter((column) => !column.weight).map((column) => column.key)`.
+
+Znaczenie:
+- domyślnie widoczne są tylko kolumny nieoznaczone jako `weight`,
+- kolumny `Waga1..Waga7` (gdzie `weight: true`) są domyślnie ukryte.
+
+### 22.3 Poprawa logiki odtwarzania stanu (`[]` jako poprawna konfiguracja)
+W `getVisibleColumnsForYear(year)` usunięto traktowanie pustej tablicy jako „braku danych”.
+
+Nowa logika:
+1. `stored` nie jest tablicą → zwracane `DEFAULT_VISIBLE_STATS_COLUMNS`,
+2. `stored` jest tablicą (również pustą) → zwracana przefiltrowana lista po znanych kluczach.
+
+Skutek:
+- zapis `visibleColumns: []` jest trwały i nie resetuje się do domyślnego „wszystko widoczne”.
+
+### 22.4 Migracja danych legacy podczas snapshotu
+W snapshotcie kolekcji `admin_games_stats`:
+- jeżeli dokument roku nie ma tablicy `visibleColumns`, runtime ustawia fallback na `DEFAULT_VISIBLE_STATS_COLUMNS`,
+- rok jest dopisywany do listy `missingVisibilityConfigYears`,
+- wykonywany jest zapis naprawczy `set({ visibleColumns: DEFAULT_VISIBLE_STATS_COLUMNS }, { merge: true })`.
+
+Skutek:
+- starsze dokumenty bez pola `visibleColumns` są automatycznie ujednolicane,
+- nowe wymaganie domyślne obowiązuje spójnie dla istniejących lat.
+
+### 22.5 Obsługa błędu zapisu checkboxów
+W handlerze `checkbox.addEventListener("change", ...)`:
+- zapis `persistYearConfig(state.selectedYear)` otrzymał `.catch(...)`,
+- w przypadku błędu wyświetlany jest status: „Nie udało się zapisać widoczności kolumn. Spróbuj ponownie.”
+
+Skutek:
+- brak cichego błędu UI przy niedostępnym zapisie.
+
+### 22.6 Backend / Firestore
+Nadal używany jest ten sam model danych:
+- kolekcja: `admin_games_stats`,
+- dokument: `{year}`,
+- pole `visibleColumns: string[]`.
+
+Zmiana backendowa dotyczy wyłącznie semantyki wartości domyślnej i migracji brakującego pola:
+- brak `visibleColumns` => automatyczny zapis domyślnej listy bez wag,
+- obecność `visibleColumns: []` => respektowanie pustej konfiguracji jako ważnego stanu biznesowego.
