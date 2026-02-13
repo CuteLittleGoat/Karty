@@ -38,20 +38,6 @@ Parametry sekcji:
 
 ---
 
-## Panel Administratora → Zakładka „Turnieje”
-
-### Tabela podsumowania (`.summary-table`)
-
-| Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
-| --- | --- | --- | --- | --- | --- | --- |
-| Suma Gier | brak | brak (tabela min 480px) | brak | brak | lewo | standard |
-| Łączna pula | brak | brak (tabela min 480px) | brak | brak | lewo | standard |
-
-Parametry sekcji:
-- `min-width` całej tabeli: **480px**.
-
----
-
 ## Panel Administratora → Zakładka „Gry admina”
 
 ### 1) Tabela gier (górna)

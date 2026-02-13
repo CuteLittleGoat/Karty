@@ -15,7 +15,7 @@ Po otwarciu strony zobaczysz układ podzielony na sekcje (karty).
 W karcie **„Panel Administratora”** na górze są zakładki.
 
 ### Jak przełączać zakładki
-1. Kliknij nazwę zakładki (np. „Aktualności”, „Czat”, „Gracze”, „Turnieje”).
+1. Kliknij nazwę zakładki (np. „Aktualności”, „Czat”, „Gracze”, „Gry admina”).
 2. Kliknięta zakładka podświetli się jako aktywna.
 3. Treść pod spodem zmieni się na odpowiedni moduł.
 
@@ -93,41 +93,6 @@ W tej zakładce zarządzasz listą graczy, PIN-ami i uprawnieniami.
 
 **Edytowalne:** nazwa, PIN, checkbox „Aplikacja”, wybór uprawnień.  
 **Automatyczne/systemowe:** statusy zapisu i walidacja formatu PIN.
-
----
-
-## 7. Turnieje (administrator)
-
-Zakładka służy do tworzenia i obsługi stołów/rozgrywek.
-
-### Dodanie stołu (gry)
-1. Otwórz zakładkę **„Turnieje”**.
-2. Kliknij przycisk dodawania gry/stołu.
-3. Uzupełnij formularz gry:
-   - data,
-   - nazwa,
-   - typ gry,
-   - status (otwarta/zamknięta — zależnie od interfejsu).
-4. Zapisz.
-
-### Otworzenie szczegółów gry
-1. Na liście kliknij wybraną grę.
-2. Otworzy się widok lub modal szczegółów.
-3. W szczegółach możesz dodawać i edytować wiersze graczy.
-
-### Dodanie gracza do konkretnej gry
-1. Wejdź w szczegóły gry.
-2. Kliknij dodawanie nowego wiersza.
-3. Uzupełnij pola finansowe i punktowe.
-4. Zapisz wiersz.
-
-### Usunięcie gry / wiersza
-1. Wybierz element (gra albo wiersz gracza).
-2. Kliknij przycisk usuwania.
-3. Potwierdź operację, jeśli pojawi się okno potwierdzenia.
-
-**Edytowalne:** pola formularza gry i wierszy.  
-**Automatyczne:** część wartości podsumowujących i obliczanych kolumn.
 
 ---
 
@@ -272,7 +237,7 @@ Każda sekcja może mieć własny stan odblokowania, więc odblokowanie jednego 
 ## 14. Najczęstsze scenariusze „krok po kroku”
 
 ### A) Chcę dodać nowy stół i pierwszych graczy
-1. Panel administratora → **Turnieje**.
+1. Panel administratora → **Gry admina**.
 2. Kliknij **dodaj grę/stół**.
 3. Wpisz datę i nazwę.
 4. Zapisz.
@@ -281,7 +246,7 @@ Każda sekcja może mieć własny stan odblokowania, więc odblokowanie jednego 
 7. Zapisz każdy wiersz.
 
 ### B) Chcę zmienić stawkę/wartości gracza w istniejącej grze
-1. Panel administratora → **Gry admina** lub **Turnieje** (zależnie od miejsca, gdzie edytujesz).
+1. Panel administratora → **Gry admina**.
 2. Wybierz grę z listy.
 3. Otwórz szczegóły.
 4. Edytuj pole wpisowego/rebuy/wypłaty.
