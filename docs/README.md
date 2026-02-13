@@ -690,3 +690,8 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 2. W kolumnie **Uprawnienia** dla gracza ustawia dostępne lata statystyk.
 3. Użytkownik po wejściu do **Statystyki** zobaczy tylko lata, do których ma dostęp.
 4. Ranking po prawej wyświetla wyłącznie dane dla aktualnie klikniętego, dozwolonego roku.
+
+## 15. Aktualizacja instrukcji UI (2026-02-13)
+
+- Zweryfikowano spójność instrukcji dla zakładek: **Gry admina**, **Gry użytkowników**, **Gry do potwierdzenia**, **Statystyki** i **Czat**.
+- Kolejność kliknięć oraz nazwy przycisków w tym dokumencie odpowiadają aktualnemu interfejsowi aplikacji.

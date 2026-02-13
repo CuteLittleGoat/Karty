@@ -102,13 +102,52 @@ Przechowuje konfigurację połączenia Firebase jako globalny obiekt używany po
 - Lista „do potwierdzenia” bazuje na filtrze statusu i kontekście źródła.
 
 
-## 3.6 Aktualna struktura kolekcji Firestore (stan z Firebase Console)
+## 3.6 Aktualna struktura kolekcji Firestore (stan z eksportu `Analizy/firestore-structure.txt`)
 
-Poniżej zebrana jest pełna struktura kolekcji widoczna na dostarczonych zrzutach ekranu:
+Poniżej zebrana jest struktura kolekcji i pól na podstawie aktualnego eksportu Firestore:
 
-- `Collection1`
-  - dokument `document1`
-    - pola techniczne/testowe: `field1 ... field20` (puste stringi).
+- `admin_games_stats`
+  - dokumenty roczne (`2026`, `2027`, ...)
+    - `rows` (array obiektów statystyk graczy),
+    - `visibleColumns` (array nazw kolumn widocznych po stronie użytkownika).
+
+- `admin_messages`
+  - dokument `admin_messages`
+    - `createdAt` (timestamp),
+    - `message` (string),
+    - `source` (string, np. `web-admin`).
+
+- `app_settings`
+  - dokument `next_game`
+    - `pin` (string).
+  - dokument `player_access`
+    - `players` (array obiektów):
+      - `id`, `name`, `pin`, `appEnabled`,
+      - `permissions` (np. `chatTab`, `confirmationsTab`, `userGamesTab`, `nextGameTab`, `statsTab`),
+      - `statsYearsAccess` (array lat dostępnych w zakładce statystyk),
+    - `updatedAt` (timestamp).
+  - dokument `rules`
+    - `text` (string),
+    - `source` (string),
+    - `updatedAt` / `createdAt` (timestamp).
+
+- `calculators`
+  - dokument typu kalkulatora (`{type}`)
+    - podkolekcje:
+      - `definitions/{versionId}`,
+      - `placeholders/{placeholderId}`,
+      - `sessions/{sessionId}` z kolejnymi podkolekcjami:
+        - `variables/{varDocId}`,
+        - `calculationFlags/{flagDocId}`,
+        - `tables/{tableId}/rows/{rowId}`,
+        - `snapshots/{snapshotId}`.
+
+- `chat_messages`
+  - dokumenty wiadomości czatu
+    - pola używane przez UI: `authorId`, `authorName`, `createdAt`, `expireAt`, `source`, `text`.
+
+- `players`
+  - dokumenty legacy/statyczne do danych historycznych graczy.
 
 - `Tables`
   - dokumenty gier (ID automatyczne, np. `3RAPSXbOk5Z7aChy94AN`)
@@ -120,65 +159,19 @@ Poniżej zebrana jest pełna struktura kolekcji widoczna na dostarczonych zrzuta
       - `name` (nazwa stołu/gry),
       - `preGameNotes` (string),
       - `postGameNotes` (string).
-    - podkolekcja:
-      - `rows` (wiersze graczy dla danej gry).
+    - podkolekcje:
+      - `rows` (wiersze graczy dla danej gry),
+      - `confirmations` (statusy potwierdzeń graczy).
 
 - `UserGames`
   - dokumenty gier użytkowników (ID automatyczne, np. `4EsjthCu80Ody96R5k7t`)
     - pola dokumentu gry:
-      - `createdAt`,
-      - `createdByPlayerId`,
-      - `createdByPlayerName`,
-      - `gameDate`,
-      - `gameType`,
-      - `isClosed`,
-      - `name`,
-      - `preGameNotes` (string),
-      - `postGameNotes` (string).
+      - `createdAt`, `updatedAt`,
+      - `createdByPlayerId`, `createdByPlayerName`,
+      - `gameDate`, `gameType`, `isClosed`, `name`.
     - podkolekcje:
       - `rows`,
       - `confirmations`.
-
-- `admin_messages`
-  - dokument `admin_messages` (stały dokument nadpisywany przy każdej wysyłce)
-    - pola:
-      - `createdAt`,
-      - `message`,
-      - `source` (np. `web-admin`).
-
-- `app_settings`
-  - dokument `next_game`
-    - pola:
-      - `pin`.
-  - dokument `player_access`
-    - pole `players` (tablica obiektów):
-      - `id`,
-      - `name`,
-      - `pin`,
-      - `appEnabled`,
-      - `permissions` (np. `chatTab`, `confirmationsTab`, `userGamesTab`, `nextGameTab`, `statisticsTab`).
-  - dokument `rules`
-    - treść regulaminu używana w UI.
-
-- `chat_messages`
-  - dokumenty wiadomości czatu
-    - pola:
-      - `authorId`,
-      - `authorName`,
-      - `createdAt`,
-      - `expireAt`,
-      - `source`,
-      - `text`.
-
-- `players`
-  - dokument `players`
-    - pola statystyczne i placeholdery historyczne (m.in. `Name`, `Cash`, `GamesPlayed`, `GamesWon`, `MoneySpend`, `MoneyWon`, `Placeholder1...`).
-
-- `admin_games_stats` (używana przez moduł Statystyki w kodzie)
-  - dokumenty roczne (`{year}`)
-    - pola:
-      - `rows` (tablica pozycji graczy),
-      - `visibleColumns` (tablica nazw kolumn widocznych dla użytkownika).
 
 ## 3.7 Aktualne Firestore Rules (zaktualizowany stan z Firebase)
 
@@ -219,10 +212,6 @@ service cloud.firestore {
       }
     }
 
-    match /Collection1/{docId} {
-      allow read, write: if true;
-    }
-
     match /chat_messages/{docId} {
       allow read, write: if true;
     }
@@ -235,6 +224,46 @@ service cloud.firestore {
     // kolekcja legacy/statyczna
     match /players/{docId} {
       allow read, write: if true;
+    }
+
+    match /calculators/{type} {
+      allow read, write: if true;
+
+      match /definitions/{versionId} {
+        allow read, write: if true;
+      }
+
+      match /placeholders/{placeholderId} {
+        allow read, write: if true;
+      }
+
+      match /sessions/{sessionId} {
+        allow read, write: if true;
+
+        match /variables/{varDocId} {
+          allow read, write: if true;
+        }
+
+        match /calculationFlags/{flagDocId} {
+          allow read, write: if true;
+        }
+
+        match /tables/{tableId} {
+          allow read, write: if true;
+
+          match /rows/{rowId} {
+            allow read, write: if true;
+          }
+        }
+
+        match /snapshots/{snapshotId} {
+          allow read, write: if true;
+        }
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
@@ -1047,9 +1076,9 @@ Brak nowej kolekcji i brak migracji krytycznej:
   - odczytuje notatki „do gry” bez możliwości edycji.
 
 ### 24.5 Firebase / Firestore Rules
-- Aktualne Rules (`allow read, write: if true;` dla `Tables` i `UserGames`) obejmują zapis i odczyt pól `preGameNotes` i `postGameNotes`.
+- Zapis i odczyt pól `preGameNotes` i `postGameNotes` jest pokryty regułami dla `Tables` i `UserGames`.
 - Przy każdym zapisie notatek aplikacja usuwa legacy pole `notes` (`FieldValue.delete()`), a dodatkowo uruchamia automatyczne czyszczenie `notes` po wykryciu tego pola w snapshotach list gier.
-- Wniosek: **nie jest wymagana nowa konfiguracja Firebase ani zmiana Rules** do wdrożenia tej funkcji.
+- Aktualny zestaw reguł został rozszerzony o pełną strukturę `calculators/*` i zapisany także w repo jako `firestore.rules`.
 
 ## Aktualizacja techniczna 2026-02-13 — eliminacja podwójnego promptu wag w „Statystyki”
 
