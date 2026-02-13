@@ -140,7 +140,7 @@ Poniżej zebrana jest pełna struktura kolekcji widoczna na dostarczonych zrzuta
       - `confirmations`.
 
 - `admin_messages`
-  - dokumenty komunikatów administracyjnych (ID automatyczne)
+  - dokument `admin_messages` (stały dokument nadpisywany przy każdej wysyłce)
     - pola:
       - `createdAt`,
       - `message`,
@@ -310,8 +310,14 @@ Dzięki temu autoryzacja w jednej sekcji nie implikuje automatycznie dostępu do
 
 ## 6.2 Aktualności
 `initAdminMessaging()`:
-- pobiera i zapisuje wiadomość administracyjną,
+- odświeża dane aktualności przez odczyt stałego dokumentu `admin_messages/admin_messages`,
+- zapisuje wiadomość administracyjną przez `set()` do stałego dokumentu `admin_messages/admin_messages` (bez historii),
 - publikuje aktualność do widoku użytkownika.
+
+`initLatestMessage()`:
+- nasłuchuje zmian dokumentu `admin_messages/admin_messages`,
+- gdy dokument nie istnieje, pokazuje tekst `Brak wiadomości od administratora.`,
+- gdy dokument istnieje, wyświetla pole `message` jako aktualne `Najnowsze`.
 
 ## 6.3 Czat (moderacja)
 `initAdminChat()`:

@@ -34,6 +34,7 @@ W karcie **„Panel Administratora”** na górze są zakładki.
 3. Kliknij **„Wyślij”**.
 4. Komunikat statusu obok przycisku poinformuje o powodzeniu lub błędzie.
 5. Najnowsza wiadomość pojawi się użytkownikom w sekcji aktualności.
+6. Każde kolejne kliknięcie **„Wyślij”** podmienia poprzednią treść (w UI zawsze działa to jako jedna bieżąca wiadomość „Najnowsze”).
 
 **Edytowalne:** pole tekstowe wiadomości.  
 **Nieedytowalne:** pole statusu (informacja systemowa).
