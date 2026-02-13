@@ -535,3 +535,38 @@ Efekt:
 Efekt:
 - użytkownik widzi tylko te kolumny, które administrator zostawił zaznaczone dla danego roku,
 - jeśli administrator odznaczył wszystkie kolumny, tabela użytkownika nie pokazuje kolumn danych.
+
+## 23. Aktualizacja 2026-02-13 — Uprawnienia lat w zakładce „Statystyki” (Strefa Gracza)
+
+### 23.1 Jak administrator przypisuje konkretne lata do gracza
+1. Otwórz **Panel Administratora**.
+2. Wejdź do zakładki **Gracze**.
+3. W wierszu wybranego gracza kliknij przycisk **Edytuj** w kolumnie uprawnień.
+4. W modalu **Uprawnienia gracza** zaznacz checkbox **Statystyki**.
+5. Kliknij przycisk **Lata** (pojawia się obok opcji Statystyki).
+6. Otworzy się modal **Lata statystyk**.
+7. Zaznacz checkboxy lat, które mają być widoczne dla tego gracza (np. 2026, 2025).
+8. Zamknij modal (przycisk `×` lub kliknięcie poza oknem) — wybory zapisują się automatycznie.
+
+### 23.2 Co widzi administrator po zapisaniu
+1. Wróć do tabeli **Gracze**.
+2. W kolumnie uprawnień przy plakietce **Statystyki** zobaczysz licznik, np.:
+   - `Statystyki (2 lat)`
+   - `Statystyki (0 lat)`
+
+Dzięki temu od razu widać, ilu lat dotyczy dostęp konkretnego gracza.
+
+### 23.3 Co widzi gracz w „Strefa Gracza” → „Statystyki”
+1. Gracz przechodzi do sekcji **Strefa Gracza**.
+2. Otwiera zakładkę **Statystyki**.
+3. Wpisuje PIN i klika **Otwórz**.
+4. Po lewej stronie, na liście lat, zobaczy tylko lata przypisane przez administratora.
+
+Przykład:
+- jeśli admin przypisał tylko 2026 i 2025, gracz zobaczy wyłącznie te 2 lata,
+- jeśli admin nie przypisał żadnego roku, gracz zobaczy komunikat o braku przypisanych lat.
+
+### 23.4 Ważne zachowanie UI
+- Przycisk **Lata** jest aktywny tylko wtedy, gdy uprawnienie **Statystyki** jest zaznaczone.
+- Po odznaczeniu uprawnienia **Statystyki** lista przypisanych lat jest czyszczona.
+- Eksport XLSX w zakładce gracza działa tylko dla aktualnie dostępnego (dozwolonego) roku.

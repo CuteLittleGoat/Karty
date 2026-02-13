@@ -377,3 +377,24 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 - Modal notatek (`#summaryNotesModal`) zachowuje dotychczasowy layout, ale czerwony przycisk akcji ma nową etykietę: `Domyślne` (`.danger`).
 - W zakładce gracza `Gry do potwierdzenia` w sekcji `.confirmations-actions` dodano trzeci przycisk `Notatki` (`.secondary`) obok `Potwierdź` (`.primary`) i `Anuluj` (`.danger`).
 - Nie wprowadzono nowych fontów, kolorów ani klas globalnych — użyto istniejącego systemu tokenów i komponentów przycisków.
+
+## 23) Aktualizacja layoutu 2026-02-13 — Modal „Lata statystyk”
+- Dodano nowy modal `#playerStatsYearsModal` wykorzystujący istniejące komponenty:
+  - `.modal-overlay`,
+  - `.modal-card.modal-card-sm`,
+  - `.modal-header`, `.modal-body`,
+  - `.status-text`, `.permissions-list`, `.permissions-item`.
+- Nie dodano nowych fontów ani nowych tokenów kolorystycznych.
+- Modal zachowuje ten sam styl noir/gold co pozostałe okna administracyjne.
+
+### 23.1 Przycisk „Lata” przy uprawnieniu „Statystyki”
+- Wiersz `.permissions-item` został rozszerzony o przycisk pomocniczy `Lata`.
+- Przycisk używa istniejącej klasy wariantu `button.secondary` + nowego doprecyzowania:
+  - `.permissions-item .permissions-years-button { margin-left: auto; padding: 6px 10px; font-size: 10px; }`
+- Efekt wizualny:
+  - przycisk jest dosunięty do prawej strony wiersza uprawnień,
+  - zachowuje spójny styl obramowania, tła i hover z systemem przycisków aplikacji.
+
+### 23.2 Badge uprawnienia „Statystyki”
+- W tabeli graczy badge `Statystyki` pokazuje licznik lat (np. `Statystyki (2 lat)`).
+- Nie wprowadzono nowej klasy badge — wykorzystano istniejący styl `.permission-badge`.

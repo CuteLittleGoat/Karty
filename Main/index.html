@@ -667,6 +667,24 @@
     </div>
 
 
+    <div id="playerStatsYearsModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="playerStatsYearsTitle">
+        <div class="modal-header">
+          <h3 id="playerStatsYearsTitle">Lata statystyk</h3>
+          <button id="playerStatsYearsClose" class="icon-button" type="button" aria-label="Zamknij okno">
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="status-text">Zaznacz lata, które gracz może zobaczyć w zakładce „Statystyki”.</p>
+          <div id="playerStatsYearsList" class="permissions-list"></div>
+          <p id="playerStatsYearsStatus" class="status-text" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+
+
+
     <div id="userGameDetailsModal" class="modal-overlay" aria-hidden="true">
       <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="userGameDetailsTitle">
         <div class="modal-header">
