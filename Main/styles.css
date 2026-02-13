@@ -826,6 +826,12 @@ h1 {
   color: var(--ink);
 }
 
+.permissions-item .permissions-years-button {
+  margin-left: auto;
+  padding: 6px 10px;
+  font-size: 10px;
+}
+
 .permissions-item input {
   width: 18px;
   height: 18px;

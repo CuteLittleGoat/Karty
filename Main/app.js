@@ -1235,6 +1235,7 @@ const synchronizeStatisticsAccessState = () => {
   }
 
   updateStatisticsVisibility();
+  window.dispatchEvent(new CustomEvent("statistics-access-updated"));
 };
 
 const initStatisticsTab = () => {
@@ -1259,6 +1260,7 @@ const initStatisticsTab = () => {
       setStatisticsVerifiedPlayerId(player.id);
       pinStatus.textContent = `PIN poprawny. Witaj ${player.name || "graczu"}.`;
       updateStatisticsVisibility();
+      window.dispatchEvent(new CustomEvent("statistics-access-updated"));
       return;
     }
 
@@ -2294,6 +2296,38 @@ const normalizeYearList = (years) => {
   return Array.from(unique).sort((a, b) => b - a);
 };
 
+const normalizeStatsYearsAccess = (statsYearsAccess) => {
+  return normalizeYearList(statsYearsAccess);
+};
+
+const normalizePlayerRecord = (player, index) => ({
+  id: typeof player.id === "string" && player.id.trim() ? player.id.trim() : `player-${index + 1}`,
+  name: typeof player.name === "string" ? player.name : "",
+  pin: sanitizePin(typeof player.pin === "string" ? player.pin : ""),
+  appEnabled: Boolean(player.appEnabled),
+  permissions: Array.isArray(player.permissions)
+    ? player.permissions.filter((permission) =>
+        AVAILABLE_PLAYER_TABS.some((availableTab) => availableTab.key === permission)
+      )
+    : [],
+  statsYearsAccess: normalizeStatsYearsAccess(player.statsYearsAccess)
+});
+
+const getAllowedStatisticsYearsForPlayer = (player, availableYears) => {
+  const sourceYears = normalizeYearList(availableYears);
+  if (!player || !isPlayerAllowedForTab(player, "statsTab")) {
+    return [];
+  }
+
+  const allowedYears = normalizeStatsYearsAccess(player.statsYearsAccess);
+  if (!allowedYears.length) {
+    return [];
+  }
+
+  const allowedSet = new Set(allowedYears);
+  return sourceYears.filter((year) => allowedSet.has(year));
+};
+
 const loadSavedSelectedGamesYear = (storageKey = ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY) => {
   const rawValue = Number(localStorage.getItem(storageKey));
   return Number.isInteger(rawValue) && rawValue > 1900 && rawValue < 3000 ? rawValue : null;
@@ -2380,6 +2414,10 @@ const initAdminPlayers = () => {
   const modalList = document.querySelector("#playerPermissionsList");
   const modalStatus = document.querySelector("#playerPermissionsStatus");
   const closeButton = document.querySelector("#playerPermissionsClose");
+  const yearsModal = document.querySelector("#playerStatsYearsModal");
+  const yearsModalList = document.querySelector("#playerStatsYearsList");
+  const yearsModalStatus = document.querySelector("#playerStatsYearsStatus");
+  const yearsModalCloseButton = document.querySelector("#playerStatsYearsClose");
 
   if (!body || !status || !addButton || !modal || !modalList || !modalStatus) {
     return;
@@ -2394,17 +2432,7 @@ const initAdminPlayers = () => {
 
   const db = firebaseApp.firestore();
 
-  const normalizePlayer = (player, index) => ({
-    id: typeof player.id === "string" && player.id.trim() ? player.id.trim() : `player-${index + 1}`,
-    name: typeof player.name === "string" ? player.name : "",
-    pin: sanitizePin(typeof player.pin === "string" ? player.pin : ""),
-    appEnabled: Boolean(player.appEnabled),
-    permissions: Array.isArray(player.permissions)
-      ? player.permissions.filter((permission) =>
-          AVAILABLE_PLAYER_TABS.some((availableTab) => availableTab.key === permission)
-        )
-      : []
-  });
+  let availableStatisticsYears = [];
 
   const getPinOwnerId = (pin, excludedId) => {
     if (!pin) {
@@ -2430,7 +2458,7 @@ const initAdminPlayers = () => {
     });
     const data = snapshot.data();
     const rawPlayers = Array.isArray(data?.players) ? data.players : [];
-    adminPlayersState.players = rawPlayers.map(normalizePlayer);
+    adminPlayersState.players = rawPlayers.map(normalizePlayerRecord);
     rebuildPinMap();
     renderPlayers();
   };
@@ -2458,11 +2486,35 @@ const initAdminPlayers = () => {
   };
 
   const closeModal = () => {
+    closeYearsModal();
     adminPlayersState.editingPlayerId = null;
     modal.classList.remove("is-visible");
     modal.setAttribute("aria-hidden", "true");
     modalStatus.textContent = "";
     document.body.classList.remove("modal-open");
+  };
+
+  const openYearsModal = () => {
+    if (!yearsModal) {
+      return;
+    }
+    yearsModal.classList.add("is-visible");
+    yearsModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  };
+
+  const closeYearsModal = () => {
+    if (!yearsModal) {
+      return;
+    }
+    yearsModal.classList.remove("is-visible");
+    yearsModal.setAttribute("aria-hidden", "true");
+    if (!modal.classList.contains("is-visible")) {
+      document.body.classList.remove("modal-open");
+    }
+    if (yearsModalStatus) {
+      yearsModalStatus.textContent = "";
+    }
   };
 
   const updatePlayerField = (playerId, field, value) => {
@@ -2502,6 +2554,51 @@ const initAdminPlayers = () => {
     return candidate;
   };
 
+  const renderStatsYearsPermissions = () => {
+    if (!yearsModalList || !yearsModalStatus) {
+      return;
+    }
+    yearsModalList.innerHTML = "";
+    const player = adminPlayersState.players.find((entry) => entry.id === adminPlayersState.editingPlayerId);
+    if (!player) {
+      yearsModalStatus.textContent = "Nie znaleziono gracza.";
+      return;
+    }
+
+    if (!availableStatisticsYears.length) {
+      yearsModalStatus.textContent = "Brak dostępnych lat statystyk. Dodaj gry, aby lata pojawiły się automatycznie.";
+      return;
+    }
+
+    yearsModalStatus.textContent = "";
+    const selectedSet = new Set(normalizeStatsYearsAccess(player.statsYearsAccess));
+    availableStatisticsYears.forEach((year) => {
+      const label = document.createElement("label");
+      label.className = "permissions-item";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = selectedSet.has(year);
+      checkbox.addEventListener("change", () => {
+        const nextSet = new Set(normalizeStatsYearsAccess(player.statsYearsAccess));
+        if (checkbox.checked) {
+          nextSet.add(year);
+        } else {
+          nextSet.delete(year);
+        }
+        player.statsYearsAccess = normalizeStatsYearsAccess(Array.from(nextSet));
+        renderPermissions();
+        void savePlayers();
+      });
+
+      const text = document.createElement("span");
+      text.textContent = String(year);
+      label.appendChild(checkbox);
+      label.appendChild(text);
+      yearsModalList.appendChild(label);
+    });
+  };
+
   const renderPermissions = () => {
     modalList.innerHTML = "";
     const player = adminPlayersState.players.find((entry) => entry.id === adminPlayersState.editingPlayerId);
@@ -2522,8 +2619,13 @@ const initAdminPlayers = () => {
           player.permissions = Array.from(new Set([...player.permissions, tab.key]));
         } else {
           player.permissions = player.permissions.filter((permission) => permission !== tab.key);
+          if (tab.key === "statsTab") {
+            player.statsYearsAccess = [];
+            closeYearsModal();
+          }
         }
         renderPlayers();
+        renderPermissions();
         void savePlayers();
       });
 
@@ -2532,6 +2634,20 @@ const initAdminPlayers = () => {
 
       label.appendChild(checkbox);
       label.appendChild(text);
+
+      if (tab.key === "statsTab") {
+        const yearsButton = document.createElement("button");
+        yearsButton.type = "button";
+        yearsButton.className = "secondary permissions-years-button";
+        yearsButton.textContent = "Lata";
+        yearsButton.disabled = !checkbox.checked;
+        yearsButton.addEventListener("click", () => {
+          openYearsModal();
+          renderStatsYearsPermissions();
+        });
+        label.appendChild(yearsButton);
+      }
+
       modalList.appendChild(label);
     });
   };
@@ -2632,7 +2748,12 @@ const initAdminPlayers = () => {
           const tab = AVAILABLE_PLAYER_TABS.find((entry) => entry.key === permission);
           const badge = document.createElement("span");
           badge.className = "permission-badge";
-          badge.textContent = tab ? tab.label : permission;
+          if (permission === "statsTab") {
+            const yearsCount = normalizeStatsYearsAccess(player.statsYearsAccess).length;
+            badge.textContent = `${tab ? tab.label : permission}${yearsCount ? ` (${yearsCount} lat)` : " (0 lat)"}`;
+          } else {
+            badge.textContent = tab ? tab.label : permission;
+          }
           tags.appendChild(badge);
         });
       } else {
@@ -2681,7 +2802,8 @@ const initAdminPlayers = () => {
       name: "",
       pin: "",
       appEnabled: false,
-      permissions: []
+      permissions: [],
+      statsYearsAccess: []
     });
     renderPlayers();
     await savePlayers();
@@ -2703,15 +2825,39 @@ const initAdminPlayers = () => {
       (snapshot) => {
         const data = snapshot.data();
         const rawPlayers = Array.isArray(data?.players) ? data.players : [];
-        adminPlayersState.players = rawPlayers.map(normalizePlayer);
+        adminPlayersState.players = rawPlayers.map(normalizePlayerRecord);
         rebuildPinMap();
         renderPlayers();
         synchronizeStatisticsAccessState();
+        window.dispatchEvent(new CustomEvent("statistics-access-updated"));
       },
       () => {
         status.textContent = "Nie udało się pobrać listy graczy.";
       }
     );
+
+  const gamesCollectionName = getGamesCollectionName();
+  db.collection(gamesCollectionName).orderBy("createdAt", "asc").onSnapshot((snapshot) => {
+    const years = normalizeYearList(
+      snapshot.docs
+        .map((doc) => extractYearFromDate(doc.data()?.gameDate))
+        .filter((year) => Number.isInteger(year))
+    );
+    availableStatisticsYears = years;
+    if (yearsModal?.classList.contains("is-visible")) {
+      renderStatsYearsPermissions();
+    }
+  });
+
+  if (yearsModalCloseButton) {
+    yearsModalCloseButton.addEventListener("click", closeYearsModal);
+  }
+
+  yearsModal?.addEventListener("click", (event) => {
+    if (event.target === yearsModal) {
+      closeYearsModal();
+    }
+  });
 };
 
 const initAdminMessaging = () => {
@@ -3096,12 +3242,40 @@ const initStatisticsView = ({
       + (row.percentAllGames * weight7);
   };
 
+  const getCurrentVisibleYears = () => {
+    const availableYears = normalizeYearList(
+      state.games
+        .map((game) => extractYearFromDate(game.gameDate))
+        .filter((year) => Number.isInteger(year))
+    );
+
+    if (isAdminView) {
+      return availableYears;
+    }
+
+    const verifiedPlayer = getStatisticsVerifiedPlayer();
+    return getAllowedStatisticsYearsForPlayer(verifiedPlayer, availableYears);
+  };
+
   const renderYears = () => {
     yearsList.innerHTML = "";
     if (!state.years.length) {
       const info = document.createElement("p");
       info.className = "status-text";
-      info.textContent = "Brak lat. Dodaj pierwszą grę, aby rok pojawił się automatycznie.";
+      if (isAdminView) {
+        info.textContent = "Brak lat. Dodaj pierwszą grę, aby rok pojawił się automatycznie.";
+      } else {
+        const verifiedPlayer = getStatisticsVerifiedPlayer();
+        const baseYears = normalizeYearList(
+          state.games
+            .map((game) => extractYearFromDate(game.gameDate))
+            .filter((year) => Number.isInteger(year))
+        );
+        const hasAssignedYears = normalizeStatsYearsAccess(verifiedPlayer?.statsYearsAccess).length > 0;
+        info.textContent = baseYears.length && !hasAssignedYears
+          ? "Brak przypisanych lat do podglądu statystyk."
+          : "Brak dostępnych lat statystyk dla Twojego konta.";
+      }
       yearsList.appendChild(info);
       return;
     }
@@ -3126,7 +3300,15 @@ const initStatisticsView = ({
     playersStatsBody.innerHTML = "";
 
     if (!state.selectedYear) {
-      status.textContent = "Wybierz rok z panelu po lewej stronie.";
+      if (!isAdminView) {
+        const verifiedPlayer = getStatisticsVerifiedPlayer();
+        const hasAssignedYears = normalizeStatsYearsAccess(verifiedPlayer?.statsYearsAccess).length > 0;
+        status.textContent = hasAssignedYears
+          ? "Brak dostępnych lat statystyk dla Twojego konta."
+          : "Brak przypisanych lat do podglądu statystyk.";
+      } else {
+        status.textContent = "Wybierz rok z panelu po lewej stronie.";
+      }
       return;
     }
 
@@ -3234,7 +3416,7 @@ const initStatisticsView = ({
   };
 
   const synchronizeYears = () => {
-    state.years = normalizeYearList(state.games.map((game) => extractYearFromDate(game.gameDate)).filter((year) => Number.isInteger(year)));
+    state.years = getCurrentVisibleYears();
     if (!state.selectedYear || !state.years.includes(state.selectedYear)) {
       state.selectedYear = state.years[0] ?? null;
     }
@@ -3387,6 +3569,13 @@ const initStatisticsView = ({
         renderStats();
         void persistYearConfig(state.selectedYear);
       });
+    });
+  }
+
+
+  if (!isAdminView) {
+    window.addEventListener("statistics-access-updated", () => {
+      synchronizeYears();
     });
   }
 

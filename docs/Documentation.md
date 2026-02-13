@@ -916,3 +916,86 @@ Nadal używany jest ten sam model danych:
 Zmiana backendowa dotyczy wyłącznie semantyki wartości domyślnej i migracji brakującego pola:
 - brak `visibleColumns` => automatyczny zapis domyślnej listy bez wag,
 - obecność `visibleColumns: []` => respektowanie pustej konfiguracji jako ważnego stanu biznesowego.
+
+## 23. Aktualizacja 2026-02-13 — Ograniczenie lat statystyk per gracz (Opcja 1: dedykowany modal)
+
+### 23.1 Zakres zmian w kodzie
+Zmiany wdrożono w:
+- `Main/app.js` (logika danych, renderowanie uprawnień, filtrowanie lat, synchronizacja widoku użytkownika),
+- `Main/index.html` (nowy modal `Lata statystyk`),
+- `Main/styles.css` (styl przycisku `Lata` w wierszu uprawnień).
+
+### 23.2 Rozszerzenie modelu danych gracza
+Dodano normalizację pola:
+- `statsYearsAccess: number[]`
+
+Nowe helpery:
+- `normalizeStatsYearsAccess(statsYearsAccess)` — normalizuje i sortuje lata malejąco,
+- `normalizePlayerRecord(player, index)` — ujednolica rekord gracza i zawsze dopisuje `statsYearsAccess`,
+- `getAllowedStatisticsYearsForPlayer(player, availableYears)` — zwraca przecięcie:
+  - lat istniejących w danych gier,
+  - lat przypisanych graczowi.
+
+### 23.3 Logika „wariant A” dla pustej listy lat
+Zastosowano wariant bezpieczeństwa:
+- `statsTab = true` + `statsYearsAccess = []` => brak dostępu do danych statystyk (brak lat po lewej stronie + komunikat w UI).
+
+### 23.4 Nowy workflow administracyjny (modal „Lata statystyk”)
+W `initAdminPlayers()` dodano:
+1. Pobieranie elementów nowego modala (`#playerStatsYearsModal`, `#playerStatsYearsList`, `#playerStatsYearsStatus`).
+2. Funkcje:
+   - `openYearsModal()`
+   - `closeYearsModal()`
+   - `renderStatsYearsPermissions()`
+3. Integrację z istniejącym modalem uprawnień:
+   - przy opcji `Statystyki` renderowany jest przycisk `Lata`,
+   - kliknięcie `Lata` otwiera modal checkboxów lat,
+   - zmiana checkboxa aktualizuje `player.statsYearsAccess` i zapisuje rekord do Firestore.
+4. Dynamiczne źródło lat:
+   - nasłuch `onSnapshot` kolekcji gier (`getGamesCollectionName()`),
+   - lata budowane z `gameDate` przez `extractYearFromDate(...)` i `normalizeYearList(...)`.
+
+### 23.5 Zmiany w tabeli graczy (admin)
+W wizualizacji badge uprawnień:
+- dla `statsTab` prezentowany jest licznik przypisanych lat,
+- format: `Statystyki (X lat)`.
+
+W tworzeniu nowego gracza domyślnie ustawiane jest:
+- `statsYearsAccess: []`.
+
+### 23.6 Filtrowanie lat w widoku „Strefa Gracza” → „Statystyki”
+W `initStatisticsView(...)` dodano:
+- `getCurrentVisibleYears()`:
+  - admin: wszystkie lata z danych gier,
+  - użytkownik: tylko lata z `getAllowedStatisticsYearsForPlayer(...)`.
+- aktualizację `synchronizeYears()` tak, by zawsze bazować na liście dozwolonych lat.
+
+Efekty:
+- panel lat po lewej stronie pokazuje wyłącznie lata dozwolone dla zweryfikowanego gracza,
+- `selectedYear` automatycznie przełącza się na pierwszy dostępny rok,
+- eksport XLSX działa tylko dla roku, który pozostał w dozwolonej liście.
+
+### 23.7 Synchronizacja zmian uprawnień podczas aktywnej sesji
+Dodano event aplikacyjny:
+- `statistics-access-updated`
+
+Emitowanie eventu następuje po:
+- poprawnej weryfikacji PIN w zakładce Statystyki,
+- zmianie listy graczy/uprawnień z Firestore,
+- synchronizacji stanu dostępu (np. utrata uprawnienia).
+
+Widok użytkownika (`isAdminView=false`) nasłuchuje event i wywołuje `synchronizeYears()`, dzięki czemu lista lat i wybrany rok odświeżają się bez restartu aplikacji.
+
+### 23.8 Zmiana backendowa (Firestore)
+Dokument:
+- kolekcja: `app_settings`
+- dokument: `player_access`
+- pole: `players[]`
+
+Rozszerzenie obiektu `players[]`:
+- `statsYearsAccess: number[]`
+
+Zapis wykonywany przez istniejący `savePlayers()` (`set(..., merge domyślny dla całego dokumentu graczy)`).
+
+Brak nowej kolekcji i brak migracji krytycznej:
+- starsze rekordy bez `statsYearsAccess` są normalizowane do pustej tablicy.
