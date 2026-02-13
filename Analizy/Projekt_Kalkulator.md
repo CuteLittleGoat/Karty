@@ -146,6 +146,226 @@
       └─ ... analogicznie jak tournament, ale type="cash"
 ```
 
+### 2.1 Konfiguracja Firebase krok po kroku (kolejność wypełniania formularza)
+
+CollectionID: calculators  
+Document ID: tournament  
+	Field: name type: string  
+		String: KalkulatorTournament  
+	Field: type type: string  
+		String: tournament  
+	Field: isActive type: boolean  
+		Boolean: true  
+	Field: createdAt type: timestamp  
+		Timestamp: aktualna data/czas  
+	Field: updatedAt type: timestamp  
+		Timestamp: aktualna data/czas  
+
+CollectionID: calculators  
+Document ID: tournament  
+	SubcollectionID: placeholders  
+	Document ID: defaults  
+		Field: payoutModel type: string  
+			String: PENDING_SPEC  
+		Field: rebuyColumnsMode type: string  
+			String: dynamic  
+		Field: rankingFormula type: string  
+			String: PENDING_SPEC  
+
+CollectionID: calculators  
+Document ID: tournament  
+	SubcollectionID: definitions  
+	Document ID: v1  
+		Field: version type: number  
+			Number: 1  
+		Field: status type: string  
+			String: active  
+		Field: appliesTo type: array  
+			Array (string): ["tournament"]  
+		Field: tables type: array  
+			Array (map): zgodnie z sekcją 3 (table1_settings, table2_entries, table3_summary, table4_ranking, table5_payout)  
+		Field: globalVariablesSchema type: array  
+			Array (map): rakePercent, defaultWinPercent, rebuyColumnsCount  
+		Field: createdBy type: string  
+			String: UID_admina  
+		Field: createdAt type: timestamp  
+			Timestamp: aktualna data/czas  
+		Field: updatedAt type: timestamp  
+			Timestamp: aktualna data/czas  
+
+CollectionID: calculators  
+Document ID: tournament  
+	SubcollectionID: sessions  
+	Document ID: {sessionId}  
+		Field: name type: string  
+			String: np. Turniej_2026_01_10  
+		Field: status type: string  
+			String: draft  
+		Field: definitionVersionId type: string  
+			String: v1  
+		Field: sourceGameId type: string|null  
+			String/null: null  
+		Field: playersSourcePath type: string  
+			String: app_settings/player_access  
+		Field: createdBy type: string  
+			String: UID_admina  
+		Field: updatedBy type: string  
+			String: UID_admina  
+		Field: createdAt type: timestamp  
+			Timestamp: aktualna data/czas  
+		Field: updatedAt type: timestamp  
+			Timestamp: aktualna data/czas  
+		Field: finalizedAt type: timestamp|null  
+			Timestamp/null: null  
+
+CollectionID: calculators  
+Document ID: tournament  
+	SubcollectionID: sessions  
+	Document ID: {sessionId}  
+		SubcollectionID: calculationFlags  
+		Document ID: current  
+			Field: freezeComputedValues type: boolean  
+				Boolean: false  
+			Field: allowManualOverride type: boolean  
+				Boolean: false  
+
+CollectionID: calculators  
+Document ID: tournament  
+	SubcollectionID: sessions  
+	Document ID: {sessionId}  
+		SubcollectionID: variables  
+		Document ID: current  
+			Field: rakePercent type: number  
+				Number: 5  
+			Field: defaultWinPercent type: number  
+				Number: 50  
+			Field: rebuyColumnsCount type: number  
+				Number: 10  
+			Field: updatedAt type: timestamp  
+				Timestamp: aktualna data/czas  
+			Field: updatedBy type: string  
+				String: UID_admina  
+
+CollectionID: calculators  
+Document ID: tournament  
+	SubcollectionID: sessions  
+	Document ID: {sessionId}  
+		SubcollectionID: tables  
+		Document ID: table1_settings  
+			SubcollectionID: rows  
+			Document ID: base  
+				Field: manual type: map  
+					Map: { buyIn: 200, rebuyUnit: 100 }  
+				Field: computed type: map  
+					Map: { rebuyCount: 0, sum: 200 }  
+				Field: updatedAt type: timestamp  
+					Timestamp: aktualna data/czas  
+				Field: updatedBy type: string  
+					String: UID_admina  
+
+CollectionID: calculators  
+Document ID: tournament  
+	SubcollectionID: sessions  
+	Document ID: {sessionId}  
+		SubcollectionID: tables  
+		Document ID: table2_entries  
+			SubcollectionID: rows  
+			Document ID: {rowId}  
+				Field: order type: number  
+					Number: 1  
+				Field: manual type: map  
+					Map: { playerId: "player_abc", rebuyMultiplier: 2, eliminated: false }  
+				Field: computed type: map  
+					Map: { lp: 1, playerNameSnapshot: "Jan Kowalski", buyInValue: 200, rebuyValue: 200 }  
+				Field: updatedAt type: timestamp  
+					Timestamp: aktualna data/czas  
+				Field: updatedBy type: string  
+					String: UID_admina  
+
+CollectionID: calculators  
+Document ID: tournament  
+	SubcollectionID: sessions  
+	Document ID: {sessionId}  
+		SubcollectionID: tables  
+		Document ID: table3_summary  
+			SubcollectionID: rows  
+			Document ID: base  
+				Field: manual type: map  
+					Map: { rakePercent: 5 }  
+				Field: computed type: map  
+					Map: { entriesTotal: 2000, rebuyTotal: 700, pot: 2565 }  
+				Field: updatedAt type: timestamp  
+					Timestamp: aktualna data/czas  
+				Field: updatedBy type: string  
+					String: UID_admina  
+
+CollectionID: calculators  
+Document ID: tournament  
+	SubcollectionID: sessions  
+	Document ID: {sessionId}  
+		SubcollectionID: tables  
+		Document ID: table4_ranking  
+			SubcollectionID: rows  
+			Document ID: {rowId}  
+				Field: order type: number  
+					Number: 1  
+				Field: playerId type: string  
+					String: player_abc  
+				Field: playerNameSnapshot type: string  
+					String: Jan Kowalski  
+				Field: place type: number  
+					Number: 1  
+				Field: rankingPoints type: number  
+					Number: 100  
+				Field: updatedAt type: timestamp  
+					Timestamp: aktualna data/czas  
+				Field: updatedBy type: string  
+					String: UID_admina  
+
+CollectionID: calculators  
+Document ID: tournament  
+	SubcollectionID: sessions  
+	Document ID: {sessionId}  
+		SubcollectionID: tables  
+		Document ID: table5_payout  
+			SubcollectionID: rows  
+			Document ID: {rowId}  
+				Field: order type: number  
+					Number: 1  
+				Field: winPercent type: number  
+					Number: 50  
+				Field: playerId type: string  
+					String: player_abc  
+				Field: playerNameSnapshot type: string  
+					String: Jan Kowalski  
+				Field: amount type: number  
+					Number: 1282.5  
+				Field: rankingPoints type: number  
+					Number: 100  
+				Field: dynamicRebuys type: map  
+					Map: { rebuy1: 1, rebuy2: 0 }  
+				Field: updatedAt type: timestamp  
+					Timestamp: aktualna data/czas  
+				Field: updatedBy type: string  
+					String: UID_admina  
+
+CollectionID: calculators  
+Document ID: cash  
+	Field: name type: string  
+		String: KalkulatorCash  
+	Field: type type: string  
+		String: cash  
+	Field: isActive type: boolean  
+		Boolean: true  
+	Field: createdAt type: timestamp  
+		Timestamp: aktualna data/czas  
+	Field: updatedAt type: timestamp  
+		Timestamp: aktualna data/czas  
+
+CollectionID: calculators  
+Document ID: cash  
+	Dalsza konfiguracja: analogicznie 1:1 jak dla tournament (definitions, sessions, variables, tables, snapshots)
+
 ---
 
 ## 3) Definicja tabel i pól (v1)
