@@ -593,3 +593,39 @@ Efekt po poprawce UI:
 - pojawia się tylko **jedno** okno prompt na jedno kliknięcie,
 - nie pojawia się drugie, powielone okno,
 - zachowanie w zakładce **Gry admina** pozostało bez zmian (nadal jedno okno na kliknięcie).
+
+## 25. Aktualizacja 2026-02-13 — uwzględnianie samych punktów w „Podsumowanie gry” i „Statystyki”
+
+### 25.1 Kiedy gracz jest teraz liczony w podsumowaniu i statystykach
+1. Otwórz **Panel administratora**.
+2. Przejdź do zakładki **Gry admina** albo **Gry użytkowników**.
+3. Otwórz **Szczegóły gry** dla wybranego stołu.
+4. W wierszu gracza możesz zostawić puste:
+   - **Wpisowe**,
+   - **Rebuy/Add-on**,
+   - **Wypłata**.
+5. Uzupełnij tylko pole **Punkty** (np. wpisz `-15`) i zapisz / zamknij okno.
+
+Efekt UI:
+- ten gracz będzie widoczny i liczony w sekcji **Podsumowanie gry**,
+- ten sam gracz będzie też liczony w sekcji **Statystyki** dla wybranego roku,
+- wpisane punkty (również ujemne) będą wpływać na kolumnę **Punkty** i pośrednio na **Wyniki** oraz pozycję w rankingu.
+
+### 25.2 Szybki scenariusz klik-po-kliku (weryfikacja)
+1. **Gry admina** → wybierz rok po lewej.
+2. W tabeli gier kliknij **Szczegóły** dla jednej gry.
+3. Dla gracza A wpisz:
+   - Wpisowe: *(puste)*,
+   - Rebuy/Add-on: *(puste)*,
+   - Wypłata: *(puste)*,
+   - Punkty: `-10`.
+4. Zamknij okno szczegółów.
+5. W sekcji **Podsumowanie gry ...** sprawdź, że gracz A jest na liście.
+6. W sekcji **Statystyki** sprawdź wiersz gracza A:
+   - kolumna **Punkty** zawiera ujemną wartość,
+   - kolumna **Wyniki** jest przeliczona z uwzględnieniem tych punktów,
+   - kolejność rankingu po prawej odświeża się na podstawie nowego wyniku.
+
+### 25.3 Ważna uwaga dla operatora
+- Jeżeli pole **Punkty** pozostanie puste i jednocześnie **Wpisowe** nie będzie dodatnie, taki wiersz nie wnosi żadnych danych do rozliczeń.
+- Jeżeli wpiszesz punkty (dodatnie lub ujemne), gracz jest traktowany jako uczestnik do celów podsumowań/statystyk, nawet bez wypełnionych pól finansowych.

@@ -1068,3 +1068,48 @@ Modyfikacja została wykonana w `Main/app.js`, w module `initAdminGames()`.
 - Przycisk `Waga1..Waga7` w zakładce **Statystyki** ma już tylko jeden aktywny handler (ten z `initStatisticsView`).
 - Jedno kliknięcie powoduje jedno wywołanie `window.prompt(...)`.
 - Zachowanie przycisków `Waga1..Waga7` w **Gry admina** pozostaje niezmienione.
+
+## 25. Aktualizacja 2026-02-13 — punkty bez wpisowego w „Gry admina” i „Gry użytkowników”
+
+### 25.1 Cel zmiany
+Wcześniej logika uwzględniała gracza w podsumowaniach/statystykach głównie przy spełnieniu warunku `Wpisowe > 0`.
+Po zmianie gracz jest brany do obliczeń, gdy spełni **co najmniej jeden** warunek:
+1. ma dodatnie `Wpisowe`,
+2. ma uzupełnione pole `Punkty` (w tym wartości ujemne).
+
+### 25.2 Implementacja w kodzie (`Main/app.js`)
+Wprowadzono wspólną regułę logiczną `hasIncludedSummaryOrStatsData(row)` w trzech modułach odpowiadających za:
+- podsumowanie i statystyki w „Gry użytkowników”,
+- statystyki roczne z wagami,
+- podsumowanie i statystyki w „Gry admina”.
+
+Reguła:
+- normalizuje `entryFee` i `points` przez `sanitizeIntegerInput`,
+- traktuje `entryFee` jako istotne tylko przy wartości dodatniej (`> 0`),
+- traktuje `points` jako istotne, gdy pole nie jest puste i nie jest samym znakiem `-`,
+- zwraca `true` dla `hasEntryFee || hasPoints`.
+
+### 25.3 Miejsca użycia reguły
+1. **Podsumowanie gry** (`getGameSummaryMetrics`) — filtruje wiersze źródłowe przed budową tabeli podsumowania.
+2. **Statystyki** (`getPlayersStatistics`) — filtruje:
+   - pulę wpłat (`totalPool`, `gamePool`),
+   - listę uczestników i agregaty per gracz (`pointsSum`, `plusMinusSum`, `depositsSum`, `meetingsCount`).
+3. Obliczanie **Wyników** (`getComputedResultValue`) pozostaje bez zmiany wzoru, ale dostaje pełniejsze dane wejściowe (np. punkty ujemne bez wpisowego), co wpływa na ranking.
+
+### 25.4 Efekt funkcjonalny
+- Gracz z pustymi polami finansowymi i wpisanymi punktami pojawia się w:
+  - tabeli „Podsumowanie gry”,
+  - tabeli „Statystyki”,
+  - rankingu zależnym od „Wyniki”.
+- Ujemne punkty realnie obniżają wynik końcowy gracza przez składnik `pointsSum * weight3`.
+- Wiersze z całkowicie pustymi danymi (brak dodatniego wpisowego i brak punktów) nadal nie są uwzględniane.
+
+### 25.5 Backend / dane
+- Nie zmieniono schematu dokumentów Firestore.
+- Wykorzystywane są istniejące pola szczegółów gry:
+  - `entryFee`,
+  - `rebuy`,
+  - `payout`,
+  - `points`,
+  - `championship`.
+- Zmiana dotyczy wyłącznie warunku kwalifikacji wiersza do obliczeń po stronie frontendu.
