@@ -354,3 +354,9 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
   - ciemne tło,
   - subtelna ramka,
   - focus ring w kolorze złotym.
+
+## 21) Aktualizacja layoutu 2026-02-13 — sterowanie kolumnami „Statystyki”
+- W widoku użytkownika tabela `#statisticsPlayersStatsBody` ukrywa całe kolumny (nagłówek + komórki) na podstawie checkboxów ustawianych przez administratora w panelu `Statystyki`.
+- Mechanizm używa istniejących nagłówków `thead th` i dynamicznie przełącza `display` dla komórek nieobecnych w `visibleColumns`.
+- Nie dodano nowych fontów, kolorów ani tokenów stylu.
+- Zachowano dotychczasowe klasy layoutu (`.admin-games-players-stats-table`, `.admin-table-scroll`, `.stats-column-header`, `.stats-column-visibility-checkbox`).

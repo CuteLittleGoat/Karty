@@ -616,3 +616,51 @@ W obu modułach renderujących podsumowanie:
   - dozwolone pozostaje `entryFee: ""`.
 - Zmiana dotyczy warstwy obliczeniowej po stronie frontendu (filtr obecności podczas agregacji).
 - Dane historyczne są kompatybilne; jedyna zmiana to interpretacja rekordów z `entryFee = "0"` lub `""` jako nieobecnych przy podsumowaniu/statystykach.
+
+## 19. Aktualizacja 2026-02-13 — Statystyki (PIN/uprawnienia + widoczność kolumn)
+
+### 19.1 Zakres kodu
+Zmiana została wprowadzona w `Main/app.js` i dotyczy modułów:
+- `initStatisticsTab()` i `updateStatisticsVisibility()` (bramka dostępu użytkownika),
+- `initAdminPlayers()` (reakcja na zmiany uprawnień graczy),
+- `initStatisticsView({...})` (widoczność kolumn użytkownika i render nagłówków).
+
+### 19.2 Ochrona dostępu do zakładki „Statystyki”
+Dodano funkcję `synchronizeStatisticsAccessState()`.
+
+Logika:
+1. Jeśli aktywny jest tryb admina (`getAdminMode() === true`) — panel statystyk jest widoczny zawsze.
+2. Jeśli użytkownik nie ma aktywnej sesji PIN (`getStatisticsPinGateState() === false`) — pozostaje bramka PIN.
+3. Jeśli sesja PIN jest aktywna, aplikacja pobiera gracza z `sessionStorage` (`STATISTICS_PLAYER_ID_STORAGE_KEY`) i weryfikuje uprawnienie `statsTab` przez `isPlayerAllowedForTab(...)`.
+4. Brak gracza lub brak uprawnienia powoduje natychmiastowe wyczyszczenie sesji (`setStatisticsPinGateState(false)`, `setStatisticsVerifiedPlayerId("")`) i ukrycie treści.
+
+Dzięki temu odebranie uprawnienia w zakładce „Gracze” natychmiast blokuje dostęp gracza do statystyk bez przeładowania strony.
+
+### 19.3 Synchronizacja z zakładką „Gracze”
+W `initAdminPlayers()` (snapshot dokumentu `app_settings/player_access`) po odświeżeniu listy graczy wykonywane jest `synchronizeStatisticsAccessState()`.
+
+Efekt:
+- każda zmiana tablicy `players[].permissions` w Firestore wpływa od razu na aktywną sesję użytkownika w zakładce Statystyki,
+- nie ma „starego” dostępu po cofnięciu uprawnienia.
+
+### 19.4 Widoczność kolumn — admin kontra użytkownik
+Konfiguracja kolumn jest nadal przechowywana per rok w `admin_games_stats/{year}.visibleColumns`.
+
+Nowy element renderowania:
+- w `initStatisticsView({...})` dodano referencję do komórek nagłówka `thead th` dla tabeli graczy,
+- dla widoku użytkownika (`isAdminView === false`) każda komórka nagłówka jest pokazywana/ukrywana przez `cell.style.display` zależnie od `visibleColumns`.
+
+Zachowanie:
+- **Administrator**: zawsze pełna tabela (wszystkie kolumny), checkboxy służą tylko do konfiguracji widoku użytkownika.
+- **Użytkownik**: widzi tylko kolumny z listy `visibleColumns` ustawionej przez admina.
+- Gdy brak wierszy danych, `colSpan` komunikatu pustego stanu odpowiada liczbie aktualnie widocznych kolumn.
+
+### 19.5 Dane backendowe (Firestore)
+Nie zmieniono schematu dokumentu, utrzymana kompatybilność:
+- kolekcja: `admin_games_stats`,
+- dokument: rok (`YYYY`),
+- pola:
+  - `rows` — ręczne ustawienia wag i pól per gracz,
+  - `visibleColumns` — `string[]` z kluczami z `STATS_COLUMN_CONFIG`.
+
+Nie dodano migracji ani nowych kolekcji — wykorzystano istniejące pola i aktualny mechanizm `set(..., { merge: true })`.

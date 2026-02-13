@@ -254,3 +254,9 @@ Parametry sekcji:
 Uwagi:
 - Wiersz **Rodzaj gry** jest renderowany bezpośrednio nad wierszem **Pula** w sekcji „Podsumowanie gry”.
 - Wartości są prezentowane jako tekst (`.status-text`) i nie wprowadzają zmian szerokości kolumn tabel danych.
+
+## Aktualizacja 2026-02-13 — dynamiczna widoczność kolumn w „Statystyki”
+- Dotyczy tabeli statystyk graczy (`.admin-games-players-stats-table`) w widoku użytkownika.
+- Administrator steruje widocznością przez checkboxy w nagłówkach widoku admina.
+- Po odznaczeniu kolumny użytkownik nie widzi tej kolumny ani w nagłówku, ani w danych.
+- Parametry szerokości i wyrównania pojedynczych kolumn pozostają bez zmian; zmienia się tylko to, które kolumny są renderowane.

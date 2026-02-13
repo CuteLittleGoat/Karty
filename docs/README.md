@@ -168,19 +168,37 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 
 ## 9. Statystyki
 
-### Jak korzystać
-1. Otwórz zakładkę **„Statystyki”**.
-2. Jeśli wymagany jest PIN, wpisz PIN i kliknij **„Otwórz”**.
-3. W lewym panelu **„Lata”** kliknij rok.
-4. Sprawdź tabelę graczy — wiersze są domyślnie ustawione malejąco po kolumnie **„(+/-)”** (najwyższy wynik na górze, najniższy na dole).
-5. Taki sam porządek zobaczysz też w sekcji **„Statystyki”** na karcie **„Gry admina”**.
+### 9.1 Wejście do „Statystyki” w widoku użytkownika (PIN + uprawnienia)
+1. Otwórz kartę **„Statystyki”** w górnym pasku użytkownika.
+2. Zobaczysz bramkę PIN z opisem „Wpisz PIN z uprawnieniem Statystyki...”.
+3. Wpisz 5-cyfrowy PIN gracza i kliknij **„Otwórz”**.
+4. Jeśli PIN jest poprawny **i** gracz ma nadane uprawnienie „Statystyki” w zakładce **Gracze**, tabela zostanie pokazana.
+5. Jeśli PIN jest błędny albo gracz nie ma uprawnienia, zobaczysz komunikat o braku dostępu.
 
-### Interpretacja
-- Kolumny procentowe i wynikowe są wyliczane automatycznie.
-- Część wag/statystyk może być edytowalna wyłącznie w panelu administracyjnym.
+### 9.2 Nadanie uprawnienia do „Statystyki” (administrator)
+1. Otwórz **Panel Administratora** → zakładka **„Gracze”**.
+2. W wierszu wybranego gracza kliknij **„Edytuj”** w sekcji uprawnień.
+3. W oknie uprawnień zaznacz pozycję **„Statystyki”**.
+4. Zapisz/pozostaw zmianę (aplikacja zapisuje uprawnienia i odświeża listę).
+5. Od tej chwili PIN tego gracza może otwierać zakładkę **„Statystyki”** w widoku użytkownika.
 
-**Edytowalne (zależnie od roli):** wybrane wagi i pola konfiguracyjne.  
-**Nieedytowalne:** większość kolumn wynikowych.
+### 9.3 Sterowanie kolumnami użytkownika przez admina
+1. Otwórz **Panel Administratora** → **„Statystyki”**.
+2. Wybierz rok z lewego panelu **„Lata”**.
+3. W nagłówku każdej kolumny tabeli graczy znajdziesz checkbox.
+4. **Odznacz checkbox** kolumny, którą chcesz ukryć w widoku użytkownika.
+5. **Zaznacz checkbox** ponownie, aby przywrócić kolumnę użytkownikowi.
+
+### 9.4 Co widzi administrator, a co użytkownik
+- **Administrator**: zawsze pełny zestaw kolumn (niezależnie od stanu checkboxów).
+- **Użytkownik**: tylko kolumny zaznaczone przez administratora w tej samej statystyce i roku.
+- Ustawienie checkboxów wpływa również na eksport danych w widoku użytkownika.
+
+### 9.5 Praca na danych statystyk
+1. Wybierz rok po lewej stronie.
+2. Odczytaj sekcję „Liczba gier / Łączna pula”.
+3. Odczytaj tabelę graczy (kolumny zależne od konfiguracji admina).
+4. Kliknij **„Eksportuj”**, aby pobrać plik XLSX z aktualnie widocznym zakresem danych.
 
 ---
 

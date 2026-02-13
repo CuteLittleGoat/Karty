@@ -1213,6 +1213,26 @@ const updateStatisticsVisibility = () => {
   content.classList.toggle("is-visible", isVerified);
 };
 
+const synchronizeStatisticsAccessState = () => {
+  if (getAdminMode()) {
+    updateStatisticsVisibility();
+    return;
+  }
+
+  if (!getStatisticsPinGateState()) {
+    updateStatisticsVisibility();
+    return;
+  }
+
+  const verifiedPlayer = getStatisticsVerifiedPlayer();
+  if (!verifiedPlayer || !isPlayerAllowedForTab(verifiedPlayer, "statsTab")) {
+    setStatisticsPinGateState(false);
+    setStatisticsVerifiedPlayerId("");
+  }
+
+  updateStatisticsVisibility();
+};
+
 const initStatisticsTab = () => {
   const input = document.querySelector("#statisticsPinInput");
   const submitButton = document.querySelector("#statisticsPinSubmit");
@@ -1258,14 +1278,7 @@ const initStatisticsTab = () => {
     return;
   }
 
-  if (getStatisticsPinGateState()) {
-    const verifiedPlayer = getStatisticsVerifiedPlayer();
-    if (!verifiedPlayer || !isPlayerAllowedForTab(verifiedPlayer, "statsTab")) {
-      setStatisticsPinGateState(false);
-      setStatisticsVerifiedPlayerId("");
-      updateStatisticsVisibility();
-    }
-  }
+  synchronizeStatisticsAccessState();
 };
 
 const initUserGamesManager = ({
@@ -2672,6 +2685,7 @@ const initAdminPlayers = () => {
         adminPlayersState.players = rawPlayers.map(normalizePlayer);
         rebuildPinMap();
         renderPlayers();
+        synchronizeStatisticsAccessState();
       },
       () => {
         status.textContent = "Nie udało się pobrać listy graczy.";
@@ -3241,6 +3255,7 @@ const initStatisticsView = ({
     manualStatsByYear: new Map(),
     visibleColumnsByYear: new Map()
   };
+  const playersStatsHeaderCells = playersStatsBody.closest("table")?.querySelectorAll("thead th") ?? [];
 
   const getDefaultManualFieldValue = (field, value) => {
     if (weightStatsFields.includes(field)) {
@@ -3435,6 +3450,18 @@ const initStatisticsView = ({
     }
 
     const statistics = getPlayersStatistics();
+    const visibleColumns = isAdminView ? STATS_COLUMN_CONFIG.map((entry) => entry.key) : getVisibleColumnsForYear(state.selectedYear);
+
+    if (!isAdminView) {
+      playersStatsHeaderCells.forEach((cell, index) => {
+        const column = STATS_COLUMN_CONFIG[index];
+        if (!column) {
+          return;
+        }
+        cell.style.display = visibleColumns.includes(column.key) ? "" : "none";
+      });
+    }
+
     status.textContent = `Wybrany rok: ${state.selectedYear}. Liczba gier: ${statistics.gameCount}.`;
     [["Liczba gier", statistics.gameCount], ["Łączna pula", statistics.totalPool]].forEach(([label, value]) => {
       const tr = document.createElement("tr");
@@ -3449,7 +3476,7 @@ const initStatisticsView = ({
     if (!statistics.playerRows.length) {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
-      td.colSpan = STATS_COLUMN_CONFIG.length;
+      td.colSpan = visibleColumns.length || STATS_COLUMN_CONFIG.length;
       td.textContent = "Brak graczy z uzupełnionym wpisowym w wybranym roku.";
       tr.appendChild(td);
       playersStatsBody.appendChild(tr);
@@ -3461,7 +3488,6 @@ const initStatisticsView = ({
       state.manualStatsByYear.set(yearKey, new Map());
     }
     const yearMap = state.manualStatsByYear.get(yearKey);
-    const visibleColumns = isAdminView ? STATS_COLUMN_CONFIG.map((entry) => entry.key) : getVisibleColumnsForYear(state.selectedYear);
 
     if (isAdminView) {
       const activeVisibleColumns = new Set(getVisibleColumnsForYear(state.selectedYear));
