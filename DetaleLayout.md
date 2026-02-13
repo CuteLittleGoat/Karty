@@ -419,3 +419,37 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
   - kolorowanie miejsc: gold/green/red.
 - Tabela rankingu ma stałe kolumny: `Miejsce`, `Gracz`, `Wynik`.
 - Dzięki wykorzystaniu istniejących klas nie wprowadzono nowych kolorów ani nowych fontów — zachowano obecny system noir/gold.
+
+## Aktualizacja 2026-02-13 — zakładka „Kalkulator” i styl pól wyboru
+
+### 1) Panel administratora — nowa zakładka
+- Do paska `.admin-panel-tabs` dodano nową pigułkę: **Kalkulator** (`.admin-panel-tab`, `data-target="adminCalculatorTab"`).
+- Zakładka jest częścią sekcji `.admin-only`, więc widoczna tylko w trybie admina.
+
+### 2) Layout zakładki „Kalkulator”
+- Główny kontener: `.admin-calculator`.
+- Układ dwukolumnowy: `.admin-calculator-layout`.
+  - Lewa kolumna (szerokość 180px): `.admin-calculator-switch`.
+  - Prawa kolumna: `.admin-calculator-content` z blokami tabel.
+- Przełączniki trybu: `.admin-calculator-switch-button` z wariantem aktywnym `.is-active`.
+- Każda tabela osadzona w karcie: `.admin-calculator-table-wrap`.
+
+### 3) Styl tabel kalkulatora
+- Tabele korzystają z globalnej klasy `.admin-data-table`.
+- Minimalna szerokość tabel kalkulatora ustawiona na `760px` (`.admin-calculator-table-wrap .admin-data-table`).
+- Sekcje tabel mają:
+  - tło `rgba(0, 0, 0, 0.25)`,
+  - obrys `1px solid var(--border2)`,
+  - zaokrąglenie `var(--radius-md)`.
+
+### 4) Ujednolicenie wyglądu pól rozwijanych
+- Dodano wspólne reguły dla:
+  - `select.admin-input`,
+  - `select`,
+  - `.admin-data-table select`.
+- Zastosowano:
+  - `appearance: none` (także `-webkit-appearance`, `-moz-appearance`),
+  - tło zgodne z motywem: `rgba(0, 0, 0, 0.35)`,
+  - obramowanie `1px solid var(--border)`,
+  - kolor tekstu `var(--ink)`.
+- Efekt: usunięcie domyślnego szarego tła dropdownów i spójność z resztą motywu UI.

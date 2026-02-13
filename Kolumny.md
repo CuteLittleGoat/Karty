@@ -256,3 +256,57 @@ Uwagi:
   - `Admin -> Statystyki`,
   - `Strefa Gracza -> Statystyki`.
 - Zmiana nie modyfikuje szerokości, wyrównania i łamania kolumn — aktualne parametry geometrii pozostają bez zmian.
+
+## Panel administratora → Zakładka „Kalkulator”
+
+### Tabela1
+
+| Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
+| --- | --- | --- | --- | --- | --- | --- |
+| Suma | brak | brak | brak | brak | lewo | standard |
+| Buy-In | brak | brak | brak | brak | lewo | standard |
+| Rebuy | brak | brak | brak | brak | lewo | standard |
+| Liczba Rebuy | brak | brak | brak | brak | lewo | standard |
+| Akcje | brak | wg zawartości | brak | brak | lewo | standard |
+
+### Tabela2
+
+| Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
+| --- | --- | --- | --- | --- | --- | --- |
+| LP | brak | brak | brak | brak | lewo | standard |
+| Gracz | brak | brak | brak | brak | lewo | standard |
+| Buy-In | brak | brak | brak | brak | lewo | standard |
+| Rebuy | brak | brak | brak | brak | lewo | standard |
+| Eliminated | brak | brak | brak | brak | lewo | standard |
+
+### Tabela3
+
+| Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
+| --- | --- | --- | --- | --- | --- | --- |
+| Rake | brak | brak | brak | brak | lewo | standard |
+| Wpisowe | brak | brak | brak | brak | lewo | standard |
+| Rebuy | brak | brak | brak | brak | lewo | standard |
+| Pot | brak | brak | brak | brak | lewo | standard |
+
+### Tabela4
+
+| Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
+| --- | --- | --- | --- | --- | --- | --- |
+| LP | brak | brak | brak | brak | lewo | standard |
+| Miejsce | brak | brak | brak | brak | lewo | standard |
+| Ranking | brak | brak | brak | brak | lewo | standard |
+
+### Tabela5
+
+| Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
+| --- | --- | --- | --- | --- | --- | --- |
+| LP | brak | brak | brak | brak | lewo | standard |
+| %wygranej | brak | brak | brak | brak | lewo | standard |
+| Gracz | brak | brak | brak | brak | lewo | standard |
+| Kwota | brak | brak | brak | brak | lewo | standard |
+| Ranking | brak | brak | brak | brak | lewo | standard |
+| Rebuy1-Rebuy10 | brak | brak | brak | brak | lewo | standard |
+
+Parametry sekcji kalkulatora:
+- Lewy panel przełączania trybu: szerokość kolumny `180px` (`.admin-calculator-layout`).
+- Minimalna szerokość tabel kalkulatora: `760px`.

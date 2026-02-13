@@ -2544,6 +2544,334 @@ const initAdminPanelTabs = () => {
   });
 };
 
+
+const initAdminCalculator = () => {
+  const rootTable1 = document.querySelector("#adminCalculatorTable1");
+  const rootTable2 = document.querySelector("#adminCalculatorTable2");
+  const rootTable3 = document.querySelector("#adminCalculatorTable3");
+  const rootTable4 = document.querySelector("#adminCalculatorTable4");
+  const rootTable5 = document.querySelector("#adminCalculatorTable5");
+  const status = document.querySelector("#adminCalculatorStatus");
+  const modeButtons = Array.from(document.querySelectorAll(".admin-calculator-switch-button"));
+
+  if (!rootTable1 || !rootTable2 || !rootTable3 || !rootTable4 || !rootTable5 || !modeButtons.length) {
+    return;
+  }
+
+  const firebaseApp = getFirebaseApp();
+
+  const createInitialState = () => ({
+    table1Rows: [{ id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" }],
+    table2Rows: [{ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false }],
+    table3Row: { rake: "" },
+    table5Rows: [{ id: `table5-${Date.now()}-0`, winPercent: "" }]
+  });
+
+  const state = {
+    mode: "tournament",
+    playerOptions: [],
+    tournament: createInitialState(),
+    cash: createInitialState()
+  };
+
+  const getModeState = () => (state.mode === "cash" ? state.cash : state.tournament);
+
+  const sanitizeInteger = (value) => String(value ?? "").replace(/[^0-9]/g, "");
+
+  const createHeader = (title) => {
+    const heading = document.createElement("h4");
+    heading.textContent = title;
+    return heading;
+  };
+
+  const createScroll = () => {
+    const scroll = document.createElement("div");
+    scroll.className = "admin-table-scroll";
+    return scroll;
+  };
+
+  const createComputedCell = () => {
+    const td = document.createElement("td");
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "admin-input";
+    input.value = "x";
+    input.disabled = true;
+    td.appendChild(input);
+    return td;
+  };
+
+  const renderTable1 = () => {
+    const modeState = getModeState();
+    rootTable1.innerHTML = "";
+    rootTable1.appendChild(createHeader("Tabela1"));
+
+    const table = document.createElement("table");
+    table.className = "admin-data-table";
+    table.innerHTML = `<thead><tr><th>Suma</th><th>Buy-In</th><th>Rebuy</th><th>Liczba Rebuy</th><th></th></tr></thead>`;
+    const tbody = document.createElement("tbody");
+
+    modeState.table1Rows.forEach((row, index) => {
+      const tr = document.createElement("tr");
+      tr.appendChild(createComputedCell());
+
+      const buyInCell = document.createElement("td");
+      const buyInInput = document.createElement("input");
+      buyInInput.type = "text";
+      buyInInput.className = "admin-input";
+      buyInInput.value = row.buyIn;
+      buyInInput.addEventListener("input", () => {
+        row.buyIn = sanitizeInteger(buyInInput.value);
+        buyInInput.value = row.buyIn;
+      });
+      buyInCell.appendChild(buyInInput);
+
+      const rebuyCell = document.createElement("td");
+      const rebuyInput = document.createElement("input");
+      rebuyInput.type = "text";
+      rebuyInput.className = "admin-input";
+      rebuyInput.value = row.rebuy;
+      rebuyInput.addEventListener("input", () => {
+        row.rebuy = sanitizeInteger(rebuyInput.value);
+        rebuyInput.value = row.rebuy;
+      });
+      rebuyCell.appendChild(rebuyInput);
+
+      tr.appendChild(buyInCell);
+      tr.appendChild(rebuyCell);
+      tr.appendChild(createComputedCell());
+
+      const actionsCell = document.createElement("td");
+      const actionsWrap = document.createElement("div");
+      actionsWrap.className = "admin-table-actions";
+
+      if (index === modeState.table1Rows.length - 1) {
+        const addButton = document.createElement("button");
+        addButton.type = "button";
+        addButton.className = "secondary";
+        addButton.textContent = "Dodaj";
+        addButton.addEventListener("click", () => {
+          modeState.table1Rows.push({ id: `table1-${Date.now()}-${modeState.table1Rows.length}`, buyIn: "", rebuy: "" });
+          renderTable1();
+        });
+        actionsWrap.appendChild(addButton);
+      }
+
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "danger admin-row-delete";
+      deleteButton.textContent = "Usuń";
+      deleteButton.disabled = modeState.table1Rows.length === 1;
+      deleteButton.addEventListener("click", () => {
+        modeState.table1Rows = modeState.table1Rows.filter((entry) => entry.id !== row.id);
+        renderTable1();
+      });
+      actionsWrap.appendChild(deleteButton);
+      actionsCell.appendChild(actionsWrap);
+      tr.appendChild(actionsCell);
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    const scroll = createScroll();
+    scroll.appendChild(table);
+    rootTable1.appendChild(scroll);
+  };
+
+  const renderTable2 = () => {
+    const modeState = getModeState();
+    rootTable2.innerHTML = "";
+    rootTable2.appendChild(createHeader("Tabela2"));
+
+    const table = document.createElement("table");
+    table.className = "admin-data-table";
+    table.innerHTML = `<thead><tr><th>LP</th><th>Gracz</th><th>Buy-In</th><th>Rebuy</th><th>Eliminated</th></tr></thead>`;
+    const tbody = document.createElement("tbody");
+
+    modeState.table2Rows.forEach((row, index) => {
+      const tr = document.createElement("tr");
+
+      const lpCell = document.createElement("td");
+      lpCell.textContent = String(index + 1);
+
+      const playerCell = document.createElement("td");
+      const playerSelect = document.createElement("select");
+      playerSelect.className = "admin-input";
+      const defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent = "Wybierz gracza";
+      playerSelect.appendChild(defaultOption);
+      state.playerOptions.forEach((playerName) => {
+        const option = document.createElement("option");
+        option.value = playerName;
+        option.textContent = playerName;
+        playerSelect.appendChild(option);
+      });
+      playerSelect.value = row.playerName;
+      playerSelect.addEventListener("change", () => {
+        row.playerName = playerSelect.value;
+      });
+      playerCell.appendChild(playerSelect);
+
+      const eliminatedCell = document.createElement("td");
+      const eliminatedCheckbox = document.createElement("input");
+      eliminatedCheckbox.type = "checkbox";
+      eliminatedCheckbox.checked = Boolean(row.eliminated);
+      eliminatedCheckbox.addEventListener("change", () => {
+        row.eliminated = eliminatedCheckbox.checked;
+      });
+      eliminatedCell.appendChild(eliminatedCheckbox);
+
+      tr.append(lpCell, playerCell, createComputedCell(), createComputedCell(), eliminatedCell);
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    const scroll = createScroll();
+    scroll.appendChild(table);
+    rootTable2.appendChild(scroll);
+  };
+
+  const renderTable3 = () => {
+    const modeState = getModeState();
+    rootTable3.innerHTML = "";
+    rootTable3.appendChild(createHeader("Tabela3"));
+
+    const table = document.createElement("table");
+    table.className = "admin-data-table";
+    table.innerHTML = `<thead><tr><th>Rake</th><th>Wpisowe</th><th>Rebuy</th><th>Pot</th></tr></thead>`;
+    const tbody = document.createElement("tbody");
+    const tr = document.createElement("tr");
+
+    const rakeCell = document.createElement("td");
+    const rakeInput = document.createElement("input");
+    rakeInput.type = "text";
+    rakeInput.className = "admin-input";
+    rakeInput.value = modeState.table3Row.rake;
+    rakeInput.addEventListener("input", () => {
+      modeState.table3Row.rake = sanitizeInteger(rakeInput.value);
+      rakeInput.value = modeState.table3Row.rake;
+    });
+    rakeCell.appendChild(rakeInput);
+
+    tr.append(rakeCell, createComputedCell(), createComputedCell(), createComputedCell());
+    tbody.appendChild(tr);
+    table.appendChild(tbody);
+
+    const scroll = createScroll();
+    scroll.appendChild(table);
+    rootTable3.appendChild(scroll);
+  };
+
+  const renderTable4 = () => {
+    rootTable4.innerHTML = "";
+    rootTable4.appendChild(createHeader("Tabela4"));
+
+    const table = document.createElement("table");
+    table.className = "admin-data-table";
+    table.innerHTML = `<thead><tr><th>LP</th><th>Miejsce</th><th>Ranking</th></tr></thead>`;
+    const tbody = document.createElement("tbody");
+    for (let index = 0; index < 3; index += 1) {
+      const tr = document.createElement("tr");
+      const lpCell = document.createElement("td");
+      lpCell.textContent = String(index + 1);
+      tr.append(lpCell, createComputedCell(), createComputedCell());
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+
+    const scroll = createScroll();
+    scroll.appendChild(table);
+    rootTable4.appendChild(scroll);
+  };
+
+  const renderTable5 = () => {
+    const modeState = getModeState();
+    rootTable5.innerHTML = "";
+    rootTable5.appendChild(createHeader("Tabela5"));
+
+    const table = document.createElement("table");
+    table.className = "admin-data-table";
+    let headerHtml = "<thead><tr><th>LP</th><th>%wygranej</th><th>Gracz</th><th>Kwota</th><th>Ranking</th>";
+    for (let i = 1; i <= 10; i += 1) {
+      headerHtml += `<th>Rebuy${i}</th>`;
+    }
+    headerHtml += "</tr></thead>";
+    table.innerHTML = headerHtml;
+
+    const tbody = document.createElement("tbody");
+    modeState.table5Rows.forEach((row, index) => {
+      const tr = document.createElement("tr");
+      const lpCell = document.createElement("td");
+      lpCell.textContent = String(index + 1);
+
+      const winPercentCell = document.createElement("td");
+      const winPercentInput = document.createElement("input");
+      winPercentInput.type = "text";
+      winPercentInput.className = "admin-input";
+      winPercentInput.value = row.winPercent;
+      winPercentInput.addEventListener("input", () => {
+        row.winPercent = sanitizeInteger(winPercentInput.value);
+        winPercentInput.value = row.winPercent;
+      });
+      winPercentCell.appendChild(winPercentInput);
+
+      tr.append(lpCell, winPercentCell, createComputedCell(), createComputedCell(), createComputedCell());
+      for (let i = 1; i <= 10; i += 1) {
+        tr.appendChild(createComputedCell());
+      }
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    const scroll = createScroll();
+    scroll.appendChild(table);
+    rootTable5.appendChild(scroll);
+  };
+
+  const render = () => {
+    renderTable1();
+    renderTable2();
+    renderTable3();
+    renderTable4();
+    renderTable5();
+  };
+
+  modeButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      state.mode = button.dataset.calculatorMode === "cash" ? "cash" : "tournament";
+      modeButtons.forEach((entry) => {
+        entry.classList.toggle("is-active", entry === button);
+      });
+      render();
+    });
+  });
+
+  if (!firebaseApp) {
+    if (status) {
+      status.textContent = "Brak połączenia z Firebase. Lista graczy będzie pusta.";
+    }
+    render();
+    return;
+  }
+
+  firebaseApp.firestore().collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
+    const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
+    state.playerOptions = players
+      .map((player) => (typeof player?.name === "string" ? player.name.trim() : ""))
+      .filter(Boolean);
+    if (status) {
+      status.textContent = `Załadowano ${state.playerOptions.length} graczy do list wyboru.`;
+    }
+    render();
+  }, () => {
+    if (status) {
+      status.textContent = "Nie udało się pobrać listy graczy.";
+    }
+    render();
+  });
+};
+
 const initAdminPanelRefresh = () => {
   const refreshButton = document.querySelector("#adminPanelRefresh");
   const panelStatus = document.querySelector("#adminPanelRefreshStatus");
@@ -5048,6 +5376,7 @@ const bootstrap = async () => {
   initAdminUserGames();
   initAdminConfirmations();
   initAdminPlayers();
+  initAdminCalculator();
   initPinGate();
   initChatTab();
   initUserConfirmations();
