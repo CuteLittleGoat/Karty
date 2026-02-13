@@ -1216,7 +1216,7 @@ Efekt: dane i kolejność rankingu są spójne pomiędzy zakładkami **Statystyk
   - kolekcja `admin_games_stats` (wagi ręczne `weight1..weight7` na dokument roku).
 - Dzięki temu nie powstaje osobna, niezależna ścieżka obliczeń rankingu.
 
-## 26. Aktualizacja 2026-02-13 — zakładka „Kalkulator” (admin)
+## 26. Zakładka „Kalkulator” (admin)
 
 ### 26.1 Zakres zmian w kodzie
 Zmiana objęła trzy pliki frontendowe:
@@ -1248,11 +1248,11 @@ Każdy stan zawiera szkielety danych:
 - `table5Rows` (`winPercent`).
 
 Renderowane tabele:
-1. **Tabela1**: `Suma`, `Buy-In`, `Rebuy`, `Liczba Rebuy`, `Akcje`.
-   - `Dodaj` widoczny tylko w ostatnim wierszu.
-   - `Usuń` (czerwony) po prawej wiersza.
-2. **Tabela2**: `LP`, `Gracz`, `Buy-In`, `Rebuy`, `Eliminated`.
+1. **Tabela1**: `Suma`, `Buy-In`, `Rebuy`, `Liczba Rebuy` (bez kolumny akcji).
+2. **Tabela2**: `LP`, `Gracz`, `Buy-In`, `Rebuy`, `Eliminated`, `Akcje`.
    - `Gracz` = lista rozwijana.
+   - `Dodaj` widoczny tylko w ostatnim wierszu.
+   - `Usuń` (czerwony) po prawej stronie każdego wiersza.
 3. **Tabela3**: `Rake`, `Wpisowe`, `Rebuy`, `Pot`.
 4. **Tabela4**: `LP`, `Miejsce`, `Ranking`.
 5. **Tabela5**: `LP`, `%wygranej`, `Gracz`, `Kwota`, `Ranking`, `Rebuy1..Rebuy10`.
@@ -1285,8 +1285,14 @@ Aktualnie moduł:
 Dodano globalne reguły CSS dla pól wyboru:
 - `select.admin-input`,
 - `select`,
-- `.admin-data-table select`.
+- `.admin-data-table select`,
+- odpowiadające im elementy `option`.
 
 Cel:
-- usunięcie szarego, systemowego tła,
-- zbliżenie wyglądu dropdownów do stylu pól `.admin-input` w całej aplikacji.
+- usunięcie szarego, systemowego tła listy opcji,
+- zachowanie ciemnego motywu także po rozwinięciu dropdownu.
+
+### 26.7 Stabilizacja fokusu w zakładce „Kalkulator”
+- Funkcja `render()` w module `initAdminCalculator()` zapisuje fokus przez `getFocusedAdminInputState(...)` i odtwarza go po przebudowie przez `restoreFocusedAdminInputState(...)`.
+- Pola edycyjne i wybory w tabelach 1, 2, 3 i 5 otrzymały komplet metadanych (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`).
+- Dzięki temu odświeżenie listy graczy z `onSnapshot(...)` nie powinno przerywać wpisywania lub wyboru aktywnego pola.

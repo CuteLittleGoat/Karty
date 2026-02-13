@@ -691,11 +691,6 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 3. Użytkownik po wejściu do **Statystyki** zobaczy tylko lata, do których ma dostęp.
 4. Ranking po prawej wyświetla wyłącznie dane dla aktualnie klikniętego, dozwolonego roku.
 
-## 15. Aktualizacja instrukcji UI (2026-02-13)
-
-- Zweryfikowano spójność instrukcji dla zakładek: **Gry admina**, **Gry użytkowników**, **Gry do potwierdzenia**, **Statystyki** i **Czat**.
-- Kolejność kliknięć oraz nazwy przycisków w tym dokumencie odpowiadają aktualnemu interfejsowi aplikacji.
-
 ## 27. Kalkulator (Panel Administratora)
 
 > Zakładka **„Kalkulator”** jest dostępna tylko w widoku administratora.
@@ -712,25 +707,30 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 2. Aktywny przycisk jest podświetlony.
 3. Oba tryby mają taki sam układ tabel, ale każdy tryb przechowuje osobny stan pól w UI.
 
-### 27.3 Tabela1 — dodawanie i usuwanie wierszy
+### 27.3 Tabela1 — pola finansowe
 1. Otwórz zakładkę **Kalkulator**.
 2. W sekcji **Tabela1** wypełniaj pola:
    - **Buy-In**,
    - **Rebuy**.
-3. Pod ostatnim zajętym wierszem kliknij **„Dodaj”**, aby utworzyć kolejny wiersz.
-4. Po prawej stronie wiersza kliknij czerwony przycisk **„Usuń”**, aby usunąć ten wiersz.
-5. Gdy zostaje tylko jeden wiersz, przycisk **„Usuń”** jest zablokowany.
+3. W tej tabeli nie ma przycisków dodawania/usuwania wiersza — służy do edycji wartości wejściowych dla istniejących pozycji.
 
-### 27.4 Tabela2 — wybór gracza z listy
+### 27.4 Tabela2 — wybór gracza i zarządzanie wierszami
 1. W sekcji **Tabela2** kliknij pole **„Gracz”**.
 2. Rozwinie się lista graczy pobierana z aktualnej listy w zakładce **„Gracze”**.
 3. Wybierz nazwę gracza z listy.
 4. Pole **Eliminated** możesz zaznaczyć/odznaczyć ręcznie.
+5. Pod ostatnim wierszem użyj przycisku **„Dodaj”**, aby utworzyć nowy wiersz w Tabeli2.
+6. W wierszu kliknij czerwony przycisk **„Usuń”**, aby usunąć dany wpis.
+7. Gdy zostaje tylko jeden wiersz, przycisk **„Usuń”** jest zablokowany.
 
 ### 27.5 Pola edytowalne i nieedytowalne
 - **Edytowalne**: pola tekstowe (np. Buy-In, Rebuy, Rake, %wygranej) oraz checkbox **Eliminated**.
 - **Nieedytowalne (obliczane przez aplikację)**: pola z wpisem **„x”** — są zablokowane do klikania/edycji.
 
 ### 27.6 Spójna kolorystyka list rozwijanych
-- Wszystkie pola wyboru (listy rozwijane) mają teraz spójną kolorystykę z resztą aplikacji.
-- Dotyczy to zarówno nowych pól w zakładce **Kalkulator**, jak i istniejących pól wyboru w innych sekcjach.
+- Lista opcji po rozwinięciu pola **Gracz** ma ciemne tło zgodne z motywem aplikacji.
+- Dotyczy to pól `select` i elementów `option`, dzięki czemu nie pojawia się domyślne szare tło systemowe.
+
+### 27.7 Stabilny fokus podczas odświeżania danych
+- Podczas przebudowy widoku (np. po odświeżeniu listy graczy) aplikacja przywraca fokus do aktywnego pola w zakładce **Kalkulator**.
+- Mechanizm obejmuje pola w tabelach 1, 2, 3 i 5, więc wpisywanie i wybór opcji nie powinny przerywać pracy użytkownika.

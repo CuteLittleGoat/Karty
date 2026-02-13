@@ -420,7 +420,7 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 - Tabela rankingu ma stałe kolumny: `Miejsce`, `Gracz`, `Wynik`.
 - Dzięki wykorzystaniu istniejących klas nie wprowadzono nowych kolorów ani nowych fontów — zachowano obecny system noir/gold.
 
-## Aktualizacja 2026-02-13 — zakładka „Kalkulator” i styl pól wyboru
+## Zakładka „Kalkulator” i styl pól wyboru
 
 ### 1) Panel administratora — nowa zakładka
 - Do paska `.admin-panel-tabs` dodano nową pigułkę: **Kalkulator** (`.admin-panel-tab`, `data-target="adminCalculatorTab"`).
@@ -452,4 +452,10 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
   - tło zgodne z motywem: `rgba(0, 0, 0, 0.35)`,
   - obramowanie `1px solid var(--border)`,
   - kolor tekstu `var(--ink)`.
-- Efekt: usunięcie domyślnego szarego tła dropdownów i spójność z resztą motywu UI.
+- Dodatkowo elementy `option` mają ciemne tło, więc lista po rozwinięciu również jest zgodna z motywem UI.
+
+
+### 5) Rozmieszczenie akcji w Tabela2
+- Przyciski `Dodaj` i `Usuń` znajdują się w kolumnie akcji tabeli **Tabela2**.
+- **Tabela1** nie zawiera kolumny akcji i służy tylko do edycji pól `Buy-In` oraz `Rebuy`.
+- W **Tabela2** przycisk `Dodaj` jest widoczny tylko w ostatnim wierszu, a `Usuń` jest blokowany przy jednym wierszu.

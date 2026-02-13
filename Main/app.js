@@ -2552,6 +2552,7 @@ const initAdminCalculator = () => {
   const rootTable4 = document.querySelector("#adminCalculatorTable4");
   const rootTable5 = document.querySelector("#adminCalculatorTable5");
   const status = document.querySelector("#adminCalculatorStatus");
+  const calculatorContent = document.querySelector(".admin-calculator-content");
   const modeButtons = Array.from(document.querySelectorAll(".admin-calculator-switch-button"));
 
   if (!rootTable1 || !rootTable2 || !rootTable3 || !rootTable4 || !rootTable5 || !modeButtons.length) {
@@ -2608,7 +2609,7 @@ const initAdminCalculator = () => {
 
     const table = document.createElement("table");
     table.className = "admin-data-table";
-    table.innerHTML = `<thead><tr><th>Suma</th><th>Buy-In</th><th>Rebuy</th><th>Liczba Rebuy</th><th></th></tr></thead>`;
+    table.innerHTML = `<thead><tr><th>Suma</th><th>Buy-In</th><th>Rebuy</th><th>Liczba Rebuy</th></tr></thead>`;
     const tbody = document.createElement("tbody");
 
     modeState.table1Rows.forEach((row, index) => {
@@ -2620,6 +2621,11 @@ const initAdminCalculator = () => {
       buyInInput.type = "text";
       buyInInput.className = "admin-input";
       buyInInput.value = row.buyIn;
+      buyInInput.dataset.focusTarget = "admin-calculator";
+      buyInInput.dataset.section = "table1";
+      buyInInput.dataset.tableId = state.mode;
+      buyInInput.dataset.rowId = row.id;
+      buyInInput.dataset.columnKey = "buyIn";
       buyInInput.addEventListener("input", () => {
         row.buyIn = sanitizeInteger(buyInInput.value);
         buyInInput.value = row.buyIn;
@@ -2631,6 +2637,11 @@ const initAdminCalculator = () => {
       rebuyInput.type = "text";
       rebuyInput.className = "admin-input";
       rebuyInput.value = row.rebuy;
+      rebuyInput.dataset.focusTarget = "admin-calculator";
+      rebuyInput.dataset.section = "table1";
+      rebuyInput.dataset.tableId = state.mode;
+      rebuyInput.dataset.rowId = row.id;
+      rebuyInput.dataset.columnKey = "rebuy";
       rebuyInput.addEventListener("input", () => {
         row.rebuy = sanitizeInteger(rebuyInput.value);
         rebuyInput.value = row.rebuy;
@@ -2640,35 +2651,6 @@ const initAdminCalculator = () => {
       tr.appendChild(buyInCell);
       tr.appendChild(rebuyCell);
       tr.appendChild(createComputedCell());
-
-      const actionsCell = document.createElement("td");
-      const actionsWrap = document.createElement("div");
-      actionsWrap.className = "admin-table-actions";
-
-      if (index === modeState.table1Rows.length - 1) {
-        const addButton = document.createElement("button");
-        addButton.type = "button";
-        addButton.className = "secondary";
-        addButton.textContent = "Dodaj";
-        addButton.addEventListener("click", () => {
-          modeState.table1Rows.push({ id: `table1-${Date.now()}-${modeState.table1Rows.length}`, buyIn: "", rebuy: "" });
-          renderTable1();
-        });
-        actionsWrap.appendChild(addButton);
-      }
-
-      const deleteButton = document.createElement("button");
-      deleteButton.type = "button";
-      deleteButton.className = "danger admin-row-delete";
-      deleteButton.textContent = "Usuń";
-      deleteButton.disabled = modeState.table1Rows.length === 1;
-      deleteButton.addEventListener("click", () => {
-        modeState.table1Rows = modeState.table1Rows.filter((entry) => entry.id !== row.id);
-        renderTable1();
-      });
-      actionsWrap.appendChild(deleteButton);
-      actionsCell.appendChild(actionsWrap);
-      tr.appendChild(actionsCell);
       tbody.appendChild(tr);
     });
 
@@ -2685,7 +2667,7 @@ const initAdminCalculator = () => {
 
     const table = document.createElement("table");
     table.className = "admin-data-table";
-    table.innerHTML = `<thead><tr><th>LP</th><th>Gracz</th><th>Buy-In</th><th>Rebuy</th><th>Eliminated</th></tr></thead>`;
+    table.innerHTML = `<thead><tr><th>LP</th><th>Gracz</th><th>Buy-In</th><th>Rebuy</th><th>Eliminated</th><th></th></tr></thead>`;
     const tbody = document.createElement("tbody");
 
     modeState.table2Rows.forEach((row, index) => {
@@ -2708,6 +2690,11 @@ const initAdminCalculator = () => {
         playerSelect.appendChild(option);
       });
       playerSelect.value = row.playerName;
+      playerSelect.dataset.focusTarget = "admin-calculator";
+      playerSelect.dataset.section = "table2";
+      playerSelect.dataset.tableId = state.mode;
+      playerSelect.dataset.rowId = row.id;
+      playerSelect.dataset.columnKey = "playerName";
       playerSelect.addEventListener("change", () => {
         row.playerName = playerSelect.value;
       });
@@ -2717,12 +2704,45 @@ const initAdminCalculator = () => {
       const eliminatedCheckbox = document.createElement("input");
       eliminatedCheckbox.type = "checkbox";
       eliminatedCheckbox.checked = Boolean(row.eliminated);
+      eliminatedCheckbox.dataset.focusTarget = "admin-calculator";
+      eliminatedCheckbox.dataset.section = "table2";
+      eliminatedCheckbox.dataset.tableId = state.mode;
+      eliminatedCheckbox.dataset.rowId = row.id;
+      eliminatedCheckbox.dataset.columnKey = "eliminated";
       eliminatedCheckbox.addEventListener("change", () => {
         row.eliminated = eliminatedCheckbox.checked;
       });
       eliminatedCell.appendChild(eliminatedCheckbox);
 
-      tr.append(lpCell, playerCell, createComputedCell(), createComputedCell(), eliminatedCell);
+      const actionsCell = document.createElement("td");
+      const actionsWrap = document.createElement("div");
+      actionsWrap.className = "admin-table-actions";
+
+      if (index === modeState.table2Rows.length - 1) {
+        const addButton = document.createElement("button");
+        addButton.type = "button";
+        addButton.className = "secondary";
+        addButton.textContent = "Dodaj";
+        addButton.addEventListener("click", () => {
+          modeState.table2Rows.push({ id: `table2-${Date.now()}-${modeState.table2Rows.length}`, playerName: "", eliminated: false });
+          render();
+        });
+        actionsWrap.appendChild(addButton);
+      }
+
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "danger admin-row-delete";
+      deleteButton.textContent = "Usuń";
+      deleteButton.disabled = modeState.table2Rows.length === 1;
+      deleteButton.addEventListener("click", () => {
+        modeState.table2Rows = modeState.table2Rows.filter((entry) => entry.id !== row.id);
+        render();
+      });
+      actionsWrap.appendChild(deleteButton);
+      actionsCell.appendChild(actionsWrap);
+
+      tr.append(lpCell, playerCell, createComputedCell(), createComputedCell(), eliminatedCell, actionsCell);
       tbody.appendChild(tr);
     });
 
@@ -2748,6 +2768,11 @@ const initAdminCalculator = () => {
     rakeInput.type = "text";
     rakeInput.className = "admin-input";
     rakeInput.value = modeState.table3Row.rake;
+    rakeInput.dataset.focusTarget = "admin-calculator";
+    rakeInput.dataset.section = "table3";
+    rakeInput.dataset.tableId = state.mode;
+    rakeInput.dataset.rowId = "0";
+    rakeInput.dataset.columnKey = "rake";
     rakeInput.addEventListener("input", () => {
       modeState.table3Row.rake = sanitizeInteger(rakeInput.value);
       rakeInput.value = modeState.table3Row.rake;
@@ -2810,6 +2835,11 @@ const initAdminCalculator = () => {
       winPercentInput.type = "text";
       winPercentInput.className = "admin-input";
       winPercentInput.value = row.winPercent;
+      winPercentInput.dataset.focusTarget = "admin-calculator";
+      winPercentInput.dataset.section = "table5";
+      winPercentInput.dataset.tableId = state.mode;
+      winPercentInput.dataset.rowId = row.id;
+      winPercentInput.dataset.columnKey = "winPercent";
       winPercentInput.addEventListener("input", () => {
         row.winPercent = sanitizeInteger(winPercentInput.value);
         winPercentInput.value = row.winPercent;
@@ -2830,11 +2860,13 @@ const initAdminCalculator = () => {
   };
 
   const render = () => {
+    const focusState = getFocusedAdminInputState(calculatorContent);
     renderTable1();
     renderTable2();
     renderTable3();
     renderTable4();
     renderTable5();
+    restoreFocusedAdminInputState(calculatorContent, focusState);
   };
 
   modeButtons.forEach((button) => {
