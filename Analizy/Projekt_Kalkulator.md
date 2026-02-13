@@ -146,227 +146,214 @@
       └─ ... analogicznie jak tournament, ale type="cash"
 ```
 
-### 2.1 Konfiguracja Firebase krok po kroku (kolejność wypełniania formularza)
+### 2.1 Skrypt Node.js: automatyczne utworzenie pełnej struktury Firebase (bez kroków ręcznych)
 
-CollectionID: calculators  
-Document ID: tournament  
-	Field: name type: string  
-		String: KalkulatorTournament  
-	Field: type type: string  
-		String: tournament  
-	Field: isActive type: boolean  
-		Boolean: true  
-	Field: createdAt type: timestamp  
-		Timestamp: aktualna data/czas  
-	Field: updatedAt type: timestamp  
-		Timestamp: aktualna data/czas  
+Poniższy skrypt tworzy **całą bazową strukturę** dla `calculators/tournament` i `calculators/cash` oraz przykładową sesję startową z podkolekcjami tabel i zmiennych.
+Jest idempotentny (można uruchamiać wielokrotnie) i używa `set(..., { merge: true })`.
 
-CollectionID: calculators  
-Document ID: tournament  
-	SubcollectionID: placeholders  
-	Document ID: defaults  
-		Field: payoutModel type: string  
-			String: PENDING_SPEC  
-		Field: rebuyColumnsMode type: string  
-			String: dynamic  
-		Field: rankingFormula type: string  
-			String: PENDING_SPEC  
+```js
+/**
+ * Seed pełnej struktury Firestore dla kalkulatorów:
+ * - calculators/tournament
+ * - calculators/cash
+ * - placeholders/defaults
+ * - definitions/v1
+ * - sessions/default_session + variables/current + calculationFlags/current
+ * - tables/*/rows/*
+ *
+ * Uruchomienie:
+ *   1) npm i firebase-admin
+ *   2) umieść serviceAccountKey.json obok pliku
+ *   3) node seed-calculators-structure.js
+ */
 
-CollectionID: calculators  
-Document ID: tournament  
-	SubcollectionID: definitions  
-	Document ID: v1  
-		Field: version type: number  
-			Number: 1  
-		Field: status type: string  
-			String: active  
-		Field: appliesTo type: array  
-			Array (string): ["tournament"]  
-		Field: tables type: array  
-			Array (map): zgodnie z sekcją 3 (table1_settings, table2_entries, table3_summary, table4_ranking, table5_payout)  
-		Field: globalVariablesSchema type: array  
-			Array (map): rakePercent, defaultWinPercent, rebuyColumnsCount  
-		Field: createdBy type: string  
-			String: UID_admina  
-		Field: createdAt type: timestamp  
-			Timestamp: aktualna data/czas  
-		Field: updatedAt type: timestamp  
-			Timestamp: aktualna data/czas  
+const admin = require("firebase-admin");
+const serviceAccount = require("./serviceAccountKey.json");
 
-CollectionID: calculators  
-Document ID: tournament  
-	SubcollectionID: sessions  
-	Document ID: {sessionId}  
-		Field: name type: string  
-			String: np. Turniej_2026_01_10  
-		Field: status type: string  
-			String: draft  
-		Field: definitionVersionId type: string  
-			String: v1  
-		Field: sourceGameId type: string|null  
-			String/null: null  
-		Field: playersSourcePath type: string  
-			String: app_settings/player_access  
-		Field: createdBy type: string  
-			String: UID_admina  
-		Field: updatedBy type: string  
-			String: UID_admina  
-		Field: createdAt type: timestamp  
-			Timestamp: aktualna data/czas  
-		Field: updatedAt type: timestamp  
-			Timestamp: aktualna data/czas  
-		Field: finalizedAt type: timestamp|null  
-			Timestamp/null: null  
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
-CollectionID: calculators  
-Document ID: tournament  
-	SubcollectionID: sessions  
-	Document ID: {sessionId}  
-		SubcollectionID: calculationFlags  
-		Document ID: current  
-			Field: freezeComputedValues type: boolean  
-				Boolean: false  
-			Field: allowManualOverride type: boolean  
-				Boolean: false  
+const db = admin.firestore();
+const now = admin.firestore.FieldValue.serverTimestamp();
 
-CollectionID: calculators  
-Document ID: tournament  
-	SubcollectionID: sessions  
-	Document ID: {sessionId}  
-		SubcollectionID: variables  
-		Document ID: current  
-			Field: rakePercent type: number  
-				Number: 5  
-			Field: defaultWinPercent type: number  
-				Number: 50  
-			Field: rebuyColumnsCount type: number  
-				Number: 10  
-			Field: updatedAt type: timestamp  
-				Timestamp: aktualna data/czas  
-			Field: updatedBy type: string  
-				String: UID_admina  
+const CALCULATORS = [
+  { id: "tournament", name: "KalkulatorTournament", type: "tournament" },
+  { id: "cash", name: "KalkulatorCash", type: "cash" },
+];
 
-CollectionID: calculators  
-Document ID: tournament  
-	SubcollectionID: sessions  
-	Document ID: {sessionId}  
-		SubcollectionID: tables  
-		Document ID: table1_settings  
-			SubcollectionID: rows  
-			Document ID: base  
-				Field: manual type: map  
-					Map: { buyIn: 200, rebuyUnit: 100 }  
-				Field: computed type: map  
-					Map: { rebuyCount: 0, sum: 200 }  
-				Field: updatedAt type: timestamp  
-					Timestamp: aktualna data/czas  
-				Field: updatedBy type: string  
-					String: UID_admina  
+function buildTablesDefinition() {
+  return [
+    {
+      tableId: "table1_settings",
+      name: "Tabela1",
+      rowsPath: "tables/table1_settings/rows",
+      columns: ["sum", "buyIn", "rebuy", "rebuyCount"],
+    },
+    {
+      tableId: "table2_entries",
+      name: "Tabela2",
+      rowsPath: "tables/table2_entries/rows",
+      columns: ["lp", "playerId", "playerNameSnapshot", "buyIn", "rebuy", "eliminated"],
+    },
+    {
+      tableId: "table3_summary",
+      name: "Tabela3",
+      rowsPath: "tables/table3_summary/rows",
+      columns: ["rake", "entryTotal", "rebuyTotal", "pot"],
+    },
+    {
+      tableId: "table4_ranking",
+      name: "Tabela4",
+      rowsPath: "tables/table4_ranking/rows",
+      columns: ["lp", "place", "rankingPoints"],
+    },
+    {
+      tableId: "table5_payout",
+      name: "Tabela5",
+      rowsPath: "tables/table5_payout/rows",
+      columns: ["lp", "winPercent", "playerNameSnapshot", "amount", "rankingPoints", "rebuyDynamic"],
+    },
+  ];
+}
 
-CollectionID: calculators  
-Document ID: tournament  
-	SubcollectionID: sessions  
-	Document ID: {sessionId}  
-		SubcollectionID: tables  
-		Document ID: table2_entries  
-			SubcollectionID: rows  
-			Document ID: {rowId}  
-				Field: order type: number  
-					Number: 1  
-				Field: manual type: map  
-					Map: { playerId: "player_abc", rebuyMultiplier: 2, eliminated: false }  
-				Field: computed type: map  
-					Map: { lp: 1, playerNameSnapshot: "Jan Kowalski", buyInValue: 200, rebuyValue: 200 }  
-				Field: updatedAt type: timestamp  
-					Timestamp: aktualna data/czas  
-				Field: updatedBy type: string  
-					String: UID_admina  
+function buildGlobalVariablesSchema() {
+  return [
+    { key: "rakePercent", type: "number", default: 0 },
+    { key: "defaultWinPercent", type: "number", default: 0 },
+    { key: "rebuyColumnsCount", type: "number", default: 10 },
+  ];
+}
 
-CollectionID: calculators  
-Document ID: tournament  
-	SubcollectionID: sessions  
-	Document ID: {sessionId}  
-		SubcollectionID: tables  
-		Document ID: table3_summary  
-			SubcollectionID: rows  
-			Document ID: base  
-				Field: manual type: map  
-					Map: { rakePercent: 5 }  
-				Field: computed type: map  
-					Map: { entriesTotal: 2000, rebuyTotal: 700, pot: 2565 }  
-				Field: updatedAt type: timestamp  
-					Timestamp: aktualna data/czas  
-				Field: updatedBy type: string  
-					String: UID_admina  
+async function seedCalculator(calculator) {
+  const calcRef = db.collection("calculators").doc(calculator.id);
+  const defRef = calcRef.collection("definitions").doc("v1");
+  const placeholdersRef = calcRef.collection("placeholders").doc("defaults");
+  const sessionRef = calcRef.collection("sessions").doc("default_session");
 
-CollectionID: calculators  
-Document ID: tournament  
-	SubcollectionID: sessions  
-	Document ID: {sessionId}  
-		SubcollectionID: tables  
-		Document ID: table4_ranking  
-			SubcollectionID: rows  
-			Document ID: {rowId}  
-				Field: order type: number  
-					Number: 1  
-				Field: playerId type: string  
-					String: player_abc  
-				Field: playerNameSnapshot type: string  
-					String: Jan Kowalski  
-				Field: place type: number  
-					Number: 1  
-				Field: rankingPoints type: number  
-					Number: 100  
-				Field: updatedAt type: timestamp  
-					Timestamp: aktualna data/czas  
-				Field: updatedBy type: string  
-					String: UID_admina  
+  const batch = db.batch();
 
-CollectionID: calculators  
-Document ID: tournament  
-	SubcollectionID: sessions  
-	Document ID: {sessionId}  
-		SubcollectionID: tables  
-		Document ID: table5_payout  
-			SubcollectionID: rows  
-			Document ID: {rowId}  
-				Field: order type: number  
-					Number: 1  
-				Field: winPercent type: number  
-					Number: 50  
-				Field: playerId type: string  
-					String: player_abc  
-				Field: playerNameSnapshot type: string  
-					String: Jan Kowalski  
-				Field: amount type: number  
-					Number: 1282.5  
-				Field: rankingPoints type: number  
-					Number: 100  
-				Field: dynamicRebuys type: map  
-					Map: { rebuy1: 1, rebuy2: 0 }  
-				Field: updatedAt type: timestamp  
-					Timestamp: aktualna data/czas  
-				Field: updatedBy type: string  
-					String: UID_admina  
+  // calculators/{type}
+  batch.set(calcRef, {
+    name: calculator.name,
+    type: calculator.type,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  }, { merge: true });
 
-CollectionID: calculators  
-Document ID: cash  
-	Field: name type: string  
-		String: KalkulatorCash  
-	Field: type type: string  
-		String: cash  
-	Field: isActive type: boolean  
-		Boolean: true  
-	Field: createdAt type: timestamp  
-		Timestamp: aktualna data/czas  
-	Field: updatedAt type: timestamp  
-		Timestamp: aktualna data/czas  
+  // calculators/{type}/placeholders/defaults
+  batch.set(placeholdersRef, {
+    payoutModel: "PENDING_SPEC",
+    rebuyColumnsMode: "dynamic",
+    rankingFormula: "PENDING_SPEC",
+    updatedAt: now,
+  }, { merge: true });
 
-CollectionID: calculators  
-Document ID: cash  
-	Dalsza konfiguracja: analogicznie 1:1 jak dla tournament (definitions, sessions, variables, tables, snapshots)
+  // calculators/{type}/definitions/v1
+  batch.set(defRef, {
+    version: 1,
+    status: "active",
+    appliesTo: [calculator.type],
+    tables: buildTablesDefinition(),
+    globalVariablesSchema: buildGlobalVariablesSchema(),
+    createdBy: "SYSTEM_SEED",
+    createdAt: now,
+    updatedAt: now,
+  }, { merge: true });
 
----
+  // calculators/{type}/sessions/default_session
+  batch.set(sessionRef, {
+    name: `${calculator.name}_DefaultSession`,
+    status: "draft",
+    definitionVersionId: "v1",
+    sourceGameId: null,
+    playersSourcePath: "app_settings/player_access",
+    createdBy: "SYSTEM_SEED",
+    updatedBy: "SYSTEM_SEED",
+    createdAt: now,
+    updatedAt: now,
+    finalizedAt: null,
+  }, { merge: true });
+
+  // variables/current
+  batch.set(sessionRef.collection("variables").doc("current"), {
+    rakePercent: 0,
+    defaultWinPercent: 0,
+    rebuyColumnsCount: 10,
+    updatedAt: now,
+    updatedBy: "SYSTEM_SEED",
+  }, { merge: true });
+
+  // calculationFlags/current
+  batch.set(sessionRef.collection("calculationFlags").doc("current"), {
+    freezeComputedValues: false,
+    allowManualOverride: false,
+    updatedAt: now,
+    updatedBy: "SYSTEM_SEED",
+  }, { merge: true });
+
+  // tables/*/rows/*
+  batch.set(sessionRef.collection("tables").doc("table1_settings").collection("rows").doc("base"), {
+    buyIn: 0,
+    rebuy: 0,
+    rebuyCount: 0,
+    sum: 0,
+    updatedAt: now,
+  }, { merge: true });
+
+  batch.set(sessionRef.collection("tables").doc("table2_entries").collection("rows").doc("template"), {
+    lp: 1,
+    playerId: null,
+    playerNameSnapshot: "",
+    buyIn: 0,
+    rebuy: 0,
+    eliminated: false,
+    updatedAt: now,
+  }, { merge: true });
+
+  batch.set(sessionRef.collection("tables").doc("table3_summary").collection("rows").doc("base"), {
+    rake: 0,
+    entryTotal: 0,
+    rebuyTotal: 0,
+    pot: 0,
+    updatedAt: now,
+  }, { merge: true });
+
+  batch.set(sessionRef.collection("tables").doc("table4_ranking").collection("rows").doc("template"), {
+    lp: 1,
+    place: 1,
+    rankingPoints: 0,
+    updatedAt: now,
+  }, { merge: true });
+
+  batch.set(sessionRef.collection("tables").doc("table5_payout").collection("rows").doc("template"), {
+    lp: 1,
+    winPercent: 0,
+    playerNameSnapshot: "",
+    amount: 0,
+    rankingPoints: 0,
+    rebuyDynamic: [],
+    updatedAt: now,
+  }, { merge: true });
+
+  await batch.commit();
+  console.log(`OK: seeded calculators/${calculator.id}`);
+}
+
+(async () => {
+  for (const calculator of CALCULATORS) {
+    await seedCalculator(calculator);
+  }
+  console.log("DONE: full calculators structure ready.");
+  process.exit(0);
+})().catch((err) => {
+  console.error("ERROR:", err);
+  process.exit(1);
+});
+```
+
+> Efekt: po jednym uruchomieniu dostajesz kompletną strukturę startową zgodną z analizą (root `calculators`, oba typy kalkulatorów, definicja `v1`, sesja robocza, zmienne, flagi i szkielety tabel).
 
 ## 3) Definicja tabel i pól (v1)
 
