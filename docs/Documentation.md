@@ -80,7 +80,8 @@ Przechowuje konfigurację połączenia Firebase jako globalny obiekt używany po
   - `gameType`,
   - `gameDate` (format `YYYY-MM-DD`),
   - `name`,
-  - `notes` (tekst notatek do sekcji „Podsumowanie gry”),
+  - `preGameNotes` (tekst notatek planistycznych „Notatki do gry”),
+  - `postGameNotes` (tekst notatek rozliczeniowych „Notatki po grze”),
   - `isClosed`,
   - `createdAt`.
 - Podkolekcja `rows` dla każdej gry:
@@ -116,7 +117,9 @@ Poniżej zebrana jest pełna struktura kolekcji widoczna na dostarczonych zrzuta
       - `gameDate` (string `YYYY-MM-DD`),
       - `gameType` (np. `Cashout`),
       - `isClosed` (boolean),
-      - `name` (nazwa stołu/gry).
+      - `name` (nazwa stołu/gry),
+      - `preGameNotes` (string),
+      - `postGameNotes` (string).
     - podkolekcja:
       - `rows` (wiersze graczy dla danej gry).
 
@@ -129,7 +132,9 @@ Poniżej zebrana jest pełna struktura kolekcji widoczna na dostarczonych zrzuta
       - `gameDate`,
       - `gameType`,
       - `isClosed`,
-      - `name`.
+      - `name`,
+      - `preGameNotes` (string),
+      - `postGameNotes` (string).
     - podkolekcje:
       - `rows`,
       - `confirmations`.
@@ -650,6 +655,7 @@ Skutek:
 - Dzięki temu obie tabele zawsze pokazują ten sam porządek danych, zgodnie z wymaganiem: od najwyższego `(+/-)` do najniższego.
 
 ### 16.2 Modal notatek „Podsumowanie gry”
+> Sekcja historyczna: aktualna logika notatek (rozdzielenie na `preGameNotes`/`postGameNotes`) jest opisana w rozdziale **21**.
 - Wspólny kontroler `getSummaryNotesModalController()` (singleton) obsługuje:
   - otwieranie modala z kontekstem (`gameId`, `gameName`),
   - ustawianie wartości `textarea`,
@@ -999,3 +1005,41 @@ Zapis wykonywany przez istniejący `savePlayers()` (`set(..., merge domyślny dl
 
 Brak nowej kolekcji i brak migracji krytycznej:
 - starsze rekordy bez `statsYearsAccess` są normalizowane do pustej tablicy.
+
+## 24. Aktualizacja 2026-02-13 — rozdzielenie notatek na „do gry” i „po grze”
+
+### 24.1 Zakres zmiany
+- Przycisk przy sekcji **Tworzenie gier** (kolumna `Nazwa`) ma etykietę **„Notatki do gry”**.
+- Przycisk przy sekcji **Podsumowanie gry** ma etykietę **„Notatki po grze”**.
+- W widoku **Gry do potwierdzenia** przycisk podglądu notatek ma etykietę **„Notatki do gry”** i działa tylko w trybie read-only.
+
+### 24.2 Model danych
+- Zastosowano dwa niezależne pola dokumentu gry:
+  - `preGameNotes` — notatki planistyczne,
+  - `postGameNotes` — notatki po zakończeniu gry.
+- Dla kompatybilności zachowano fallback odczytu `preGameNotes` do legacy pola `notes`.
+- Nowo dodawana gra otrzymuje:
+  - `preGameNotes: DEFAULT_GAME_NOTES_TEMPLATE`,
+  - `postGameNotes: ""`.
+
+### 24.3 Modal notatek
+- `getSummaryNotesModalController()` przyjmuje parametry kontekstowe:
+  - `notesLabel`,
+  - `clearButtonLabel`,
+  - `clearToDefault`,
+  - `readOnlyMessage`,
+  - `textareaPlaceholder`.
+- Tryby działania:
+  1. **Notatki do gry**: czerwony przycisk `Domyślne` przywraca szablon.
+  2. **Notatki po grze**: czerwony przycisk `Usuń` czyści treść do pustego stringa.
+
+### 24.4 Integracje
+- `initUserGamesManager(...)` i `initAdminGames()`:
+  - notatki „do gry” są obsługiwane w tabeli gier,
+  - notatki „po grze” są obsługiwane w podsumowaniu gry.
+- `initUserConfirmations()`:
+  - odczytuje notatki „do gry” bez możliwości edycji.
+
+### 24.5 Firebase / Firestore Rules
+- Aktualne Rules (`allow read, write: if true;` dla `Tables` i `UserGames`) obejmują zapis i odczyt nowych pól `preGameNotes` i `postGameNotes`.
+- Wniosek: **nie jest wymagana nowa konfiguracja Firebase ani zmiana Rules** do wdrożenia tej funkcji.
