@@ -3237,12 +3237,14 @@ const initStatisticsView = ({
       const entryFee = parseIntegerOrZero(row.entryFee);
       const rebuy = parseIntegerOrZero(row.rebuy);
       const payout = parseIntegerOrZero(row.payout);
+      const normalizedEntryFee = sanitizeIntegerInput(typeof row.entryFee === "number" ? `${row.entryFee}` : row.entryFee ?? "");
       return {
         ...row,
         entryFee,
         rebuy,
         payout,
         profit: payout - (entryFee + rebuy),
+        hasCompletedEntryFee: Boolean(normalizedEntryFee) && normalizedEntryFee !== "-",
         championship: Boolean(row.championship)
       };
     });
@@ -3277,6 +3279,8 @@ const initStatisticsView = ({
           return;
         }
 
+        const hasCompletedEntryFee = row.hasCompletedEntryFee === true;
+
         if (!playersMap.has(playerName)) {
           playersMap.set(playerName, {
             playerName,
@@ -3291,14 +3295,16 @@ const initStatisticsView = ({
         }
 
         const item = playersMap.get(playerName);
-        item.meetingsCount += 1;
+        if (hasCompletedEntryFee) {
+          item.meetingsCount += 1;
+        }
         item.championshipCount += row.championship ? 1 : 0;
         item.pointsSum += parseIntegerOrZero(row.points);
         item.plusMinusSum += row.profit;
         item.payoutSum += row.payout;
         item.depositsSum += row.entryFee + row.rebuy;
 
-        if (!counted.has(playerName)) {
+        if (hasCompletedEntryFee && !counted.has(playerName)) {
           item.playedGamesPoolSum += gamePool;
           counted.add(playerName);
         }
@@ -3818,12 +3824,14 @@ const initAdminGames = () => {
       const rebuy = parseIntegerOrZero(row.rebuy);
       const payout = parseIntegerOrZero(row.payout);
       const profit = payout - (entryFee + rebuy);
+      const normalizedEntryFee = sanitizeIntegerInput(typeof row.entryFee === "number" ? `${row.entryFee}` : row.entryFee ?? "");
       return {
         ...row,
         entryFee,
         rebuy,
         payout,
         profit,
+        hasCompletedEntryFee: Boolean(normalizedEntryFee) && normalizedEntryFee !== "-",
         points: parseIntegerOrZero(row.points),
         championship: Boolean(row.championship)
       };
@@ -3947,6 +3955,8 @@ const initAdminGames = () => {
           return;
         }
 
+        const hasCompletedEntryFee = row.hasCompletedEntryFee === true;
+
         if (!playersMap.has(playerName)) {
           playersMap.set(playerName, {
             playerName,
@@ -3961,14 +3971,16 @@ const initAdminGames = () => {
         }
 
         const playerStats = playersMap.get(playerName);
-        playerStats.meetingsCount += 1;
+        if (hasCompletedEntryFee) {
+          playerStats.meetingsCount += 1;
+        }
         playerStats.championshipCount += row.championship ? 1 : 0;
         playerStats.pointsSum += row.points;
         playerStats.plusMinusSum += row.profit;
         playerStats.payoutSum += row.payout;
         playerStats.depositsSum += row.entryFee + row.rebuy;
 
-        if (!playersCountedInGame.has(playerName)) {
+        if (hasCompletedEntryFee && !playersCountedInGame.has(playerName)) {
           playerStats.playedGamesPoolSum += gamePool;
           playersCountedInGame.add(playerName);
         }

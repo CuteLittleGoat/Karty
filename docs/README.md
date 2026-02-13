@@ -629,3 +629,38 @@ Efekt UI:
 ### 25.3 Ważna uwaga dla operatora
 - Jeżeli pole **Punkty** pozostanie puste i jednocześnie **Wpisowe** nie będzie dodatnie, taki wiersz nie wnosi żadnych danych do rozliczeń.
 - Jeżeli wpiszesz punkty (dodatnie lub ujemne), gracz jest traktowany jako uczestnik do celów podsumowań/statystyk, nawet bez wypełnionych pól finansowych.
+
+## 26. Aktualizacja 2026-02-13 — nowe liczenie „Ilość Spotkań” i „Suma z rozegranych gier”
+
+### 26.1 Co się zmieniło dla użytkownika
+W sekcjach:
+- **Panel administratora → Gry admina → Statystyki**,
+- **Statystyki** (tabela oparta o te same dane),
+
+kolumny:
+- **Ilość Spotkań**,
+- **Suma z rozegranych gier**,
+
+liczą się teraz tylko dla gier, w których gracz ma **uzupełnione pole „Wpisowe”** w oknie **Szczegóły gry**.
+
+Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie zwiększa już tych dwóch kolumn.
+
+### 26.2 Jak to sprawdzić krok po kroku
+1. Wejdź do **Panel administratora**.
+2. Otwórz zakładkę **Gry admina**.
+3. Wybierz rok z listy po lewej.
+4. Kliknij przycisk **Szczegóły** przy wybranej grze.
+5. Dla wybranego gracza ustaw pole **Wpisowe**:
+   - przypadek A: wpisz wartość (np. `0`, `50`, `100`),
+   - przypadek B: zostaw pole puste.
+6. Zamknij okno szczegółów.
+7. W sekcji **Statystyki** sprawdź wiersz tego gracza:
+   - przy przypadku A gra jest liczona do **Ilość Spotkań**,
+   - przy przypadku B gra nie jest liczona do **Ilość Spotkań**.
+8. W tej samej sekcji sprawdź kolumnę **Suma z rozegranych gier**:
+   - przypadek A dodaje do sumy wartość **Pula** tej gry,
+   - przypadek B nie dodaje wartości **Pula** tej gry.
+
+### 26.3 Ważna uwaga praktyczna
+- To, że gracz widnieje na liście uczestników gry, nie wystarcza już do tych dwóch kolumn.
+- Decyduje wyłącznie to, czy pole **Wpisowe** jest uzupełnione w **Szczegóły gry**.
