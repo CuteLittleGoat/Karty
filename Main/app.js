@@ -11,6 +11,8 @@ const STATISTICS_PLAYER_ID_STORAGE_KEY = "statisticsPlayerId";
 const PLAYER_ACCESS_COLLECTION = "app_settings";
 const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
+const ADMIN_MESSAGES_COLLECTION = "admin_messages";
+const ADMIN_MESSAGES_DOCUMENT = "admin_messages";
 const RULES_DEFAULT_TEXT = "";
 const DEFAULT_GAME_NOTES_TEMPLATE = "Przewidywani gracze:\nRebuy:\nAddon:\nInne:";
 
@@ -3058,11 +3060,7 @@ const initAdminMessaging = () => {
   const db = firebaseApp.firestore();
 
   const refreshNewsData = async () => {
-    await db
-      .collection("admin_messages")
-      .orderBy("createdAt", "desc")
-      .limit(1)
-      .get({ source: "server" });
+    await db.collection(ADMIN_MESSAGES_COLLECTION).doc(ADMIN_MESSAGES_DOCUMENT).get({ source: "server" });
   };
 
   registerAdminRefreshHandler("adminNewsTab", refreshNewsData);
@@ -3079,7 +3077,7 @@ const initAdminMessaging = () => {
     status.textContent = "Wysyłanie wiadomości...";
 
     try {
-      await db.collection("admin_messages").add({
+      await db.collection(ADMIN_MESSAGES_COLLECTION).doc(ADMIN_MESSAGES_DOCUMENT).set({
         message,
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
         source: "web-admin"
@@ -4837,19 +4835,17 @@ const initLatestMessage = () => {
 
   const db = firebaseApp.firestore();
 
-  db.collection("admin_messages")
-    .orderBy("createdAt", "desc")
-    .limit(1)
+  db.collection(ADMIN_MESSAGES_COLLECTION)
+    .doc(ADMIN_MESSAGES_DOCUMENT)
     .onSnapshot(
       (snapshot) => {
-        if (snapshot.empty) {
+        if (!snapshot.exists) {
           output.value = "Brak wiadomości od administratora.";
           status.textContent = "";
           return;
         }
 
-        const doc = snapshot.docs[0];
-        const data = doc.data();
+        const data = snapshot.data();
         const message = typeof data.message === "string" ? data.message : "";
 
         output.value = message || "Brak wiadomości od administratora.";
