@@ -12,6 +12,7 @@ const PLAYER_ACCESS_COLLECTION = "app_settings";
 const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
 const RULES_DEFAULT_TEXT = "";
+const DEFAULT_GAME_NOTES_TEMPLATE = "Przewidywani gracze:\nRebuy:\nAddon:\nInne:";
 const AVAILABLE_PLAYER_TABS = [
   {
     key: "nextGameTab",
@@ -281,7 +282,8 @@ const getSummaryNotesModalController = (() => {
     const open = ({ gameId, gameName, notes, canWrite, onSave, triggerButton }) => {
       state.gameId = String(gameId ?? "");
       state.gameName = String(gameName ?? "Bez nazwy");
-      state.notes = typeof notes === "string" ? notes : "";
+      const normalizedNotes = typeof notes === "string" ? notes : "";
+      state.notes = normalizedNotes.trim() ? normalizedNotes : DEFAULT_GAME_NOTES_TEMPLATE;
       state.canWrite = Boolean(canWrite);
       state.onSave = typeof onSave === "function" ? onSave : null;
       state.triggerButton = triggerButton instanceof HTMLElement ? triggerButton : null;
@@ -325,7 +327,7 @@ const getSummaryNotesModalController = (() => {
     });
 
     clearButton.addEventListener("click", () => {
-      void persist("");
+      void persist(DEFAULT_GAME_NOTES_TEMPLATE);
     });
 
     closeButton.addEventListener("click", closeModal);
@@ -961,6 +963,7 @@ const initUserConfirmations = () => {
   }
 
   const db = firebaseApp.firestore();
+  const summaryNotesModal = getSummaryNotesModalController();
   const gamesCollectionName = getGamesCollectionName();
   const userGamesCollectionName = getUserGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
@@ -1071,7 +1074,22 @@ const initUserConfirmations = () => {
           tr.classList.remove("confirmed-row");
         });
 
-        actionsWrap.append(confirmButton, cancelButton);
+        const notesButton = document.createElement("button");
+        notesButton.type = "button";
+        notesButton.className = "secondary";
+        notesButton.textContent = "Notatki";
+        notesButton.addEventListener("click", () => {
+          summaryNotesModal.open({
+            gameId: game.id,
+            gameName: game.name || "Bez nazwy",
+            notes: typeof game.notes === "string" ? game.notes : "",
+            canWrite: false,
+            onSave: null,
+            triggerButton: notesButton
+          });
+        });
+
+        actionsWrap.append(confirmButton, cancelButton, notesButton);
         actionsCell.appendChild(actionsWrap);
         tr.append(gameTypeCell, dateCell, nameCell, actionsCell);
         body.appendChild(tr);
@@ -1614,7 +1632,27 @@ const initUserGamesManager = ({
         modal.setAttribute("aria-hidden", "false");
         document.body.classList.add("modal-open");
       });
-      nameWrap.append(nameInput, detailsButton);
+      const notesButton = document.createElement("button");
+      notesButton.type = "button";
+      notesButton.className = "secondary";
+      notesButton.textContent = "Notatki";
+      notesButton.addEventListener("click", () => {
+        summaryNotesModal.open({
+          gameId: game.id,
+          gameName: game.name || "Bez nazwy",
+          notes: typeof game.notes === "string" ? game.notes : "",
+          canWrite: canWrite(),
+          onSave: async ({ notes }) => {
+            await db.collection(gamesCollectionName).doc(game.id).update({ notes });
+            const target = state.games.find((entry) => entry.id === game.id);
+            if (target) {
+              target.notes = notes;
+            }
+          },
+          triggerButton: notesButton
+        });
+      });
+      nameWrap.append(nameInput, detailsButton, notesButton);
       nameCell.appendChild(nameWrap);
 
       const closedCell = document.createElement("td");
@@ -1837,6 +1875,7 @@ const initUserGamesManager = ({
         gameDate,
         name,
         isClosed: false,
+        notes: DEFAULT_GAME_NOTES_TEMPLATE,
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
         ...createGamePayload()
       });
@@ -3841,7 +3880,27 @@ const initAdminGames = () => {
       detailsButton.className = "secondary";
       detailsButton.textContent = "Szczegóły";
       detailsButton.addEventListener("click", () => openModal(game.id));
-      nameWrap.append(nameInput, detailsButton);
+      const notesButton = document.createElement("button");
+      notesButton.type = "button";
+      notesButton.className = "secondary";
+      notesButton.textContent = "Notatki";
+      notesButton.addEventListener("click", () => {
+        summaryNotesModal.open({
+          gameId: game.id,
+          gameName: game.name || "Bez nazwy",
+          notes: typeof game.notes === "string" ? game.notes : "",
+          canWrite: true,
+          onSave: async ({ notes }) => {
+            await db.collection(gamesCollectionName).doc(game.id).update({ notes });
+            const target = state.games.find((entry) => entry.id === game.id);
+            if (target) {
+              target.notes = notes;
+            }
+          },
+          triggerButton: notesButton
+        });
+      });
+      nameWrap.append(nameInput, detailsButton, notesButton);
       nameCell.appendChild(nameWrap);
 
       const closedCell = document.createElement("td");
@@ -4358,6 +4417,7 @@ const initAdminGames = () => {
         gameDate,
         name,
         isClosed: false,
+        notes: DEFAULT_GAME_NOTES_TEMPLATE,
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
       });
       status.textContent = `Dodano grę "${name}" z datą ${gameDate}.`;

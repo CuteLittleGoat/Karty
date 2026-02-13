@@ -368,3 +368,12 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
   - wcześniej: `% Wszystkich gier` potem `% Rozegranych gier`,
   - teraz: `% Rozegranych gier` potem `% Wszystkich gier`.
 - Nie dodano nowych klas CSS, fontów, kolorów ani tokenów spacing.
+
+## 18) Aktualizacja UI: funkcja „Notatki” w tabelach gier i potwierdzeniach
+- W kolumnie `Nazwa` (tabele `Gry admina` i `Gry użytkowników`) układ `.admin-games-name-control` pokazuje teraz trzy elementy w jednym wierszu:
+  - pole tekstowe nazwy,
+  - przycisk `Szczegóły` (`.secondary`),
+  - przycisk `Notatki` (`.secondary`).
+- Modal notatek (`#summaryNotesModal`) zachowuje dotychczasowy layout, ale czerwony przycisk akcji ma nową etykietę: `Domyślne` (`.danger`).
+- W zakładce gracza `Gry do potwierdzenia` w sekcji `.confirmations-actions` dodano trzeci przycisk `Notatki` (`.secondary`) obok `Potwierdź` (`.primary`) i `Anuluj` (`.danger`).
+- Nie wprowadzono nowych fontów, kolorów ani klas globalnych — użyto istniejącego systemu tokenów i komponentów przycisków.

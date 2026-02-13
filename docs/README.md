@@ -111,9 +111,13 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 1. W zakładce **„Gry admina”** wybierz rok po lewej stronie.
 2. Przejdź do karty **„Podsumowanie gry ...”** dla wybranej pozycji.
 3. W tej samej linii, przed tytułem **„Podsumowanie gry ...”**, kliknij przycisk **„Notatki”**.
-4. Otworzy się osobne okno z polem tekstowym.
-5. Wpisz notatkę i kliknij **„Zapisz”** — treść zostanie zapamiętana dla tej gry.
-6. Jeśli chcesz wyczyścić notatkę, kliknij **„Usuń”** (pole zostanie zapisane jako puste).
+4. Otworzy się okno notatek z przyciskami **„Zapisz”** i **„Domyślne”**.
+5. Przycisk **„Domyślne”** wstawia szablon:
+   - `Przewidywani gracze:`
+   - `Rebuy:`
+   - `Addon:`
+   - `Inne:`
+6. Wprowadź własny tekst i kliknij **„Zapisz”**.
 7. Zamknij okno przyciskiem `×`, kliknięciem poza oknem lub klawiszem `Esc`.
 
 ### Które pola wpisujesz ręcznie
@@ -184,6 +188,14 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 - Podsumowanie `+/-` per wiersz,
 - część pól podsumowań i sum.
 
+### Notatki przy tworzeniu/edycji gry (kolumna „Nazwa”)
+1. Wejdź do tabeli gier w zakładce **„Gry admina”** albo **„Gry użytkowników”**.
+2. W kolumnie **„Nazwa”** przy każdej grze są teraz dwa przyciski: **„Szczegóły”** i **„Notatki”**.
+3. Kliknij **„Notatki”**, aby otworzyć notatkę przypisaną do tej konkretnej gry.
+4. Dla nowo dodanej gry zobaczysz od razu domyślny szablon 4 linii.
+5. Edytuj treść i kliknij **„Zapisz”**.
+6. Jeśli chcesz wrócić do szablonu startowego, kliknij czerwony przycisk **„Domyślne”**.
+
 ### Podsumowanie gry — jak odczytać
 1. W zakładce **„Gry admina”** lub **„Gry użytkowników”** wybierz rok z lewego panelu.
 2. Kliknij grę, którą chcesz przeanalizować.
@@ -199,11 +211,17 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 1. Otwórz zakładkę **„Gry do potwierdzenia”**.
 2. Przejdź bramkę PIN (jeśli wymagana).
 3. Z listy wybierz pozycję oczekującą.
-4. Kliknij akcję potwierdzenia lub odrzucenia.
-5. Sprawdź status po wykonaniu akcji.
+4. Kliknij **„Potwierdź”** albo **„Anuluj”**.
+5. Sprawdź podświetlenie wiersza i status po wykonaniu akcji.
 
-**Edytowalne:** decyzja potwierdzenia/odrzucenia i ewentualny komentarz (jeśli pole jest dostępne).  
-**Nieedytowalne:** dane źródłowe gry zgłoszonej do akceptacji.
+### Podgląd notatek gry w „Gry do potwierdzenia”
+1. W tym samym wierszu kliknij **„Notatki”**.
+2. Otworzy się okno notatek w trybie tylko do odczytu.
+3. Możesz przeczytać wiadomość od osoby tworzącej grę.
+4. Nie możesz zapisać zmian z tego widoku (to podgląd).
+
+**Edytowalne:** decyzja potwierdzenia/odrzucenia.  
+**Nieedytowalne:** notatka gry i dane źródłowe gry zgłoszonej do akceptacji.
 
 ---
 

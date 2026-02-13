@@ -650,28 +650,41 @@ Skutek:
 - Dzięki temu obie tabele zawsze pokazują ten sam porządek danych, zgodnie z wymaganiem: od najwyższego `(+/-)` do najniższego.
 
 ### 16.2 Modal notatek „Podsumowanie gry”
-- Dodano globalny kontroler `getSummaryNotesModalController()` (singleton), który obsługuje:
-  - otwieranie modala z kontekstem konkretnej gry (`gameId`, `gameName`),
-  - ustawienie `textarea`,
-  - zapis (`Zapisz`) i czyszczenie (`Usuń`) notatki,
+- Wspólny kontroler `getSummaryNotesModalController()` (singleton) obsługuje:
+  - otwieranie modala z kontekstem (`gameId`, `gameName`),
+  - ustawianie wartości `textarea`,
+  - zapis (`Zapisz`) i przywracanie szablonu (`Domyślne`),
   - zamykanie (`×`, klik poza modalem, `Esc`).
-- Persistencja notatki: zapis do dokumentu gry w Firestore przez update pola `notes`.
-- Ten sam modal jest wykorzystywany przez:
-  - `initAdminGames()` (pełny zapis),
-  - `initUserGamesManager(...)` (zależnie od `canWrite`, czyli prawa edycji).
+- Dodano stałą `DEFAULT_GAME_NOTES_TEMPLATE`:
+  - `Przewidywani gracze:`
+  - `Rebuy:`
+  - `Addon:`
+  - `Inne:`
+- Gdy pole `notes` jest puste, modal automatycznie podstawia szablon domyślny.
+- Persistencja: update pola `notes` w dokumencie gry (`Tables`/`UserGames`).
+- Ten sam modal jest używany w 4 miejscach:
+  - podsumowanie gry (`initAdminGames()`),
+  - podsumowanie gry (`initUserGamesManager(...)`),
+  - tabela gier przy kolumnie `Nazwa` (`Gry admina` / `Gry użytkowników`),
+  - `initUserConfirmations()` w trybie read-only (`canWrite: false`).
 
 ### 16.3 Ochrona fokusu i UX
-- W celu uniknięcia problemu opisanego w analizie z folderu `Analizy` przyjęto model zapisu **na akcję przycisku** (`Zapisz`/`Usuń`), bez autozapisu podczas pisania.
-- Dodatkowo po zamknięciu modala fokus wraca do przycisku `Notatki`, który otworzył okno (`triggerButton.focus()`), co stabilizuje nawigację klawiaturą i zapobiega „gubieniu” aktywnego elementu.
+- Zachowano model zapisu wyłącznie po akcji użytkownika (`Zapisz`/`Domyślne`), bez autozapisu podczas pisania.
+- Dzięki temu nie występuje re-render wymuszany co znak i nie pojawia się regresja utraty fokusu.
+- Po zamknięciu modala fokus wraca do przycisku otwierającego (`triggerButton.focus()`).
 
 ### 16.4 Struktura HTML/CSS
-- `Main/index.html`: nowy modal `#summaryNotesModal` z:
+- `Main/index.html`: modal `#summaryNotesModal` zawiera:
   - `#summaryNotesInput` (`textarea`),
   - `#summaryNotesSave`, `#summaryNotesClear`, `#summaryNotesClose`,
   - `#summaryNotesStatus` (`aria-live`).
-- `Main/styles.css`: nowe klasy wizualne:
-  - `.admin-game-summary-heading` (przycisk + tytuł w jednej linii),
-  - `.admin-textarea` (+ styl `:focus`) dla pola notatek.
+- Etykieta czerwonego przycisku została zmieniona z `Usuń` na `Domyślne`.
+- `Main/styles.css`: wykorzystano istniejące klasy wizualne (`secondary`, `danger`, `.admin-textarea`, `.admin-game-summary-heading`) bez dodawania nowych tokenów kolorystycznych.
+
+### 16.5 Inicjalizacja notatek podczas dodawania gry
+- W obu miejscach tworzenia gry (`initAdminGames()` i `initUserGamesManager(...)`) nowy dokument gry otrzymuje od razu:
+  - `notes: DEFAULT_GAME_NOTES_TEMPLATE`.
+- Efekt: każda nowa gra ma gotową strukturę notatki niezależnie od tego, czy pierwszy raz otwieramy notatki z tabeli czy z podsumowania.
 
 
 ## 17. Zmiana logiki pól liczbowych w modalu „Szczegóły gry” (Wpisowe/Wypłata)
