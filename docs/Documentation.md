@@ -175,7 +175,7 @@ Poniżej zebrana jest pełna struktura kolekcji widoczna na dostarczonych zrzuta
       - `rows` (tablica pozycji graczy),
       - `visibleColumns` (tablica nazw kolumn widocznych dla użytkownika).
 
-## 3.7 Aktualne Firestore Rules (stan przekazany do dokumentacji)
+## 3.7 Aktualne Firestore Rules (zaktualizowany stan z Firebase)
 
 ```firestore
 rules_version = '2';
@@ -221,18 +221,26 @@ service cloud.firestore {
     match /chat_messages/{docId} {
       allow read, write: if true;
     }
+
+    // zapis statystyk rocznych (checkboxy kolumn)
+    match /admin_games_stats/{year} {
+      allow read, write: if true;
+    }
+
+    // kolekcja legacy/statyczna
+    match /players/{docId} {
+      allow read, write: if true;
+    }
   }
 }
 ```
 
-## 3.8 Luka konfiguracyjna wynikająca z porównania struktury i Rules
+## 3.8 Wpływ aktualizacji Rules na moduły aplikacji
 
-W aktualnych Rules brakuje jawnych reguł dla kolekcji:
-- `admin_games_stats` (zapisy checkboxów kolumn statystyk),
-- `players` (dokument statystyk legacy),
-- ewentualnych dodatkowych dokumentów konfiguracyjnych, jeżeli są używane poza `app_settings`.
-
-To powoduje, że moduły odwołujące się do tych kolekcji mogą dostawać `permission-denied` mimo poprawnej logiki frontendowej.
+Po dodaniu jawnych reguł dla kolekcji `admin_games_stats` i `players`:
+- moduł Statystyki może zapisywać konfigurację widocznych kolumn (`visibleColumns`) bez błędów `permission-denied`,
+- odczyt/zapis danych legacy w `players` pozostaje spójny z aktualnym schematem,
+- opis struktury Firestore i polityki dostępu w dokumentacji jest spójny.
 
 ---
 
