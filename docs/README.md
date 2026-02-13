@@ -107,18 +107,15 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 4. W modalu szczegółów zmieniaj wartości i zamknij okno przyciskiem `×`.
 
 
-### Podsumowanie gry — przycisk „Notatki”
+### Podsumowanie gry — przycisk „Notatki po grze”
 1. W zakładce **„Gry admina”** wybierz rok po lewej stronie.
 2. Przejdź do karty **„Podsumowanie gry ...”** dla wybranej pozycji.
-3. W tej samej linii, przed tytułem **„Podsumowanie gry ...”**, kliknij przycisk **„Notatki”**.
-4. Otworzy się okno notatek z przyciskami **„Zapisz”** i **„Domyślne”**.
-5. Przycisk **„Domyślne”** wstawia szablon:
-   - `Przewidywani gracze:`
-   - `Rebuy:`
-   - `Addon:`
-   - `Inne:`
-6. Wprowadź własny tekst i kliknij **„Zapisz”**.
+3. W tej samej linii, przed tytułem **„Podsumowanie gry ...”**, kliknij przycisk **„Notatki po grze”**.
+4. Otworzy się okno notatek z przyciskami **„Zapisz”** i **„Usuń”**.
+5. Wpisz treść podsumowania i kliknij **„Zapisz”**, aby zapisać notatkę po grze.
+6. Kliknij **„Usuń”**, aby całkowicie wyczyścić treść notatki po grze.
 7. Zamknij okno przyciskiem `×`, kliknięciem poza oknem lub klawiszem `Esc`.
+8. Jeżeli wcześniej była używana stara wersja przycisku „Notatki”, wpisz notatkę po grze ponownie w nowym przycisku **„Notatki po grze”**.
 
 ### Które pola wpisujesz ręcznie
 - Nazwa gracza,
@@ -190,11 +187,16 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 
 ### Notatki przy tworzeniu/edycji gry (kolumna „Nazwa”)
 1. Wejdź do tabeli gier w zakładce **„Gry admina”** albo **„Gry użytkowników”**.
-2. W kolumnie **„Nazwa”** przy każdej grze są teraz dwa przyciski: **„Szczegóły”** i **„Notatki”**.
-3. Kliknij **„Notatki”**, aby otworzyć notatkę przypisaną do tej konkretnej gry.
-4. Dla nowo dodanej gry zobaczysz od razu domyślny szablon 4 linii.
-5. Edytuj treść i kliknij **„Zapisz”**.
-6. Jeśli chcesz wrócić do szablonu startowego, kliknij czerwony przycisk **„Domyślne”**.
+2. W kolumnie **„Nazwa”** przy każdej grze są dwa przyciski: **„Szczegóły”** i **„Notatki do gry”**.
+3. Kliknij **„Notatki do gry”**, aby otworzyć notatkę planistyczną dla danej gry.
+4. Dla nowo dodanej gry zobaczysz domyślny szablon:
+   - `Przewidywani gracze:`
+   - `Rebuy:`
+   - `Addon:`
+   - `Inne:`
+5. Możesz dowolnie edytować treść (w tym usunąć cały szablon) i kliknąć **„Zapisz”**.
+6. Kliknij **„Domyślne”**, aby przywrócić powyższy szablon.
+7. Po aktualizacji systemu starsze testowe treści ze starego przycisku „Notatki” nie są już wyświetlane — wypełnij notatki ponownie w nowym przycisku **„Notatki do gry”**.
 
 ### Podsumowanie gry — jak odczytać
 1. W zakładce **„Gry admina”** lub **„Gry użytkowników”** wybierz rok z lewego panelu.
@@ -215,9 +217,9 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 5. Sprawdź podświetlenie wiersza i status po wykonaniu akcji.
 
 ### Podgląd notatek gry w „Gry do potwierdzenia”
-1. W tym samym wierszu kliknij **„Notatki”**.
+1. W tym samym wierszu kliknij **„Notatki do gry”**.
 2. Otworzy się okno notatek w trybie tylko do odczytu.
-3. Możesz przeczytać wiadomość od osoby tworzącej grę.
+3. Możesz przeczytać treść przygotowaną wcześniej w przycisku **„Notatki do gry”** przez osobę tworzącą grę.
 4. Nie możesz zapisać zmian z tego widoku (to podgląd).
 
 **Edytowalne:** decyzja potwierdzenia/odrzucenia.  

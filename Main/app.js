@@ -13,6 +13,32 @@ const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
 const RULES_DEFAULT_TEXT = "";
 const DEFAULT_GAME_NOTES_TEMPLATE = "Przewidywani gracze:\nRebuy:\nAddon:\nInne:";
+
+const getPreGameNotes = (game) => {
+  if (typeof game?.preGameNotes === "string") {
+    return game.preGameNotes;
+  }
+  return "";
+};
+
+const getPostGameNotes = (game) => {
+  if (typeof game?.postGameNotes === "string") {
+    return game.postGameNotes;
+  }
+  return "";
+};
+
+const removeLegacyNotesField = async (db, collectionName, gameId, fieldValueDelete) => {
+  if (!collectionName || !gameId || !fieldValueDelete) {
+    return;
+  }
+  try {
+    await db.collection(collectionName).doc(gameId).update({ notes: fieldValueDelete });
+  } catch (error) {
+    // ignorujemy błędy cleanupu legacy pola
+  }
+};
+
 const AVAILABLE_PLAYER_TABS = [
   {
     key: "nextGameTab",
@@ -264,9 +290,14 @@ const getSummaryNotesModalController = (() => {
       gameId: "",
       gameName: "",
       notes: "",
+      notesLabel: "Notatki",
       canWrite: false,
       onSave: null,
-      triggerButton: null
+      triggerButton: null,
+      clearButtonLabel: "Usuń",
+      clearToDefault: false,
+      readOnlyMessage: "Brak uprawnień do edycji notatek.",
+      textareaPlaceholder: "Wpisz notatki..."
     };
 
     const closeModal = () => {
@@ -279,21 +310,40 @@ const getSummaryNotesModalController = (() => {
       state.triggerButton = null;
     };
 
-    const open = ({ gameId, gameName, notes, canWrite, onSave, triggerButton }) => {
+    const open = ({
+      gameId,
+      gameName,
+      notes,
+      canWrite,
+      onSave,
+      triggerButton,
+      notesLabel,
+      clearButtonLabel,
+      clearToDefault,
+      readOnlyMessage,
+      textareaPlaceholder
+    }) => {
       state.gameId = String(gameId ?? "");
       state.gameName = String(gameName ?? "Bez nazwy");
       const normalizedNotes = typeof notes === "string" ? notes : "";
-      state.notes = normalizedNotes.trim() ? normalizedNotes : DEFAULT_GAME_NOTES_TEMPLATE;
+      state.notes = normalizedNotes;
+      state.notesLabel = String(notesLabel ?? "Notatki");
       state.canWrite = Boolean(canWrite);
       state.onSave = typeof onSave === "function" ? onSave : null;
       state.triggerButton = triggerButton instanceof HTMLElement ? triggerButton : null;
+      state.clearButtonLabel = String(clearButtonLabel ?? "Usuń");
+      state.clearToDefault = Boolean(clearToDefault);
+      state.readOnlyMessage = String(readOnlyMessage ?? "Brak uprawnień do edycji notatek.");
+      state.textareaPlaceholder = String(textareaPlaceholder ?? "Wpisz notatki...");
 
-      title.textContent = `Notatki: ${state.gameName}`;
+      title.textContent = `${state.notesLabel}: ${state.gameName}`;
       textarea.value = state.notes;
+      textarea.placeholder = state.textareaPlaceholder;
       textarea.disabled = !state.canWrite;
       saveButton.disabled = !state.canWrite;
       clearButton.disabled = !state.canWrite;
-      status.textContent = state.canWrite ? "" : "Brak uprawnień do edycji notatek.";
+      clearButton.textContent = state.clearButtonLabel;
+      status.textContent = state.canWrite ? "" : state.readOnlyMessage;
 
       modal.classList.add("is-visible");
       modal.setAttribute("aria-hidden", "false");
@@ -327,7 +377,8 @@ const getSummaryNotesModalController = (() => {
     });
 
     clearButton.addEventListener("click", () => {
-      void persist(DEFAULT_GAME_NOTES_TEMPLATE);
+      const nextValue = state.clearToDefault ? DEFAULT_GAME_NOTES_TEMPLATE : "";
+      void persist(nextValue);
     });
 
     closeButton.addEventListener("click", closeModal);
@@ -1026,6 +1077,9 @@ const initUserConfirmations = () => {
       }
 
       visibleGames.forEach(({ collectionName, game, confirmation }) => {
+        if (Object.prototype.hasOwnProperty.call(game ?? {}, "notes")) {
+          void removeLegacyNotesField(db, collectionName, game.id, firebaseApp.firestore.FieldValue.delete());
+        }
         const tr = document.createElement("tr");
         if (confirmation?.confirmed) {
           tr.classList.add("confirmed-row");
@@ -1077,14 +1131,18 @@ const initUserConfirmations = () => {
         const notesButton = document.createElement("button");
         notesButton.type = "button";
         notesButton.className = "secondary";
-        notesButton.textContent = "Notatki";
+        notesButton.textContent = "Notatki do gry";
         notesButton.addEventListener("click", () => {
           summaryNotesModal.open({
             gameId: game.id,
             gameName: game.name || "Bez nazwy",
-            notes: typeof game.notes === "string" ? game.notes : "",
+            notes: getPreGameNotes(game),
             canWrite: false,
             onSave: null,
+            notesLabel: "Notatki do gry",
+            clearButtonLabel: "Domyślne",
+            clearToDefault: true,
+            readOnlyMessage: "Podgląd notatek do gry (tylko odczyt).",
             triggerButton: notesButton
           });
         });
@@ -1439,20 +1497,24 @@ const initUserGamesManager = ({
       const notesButton = document.createElement("button");
       notesButton.type = "button";
       notesButton.className = "secondary";
-      notesButton.textContent = "Notatki";
+      notesButton.textContent = "Notatki po grze";
       notesButton.addEventListener("click", () => {
         summaryNotesModal.open({
           gameId: game.id,
           gameName: game.name || "Bez nazwy",
-          notes: typeof game.notes === "string" ? game.notes : "",
+          notes: getPostGameNotes(game),
           canWrite: canWrite(),
           onSave: async ({ notes }) => {
-            await db.collection(gamesCollectionName).doc(game.id).update({ notes });
+            await db.collection(gamesCollectionName).doc(game.id).update({ postGameNotes: notes, notes: firebaseApp.firestore.FieldValue.delete() });
             const target = state.games.find((entry) => entry.id === game.id);
             if (target) {
-              target.notes = notes;
+              target.postGameNotes = notes;
             }
           },
+          notesLabel: "Notatki po grze",
+          clearButtonLabel: "Usuń",
+          clearToDefault: false,
+          textareaPlaceholder: "Wpisz notatki po grze...",
           triggerButton: notesButton
         });
       });
@@ -1637,20 +1699,24 @@ const initUserGamesManager = ({
       const notesButton = document.createElement("button");
       notesButton.type = "button";
       notesButton.className = "secondary";
-      notesButton.textContent = "Notatki";
+      notesButton.textContent = "Notatki do gry";
       notesButton.addEventListener("click", () => {
         summaryNotesModal.open({
           gameId: game.id,
           gameName: game.name || "Bez nazwy",
-          notes: typeof game.notes === "string" ? game.notes : "",
+          notes: getPreGameNotes(game),
           canWrite: canWrite(),
           onSave: async ({ notes }) => {
-            await db.collection(gamesCollectionName).doc(game.id).update({ notes });
+            await db.collection(gamesCollectionName).doc(game.id).update({ preGameNotes: notes, notes: firebaseApp.firestore.FieldValue.delete() });
             const target = state.games.find((entry) => entry.id === game.id);
             if (target) {
-              target.notes = notes;
+              target.preGameNotes = notes;
             }
           },
+          notesLabel: "Notatki do gry",
+          clearButtonLabel: "Domyślne",
+          clearToDefault: true,
+          textareaPlaceholder: "Wpisz notatki do gry...",
           triggerButton: notesButton
         });
       });
@@ -1834,6 +1900,11 @@ const initUserGamesManager = ({
   });
 
   db.collection(gamesCollectionName).orderBy("createdAt", "asc").onSnapshot((snapshot) => {
+    snapshot.docs.forEach((doc) => {
+      if (Object.prototype.hasOwnProperty.call(doc.data() ?? {}, "notes")) {
+        void removeLegacyNotesField(db, gamesCollectionName, doc.id, firebaseApp.firestore.FieldValue.delete());
+      }
+    });
     state.games = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
     const activeIds = new Set(state.games.map((game) => game.id));
@@ -1877,7 +1948,8 @@ const initUserGamesManager = ({
         gameDate,
         name,
         isClosed: false,
-        notes: DEFAULT_GAME_NOTES_TEMPLATE,
+        preGameNotes: DEFAULT_GAME_NOTES_TEMPLATE,
+        postGameNotes: "",
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
         ...createGamePayload()
       });
@@ -4072,20 +4144,24 @@ const initAdminGames = () => {
       const notesButton = document.createElement("button");
       notesButton.type = "button";
       notesButton.className = "secondary";
-      notesButton.textContent = "Notatki";
+      notesButton.textContent = "Notatki do gry";
       notesButton.addEventListener("click", () => {
         summaryNotesModal.open({
           gameId: game.id,
           gameName: game.name || "Bez nazwy",
-          notes: typeof game.notes === "string" ? game.notes : "",
+          notes: getPreGameNotes(game),
           canWrite: true,
           onSave: async ({ notes }) => {
-            await db.collection(gamesCollectionName).doc(game.id).update({ notes });
+            await db.collection(gamesCollectionName).doc(game.id).update({ preGameNotes: notes, notes: firebaseApp.firestore.FieldValue.delete() });
             const target = state.games.find((entry) => entry.id === game.id);
             if (target) {
-              target.notes = notes;
+              target.preGameNotes = notes;
             }
           },
+          notesLabel: "Notatki do gry",
+          clearButtonLabel: "Domyślne",
+          clearToDefault: true,
+          textareaPlaceholder: "Wpisz notatki do gry...",
           triggerButton: notesButton
         });
       });
@@ -4147,20 +4223,24 @@ const initAdminGames = () => {
       const notesButton = document.createElement("button");
       notesButton.type = "button";
       notesButton.className = "secondary";
-      notesButton.textContent = "Notatki";
+      notesButton.textContent = "Notatki po grze";
       notesButton.addEventListener("click", () => {
         summaryNotesModal.open({
           gameId: game.id,
           gameName: game.name || "Bez nazwy",
-          notes: typeof game.notes === "string" ? game.notes : "",
+          notes: getPostGameNotes(game),
           canWrite: true,
           onSave: async ({ notes }) => {
-            await db.collection(gamesCollectionName).doc(game.id).update({ notes });
+            await db.collection(gamesCollectionName).doc(game.id).update({ postGameNotes: notes, notes: firebaseApp.firestore.FieldValue.delete() });
             const target = state.games.find((entry) => entry.id === game.id);
             if (target) {
-              target.notes = notes;
+              target.postGameNotes = notes;
             }
           },
+          notesLabel: "Notatki po grze",
+          clearButtonLabel: "Usuń",
+          clearToDefault: false,
+          textareaPlaceholder: "Wpisz notatki po grze...",
           triggerButton: notesButton
         });
       });
@@ -4566,6 +4646,11 @@ const initAdminGames = () => {
   db.collection(gamesCollectionName)
     .orderBy("createdAt", "asc")
     .onSnapshot((snapshot) => {
+      snapshot.docs.forEach((doc) => {
+        if (Object.prototype.hasOwnProperty.call(doc.data() ?? {}, "notes")) {
+          void removeLegacyNotesField(db, gamesCollectionName, doc.id, firebaseApp.firestore.FieldValue.delete());
+        }
+      });
       state.games = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 
       const activeIds = new Set(state.games.map((game) => game.id));
@@ -4606,7 +4691,8 @@ const initAdminGames = () => {
         gameDate,
         name,
         isClosed: false,
-        notes: DEFAULT_GAME_NOTES_TEMPLATE,
+        preGameNotes: DEFAULT_GAME_NOTES_TEMPLATE,
+        postGameNotes: "",
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
       });
       status.textContent = `Dodano grę "${name}" z datą ${gameDate}.`;
