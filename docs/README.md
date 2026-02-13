@@ -664,3 +664,28 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 ### 26.3 Ważna uwaga praktyczna
 - To, że gracz widnieje na liście uczestników gry, nie wystarcza już do tych dwóch kolumn.
 - Decyduje wyłącznie to, czy pole **Wpisowe** jest uzupełnione w **Szczegóły gry**.
+
+## 16. Ranking roczny w zakładce „Statystyki” (nowy panel po prawej)
+
+### 16.1 Gdzie znaleźć ranking
+1. Wejdź w **Statystyki** (admin: zakładka panelu administratora, użytkownik: zakładka strefy gracza po PIN).
+2. Po lewej kliknij wybrany rok na liście **Lata**.
+3. Po prawej stronie widoku zobaczysz tabelę **Ranking** z kolumnami:
+   - **Miejsce**,
+   - **Gracz**,
+   - **Wynik**.
+
+### 16.2 Jak działa zależność od roku
+1. Kliknij rok `R1` — ranking po prawej przelicza się dla `R1`.
+2. Kliknij inny rok `R2` — ranking natychmiast zmienia się na dane z `R2`.
+3. Jeśli dla roku nie ma danych, w tabeli rankingu pojawi się komunikat o braku danych rankingowych.
+
+### 16.3 Spójność z „Gry admina”
+- Ranking w **Statystyki** jest liczony tak samo jak ranking w **Gry admina**.
+- To oznacza, że po wybraniu tego samego roku kolejność graczy i wartości **Wynik** są zgodne w obu miejscach.
+
+### 16.4 Ograniczenia widoku użytkownika (Uprawnienia → Gracze)
+1. Administrator otwiera **Panel Administratora → Gracze**.
+2. W kolumnie **Uprawnienia** dla gracza ustawia dostępne lata statystyk.
+3. Użytkownik po wejściu do **Statystyki** zobaczy tylko lata, do których ma dostęp.
+4. Ranking po prawej wyświetla wyłącznie dane dla aktualnie klikniętego, dozwolonego roku.

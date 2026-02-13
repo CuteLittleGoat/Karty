@@ -1148,3 +1148,35 @@ Pozostałe agregaty (`pointsSum`, `plusMinusSum`, `payoutSum`, `depositsSum`) po
 - `Ilość Spotkań` odzwierciedla wyłącznie gry z uzupełnionym `Wpisowe` dla danego gracza.
 - `Suma z rozegranych gier` dodaje `Pula` tylko z gier spełniających powyższy warunek.
 - Tabele w **Gry admina** i **Statystyki** pozostają spójne, bo korzystają z tej samej logiki obliczeń.
+
+## 24. Statystyki: roczny ranking po prawej stronie + wspólna logika z „Gry admina”
+
+### 24.1 Zmiany w HTML (`Main/index.html`)
+- W `#adminStatisticsTab` dodano prawy sidebar rankingu (`.admin-games-ranking-sidebar`) z tabelą `#adminStatisticsRankingBody`.
+- W `#statsTab` (widok użytkownika) dodano analogiczny prawy sidebar z tabelą `#statisticsRankingBody`.
+- Obie tabele używają tego samego układu kolumn: `Miejsce`, `Gracz`, `Wynik`.
+
+### 24.2 Ujednolicenie logiki obliczeń (`Main/app.js`)
+Wprowadzono współdzielone funkcje używane przez oba moduły (Statystyki i Gry admina):
+- `getDefaultStatsManualFieldValue(...)` — domyślne wartości wag (`1`) i normalizacja ręcznych pól.
+- `getComputedStatsResultValue(...)` — wspólny wzór na pole `Wynik`.
+- `sortRankingRowsByResult(...)` — jednolite sortowanie rankingu (malejąco po wyniku, potem alfabetycznie po graczu).
+- `buildRankingRowsFromStatistics(...)` — budowanie listy rankingowej z tych samych statystyk i tych samych wag rocznych.
+- `renderRankingTable(...)` — wspólny renderer tabeli rankingu z tym samym kolorowaniem stref miejsc.
+
+Efekt: dane i kolejność rankingu są spójne pomiędzy zakładkami **Statystyki** i **Gry admina**.
+
+### 24.3 Powiązanie rankingu z rokiem
+- `initStatisticsView(...)` przyjmuje teraz `rankingBodySelector` i renderuje ranking dla aktualnie wybranego roku (`state.selectedYear`).
+- Po każdej zmianie roku, danych gier, szczegółów wierszy i wag ranking jest przeliczany ponownie dla tego samego roku.
+
+### 24.4 Ograniczenia lat po stronie użytkownika
+- Widok użytkownika nadal korzysta z filtracji lat przez uprawnienia gracza (`statsYearsAccess` mapowane z kolumny Uprawnienia w module Gracze).
+- Ranking użytkownika jest renderowany wyłącznie dla lat widocznych/dostępnych w tym widoku.
+
+### 24.5 Backend i źródło danych
+- Ranking pobiera dane wejściowe z tych samych źródeł co statystyki i „Gry admina”:
+  - kolekcja gier (`Tables` / kolekcja skonfigurowana),
+  - podkolekcja `rows` z danymi graczy,
+  - kolekcja `admin_games_stats` (wagi ręczne `weight1..weight7` na dokument roku).
+- Dzięki temu nie powstaje osobna, niezależna ścieżka obliczeń rankingu.
