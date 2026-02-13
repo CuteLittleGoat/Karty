@@ -398,3 +398,12 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 ### 23.2 Badge uprawnienia „Statystyki”
 - W tabeli graczy badge `Statystyki` pokazuje licznik lat (np. `Statystyki (2 lat)`).
 - Nie wprowadzono nowej klasy badge — wykorzystano istniejący styl `.permission-badge`.
+
+## 19) Aktualizacja UI 2026-02-13 — rozdzielenie „Notatki do gry” i „Notatki po grze”
+
+- W sekcji tabel gier (kolumna `Nazwa`) przycisk pomocniczy `.secondary` ma etykietę **`Notatki do gry`**.
+- W sekcji nagłówka `Podsumowanie gry ...` przycisk pomocniczy `.secondary` ma etykietę **`Notatki po grze`**.
+- Modal `#summaryNotesModal` zachowuje ten sam layout i style, ale czerwony przycisk `.danger` działa kontekstowo:
+  - **Notatki do gry** → etykieta `Domyślne`,
+  - **Notatki po grze** → etykieta `Usuń`.
+- W widoku `Gry do potwierdzenia` trzeci przycisk w `.confirmations-actions` ma etykietę **`Notatki do gry`** i otwiera modal tylko do odczytu.
