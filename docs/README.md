@@ -571,3 +571,25 @@ Przykład:
 - Przycisk **Lata** jest aktywny tylko wtedy, gdy uprawnienie **Statystyki** jest zaznaczone.
 - Po odznaczeniu uprawnienia **Statystyki** lista przypisanych lat jest czyszczona.
 - Eksport XLSX w zakładce gracza działa tylko dla aktualnie dostępnego (dozwolonego) roku.
+
+## 24. Aktualizacja 2026-02-13 — przyciski Waga1..Waga7 w zakładce „Statystyki”
+
+### 24.1 Problem, który został usunięty
+1. Wejdź do **Panel administratora**.
+2. Otwórz zakładkę **Statystyki**.
+3. Kliknij dowolny przycisk nagłówka: **Waga1**, **Waga2**, ..., **Waga7**.
+
+Przed poprawką pojawiały się dwa okna jedno po drugim:
+- pierwsze okno do wpisania wartości,
+- a po zatwierdzeniu/albo anulowaniu od razu drugie okno.
+
+### 24.2 Jak działa teraz (krok po kroku)
+1. Wejdź do **Panel administratora** → **Statystyki**.
+2. Wybierz rok z listy po lewej stronie.
+3. W tabeli graczy kliknij przycisk **Waga1** (analogicznie działa **Waga2..Waga7**).
+4. Wpisz wartość i kliknij **OK** (lub **Anuluj**).
+
+Efekt po poprawce UI:
+- pojawia się tylko **jedno** okno prompt na jedno kliknięcie,
+- nie pojawia się drugie, powielone okno,
+- zachowanie w zakładce **Gry admina** pozostało bez zmian (nadal jedno okno na kliknięcie).
