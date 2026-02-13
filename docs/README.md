@@ -195,6 +195,7 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
    - `Inne:`
 5. Możesz dowolnie edytować treść (w tym usunąć cały szablon) i kliknąć **„Zapisz”**.
 6. Kliknij **„Domyślne”**, aby przywrócić powyższy szablon.
+7. Po kliknięciu **„Zapisz”** treść notatki jest zapisywana tylko jako aktualny typ notatki (do gry), bez łączenia ze starym typem notatek.
 
 ### Podsumowanie gry — jak odczytać
 1. W zakładce **„Gry admina”** lub **„Gry użytkowników”** wybierz rok z lewego panelu.

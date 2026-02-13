@@ -1017,7 +1017,7 @@ Brak nowej kolekcji i brak migracji krytycznej:
 - Zastosowano dwa niezależne pola dokumentu gry:
   - `preGameNotes` — notatki planistyczne,
   - `postGameNotes` — notatki po zakończeniu gry.
-- Dla kompatybilności zachowano fallback odczytu `preGameNotes` do legacy pola `notes`.
+- Usunięto fallback do legacy pola `notes` — odczyt działa wyłącznie na `preGameNotes` oraz `postGameNotes`.
 - Nowo dodawana gra otrzymuje:
   - `preGameNotes: DEFAULT_GAME_NOTES_TEMPLATE`,
   - `postGameNotes: ""`.
@@ -1041,5 +1041,6 @@ Brak nowej kolekcji i brak migracji krytycznej:
   - odczytuje notatki „do gry” bez możliwości edycji.
 
 ### 24.5 Firebase / Firestore Rules
-- Aktualne Rules (`allow read, write: if true;` dla `Tables` i `UserGames`) obejmują zapis i odczyt nowych pól `preGameNotes` i `postGameNotes`.
+- Aktualne Rules (`allow read, write: if true;` dla `Tables` i `UserGames`) obejmują zapis i odczyt pól `preGameNotes` i `postGameNotes`.
+- Przy każdym zapisie notatek aplikacja usuwa legacy pole `notes` (`FieldValue.delete()`), a dodatkowo uruchamia automatyczne czyszczenie `notes` po wykryciu tego pola w snapshotach list gier.
 - Wniosek: **nie jest wymagana nowa konfiguracja Firebase ani zmiana Rules** do wdrożenia tej funkcji.

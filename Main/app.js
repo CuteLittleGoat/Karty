@@ -18,9 +18,6 @@ const getPreGameNotes = (game) => {
   if (typeof game?.preGameNotes === "string") {
     return game.preGameNotes;
   }
-  if (typeof game?.notes === "string") {
-    return game.notes;
-  }
   return "";
 };
 
@@ -29,6 +26,29 @@ const getPostGameNotes = (game) => {
     return game.postGameNotes;
   }
   return "";
+};
+
+const legacyNotesCleanupInProgress = new Set();
+
+const clearLegacyNotesField = async ({ firebaseApp, db, collectionName, game }) => {
+  const hasLegacyNotes = Object.prototype.hasOwnProperty.call(game ?? {}, "notes");
+  if (!hasLegacyNotes || !game?.id) {
+    return;
+  }
+
+  const cleanupKey = `${collectionName}:${game.id}`;
+  if (legacyNotesCleanupInProgress.has(cleanupKey)) {
+    return;
+  }
+
+  legacyNotesCleanupInProgress.add(cleanupKey);
+  try {
+    await db.collection(collectionName).doc(game.id).update({
+      notes: firebaseApp.firestore.FieldValue.delete()
+    });
+  } catch (error) {
+    legacyNotesCleanupInProgress.delete(cleanupKey);
+  }
 };
 const AVAILABLE_PLAYER_TABS = [
   {
@@ -1493,7 +1513,10 @@ const initUserGamesManager = ({
           notes: getPostGameNotes(game),
           canWrite: canWrite(),
           onSave: async ({ notes }) => {
-            await db.collection(gamesCollectionName).doc(game.id).update({ postGameNotes: notes });
+            await db.collection(gamesCollectionName).doc(game.id).update({
+              postGameNotes: notes,
+              notes: firebaseApp.firestore.FieldValue.delete()
+            });
             const target = state.games.find((entry) => entry.id === game.id);
             if (target) {
               target.postGameNotes = notes;
@@ -1695,7 +1718,10 @@ const initUserGamesManager = ({
           notes: getPreGameNotes(game),
           canWrite: canWrite(),
           onSave: async ({ notes }) => {
-            await db.collection(gamesCollectionName).doc(game.id).update({ preGameNotes: notes });
+            await db.collection(gamesCollectionName).doc(game.id).update({
+              preGameNotes: notes,
+              notes: firebaseApp.firestore.FieldValue.delete()
+            });
             const target = state.games.find((entry) => entry.id === game.id);
             if (target) {
               target.preGameNotes = notes;
@@ -1889,6 +1915,9 @@ const initUserGamesManager = ({
 
   db.collection(gamesCollectionName).orderBy("createdAt", "asc").onSnapshot((snapshot) => {
     state.games = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    state.games.forEach((game) => {
+      void clearLegacyNotesField({ firebaseApp, db, collectionName: gamesCollectionName, game });
+    });
 
     const activeIds = new Set(state.games.map((game) => game.id));
     state.detailsUnsubscribers.forEach((unsubscribe, gameId) => {
@@ -3528,6 +3557,9 @@ const initStatisticsView = ({
 
   db.collection(gamesCollectionName).orderBy("createdAt", "asc").onSnapshot((snapshot) => {
     state.games = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    state.games.forEach((game) => {
+      void clearLegacyNotesField({ firebaseApp, db, collectionName: gamesCollectionName, game });
+    });
     const activeIds = new Set(state.games.map((game) => game.id));
 
     state.detailUnsubscribers.forEach((unsubscribe, gameId) => {
@@ -4135,7 +4167,10 @@ const initAdminGames = () => {
           notes: getPreGameNotes(game),
           canWrite: true,
           onSave: async ({ notes }) => {
-            await db.collection(gamesCollectionName).doc(game.id).update({ preGameNotes: notes });
+            await db.collection(gamesCollectionName).doc(game.id).update({
+              preGameNotes: notes,
+              notes: firebaseApp.firestore.FieldValue.delete()
+            });
             const target = state.games.find((entry) => entry.id === game.id);
             if (target) {
               target.preGameNotes = notes;
@@ -4214,7 +4249,10 @@ const initAdminGames = () => {
           notes: getPostGameNotes(game),
           canWrite: true,
           onSave: async ({ notes }) => {
-            await db.collection(gamesCollectionName).doc(game.id).update({ postGameNotes: notes });
+            await db.collection(gamesCollectionName).doc(game.id).update({
+              postGameNotes: notes,
+              notes: firebaseApp.firestore.FieldValue.delete()
+            });
             const target = state.games.find((entry) => entry.id === game.id);
             if (target) {
               target.postGameNotes = notes;
@@ -4630,6 +4668,9 @@ const initAdminGames = () => {
     .orderBy("createdAt", "asc")
     .onSnapshot((snapshot) => {
       state.games = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      state.games.forEach((game) => {
+        void clearLegacyNotesField({ firebaseApp, db, collectionName: gamesCollectionName, game });
+      });
 
       const activeIds = new Set(state.games.map((game) => game.id));
       state.detailsUnsubscribers.forEach((unsubscribe, gameId) => {
