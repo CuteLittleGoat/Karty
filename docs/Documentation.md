@@ -1044,3 +1044,27 @@ Brak nowej kolekcji i brak migracji krytycznej:
 - Aktualne Rules (`allow read, write: if true;` dla `Tables` i `UserGames`) obejmują zapis i odczyt pól `preGameNotes` i `postGameNotes`.
 - Przy każdym zapisie notatek aplikacja usuwa legacy pole `notes` (`FieldValue.delete()`), a dodatkowo uruchamia automatyczne czyszczenie `notes` po wykryciu tego pola w snapshotach list gier.
 - Wniosek: **nie jest wymagana nowa konfiguracja Firebase ani zmiana Rules** do wdrożenia tej funkcji.
+
+## Aktualizacja techniczna 2026-02-13 — eliminacja podwójnego promptu wag w „Statystyki”
+
+### Zakres zmian
+Modyfikacja została wykonana w `Main/app.js`, w module `initAdminGames()`.
+
+### Przyczyna błędu
+- W `initAdminGames()` selektor przycisków wag był globalny: `.admin-weight-bulk-button`.
+- Ta klasa występuje zarówno w tabeli:
+  - **Gry admina → Statystyki**,
+  - jak i **Statystyki** (zakładka administracyjna).
+- Dodatkowo `initStatisticsView({... isAdminView: true ...})` rejestrował własne nasłuchiwanie kliknięcia dla przycisków wag w zakładce **Statystyki**.
+- Skutek: kliknięcie przycisku `Waga1..Waga7` w zakładce **Statystyki** uruchamiało dwa handlery i dwa kolejne `window.prompt(...)`.
+
+### Implementacja poprawki
+- W `initAdminGames()` pobierana jest referencja do tabeli sekcji **Gry admina** przez:
+  - `playersStatsBody.closest("table")`.
+- Lista przycisków wag jest od teraz tworzona wyłącznie w obrębie tej tabeli:
+  - `adminGamesPlayersStatsTable?.querySelectorAll(".admin-weight-bulk-button") ?? []`.
+
+### Efekt funkcjonalny
+- Przycisk `Waga1..Waga7` w zakładce **Statystyki** ma już tylko jeden aktywny handler (ten z `initStatisticsView`).
+- Jedno kliknięcie powoduje jedno wywołanie `window.prompt(...)`.
+- Zachowanie przycisków `Waga1..Waga7` w **Gry admina** pozostaje niezmienione.

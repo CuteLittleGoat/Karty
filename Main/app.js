@@ -3756,7 +3756,8 @@ const initAdminGames = () => {
   const gameDetailsCollectionName = getGameDetailsCollectionName();
   const manualStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
   const weightStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
-  const weightHeaderButtons = Array.from(document.querySelectorAll(".admin-weight-bulk-button"));
+  const adminGamesPlayersStatsTable = playersStatsBody.closest("table");
+  const weightHeaderButtons = Array.from(adminGamesPlayersStatsTable?.querySelectorAll(".admin-weight-bulk-button") ?? []);
 
   const state = {
     years: [],
