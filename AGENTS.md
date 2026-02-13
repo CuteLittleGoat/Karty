@@ -13,3 +13,4 @@
 13. Jeżeli zapisujesz plik z wynikami analizy to w pliku uwzględnij prompt użytkownika, żeby zachować kontekst zapisanych odpowiedzi
 14. Folderu Analizy nie uwzględniaj w żadnych dokumentacjach i instrukcjach
 15. Ignoruj zawartość folderu MigracjaAndroid
+16. W plikach docs/Documentation.md, Kolumny.md, DetaleLayoutu.md nie przechowuj archiwalnych informacji. Mają tam być tylko aktualne informacje a nie historia zmian.
