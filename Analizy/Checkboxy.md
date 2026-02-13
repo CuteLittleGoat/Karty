@@ -94,3 +94,92 @@ To poprawi UX i debugowanie, ale **nie zastąpi korekty reguł Firestore**.
 - ✅ Wdrożone poprawki logiki checkboxów są w kodzie i działają (domyślne ukrycie wag + poprawny render user view).
 - ⚠️ Aktualny problem dotyczy warstwy zapisu do Firestore, nie samej funkcji ukrywania kolumn.
 - ✅ Docelowa naprawa: **aktualizacja konfiguracji Firebase (Firestore Rules) + drobne ulepszenie komunikatów błędów w kodzie**.
+
+---
+
+## 6. Co dokładnie zmienić w Firebase (krok po kroku)
+
+Poniżej jest gotowa instrukcja „co kliknąć i co wkleić”, żeby usunąć błąd zapisu checkboxów.
+
+### 6.1 Firestore Database → Rules
+1. Wejdź w **Firebase Console** → **Firestore Database** → zakładka **Rules**.
+2. Zastąp aktualną zawartość reguł poniższą wersją (minimalna poprawka pod obecną strukturę kolekcji):
+
+```firestore
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /admin_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    match /app_settings/{docId} {
+      allow read, write: if true;
+    }
+
+    match /Tables/{tableId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /UserGames/{gameId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /Collection1/{docId} {
+      allow read, write: if true;
+    }
+
+    match /chat_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    // DODAJ: zapis statystyk rocznych (tu zapisują się checkboxy kolumn)
+    match /admin_games_stats/{year} {
+      allow read, write: if true;
+    }
+
+    // DODAJ: kolekcja legacy/statyczna ze screenów
+    match /players/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+3. Kliknij **Publish**.
+
+### 6.2 Weryfikacja po publikacji Rules
+1. Otwórz aplikację i przejdź: **Panel Admina → Statystyki**.
+2. Zmień stan dowolnego checkboxa kolumny (zaznacz/odznacz).
+3. Sprawdź, czy komunikat błędu już się nie pojawia.
+4. W Firebase sprawdź dokument `admin_games_stats/{rok}`:
+   - pole `visibleColumns` powinno zmieniać się po kliknięciu checkboxa.
+
+### 6.3 Dodatkowa konfiguracja (zalecane po naprawie)
+Aktualnie reguły są całkowicie otwarte (`if true`). To jest dobre do szybkiego testu, ale produkcyjnie zalecane jest:
+1. Dodać Firebase Authentication.
+2. Ograniczyć `write` tylko do administratora (np. custom claims lub lista admin UID).
+3. Zostawić `read` wg potrzeb modułów użytkownika.
+
+### 6.4 Dlaczego dokładnie to naprawia błąd checkboxów
+- Checkboxy zapisują się do `admin_games_stats/{year}.visibleColumns`.
+- W Twoich obecnych Rules nie ma `match /admin_games_stats/{year}`.
+- Brak dopasowania reguły = Firestore zwraca `permission-denied` przy zapisie.
+- Dodanie tej reguły usuwa przyczynę źródłową komunikatu: „Nie udało się zapisać widoczności kolumn...”.

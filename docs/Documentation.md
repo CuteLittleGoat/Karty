@@ -100,6 +100,140 @@ Przechowuje konfigurację połączenia Firebase jako globalny obiekt używany po
 - Dane gier aktywnych są agregowane z odpowiednich kolekcji.
 - Lista „do potwierdzenia” bazuje na filtrze statusu i kontekście źródła.
 
+
+## 3.6 Aktualna struktura kolekcji Firestore (stan z Firebase Console)
+
+Poniżej zebrana jest pełna struktura kolekcji widoczna na dostarczonych zrzutach ekranu:
+
+- `Collection1`
+  - dokument `document1`
+    - pola techniczne/testowe: `field1 ... field20` (puste stringi).
+
+- `Tables`
+  - dokumenty gier (ID automatyczne, np. `3RAPSXbOk5Z7aChy94AN`)
+    - pola dokumentu gry:
+      - `createdAt` (timestamp),
+      - `gameDate` (string `YYYY-MM-DD`),
+      - `gameType` (np. `Cashout`),
+      - `isClosed` (boolean),
+      - `name` (nazwa stołu/gry).
+    - podkolekcja:
+      - `rows` (wiersze graczy dla danej gry).
+
+- `UserGames`
+  - dokumenty gier użytkowników (ID automatyczne, np. `4EsjthCu80Ody96R5k7t`)
+    - pola dokumentu gry:
+      - `createdAt`,
+      - `createdByPlayerId`,
+      - `createdByPlayerName`,
+      - `gameDate`,
+      - `gameType`,
+      - `isClosed`,
+      - `name`.
+    - podkolekcje:
+      - `rows`,
+      - `confirmations`.
+
+- `admin_messages`
+  - dokumenty komunikatów administracyjnych (ID automatyczne)
+    - pola:
+      - `createdAt`,
+      - `message`,
+      - `source` (np. `web-admin`).
+
+- `app_settings`
+  - dokument `next_game`
+    - pola:
+      - `pin`.
+  - dokument `player_access`
+    - pole `players` (tablica obiektów):
+      - `id`,
+      - `name`,
+      - `pin`,
+      - `appEnabled`,
+      - `permissions` (np. `chatTab`, `confirmationsTab`, `userGamesTab`, `nextGameTab`, `statisticsTab`).
+  - dokument `rules`
+    - treść regulaminu używana w UI.
+
+- `chat_messages`
+  - dokumenty wiadomości czatu
+    - pola:
+      - `authorId`,
+      - `authorName`,
+      - `createdAt`,
+      - `expireAt`,
+      - `source`,
+      - `text`.
+
+- `players`
+  - dokument `players`
+    - pola statystyczne i placeholdery historyczne (m.in. `Name`, `Cash`, `GamesPlayed`, `GamesWon`, `MoneySpend`, `MoneyWon`, `Placeholder1...`).
+
+- `admin_games_stats` (używana przez moduł Statystyki w kodzie)
+  - dokumenty roczne (`{year}`)
+    - pola:
+      - `rows` (tablica pozycji graczy),
+      - `visibleColumns` (tablica nazw kolumn widocznych dla użytkownika).
+
+## 3.7 Aktualne Firestore Rules (stan przekazany do dokumentacji)
+
+```firestore
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /admin_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    match /app_settings/{docId} {
+      allow read, write: if true;
+    }
+
+    match /Tables/{tableId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /UserGames/{gameId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /Collection1/{docId} {
+      allow read, write: if true;
+    }
+
+    match /chat_messages/{docId} {
+      allow read, write: if true;
+    }
+  }
+}
+```
+
+## 3.8 Luka konfiguracyjna wynikająca z porównania struktury i Rules
+
+W aktualnych Rules brakuje jawnych reguł dla kolekcji:
+- `admin_games_stats` (zapisy checkboxów kolumn statystyk),
+- `players` (dokument statystyk legacy),
+- ewentualnych dodatkowych dokumentów konfiguracyjnych, jeżeli są używane poza `app_settings`.
+
+To powoduje, że moduły odwołujące się do tych kolekcji mogą dostawać `permission-denied` mimo poprawnej logiki frontendowej.
+
 ---
 
 ## 4. Inicjalizacja backendu i obsługa błędów
