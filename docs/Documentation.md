@@ -1113,3 +1113,38 @@ Reguła:
   - `points`,
   - `championship`.
 - Zmiana dotyczy wyłącznie warunku kwalifikacji wiersza do obliczeń po stronie frontendu.
+
+## 26. Aktualizacja 2026-02-13 — reguła „uzupełnione Wpisowe” dla kolumn `Ilość Spotkań` i `Suma z rozegranych gier`
+
+### 26.1 Cel zmiany
+Doprecyzowano sposób liczenia dwóch kolumn statystycznych (wspólnych dla:
+- sekcji **Gry admina → Statystyki**,
+- widoku **Statystyki**).
+
+Nowa zasada:
+- gra jest liczona do `meetingsCount` i `playedGamesPoolSum` tylko wtedy, gdy gracz ma **uzupełnione** pole `entryFee` (`Wpisowe`) w szczegółach gry.
+
+Samo zapisanie gracza do gry bez wartości w `entryFee` nie kwalifikuje gry do tych dwóch agregatów.
+
+### 26.2 Implementacja (`Main/app.js`)
+W dwóch niezależnych modułach statystyk dodano atrybut pochodny `hasCompletedEntryFee` podczas normalizacji wierszy `getDetailRows(gameId)`:
+- wartość oparta o `sanitizeIntegerInput(...)` dla surowego `row.entryFee`,
+- `true` gdy pole po normalizacji nie jest puste i nie jest samym `"-"`.
+
+Następnie w `getPlayersStatistics()`:
+1. `meetingsCount` jest inkrementowane tylko przy `hasCompletedEntryFee === true`.
+2. `playedGamesPoolSum` dodaje `gamePool` tylko gdy:
+   - gracz ma `hasCompletedEntryFee === true`,
+   - i nie został jeszcze policzony dla tej gry (zachowany mechanizm `Set`, aby uniknąć podwójnego doliczenia).
+
+Pozostałe agregaty (`pointsSum`, `plusMinusSum`, `payoutSum`, `depositsSum`) pozostają liczone według dotychczasowej reguły kwalifikacji wiersza (`hasIncludedSummaryOrStatsData`).
+
+### 26.3 Zakres i kompatybilność
+- Brak zmian w HTML/CSS i brak zmian układu kolumn.
+- Brak zmian schematu Firestore (frontend-only logic change).
+- Brak migracji danych.
+
+### 26.4 Efekt funkcjonalny
+- `Ilość Spotkań` odzwierciedla wyłącznie gry z uzupełnionym `Wpisowe` dla danego gracza.
+- `Suma z rozegranych gier` dodaje `Pula` tylko z gier spełniających powyższy warunek.
+- Tabele w **Gry admina** i **Statystyki** pozostają spójne, bo korzystają z tej samej logiki obliczeń.
