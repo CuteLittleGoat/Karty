@@ -407,3 +407,15 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
   - **Notatki do gry** → etykieta `Domyślne`,
   - **Notatki po grze** → etykieta `Usuń`.
 - W widoku `Gry do potwierdzenia` trzeci przycisk w `.confirmations-actions` ma etykietę **`Notatki do gry`** i otwiera modal tylko do odczytu.
+
+## 26) Zakładka „Statystyki” — prawy panel rankingu rocznego
+- Zarówno w panelu administratora (`#adminStatisticsTab`), jak i w strefie gracza (`#statsTab`) widok statystyk ma teraz układ 3-kolumnowy:
+  1. lewy sidebar `Lata`,
+  2. środkowa sekcja tabel statystyk,
+  3. prawy sidebar `Ranking`.
+- Prawy panel używa tych samych klas wizualnych co ranking w „Gry admina”:
+  - `.admin-games-ranking-sidebar`,
+  - `.admin-games-ranking-table`,
+  - kolorowanie miejsc: gold/green/red.
+- Tabela rankingu ma stałe kolumny: `Miejsce`, `Gracz`, `Wynik`.
+- Dzięki wykorzystaniu istniejących klas nie wprowadzono nowych kolorów ani nowych fontów — zachowano obecny system noir/gold.

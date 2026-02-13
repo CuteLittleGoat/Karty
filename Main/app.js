@@ -139,6 +139,92 @@ const STATS_COLUMN_CONFIG = [
 const DEFAULT_VISIBLE_STATS_COLUMNS = STATS_COLUMN_CONFIG
   .filter((column) => !column.weight)
   .map((column) => column.key);
+const WEIGHT_STATS_FIELDS = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
+
+const getDefaultStatsManualFieldValue = (field, value) => {
+  if (WEIGHT_STATS_FIELDS.includes(field)) {
+    const normalized = typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
+    return normalized ? normalized : "1";
+  }
+  return typeof value === "string" || typeof value === "number" ? String(value) : "";
+};
+
+const getComputedStatsResultValue = (row, manualEntry = {}, getDefaultManualFieldValue = getDefaultStatsManualFieldValue) => {
+  const weight1 = parseIntegerOrZero(getDefaultManualFieldValue("weight1", manualEntry.weight1));
+  const weight2 = parseIntegerOrZero(getDefaultManualFieldValue("weight2", manualEntry.weight2));
+  const weight3 = parseIntegerOrZero(getDefaultManualFieldValue("weight3", manualEntry.weight3));
+  const weight4 = parseIntegerOrZero(getDefaultManualFieldValue("weight4", manualEntry.weight4));
+  const weight5 = parseIntegerOrZero(getDefaultManualFieldValue("weight5", manualEntry.weight5));
+  const weight6 = parseIntegerOrZero(getDefaultManualFieldValue("weight6", manualEntry.weight6));
+  const weight7 = parseIntegerOrZero(getDefaultManualFieldValue("weight7", manualEntry.weight7));
+
+  return (row.championshipCount * weight1)
+    + (row.participationPercent * weight2)
+    + (row.pointsSum * weight3)
+    + (row.plusMinusSum * weight4)
+    + (row.payoutSum * weight5)
+    + (row.depositsSum * weight6)
+    + (row.percentAllGames * weight7);
+};
+
+const sortRankingRowsByResult = (rows) => {
+  rows.sort((a, b) => {
+    if (b.resultValue !== a.resultValue) {
+      return b.resultValue - a.resultValue;
+    }
+    return a.playerName.localeCompare(b.playerName, "pl");
+  });
+  return rows;
+};
+
+const buildRankingRowsFromStatistics = (playerRows, yearMap, getDefaultManualFieldValue = getDefaultStatsManualFieldValue) => {
+  return sortRankingRowsByResult(playerRows.map((statsRow) => {
+    const manualEntry = yearMap.get(statsRow.playerName) ?? {};
+    return {
+      ...statsRow,
+      resultValue: getComputedStatsResultValue(statsRow, manualEntry, getDefaultManualFieldValue)
+    };
+  }));
+};
+
+const renderRankingTable = (rankingBody, playerRows) => {
+  if (!rankingBody) {
+    return;
+  }
+
+  rankingBody.innerHTML = "";
+
+  if (!playerRows.length) {
+    const emptyRow = document.createElement("tr");
+    const emptyCell = document.createElement("td");
+    emptyCell.colSpan = 3;
+    emptyCell.textContent = "Brak danych rankingowych dla wybranego roku.";
+    emptyRow.appendChild(emptyCell);
+    rankingBody.appendChild(emptyRow);
+    return;
+  }
+
+  playerRows.forEach((entry, index) => {
+    const rank = index + 1;
+    const tr = document.createElement("tr");
+    if (rank <= 8) {
+      tr.classList.add("admin-games-ranking-row-gold");
+    } else if (rank <= 17) {
+      tr.classList.add("admin-games-ranking-row-green");
+    } else {
+      tr.classList.add("admin-games-ranking-row-red");
+    }
+
+    const rankCell = document.createElement("td");
+    rankCell.textContent = String(rank);
+    const playerCell = document.createElement("td");
+    playerCell.textContent = entry.playerName;
+    const resultCell = document.createElement("td");
+    resultCell.textContent = String(entry.resultValue);
+    tr.append(rankCell, playerCell, resultCell);
+    rankingBody.appendChild(tr);
+  });
+};
 
 const adminPlayersState = {
   players: [],
@@ -3135,6 +3221,7 @@ const initStatisticsView = ({
   yearsListSelector,
   statsBodySelector,
   playersStatsBodySelector,
+  rankingBodySelector,
   statusSelector,
   exportButtonSelector,
   selectedYearStorageKey,
@@ -3145,6 +3232,7 @@ const initStatisticsView = ({
   const yearsList = document.querySelector(yearsListSelector);
   const statsBody = document.querySelector(statsBodySelector);
   const playersStatsBody = document.querySelector(playersStatsBodySelector);
+  const rankingBody = rankingBodySelector ? document.querySelector(rankingBodySelector) : null;
   const status = document.querySelector(statusSelector);
   const exportButton = document.querySelector(exportButtonSelector);
   const firebaseApp = getFirebaseApp();
@@ -3163,7 +3251,6 @@ const initStatisticsView = ({
   const gamesCollectionName = getGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
   const manualStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
-  const weightStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
   const state = {
     years: [],
     selectedYear: loadSavedSelectedGamesYear(selectedYearStorageKey),
@@ -3176,13 +3263,7 @@ const initStatisticsView = ({
   const playersStatsHeaderCells = playersStatsBody.closest("table")?.querySelectorAll("thead th") ?? [];
   const adminColumnVisibilityCheckboxes = new Map();
 
-  const getDefaultManualFieldValue = (field, value) => {
-    if (weightStatsFields.includes(field)) {
-      const normalized = typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
-      return normalized ? normalized : "1";
-    }
-    return typeof value === "string" || typeof value === "number" ? String(value) : "";
-  };
+  const getDefaultManualFieldValue = (field, value) => getDefaultStatsManualFieldValue(field, value);
 
   const getVisibleColumnsForYear = (year) => {
     const yearKey = String(year ?? "");
@@ -3325,23 +3406,7 @@ const initStatisticsView = ({
     };
   };
 
-  const getComputedResultValue = (row, manualEntry = {}) => {
-    const weight1 = parseIntegerOrZero(getDefaultManualFieldValue("weight1", manualEntry.weight1));
-    const weight2 = parseIntegerOrZero(getDefaultManualFieldValue("weight2", manualEntry.weight2));
-    const weight3 = parseIntegerOrZero(getDefaultManualFieldValue("weight3", manualEntry.weight3));
-    const weight4 = parseIntegerOrZero(getDefaultManualFieldValue("weight4", manualEntry.weight4));
-    const weight5 = parseIntegerOrZero(getDefaultManualFieldValue("weight5", manualEntry.weight5));
-    const weight6 = parseIntegerOrZero(getDefaultManualFieldValue("weight6", manualEntry.weight6));
-    const weight7 = parseIntegerOrZero(getDefaultManualFieldValue("weight7", manualEntry.weight7));
-
-    return (row.championshipCount * weight1)
-      + (row.participationPercent * weight2)
-      + (row.pointsSum * weight3)
-      + (row.plusMinusSum * weight4)
-      + (row.payoutSum * weight5)
-      + (row.depositsSum * weight6)
-      + (row.percentAllGames * weight7);
-  };
+  const getComputedResultValue = (row, manualEntry = {}) => getComputedStatsResultValue(row, manualEntry, getDefaultManualFieldValue);
 
   const getCurrentVisibleYears = () => {
     const availableYears = normalizeYearList(
@@ -3399,6 +3464,7 @@ const initStatisticsView = ({
   const renderStats = () => {
     statsBody.innerHTML = "";
     playersStatsBody.innerHTML = "";
+    renderRankingTable(rankingBody, []);
 
     if (!state.selectedYear) {
       if (!isAdminView) {
@@ -3454,6 +3520,7 @@ const initStatisticsView = ({
       td.textContent = "Brak graczy z uzupełnionym wpisowym w wybranym roku.";
       tr.appendChild(td);
       playersStatsBody.appendChild(tr);
+      renderRankingTable(rankingBody, []);
       return;
     }
 
@@ -3474,6 +3541,8 @@ const initStatisticsView = ({
         checkbox.checked = activeVisibleColumns.has(column.key);
       });
     }
+
+    const rankingRows = buildRankingRowsFromStatistics(statistics.playerRows, yearMap, getDefaultManualFieldValue);
 
     statistics.playerRows.forEach((row) => {
       const tr = document.createElement("tr");
@@ -3514,6 +3583,8 @@ const initStatisticsView = ({
 
       playersStatsBody.appendChild(tr);
     });
+
+    renderRankingTable(rankingBody, rankingRows);
   };
 
   const synchronizeYears = () => {
@@ -3644,7 +3715,7 @@ const initStatisticsView = ({
       button.addEventListener("click", () => {
         const weightKey = button.dataset.weightKey;
         const promptValue = window.prompt(`Podaj wartość liczbową dla kolumny ${button.textContent}.`, "1");
-        if (!weightStatsFields.includes(weightKey) || promptValue === null || !state.selectedYear) {
+        if (!WEIGHT_STATS_FIELDS.includes(weightKey) || promptValue === null || !state.selectedYear) {
           return;
         }
         const normalized = sanitizeIntegerInput(promptValue);
@@ -3720,6 +3791,7 @@ const initStatisticsViews = () => {
     yearsListSelector: "#adminStatisticsYearsList",
     statsBodySelector: "#adminStatisticsStatsBody",
     playersStatsBodySelector: "#adminStatisticsPlayersStatsBody",
+    rankingBodySelector: "#adminStatisticsRankingBody",
     statusSelector: "#adminStatisticsStatus",
     exportButtonSelector: "#adminStatisticsExport",
     selectedYearStorageKey: ADMIN_STATISTICS_SELECTED_YEAR_STORAGE_KEY,
@@ -3732,6 +3804,7 @@ const initStatisticsViews = () => {
     yearsListSelector: "#statisticsYearsList",
     statsBodySelector: "#statisticsStatsBody",
     playersStatsBodySelector: "#statisticsPlayersStatsBody",
+    rankingBodySelector: "#statisticsRankingBody",
     statusSelector: "#statisticsStatus",
     exportButtonSelector: "#statisticsExport",
     selectedYearStorageKey: USER_STATISTICS_SELECTED_YEAR_STORAGE_KEY,
@@ -3772,7 +3845,6 @@ const initAdminGames = () => {
   const gamesCollectionName = getGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
   const manualStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
-  const weightStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
   const adminGamesPlayersStatsTable = playersStatsBody.closest("table");
   const weightHeaderButtons = Array.from(adminGamesPlayersStatsTable?.querySelectorAll(".admin-weight-bulk-button") ?? []);
 
@@ -3868,13 +3940,7 @@ const initAdminGames = () => {
     return state.manualStatsByYear.get(yearKey) ?? new Map();
   };
 
-  const getDefaultManualFieldValue = (field, value) => {
-    if (weightStatsFields.includes(field)) {
-      const normalized = typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
-      return normalized ? normalized : "1";
-    }
-    return typeof value === "string" || typeof value === "number" ? String(value) : "";
-  };
+  const getDefaultManualFieldValue = (field, value) => getDefaultStatsManualFieldValue(field, value);
 
   const serializeManualStats = (year) => {
     const yearStats = getManualStatsForYear(year);
@@ -4003,68 +4069,8 @@ const initAdminGames = () => {
     };
   };
 
-  const getComputedResultValue = (row, manualEntry = {}) => {
-    const weight1 = parseIntegerOrZero(getDefaultManualFieldValue("weight1", manualEntry.weight1));
-    const weight2 = parseIntegerOrZero(getDefaultManualFieldValue("weight2", manualEntry.weight2));
-    const weight3 = parseIntegerOrZero(getDefaultManualFieldValue("weight3", manualEntry.weight3));
-    const weight4 = parseIntegerOrZero(getDefaultManualFieldValue("weight4", manualEntry.weight4));
-    const weight5 = parseIntegerOrZero(getDefaultManualFieldValue("weight5", manualEntry.weight5));
-    const weight6 = parseIntegerOrZero(getDefaultManualFieldValue("weight6", manualEntry.weight6));
-    const weight7 = parseIntegerOrZero(getDefaultManualFieldValue("weight7", manualEntry.weight7));
+  const getComputedResultValue = (row, manualEntry = {}) => getComputedStatsResultValue(row, manualEntry, getDefaultManualFieldValue);
 
-    return (row.championshipCount * weight1)
-      + (row.participationPercent * weight2)
-      + (row.pointsSum * weight3)
-      + (row.plusMinusSum * weight4)
-      + (row.payoutSum * weight5)
-      + (row.depositsSum * weight6)
-      + (row.percentAllGames * weight7);
-  };
-
-  const sortRankingRowsByResult = (rows) => {
-    rows.sort((a, b) => {
-      if (b.resultValue !== a.resultValue) {
-        return b.resultValue - a.resultValue;
-      }
-      return a.playerName.localeCompare(b.playerName, "pl");
-    });
-    return rows;
-  };
-
-  const renderRankingTable = (playerRows) => {
-    rankingBody.innerHTML = "";
-
-    if (!playerRows.length) {
-      const emptyRow = document.createElement("tr");
-      const emptyCell = document.createElement("td");
-      emptyCell.colSpan = 3;
-      emptyCell.textContent = "Brak danych rankingowych dla wybranego roku.";
-      emptyRow.appendChild(emptyCell);
-      rankingBody.appendChild(emptyRow);
-      return;
-    }
-
-    playerRows.forEach((entry, index) => {
-      const rank = index + 1;
-      const tr = document.createElement("tr");
-      if (rank <= 8) {
-        tr.classList.add("admin-games-ranking-row-gold");
-      } else if (rank <= 17) {
-        tr.classList.add("admin-games-ranking-row-green");
-      } else {
-        tr.classList.add("admin-games-ranking-row-red");
-      }
-
-      const rankCell = document.createElement("td");
-      rankCell.textContent = String(rank);
-      const playerCell = document.createElement("td");
-      playerCell.textContent = entry.playerName;
-      const resultCell = document.createElement("td");
-      resultCell.textContent = String(entry.resultValue);
-      tr.append(rankCell, playerCell, resultCell);
-      rankingBody.appendChild(tr);
-    });
-  };
 
   const renderYears = () => {
     yearsList.innerHTML = "";
@@ -4400,19 +4406,14 @@ const initAdminGames = () => {
     };
 
     const updateResultsAndRanking = (statisticsRows, yearMap) => {
-      const rankingRows = sortRankingRowsByResult(statisticsRows.map((statsRow) => {
-        const localEntry = yearMap.get(statsRow.playerName) ?? {};
-        const resultValue = getComputedResultValue(statsRow, localEntry);
-        const resultCell = playersStatsBody.querySelector(`[data-result-player="${window.CSS.escape(statsRow.playerName)}"]`);
+      const rankingRows = buildRankingRowsFromStatistics(statisticsRows, yearMap, getDefaultManualFieldValue);
+      rankingRows.forEach((rankingRow) => {
+        const resultCell = playersStatsBody.querySelector(`[data-result-player="${window.CSS.escape(rankingRow.playerName)}"]`);
         if (resultCell) {
-          resultCell.textContent = String(resultValue);
+          resultCell.textContent = String(rankingRow.resultValue);
         }
-        return {
-          ...statsRow,
-          resultValue
-        };
-      }));
-      renderRankingTable(rankingRows);
+      });
+      renderRankingTable(rankingBody, rankingRows);
     };
 
     const createEditableCell = (playerName, key) => {
@@ -4453,20 +4454,14 @@ const initAdminGames = () => {
       td.textContent = "Brak graczy z uzupełnionym wpisowym w wybranym roku.";
       tr.appendChild(td);
       playersStatsBody.appendChild(tr);
-      renderRankingTable([]);
+      renderRankingTable(rankingBody, []);
       return;
     }
-
-    const rankingRows = [];
 
     statistics.playerRows.forEach((row) => {
       const tr = document.createElement("tr");
       const manualEntry = currentYearStats.get(row.playerName) ?? {};
       const resultValue = getComputedResultValue(row, manualEntry);
-      rankingRows.push({
-        ...row,
-        resultValue
-      });
 
       const resultCell = createReadOnlyCell(resultValue);
       resultCell.dataset.resultPlayer = row.playerName;
@@ -4495,7 +4490,7 @@ const initAdminGames = () => {
       playersStatsBody.appendChild(tr);
     });
 
-    renderRankingTable(sortRankingRowsByResult(rankingRows));
+    renderRankingTable(rankingBody, buildRankingRowsFromStatistics(statistics.playerRows, currentYearStats, getDefaultManualFieldValue));
   };
 
   const renderModal = (gameId) => {
@@ -4665,7 +4660,7 @@ const initAdminGames = () => {
   weightHeaderButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const weightKey = button.dataset.weightKey;
-      if (!weightStatsFields.includes(weightKey)) {
+      if (!WEIGHT_STATS_FIELDS.includes(weightKey)) {
         return;
       }
       const promptValue = window.prompt(`Podaj wartość liczbową dla kolumny ${button.textContent}.`, "1");
