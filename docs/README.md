@@ -112,7 +112,13 @@ W tej zakładce zarządzasz listą graczy, PIN-ami i uprawnieniami.
 ### Widok administratora
 1. Otwórz **Panel Administratora**.
 2. Kliknij zakładkę **„Najbliższa gra”**.
-3. Zobaczysz tę samą tabelę tylko do odczytu, z tymi samymi kolumnami i sortowaniem.
+3. Zobaczysz tabelę z kolumnami:
+   - **Rodzaj gry**,
+   - **Data**,
+   - **Nazwa**,
+   - **Akcje**.
+4. W kolumnie **Akcje** kliknij przycisk **„Usuń Całkowicie”**, jeżeli chcesz usunąć śmieciowy wpis.
+5. Operacja **„Usuń Całkowicie”** kasuje grę bezpośrednio z listy i z bazy danych aplikacji (narzędzie porządkowe dla admina).
 
 ### Jakie gry są wyświetlane
 - Do tabeli trafiają gry utworzone w zakładkach **„Gry admina”** i **„Gry użytkowników”**.
@@ -197,8 +203,12 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 ### Dodanie własnej gry
 1. Otwórz zakładkę **„Gry użytkowników”**.
 2. Jeśli widzisz bramkę PIN, wpisz PIN i zatwierdź.
-3. Kliknij dodanie gry.
-4. Uzupełnij dane gry i zapisz.
+3. Kliknij przycisk **„Dodaj grę”**.
+4. System od razu tworzy kompletny wpis z wymaganymi polami:
+   - **Rodzaj gry** = `Cashout` (ustawiane automatycznie),
+   - **Data** = bieżący dzień (ustawiane automatycznie),
+   - **Nazwa** = kolejna nazwa typu `Gra X` (ustawiane automatycznie).
+5. Aplikacja blokuje utworzenie gry, jeśli którekolwiek z pól **Rodzaj gry / Data / Nazwa** byłoby puste.
 
 ### Edycja własnej gry
 1. Wybierz rok i grę z listy.
