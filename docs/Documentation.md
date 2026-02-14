@@ -363,7 +363,8 @@ Dzięki temu autoryzacja w jednej sekcji nie implikuje automatycznie dostępu do
 - CRUD rekordów graczy,
 - walidacja PIN,
 - aktywacja/dezaktywacja `appEnabled`,
-- edycja listy `permissions` przez modal.
+- edycja listy `permissions` przez modal,
+- stabilna edycja wielu checkboxów uprawnień bez zamykania modala (aktualizacja działa na bieżącej referencji gracza po każdym `onSnapshot`).
 
 ## 6.6 Gry admina
 `initAdminGames()`:
@@ -390,8 +391,11 @@ Dzięki temu autoryzacja w jednej sekcji nie implikuje automatycznie dostępu do
 ## 7. Moduły użytkownika — logika backendowa
 
 ## 7.1 Najbliższa gra
-- `initPinGate()` uruchamia bramkę PIN.
-- Po autoryzacji użytkownik dostaje widok danych przypisanych do sekcji.
+- `initPinGate()` uruchamia bramkę PIN użytkownika.
+- `initNextGamesView()` pobiera dane z kolekcji `Tables` i `UserGames`, łączy je i renderuje w tabeli tylko do odczytu.
+- Widok użytkownika (`#nextGameTableBody`) i widok administratora (`#adminNextGameTableBody`) korzystają z tego samego źródła danych i tego samego sortowania.
+- Filtrowanie: wyświetlane są tylko gry, dla których `isClosed === false`.
+- Sortowanie: po `gameDate` malejąco (najnowsza data na górze).
 
 ## 7.2 Czat użytkownika
 `initChatTab()`:
@@ -697,10 +701,16 @@ Skutek:
   - zapis (`Zapisz`) i przywracanie szablonu (`Domyślne`),
   - zamykanie (`×`, klik poza modalem, `Esc`).
 - Dodano stałą `DEFAULT_GAME_NOTES_TEMPLATE`:
+  - `Rodzaj gry:`
+  - `Adres:`
   - `Przewidywani gracze:`
+  - `Stack:`
+  - `Wpisowe:`
   - `Rebuy:`
-  - `Addon:`
-  - `Inne:`
+  - `Add-on:`
+  - `Blindy:`
+  - `Organizacja:`
+  - `Podział puli:`
 - Gdy pole `notes` jest puste, modal automatycznie podstawia szablon domyślny.
 - Persistencja: update pola `notes` w dokumencie gry (`Tables`/`UserGames`).
 - Ten sam modal jest używany w 4 miejscach:
@@ -1296,3 +1306,17 @@ Cel:
 - Funkcja `render()` w module `initAdminCalculator()` zapisuje fokus przez `getFocusedAdminInputState(...)` i odtwarza go po przebudowie przez `restoreFocusedAdminInputState(...)`.
 - Pola edycyjne i wybory w tabelach 1, 2, 3 i 5 otrzymały komplet metadanych (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`).
 - Dzięki temu odświeżenie listy graczy z `onSnapshot(...)` nie powinno przerywać wpisywania lub wyboru aktywnego pola.
+
+
+## 24. Czat admina i kolejność wiadomości
+
+- `initAdminChat()` używa zapytania `orderBy("createdAt", "asc")` zarówno przy subskrypcji `onSnapshot`, jak i przy ręcznym odświeżeniu.
+- Dzięki temu kolejność wiadomości w panelu admina jest zgodna z widokiem użytkownika (najnowsze na dole listy).
+
+## 25. Kolejność kolumn statystyk (`%` i `Waga7`)
+
+- W konfiguracji `STATS_COLUMN_CONFIG` kolejność została ustawiona na:
+  1. `% Rozegranych gier` (`percentAllGames`),
+  2. `% Wszystkich gier` (`percentPlayedGames`),
+  3. `Waga7` (`weight7`).
+- Taka sama kolejność jest utrzymana w nagłówkach tabel w zakładkach `Gry admina` i `Statystyki`.

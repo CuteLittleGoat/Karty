@@ -41,6 +41,7 @@
             <button class="admin-panel-tab" type="button" data-target="adminGamesTab">Gry admina</button>
             <button class="admin-panel-tab" type="button" data-target="adminStatisticsTab">Statystyki</button>
             <button class="admin-panel-tab" type="button" data-target="adminUserGamesTab">Gry użytkowników</button>
+            <button class="admin-panel-tab" type="button" data-target="adminNextGameTab">Najbliższa gra</button>
             <button class="admin-panel-tab" type="button" data-target="adminConfirmationsTab">Gry do potwierdzenia</button>
             <button class="admin-panel-tab" type="button" data-target="adminCalculatorTab">Kalkulator</button>
           </div>
@@ -185,8 +186,8 @@
                           <th><button type="button" class="admin-weight-bulk-button" data-weight-key="weight6">Waga6</button></th>
                           <th>Suma z rozegranych gier</th>
                           <th>% Rozegranych gier</th>
-                          <th><button type="button" class="admin-weight-bulk-button" data-weight-key="weight7">Waga7</button></th>
                           <th>% Wszystkich gier</th>
+                          <th><button type="button" class="admin-weight-bulk-button" data-weight-key="weight7">Waga7</button></th>
                           <th>Wyniki</th>
                         </tr>
                       </thead>
@@ -248,6 +249,27 @@
               </section>
             </div>
           </div>
+          <div id="adminNextGameTab" class="admin-panel-content" role="tabpanel">
+            <section class="admin-games-content">
+              <div class="admin-games-section">
+                <div class="card-header admin-tables-header">
+                  <h3>Najbliższa gra</h3>
+                </div>
+                <div class="admin-table-scroll">
+                  <table class="admin-data-table">
+                    <thead>
+                      <tr>
+                        <th>Rodzaj gry</th>
+                        <th>Data</th>
+                        <th>Nazwa</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminNextGameTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
           <div id="adminStatisticsTab" class="admin-panel-content" role="tabpanel">
             <div class="admin-games-layout">
               <aside class="admin-games-sidebar">
@@ -294,8 +316,8 @@
                           <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight6">Waga6</button></th>
                           <th>Suma z rozegranych gier</th>
                           <th>% Rozegranych gier</th>
-                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight7">Waga7</button></th>
                           <th>% Wszystkich gier</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight7">Waga7</button></th>
                           <th>Wynik</th>
                         </tr>
                       </thead>
@@ -408,7 +430,18 @@
                 </div>
               </div>
               <div id="nextGameContent" class="next-game-content">
-                <p class="user-construction">Strona w budowie</p>
+                <div class="admin-table-scroll">
+                  <table class="admin-data-table">
+                    <thead>
+                      <tr>
+                        <th>Rodzaj gry</th>
+                        <th>Data</th>
+                        <th>Nazwa</th>
+                      </tr>
+                    </thead>
+                    <tbody id="nextGameTableBody"></tbody>
+                  </table>
+                </div>
               </div>
             </div>
             <div id="updatesTab" class="tab-panel" role="tabpanel">
