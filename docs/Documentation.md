@@ -1326,3 +1326,22 @@ Cel:
   2. `% Wszystkich gier` (`percentPlayedGames`),
   3. `Waga7` (`weight7`).
 - Taka sama kolejność jest utrzymana w nagłówkach tabel w zakładkach `Gry admina` i `Statystyki`.
+
+
+## 12. Pakiet Android (MigracjaAndroid/AndroidApp)
+
+Pakiet `MigracjaAndroid/AndroidApp` zawiera minimalny projekt Android oparty o WebView + Firestore listener dla lokalnych powiadomień.
+
+### 12.1 Launcher icon (naprawa błędu AAPT `mipmap/ic_launcher not found`)
+- Manifest wskazuje:
+  - `android:icon="@mipmap/ic_launcher"`
+  - `android:roundIcon="@mipmap/ic_launcher_round"`
+- Zasoby ikon są dostarczone w:
+  - `app/src/main/res/mipmap/ic_launcher.xml`
+  - `app/src/main/res/mipmap/ic_launcher_round.xml`
+  - `app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`
+  - `app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml`
+  - `app/src/main/res/drawable/ic_launcher_foreground.xml`
+  - `app/src/main/res/values/colors.xml` (`ic_launcher_background`)
+
+To usuwa błąd linkowania zasobów przy buildzie w Android Studio, kiedy manifest używa `@mipmap/ic_launcher`.

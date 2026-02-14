@@ -774,3 +774,12 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 ### 27.7 Stabilny fokus podczas odświeżania danych
 - Podczas przebudowy widoku (np. po odświeżeniu listy graczy) aplikacja przywraca fokus do aktywnego pola w zakładce **Kalkulator**.
 - Mechanizm obejmuje pola w tabelach 1, 2, 3 i 5, więc wpisywanie i wybór opcji nie powinny przerywać pracy użytkownika.
+
+
+## 16. Aplikacja Android — obsługa UI (wersja WebView)
+
+1. Uruchom aplikację **Karty** na telefonie z Androidem.
+2. Po starcie zobaczysz ten sam interfejs co w przeglądarce (widok użytkownika).
+3. Aby przejść do wybranej funkcji, klikaj karty/zakładki tak samo jak w wersji webowej (np. „Aktualności”, „Najbliższa gra”, „Czat”).
+4. Jeśli pojawi się systemowe powiadomienie Android o nowej wiadomości, kliknij je, aby wrócić do aplikacji i odczytać treść w UI.
+5. W aplikacji Android nie ma osobnego ekranu administratora wymuszanego przez URL — widok startuje jako użytkownik.
