@@ -392,8 +392,10 @@ Dzięki temu autoryzacja w jednej sekcji nie implikuje automatycznie dostępu do
 
 ## 7.1 Najbliższa gra
 - `initPinGate()` uruchamia bramkę PIN użytkownika.
-- `initNextGamesView()` pobiera dane z kolekcji `Tables` i `UserGames`, łączy je i renderuje w tabeli tylko do odczytu.
-- Widok użytkownika (`#nextGameTableBody`) i widok administratora (`#adminNextGameTableBody`) korzystają z tego samego źródła danych i tego samego sortowania.
+- `initNextGamesView()` pobiera dane z kolekcji `Tables` i `UserGames`, łączy je i renderuje.
+- Widok użytkownika (`#nextGameTableBody`) pokazuje tabelę tylko do odczytu (kolumny: `Rodzaj gry`, `Data`, `Nazwa`).
+- Widok administratora (`#adminNextGameTableBody`) ma dodatkową kolumnę `Akcje` z przyciskiem `Usuń Całkowicie`.
+- `Usuń Całkowicie` wykonuje pełne kasowanie dokumentu gry z kolekcji źródłowej (`Tables` lub `UserGames`) oraz czyści podkolekcje `rows` i `confirmations`.
 - Filtrowanie: wyświetlane są tylko gry, dla których `isClosed === false`.
 - Sortowanie: po `gameDate` malejąco (najnowsza data na górze).
 
@@ -732,10 +734,14 @@ Skutek:
 - Etykieta czerwonego przycisku została zmieniona z `Usuń` na `Domyślne`.
 - `Main/styles.css`: wykorzystano istniejące klasy wizualne (`secondary`, `danger`, `.admin-textarea`, `.admin-game-summary-heading`) bez dodawania nowych tokenów kolorystycznych.
 
-### 16.5 Inicjalizacja notatek podczas dodawania gry
-- W obu miejscach tworzenia gry (`initAdminGames()` i `initUserGamesManager(...)`) nowy dokument gry otrzymuje od razu:
-  - `notes: DEFAULT_GAME_NOTES_TEMPLATE`.
-- Efekt: każda nowa gra ma gotową strukturę notatki niezależnie od tego, czy pierwszy raz otwieramy notatki z tabeli czy z podsumowania.
+### 16.5 Inicjalizacja danych wymaganych podczas dodawania gry
+- W obu miejscach tworzenia gry (`initAdminGames()` i `initUserGamesManager(...)`) tworzony jest payload przez `getValidatedNewGamePayload(...)`.
+- Funkcja wymusza komplet pól wymaganych:
+  - `gameType` (domyślnie `Cashout`),
+  - `gameDate` (bieżąca data `YYYY-MM-DD`),
+  - `name` (kolejna nazwa typu `Gra X` dla tego dnia).
+- Jeśli któreś z wymaganych pól byłoby puste, zapis do Firestore nie jest wykonywany.
+- Do payloadu są też dokładane pola techniczne: `isClosed`, `preGameNotes`, `postGameNotes`, `createdAt` oraz (dla widoku użytkownika) dane autora.
 
 
 ## 17. Zmiana logiki pól liczbowych w modalu „Szczegóły gry” (Wpisowe/Wypłata)

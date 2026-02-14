@@ -462,11 +462,14 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 
 ## 24) Zakładka „Najbliższa gra” — admin + użytkownik
 
-- W panelu admina dodano zakładkę `adminNextGameTab` renderowaną jako standardowy panel `.admin-panel-content`.
-- Widok użytkownika (`#nextGameTableBody`) i admina (`#adminNextGameTableBody`) mają identyczny układ tabeli 3-kolumnowej, bez kontrolek edycyjnych.
-- W obu widokach zachowano istniejące fonty i kolory (`.admin-data-table`):
-  - nagłówek i komórki tabeli używają tego samego kontrastu i obramowań co inne tabele administracyjne,
-  - nie dodawano nowych tokenów kolorystycznych ani nowych fontów.
+- W panelu admina zakładka `adminNextGameTab` korzysta ze standardowego panelu `.admin-panel-content`.
+- Widok użytkownika (`#nextGameTableBody`) ma tabelę 3-kolumnową (`Rodzaj gry`, `Data`, `Nazwa`) bez kontrolek.
+- Widok administratora (`#adminNextGameTableBody`) ma tabelę 4-kolumnową z dodatkową kolumną `Akcje`.
+- W kolumnie `Akcje` znajduje się czerwony przycisk `Usuń Całkowicie` (`button.danger`) dla każdego wiersza.
+- Zachowano istniejące fonty i tokeny kolorów (`.admin-data-table`, `.danger`):
+  - brak nowych fontów,
+  - brak nowych palet kolorystycznych,
+  - przycisk destrukcyjny używa tego samego stylu co pozostałe akcje usuwania w aplikacji.
 
 ## 25) Kolejność kolumn „% / Waga7” w statystykach
 

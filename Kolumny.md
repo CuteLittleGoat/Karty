@@ -315,12 +315,24 @@ Parametry sekcji kalkulatora:
 
 ## Zakładka „Najbliższa gra” (admin + użytkownik)
 
+### Widok użytkownika
+
 | Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
 | --- | --- | --- | --- | --- | --- | --- |
 | Rodzaj gry | brak | brak | brak | brak | lewo | standard |
 | Data | brak | brak | brak | brak | lewo | standard |
 | Nazwa | brak | brak | brak | brak | lewo | standard |
 
+### Widok administratora
+
+| Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
+| --- | --- | --- | --- | --- | --- | --- |
+| Rodzaj gry | brak | brak | brak | brak | lewo | standard |
+| Data | brak | brak | brak | brak | lewo | standard |
+| Nazwa | brak | brak | brak | brak | lewo | standard |
+| Akcje | brak | wg zawartości przycisku `Usuń Całkowicie` | brak | brak | lewo | standard |
+
 Uwagi:
-- Tabela działa w trybie tylko do odczytu (brak pól `input/select`).
-- W obu widokach używa kontenera `.admin-table-scroll` i tabeli `.admin-data-table`.
+- Widok użytkownika działa w trybie tylko do odczytu (brak pól `input/select`).
+- Widok administratora ma dodatkową kolumnę akcji z przyciskiem destrukcyjnym.
+- Oba widoki używają kontenera `.admin-table-scroll` i tabeli `.admin-data-table`.

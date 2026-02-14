@@ -93,6 +93,7 @@ const DEFAULT_TABLE_META = {
   gameType: "rodzaj gry",
   gameDate: "data"
 };
+const DEFAULT_GAME_TYPE = "Cashout";
 const TABLE_COLUMNS = [
   { key: "playerName", label: "nazwa gracza" },
   { key: "percentAllGames", label: "% z wszystkich gier" },
@@ -241,7 +242,8 @@ const nextGamesState = {
   adminGames: [],
   userGames: [],
   adminUnsubscribe: null,
-  userUnsubscribe: null
+  userUnsubscribe: null,
+  db: null
 };
 const debounceTimers = new Map();
 const adminRefreshHandlers = new Map();
@@ -598,6 +600,45 @@ const getNextGameNameForDate = (games, gameDate) => {
   return getNextTableName(sameDayGames);
 };
 
+const getValidatedNewGamePayload = ({ games, additionalPayload = {} }) => {
+  const gameType = DEFAULT_GAME_TYPE;
+  const gameDate = getFormattedCurrentDate();
+  const name = getNextGameNameForDate(games, gameDate);
+
+  const hasMissingRequiredField = [gameType, gameDate, name]
+    .some((value) => typeof value !== "string" || !value.trim());
+
+  if (hasMissingRequiredField) {
+    return null;
+  }
+
+  return {
+    gameType,
+    gameDate,
+    name,
+    ...additionalPayload
+  };
+};
+
+const deleteCollectionDocuments = async (collectionRef) => {
+  let snapshot = await collectionRef.limit(250).get();
+  while (!snapshot.empty) {
+    const batch = collectionRef.firestore.batch();
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    await batch.commit();
+    snapshot = await collectionRef.limit(250).get();
+  }
+};
+
+const deleteGameCompletely = async ({ db, collectionName, gameId }) => {
+  const gameRef = db.collection(collectionName).doc(gameId);
+  await deleteCollectionDocuments(gameRef.collection(GAME_DETAILS_COLLECTION));
+  await deleteCollectionDocuments(gameRef.collection(GAME_CONFIRMATIONS_COLLECTION));
+  await gameRef.delete();
+};
+
 const normalizeNumber = (value) => {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : 0;
@@ -909,10 +950,15 @@ const initPinGate = () => {
   updatePinVisibility();
 };
 
-const renderNextGamesTable = (tableBody, games, emptyMessage) => {
+const renderNextGamesTable = (tableBody, games, emptyMessage, options = {}) => {
   if (!tableBody) {
     return;
   }
+
+  const {
+    canDeleteCompletely = false,
+    onDeleteCompletely = null
+  } = options;
 
   const createCell = (value) => {
     const cell = document.createElement("td");
@@ -924,7 +970,7 @@ const renderNextGamesTable = (tableBody, games, emptyMessage) => {
   if (!games.length) {
     const emptyRow = document.createElement("tr");
     const emptyCell = document.createElement("td");
-    emptyCell.colSpan = 3;
+    emptyCell.colSpan = canDeleteCompletely ? 4 : 3;
     emptyCell.textContent = emptyMessage;
     emptyRow.appendChild(emptyCell);
     tableBody.appendChild(emptyRow);
@@ -936,6 +982,22 @@ const renderNextGamesTable = (tableBody, games, emptyMessage) => {
     row.appendChild(createCell(game.gameType || ""));
     row.appendChild(createCell(game.gameDate || ""));
     row.appendChild(createCell(game.name || ""));
+
+    if (canDeleteCompletely) {
+      const deleteCell = document.createElement("td");
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "danger";
+      deleteButton.textContent = "Usuń Całkowicie";
+      deleteButton.addEventListener("click", () => {
+        if (typeof onDeleteCompletely === "function") {
+          void onDeleteCompletely(game);
+        }
+      });
+      deleteCell.appendChild(deleteButton);
+      row.appendChild(deleteCell);
+    }
+
     tableBody.appendChild(row);
   });
 };
@@ -966,10 +1028,31 @@ const syncNextGamesViews = () => {
     games,
     "Brak otwartych gier do wyświetlenia."
   );
+
+  const handleAdminDeleteCompletely = async (game) => {
+    if (!game?.id || !game?.collectionName || !nextGamesState.db) {
+      return;
+    }
+
+    try {
+      await deleteGameCompletely({
+        db: nextGamesState.db,
+        collectionName: game.collectionName,
+        gameId: game.id
+      });
+    } catch (error) {
+      // Brak dodatkowego statusu UI w tym widoku — błąd można sprawdzić w konsoli przeglądarki.
+    }
+  };
+
   renderNextGamesTable(
     document.querySelector("#adminNextGameTableBody"),
     games,
-    "Brak otwartych gier do wyświetlenia."
+    "Brak otwartych gier do wyświetlenia.",
+    {
+      canDeleteCompletely: true,
+      onDeleteCompletely: handleAdminDeleteCompletely
+    }
   );
 };
 
@@ -989,9 +1072,11 @@ const initNextGamesView = () => {
   }
 
   const db = firebaseApp.firestore();
+  nextGamesState.db = db;
 
-  const mapSnapshot = (snapshot) => snapshot.docs.map((doc) => ({
+  const mapSnapshot = (snapshot, collectionName) => snapshot.docs.map((doc) => ({
     id: doc.id,
+    collectionName,
     gameType: typeof doc.data()?.gameType === "string" ? doc.data().gameType : "",
     gameDate: typeof doc.data()?.gameDate === "string" ? doc.data().gameDate : "",
     name: typeof doc.data()?.name === "string" ? doc.data().name : "",
@@ -1007,13 +1092,13 @@ const initNextGamesView = () => {
 
   nextGamesState.adminUnsubscribe = db.collection(GAMES_COLLECTION)
     .onSnapshot((snapshot) => {
-      nextGamesState.adminGames = mapSnapshot(snapshot);
+      nextGamesState.adminGames = mapSnapshot(snapshot, GAMES_COLLECTION);
       syncNextGamesViews();
     });
 
   nextGamesState.userUnsubscribe = db.collection(USER_GAMES_COLLECTION)
     .onSnapshot((snapshot) => {
-      nextGamesState.userGames = mapSnapshot(snapshot);
+      nextGamesState.userGames = mapSnapshot(snapshot, USER_GAMES_COLLECTION);
       syncNextGamesViews();
     });
 
@@ -1022,8 +1107,8 @@ const initNextGamesView = () => {
       db.collection(GAMES_COLLECTION).get({ source: "server" }),
       db.collection(USER_GAMES_COLLECTION).get({ source: "server" })
     ]);
-    nextGamesState.adminGames = mapSnapshot(adminGamesSnapshot);
-    nextGamesState.userGames = mapSnapshot(userGamesSnapshot);
+    nextGamesState.adminGames = mapSnapshot(adminGamesSnapshot, GAMES_COLLECTION);
+    nextGamesState.userGames = mapSnapshot(userGamesSnapshot, USER_GAMES_COLLECTION);
     syncNextGamesViews();
   });
 };
@@ -2174,19 +2259,24 @@ const initUserGamesManager = ({
     addGameButton.disabled = true;
     status.textContent = "Dodawanie gry...";
     try {
-      const gameDate = getFormattedCurrentDate();
-      const name = getNextGameNameForDate(state.games, gameDate);
-      await db.collection(gamesCollectionName).add({
-        gameType: "Cashout",
-        gameDate,
-        name,
-        isClosed: false,
-        preGameNotes: DEFAULT_GAME_NOTES_TEMPLATE,
-        postGameNotes: "",
-        createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
-        ...createGamePayload()
+      const newGamePayload = getValidatedNewGamePayload({
+        games: state.games,
+        additionalPayload: {
+          isClosed: false,
+          preGameNotes: DEFAULT_GAME_NOTES_TEMPLATE,
+          postGameNotes: "",
+          createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+          ...createGamePayload()
+        }
       });
-      status.textContent = `Dodano grę "${name}" z datą ${gameDate}.`;
+
+      if (!newGamePayload) {
+        status.textContent = "Nie można utworzyć gry bez pól: Rodzaj gry, Data i Nazwa.";
+        return;
+      }
+
+      await db.collection(gamesCollectionName).add(newGamePayload);
+      status.textContent = `Dodano grę "${newGamePayload.name}" z datą ${newGamePayload.gameDate}.`;
     } catch (error) {
       status.textContent = "Nie udało się dodać gry użytkownika.";
     } finally {
@@ -5224,18 +5314,23 @@ const initAdminGames = () => {
     addGameButton.disabled = true;
     status.textContent = "Dodawanie gry...";
     try {
-      const gameDate = getFormattedCurrentDate();
-      const name = getNextGameNameForDate(state.games, gameDate);
-      await db.collection(gamesCollectionName).add({
-        gameType: "Cashout",
-        gameDate,
-        name,
-        isClosed: false,
-        preGameNotes: DEFAULT_GAME_NOTES_TEMPLATE,
-        postGameNotes: "",
-        createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+      const newGamePayload = getValidatedNewGamePayload({
+        games: state.games,
+        additionalPayload: {
+          isClosed: false,
+          preGameNotes: DEFAULT_GAME_NOTES_TEMPLATE,
+          postGameNotes: "",
+          createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+        }
       });
-      status.textContent = `Dodano grę "${name}" z datą ${gameDate}.`;
+
+      if (!newGamePayload) {
+        status.textContent = "Nie można utworzyć gry bez pól: Rodzaj gry, Data i Nazwa.";
+        return;
+      }
+
+      await db.collection(gamesCollectionName).add(newGamePayload);
+      status.textContent = `Dodano grę "${newGamePayload.name}" z datą ${newGamePayload.gameDate}.`;
     } catch (error) {
       const errorCode = error?.code;
       if (errorCode === "permission-denied") {
