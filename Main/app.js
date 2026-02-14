@@ -14,7 +14,7 @@ const RULES_DOCUMENT = "rules";
 const ADMIN_MESSAGES_COLLECTION = "admin_messages";
 const ADMIN_MESSAGES_DOCUMENT = "admin_messages";
 const RULES_DEFAULT_TEXT = "";
-const DEFAULT_GAME_NOTES_TEMPLATE = "Przewidywani gracze:\nRebuy:\nAddon:\nInne:";
+const DEFAULT_GAME_NOTES_TEMPLATE = "Rodzaj gry:\nAdres:\nPrzewidywani gracze:\nStack:\nWpisowe:\nRebuy:\nAdd-on:\nBlindy:\nOrganizacja:\nPodział puli:";
 
 const getPreGameNotes = (game) => {
   if (typeof game?.preGameNotes === "string") {
@@ -123,8 +123,8 @@ const STATS_COLUMN_CONFIG = [
   { key: "weight6", label: "Waga6", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight6", manual?.weight6) },
   { key: "playedGamesPoolSum", label: "Suma z rozegranych gier", editable: false, weight: false, value: (row) => row.playedGamesPoolSum },
   { key: "percentAllGames", label: "% Rozegranych gier", editable: false, weight: false, value: (row) => `${row.percentAllGames}%` },
-  { key: "weight7", label: "Waga7", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight7", manual?.weight7) },
   { key: "percentPlayedGames", label: "% Wszystkich gier", editable: false, weight: false, value: (row) => `${row.percentPlayedGames}%` },
+  { key: "weight7", label: "Waga7", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight7", manual?.weight7) },
   {
     key: "result",
     label: "Wynik",
@@ -236,6 +236,12 @@ const adminPlayersState = {
 const chatState = {
   unsubscribe: null,
   adminUnsubscribe: null
+};
+const nextGamesState = {
+  adminGames: [],
+  userGames: [],
+  adminUnsubscribe: null,
+  userUnsubscribe: null
 };
 const debounceTimers = new Map();
 const adminRefreshHandlers = new Map();
@@ -901,6 +907,125 @@ const initPinGate = () => {
   });
 
   updatePinVisibility();
+};
+
+const renderNextGamesTable = (tableBody, games, emptyMessage) => {
+  if (!tableBody) {
+    return;
+  }
+
+  const createCell = (value) => {
+    const cell = document.createElement("td");
+    cell.textContent = String(value ?? "");
+    return cell;
+  };
+
+  tableBody.innerHTML = "";
+  if (!games.length) {
+    const emptyRow = document.createElement("tr");
+    const emptyCell = document.createElement("td");
+    emptyCell.colSpan = 3;
+    emptyCell.textContent = emptyMessage;
+    emptyRow.appendChild(emptyCell);
+    tableBody.appendChild(emptyRow);
+    return;
+  }
+
+  games.forEach((game) => {
+    const row = document.createElement("tr");
+    row.appendChild(createCell(game.gameType || ""));
+    row.appendChild(createCell(game.gameDate || ""));
+    row.appendChild(createCell(game.name || ""));
+    tableBody.appendChild(row);
+  });
+};
+
+const getCombinedOpenGames = () => {
+  return [...nextGamesState.adminGames, ...nextGamesState.userGames]
+    .filter((game) => !game.isClosed)
+    .sort((a, b) => {
+      const left = getDateSortValue(a.gameDate);
+      const right = getDateSortValue(b.gameDate);
+      if (!Number.isFinite(left) && !Number.isFinite(right)) {
+        return 0;
+      }
+      if (!Number.isFinite(left)) {
+        return 1;
+      }
+      if (!Number.isFinite(right)) {
+        return -1;
+      }
+      return right - left;
+    });
+};
+
+const syncNextGamesViews = () => {
+  const games = getCombinedOpenGames();
+  renderNextGamesTable(
+    document.querySelector("#nextGameTableBody"),
+    games,
+    "Brak otwartych gier do wyświetlenia."
+  );
+  renderNextGamesTable(
+    document.querySelector("#adminNextGameTableBody"),
+    games,
+    "Brak otwartych gier do wyświetlenia."
+  );
+};
+
+const initNextGamesView = () => {
+  const firebaseApp = getFirebaseApp();
+  const userTableBody = document.querySelector("#nextGameTableBody");
+  const adminTableBody = document.querySelector("#adminNextGameTableBody");
+
+  if (!userTableBody && !adminTableBody) {
+    return;
+  }
+
+  if (!firebaseApp) {
+    renderNextGamesTable(userTableBody, [], "Uzupełnij konfigurację Firebase, aby wyświetlić gry.");
+    renderNextGamesTable(adminTableBody, [], "Uzupełnij konfigurację Firebase, aby wyświetlić gry.");
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+
+  const mapSnapshot = (snapshot) => snapshot.docs.map((doc) => ({
+    id: doc.id,
+    gameType: typeof doc.data()?.gameType === "string" ? doc.data().gameType : "",
+    gameDate: typeof doc.data()?.gameDate === "string" ? doc.data().gameDate : "",
+    name: typeof doc.data()?.name === "string" ? doc.data().name : "",
+    isClosed: Boolean(doc.data()?.isClosed)
+  }));
+
+  if (typeof nextGamesState.adminUnsubscribe === "function") {
+    nextGamesState.adminUnsubscribe();
+  }
+  if (typeof nextGamesState.userUnsubscribe === "function") {
+    nextGamesState.userUnsubscribe();
+  }
+
+  nextGamesState.adminUnsubscribe = db.collection(GAMES_COLLECTION)
+    .onSnapshot((snapshot) => {
+      nextGamesState.adminGames = mapSnapshot(snapshot);
+      syncNextGamesViews();
+    });
+
+  nextGamesState.userUnsubscribe = db.collection(USER_GAMES_COLLECTION)
+    .onSnapshot((snapshot) => {
+      nextGamesState.userGames = mapSnapshot(snapshot);
+      syncNextGamesViews();
+    });
+
+  registerAdminRefreshHandler("adminNextGameTab", async () => {
+    const [adminGamesSnapshot, userGamesSnapshot] = await Promise.all([
+      db.collection(GAMES_COLLECTION).get({ source: "server" }),
+      db.collection(USER_GAMES_COLLECTION).get({ source: "server" })
+    ]);
+    nextGamesState.adminGames = mapSnapshot(adminGamesSnapshot);
+    nextGamesState.userGames = mapSnapshot(userGamesSnapshot);
+    syncNextGamesViews();
+  });
 };
 
 const updateChatVisibility = () => {
@@ -3001,6 +3126,12 @@ const initAdminPlayers = () => {
     adminPlayersState.players = rawPlayers.map(normalizePlayerRecord);
     rebuildPinMap();
     renderPlayers();
+    if (modal.classList.contains("is-visible")) {
+      renderPermissions();
+      if (yearsModal && yearsModal.classList.contains("is-visible")) {
+        renderStatsYearsPermissions();
+      }
+    }
   };
 
   registerAdminRefreshHandler("adminPlayersTab", refreshPlayersData);
@@ -3016,6 +3147,8 @@ const initAdminPlayers = () => {
       status.textContent = "Nie udało się zapisać listy graczy.";
     }
   };
+
+  const getEditingPlayer = () => adminPlayersState.players.find((entry) => entry.id === adminPlayersState.editingPlayerId);
 
   const openModal = (playerId) => {
     adminPlayersState.editingPlayerId = playerId;
@@ -3099,7 +3232,7 @@ const initAdminPlayers = () => {
       return;
     }
     yearsModalList.innerHTML = "";
-    const player = adminPlayersState.players.find((entry) => entry.id === adminPlayersState.editingPlayerId);
+    const player = getEditingPlayer();
     if (!player) {
       yearsModalStatus.textContent = "Nie znaleziono gracza.";
       return;
@@ -3120,13 +3253,17 @@ const initAdminPlayers = () => {
       checkbox.type = "checkbox";
       checkbox.checked = selectedSet.has(year);
       checkbox.addEventListener("change", () => {
-        const nextSet = new Set(normalizeStatsYearsAccess(player.statsYearsAccess));
+        const targetPlayer = getEditingPlayer();
+        if (!targetPlayer) {
+          return;
+        }
+        const nextSet = new Set(normalizeStatsYearsAccess(targetPlayer.statsYearsAccess));
         if (checkbox.checked) {
           nextSet.add(year);
         } else {
           nextSet.delete(year);
         }
-        player.statsYearsAccess = normalizeStatsYearsAccess(Array.from(nextSet));
+        targetPlayer.statsYearsAccess = normalizeStatsYearsAccess(Array.from(nextSet));
         renderPermissions();
         void savePlayers();
       });
@@ -3141,7 +3278,7 @@ const initAdminPlayers = () => {
 
   const renderPermissions = () => {
     modalList.innerHTML = "";
-    const player = adminPlayersState.players.find((entry) => entry.id === adminPlayersState.editingPlayerId);
+    const player = getEditingPlayer();
     if (!player) {
       modalStatus.textContent = "Nie znaleziono gracza.";
       return;
@@ -3155,12 +3292,16 @@ const initAdminPlayers = () => {
       checkbox.type = "checkbox";
       checkbox.checked = player.permissions.includes(tab.key);
       checkbox.addEventListener("change", () => {
+        const targetPlayer = getEditingPlayer();
+        if (!targetPlayer) {
+          return;
+        }
         if (checkbox.checked) {
-          player.permissions = Array.from(new Set([...player.permissions, tab.key]));
+          targetPlayer.permissions = Array.from(new Set([...targetPlayer.permissions, tab.key]));
         } else {
-          player.permissions = player.permissions.filter((permission) => permission !== tab.key);
+          targetPlayer.permissions = targetPlayer.permissions.filter((permission) => permission !== tab.key);
           if (tab.key === "statsTab") {
-            player.statsYearsAccess = [];
+            targetPlayer.statsYearsAccess = [];
             closeYearsModal();
           }
         }
@@ -3521,7 +3662,7 @@ const initAdminChat = () => {
   };
 
   const refreshChatData = async () => {
-    await db.collection(CHAT_COLLECTION).orderBy("createdAt", "desc").limit(200).get({ source: "server" });
+    await db.collection(CHAT_COLLECTION).orderBy("createdAt", "asc").limit(200).get({ source: "server" });
   };
 
   registerAdminRefreshHandler("adminChatTab", refreshChatData);
@@ -3531,7 +3672,7 @@ const initAdminChat = () => {
   }
 
   chatState.adminUnsubscribe = db.collection(CHAT_COLLECTION)
-    .orderBy("createdAt", "desc")
+    .orderBy("createdAt", "asc")
     .limit(200)
     .onSnapshot(
       (snapshot) => {
@@ -5410,6 +5551,7 @@ const bootstrap = async () => {
   initAdminPlayers();
   initAdminCalculator();
   initPinGate();
+  initNextGamesView();
   initChatTab();
   initUserConfirmations();
   initUserGamesTab();

@@ -158,12 +158,11 @@
   - opis (`.pin-title`),
   - pole + przycisk w układzie `.pin-inputs`,
   - status (`.status-text`).
-- Zawartość po poprawnej autoryzacji korzysta z tego samego kontenera co „Najbliższa gra” (`.next-game-content.is-visible`).
-- Główny komunikat „Strona w budowie” używa istniejącego stylu `.user-construction`:
-  - font tytułowy (`var(--font-title)`),
-  - duży responsywny rozmiar (`clamp(36px, 7vw, 96px)`),
-  - uppercase + rozszerzone kerning (`letter-spacing: 0.18em`),
-  - kolor złoty (`var(--gold)`) i poświata (`var(--glow-gold)`).
+- Zawartość po poprawnej autoryzacji korzysta z kontenera `.next-game-content.is-visible`.
+- Wewnątrz kontenera renderowana jest tabela tylko do odczytu (`.admin-data-table` w `.admin-table-scroll`) z kolumnami:
+  - `Rodzaj gry`,
+  - `Data`,
+  - `Nazwa`.
 
 ## 13) Zakładka „Gry użytkowników” — panel administratora
 - Do paska `.admin-panel-tabs` dodano nową pigułkę **Gry użytkowników** (`.admin-panel-tab`) pomiędzy „Gry admina” i „Gry do potwierdzenia”.
@@ -173,7 +172,7 @@
   - zaokrąglenie `var(--radius-md)`,
   - wewnętrzny odstęp `16px`,
   - układ `grid` z odstępem `var(--gap-2)`.
-- Komunikat „Strona w budowie” pozostaje w stylu `.user-construction` (duży złoty napis), co utrzymuje wspólny język wizualny placeholderów w aplikacji.
+- Zakładka admina „Najbliższa gra” korzysta z tych samych komponentów tabeli (`.admin-table-scroll`, `.admin-data-table`) co widok użytkownika.
 
 
 ## 14) Layout „Gry użytkowników” po wdrożeniu CRUD
@@ -459,3 +458,18 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 - Przyciski `Dodaj` i `Usuń` znajdują się w kolumnie akcji tabeli **Tabela2**.
 - **Tabela1** nie zawiera kolumny akcji i służy tylko do edycji pól `Buy-In` oraz `Rebuy`.
 - W **Tabela2** przycisk `Dodaj` jest widoczny tylko w ostatnim wierszu, a `Usuń` jest blokowany przy jednym wierszu.
+
+
+## 24) Zakładka „Najbliższa gra” — admin + użytkownik
+
+- W panelu admina dodano zakładkę `adminNextGameTab` renderowaną jako standardowy panel `.admin-panel-content`.
+- Widok użytkownika (`#nextGameTableBody`) i admina (`#adminNextGameTableBody`) mają identyczny układ tabeli 3-kolumnowej, bez kontrolek edycyjnych.
+- W obu widokach zachowano istniejące fonty i kolory (`.admin-data-table`):
+  - nagłówek i komórki tabeli używają tego samego kontrastu i obramowań co inne tabele administracyjne,
+  - nie dodawano nowych tokenów kolorystycznych ani nowych fontów.
+
+## 25) Kolejność kolumn „% / Waga7” w statystykach
+
+- Aktualny układ nagłówków w tabelach statystyk: `% Rozegranych gier` → `% Wszystkich gier` → `Waga7`.
+- Zmiana dotyczy zakładek `Gry admina` i `Statystyki` w panelu admina.
+- Geometria i style komórek pozostają bez zmian (ta sama tabela `.admin-games-players-stats-table`).

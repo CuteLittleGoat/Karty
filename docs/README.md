@@ -90,10 +90,34 @@ W tej zakładce zarządzasz listą graczy, PIN-ami i uprawnieniami.
 ### Uprawnienia
 1. W wierszu gracza kliknij przycisk uprawnień.
 2. W oknie/modalu zaznacz lub odznacz dostępne zakładki.
-3. Zatwierdź zapis zmian.
+3. Bez zamykania okna możesz od razu zmieniać kolejne checkboxy — każda zmiana zapisuje się na bieżąco.
+4. Zamknij okno po zakończeniu edycji.
 
 **Edytowalne:** nazwa, PIN, checkbox „Aplikacja”, wybór uprawnień.  
 **Automatyczne/systemowe:** statusy zapisu i walidacja formatu PIN.
+
+---
+
+## 7. Najbliższa gra
+
+### Widok użytkownika
+1. Otwórz zakładkę **„Najbliższa gra”**.
+2. Wpisz PIN z uprawnieniem do tej zakładki i kliknij **„Otwórz”**.
+3. Po poprawnej autoryzacji zobaczysz tabelę tylko do odczytu z kolumnami:
+   - **Rodzaj gry**,
+   - **Data**,
+   - **Nazwa**.
+4. Wiersze są sortowane po kolumnie **Data**: najnowsza gra jest najwyżej.
+
+### Widok administratora
+1. Otwórz **Panel Administratora**.
+2. Kliknij zakładkę **„Najbliższa gra”**.
+3. Zobaczysz tę samą tabelę tylko do odczytu, z tymi samymi kolumnami i sortowaniem.
+
+### Jakie gry są wyświetlane
+- Do tabeli trafiają gry utworzone w zakładkach **„Gry admina”** i **„Gry użytkowników”**.
+- W tabeli pokazywane są tylko gry z odznaczonym checkboxem **CzyZamknięta**.
+- Zaznaczenie checkboxa **CzyZamknięta** ukrywa grę z zakładki **„Najbliższa gra”**.
 
 ---
 
@@ -190,10 +214,16 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 2. W kolumnie **„Nazwa”** przy każdej grze są dwa przyciski: **„Szczegóły”** i **„Notatki do gry”**.
 3. Kliknij **„Notatki do gry”**, aby otworzyć notatkę planistyczną dla danej gry.
 4. Dla nowo dodanej gry zobaczysz domyślny szablon:
+   - `Rodzaj gry:`
+   - `Adres:`
    - `Przewidywani gracze:`
+   - `Stack:`
+   - `Wpisowe:`
    - `Rebuy:`
-   - `Addon:`
-   - `Inne:`
+   - `Add-on:`
+   - `Blindy:`
+   - `Organizacja:`
+   - `Podział puli:`
 5. Możesz dowolnie edytować treść (w tym usunąć cały szablon) i kliknąć **„Zapisz”**.
 6. Kliknij **„Domyślne”**, aby przywrócić powyższy szablon.
 7. Po kliknięciu **„Zapisz”** treść notatki jest zapisywana tylko jako aktualny typ notatki (do gry), bez łączenia ze starym typem notatek.

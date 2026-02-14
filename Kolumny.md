@@ -77,8 +77,8 @@ Parametry sekcji:
 | Waga6 | brak | min 84px dla inputów | brak | brak | lewo | standard |
 | Suma z rozegranych gier | brak | min 84px dla inputów | brak | brak | lewo | standard |
 | % Rozegranych gier | brak | min 84px dla inputów | brak | brak | lewo | standard |
-| Waga7 | brak | min 84px dla inputów | brak | brak | lewo | standard |
 | % Wszystkich gier | brak | min 84px dla inputów | brak | brak | lewo | standard |
+| Waga7 | brak | min 84px dla inputów | brak | brak | lewo | standard |
 | Wynik | brak | min 84px dla inputów | brak | brak | lewo | standard |
 
 Parametry sekcji:
@@ -248,9 +248,10 @@ Uwagi:
 - Parametry szerokości i wyrównania pojedynczych kolumn pozostają bez zmian; zmienia się tylko to, które kolumny są renderowane.
 
 ## Etykiety kolumn procentowych w Statystykach
-- Zmieniono nazwy (zamiana miejsc) dwóch nagłówków procentowych w tabelach statystyk:
-  - `% Wszystkich gier` → `% Rozegranych gier`,
-  - `% Rozegranych gier` → `% Wszystkich gier`.
+- Aktualna kolejność nagłówków procentowych i wag w tabelach statystyk:
+  - `% Rozegranych gier`,
+  - `% Wszystkich gier`,
+  - `Waga7`.
 - Dotyczy to tabel:
   - `Gry admina -> Statystyki`,
   - `Admin -> Statystyki`,
@@ -310,3 +311,16 @@ Uwagi:
 Parametry sekcji kalkulatora:
 - Lewy panel przełączania trybu: szerokość kolumny `180px` (`.admin-calculator-layout`).
 - Minimalna szerokość tabel kalkulatora: `760px`.
+
+
+## Zakładka „Najbliższa gra” (admin + użytkownik)
+
+| Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
+| --- | --- | --- | --- | --- | --- | --- |
+| Rodzaj gry | brak | brak | brak | brak | lewo | standard |
+| Data | brak | brak | brak | brak | lewo | standard |
+| Nazwa | brak | brak | brak | brak | lewo | standard |
+
+Uwagi:
+- Tabela działa w trybie tylko do odczytu (brak pól `input/select`).
+- W obu widokach używa kontenera `.admin-table-scroll` i tabeli `.admin-data-table`.
