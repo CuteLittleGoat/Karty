@@ -46,7 +46,13 @@ MigracjaAndroid/AndroidApp/
          ├─ values/strings.xml
          ├─ values/colors.xml
          ├─ values/themes.xml
-         └─ drawable/ic_notification.xml
+         ├─ drawable/ic_notification.xml
+         ├─ drawable/ic_launcher_foreground.xml
+         ├─ mipmap/ic_launcher.xml
+         ├─ mipmap/ic_launcher_round.xml
+         └─ mipmap-anydpi-v26/
+            ├─ ic_launcher.xml
+            └─ ic_launcher_round.xml
 ```
 
 ---
@@ -240,6 +246,7 @@ class AdminMessageListener {
   <application
     android:label="Karty"
     android:icon="@mipmap/ic_launcher"
+    android:roundIcon="@mipmap/ic_launcher_round"
     android:usesCleartextTraffic="false">
 
     <activity
@@ -256,6 +263,21 @@ class AdminMessageListener {
 ```
 
 ---
+
+
+### 4.1. Typowy błąd i szybka naprawa ikon
+
+Jeżeli dostajesz błąd: `resource mipmap/ic_launcher not found`, oznacza to, że manifest odwołuje się do ikony w katalogu `mipmap`, ale plik ikony istnieje tylko w `drawable` albo nie istnieje wcale.
+
+Minimalny komplet, który musi istnieć:
+- `res/mipmap/ic_launcher.xml`
+- `res/mipmap/ic_launcher_round.xml`
+- `res/mipmap-anydpi-v26/ic_launcher.xml`
+- `res/mipmap-anydpi-v26/ic_launcher_round.xml`
+- `res/drawable/ic_launcher_foreground.xml`
+- `res/values/colors.xml` z kolorem `ic_launcher_background`
+
+Po skopiowaniu tych plików wykonaj: **Build → Clean Project**, a potem **Build → Rebuild Project**.
 
 ## 5. `app/build.gradle` — kluczowe zależności
 

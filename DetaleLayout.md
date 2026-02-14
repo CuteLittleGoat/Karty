@@ -476,3 +476,10 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 - Aktualny układ nagłówków w tabelach statystyk: `% Rozegranych gier` → `% Wszystkich gier` → `Waga7`.
 - Zmiana dotyczy zakładek `Gry admina` i `Statystyki` w panelu admina.
 - Geometria i style komórek pozostają bez zmian (ta sama tabela `.admin-games-players-stats-table`).
+
+
+## 17) Android launcher icon (MigracjaAndroid)
+- Ikona launchera oparta o motyw noir + czerwony akcent kart.
+- Tło ikony (`ic_launcher_background`): `#0B1F2E`.
+- Foreground (`ic_launcher_foreground.xml`) zawiera biały kształt karty i czerwony symbol.
+- Dostępne warianty: standard (`ic_launcher`) i okrągły (`ic_launcher_round`).
