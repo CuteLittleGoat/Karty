@@ -1346,7 +1346,3 @@ Pakiet `MigracjaAndroid/AndroidApp` zawiera minimalny projekt Android oparty o W
 
 To usuwa błąd linkowania zasobów przy buildzie w Android Studio, kiedy manifest używa `@mipmap/ic_launcher`.
 
-## Nawigacja z panelu administratora do modułu Symulator
-- W nagłówku panelu administratora dodano przycisk `Nie dotykać!` (`#adminSimulatorButton`).
-- Kliknięcie przycisku wykonuje przekierowanie `window.location.href = "../Symulator/index.html"`.
-- Przycisk działa wyłącznie jako nawigacja UI do osobnego modułu symulacji Texas Hold'em.

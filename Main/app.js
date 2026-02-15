@@ -5631,18 +5631,6 @@ const initInstructionModal = () => {
   });
 };
 
-const initSimulatorNavigation = () => {
-  const simulatorButton = document.querySelector("#adminSimulatorButton");
-
-  if (!simulatorButton) {
-    return;
-  }
-
-  simulatorButton.addEventListener("click", () => {
-    window.location.href = "../Symulator/index.html";
-  });
-};
-
 const bootstrap = async () => {
   const isAdmin = getAdminMode();
   document.body.classList.toggle("is-admin", isAdmin);
@@ -5668,7 +5656,6 @@ const bootstrap = async () => {
   initLatestMessage();
   initRulesDisplay();
   initInstructionModal();
-  initSimulatorNavigation();
 };
 
 void bootstrap();
