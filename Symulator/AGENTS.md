@@ -1,7 +1,7 @@
 1. Folder "Stymulator" to osobny moduł
 2. Moduł "Symulator" ma własne pliki z dokumentacją
 3. Zmian w module "Symulator" nie uwzględniaj w ogólej dokumentacji - modyfikuj jednak pliki DetaleLayout.md i Kolumny.md
-4. Po każdej zmianie kodu zmodyfikuj pliki docs/Documentation.md oraz docs/README.md
+4. Po każdej zmianie kodu zmodyfikuj pliki Symulator/docs/Documentation.md oraz Symulator/docs/README.md
 5. Plik README.md ma zawierać instrukcje obsługi dla użytkownika
 6. Instrukcja w README.md ma być bardzo dokładna - co i gdzie kliknąć dla uzyskania jakiegoś efektu (dodanie stołu, dodanie gracza, zmiana stawki itp).
 7. Instrukcja w REAMDE.md ma na celu opisanie wszystkich funkcji UI dla użytkownika, który pierwszy raz ma kontakt z aplikacją
