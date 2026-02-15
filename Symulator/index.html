@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Symulator Texas Hold'em</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="simulator-layout">
+      <aside class="control-panel">
+        <h1>Texas Hold'em</h1>
+        <p class="panel-subtitle">Tryb: 1 gracz + 1-9 botów</p>
+
+        <label for="startingStack">Stawka początkowa</label>
+        <input id="startingStack" type="number" min="100" step="50" value="1000" />
+
+        <label for="botCount">Liczba botów</label>
+        <input id="botCount" type="range" min="1" max="9" value="5" />
+        <div class="range-value"><span id="botCountValue">5</span> botów</div>
+
+        <div class="panel-actions">
+          <button id="startHandButton" class="primary" type="button">Rozdaj nową rękę</button>
+          <button id="nextStreetButton" class="secondary" type="button" disabled>Następna faza</button>
+          <button id="autoPlayButton" class="secondary" type="button">Auto gra</button>
+        </div>
+
+        <div class="stats">
+          <div><span>Pula:</span> <strong id="potValue">0</strong></div>
+          <div><span>Faza:</span> <strong id="phaseValue">-</strong></div>
+          <div><span>Stack gracza:</span> <strong id="playerStackValue">0</strong></div>
+        </div>
+
+        <div class="log-wrapper">
+          <h2>Log rozdań</h2>
+          <ul id="eventLog" class="event-log"></ul>
+        </div>
+      </aside>
+
+      <main class="table-area">
+        <header class="table-header">
+          <a class="back-link" href="../Main/index.html?view=admin">← Powrót do panelu admina</a>
+        </header>
+
+        <section class="poker-table" aria-label="Wirtualny stół pokerowy">
+          <div class="deck" id="deck"></div>
+
+          <div class="community-cards" id="communityCards"></div>
+
+          <div class="pot-chip" id="potChip">Pula: 0</div>
+
+          <div class="bot-seats" id="botSeats"></div>
+
+          <div class="player-seat" id="playerSeat">
+            <div class="seat-label">Ty</div>
+            <div class="cards" id="playerCards"></div>
+            <div class="seat-status" id="playerStatus">Czeka na rozdanie...</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

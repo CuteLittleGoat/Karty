@@ -336,3 +336,15 @@ Uwagi:
 - Widok użytkownika działa w trybie tylko do odczytu (brak pól `input/select`).
 - Widok administratora ma dodatkową kolumnę akcji z przyciskiem destrukcyjnym.
 - Oba widoki używają kontenera `.admin-table-scroll` i tabeli `.admin-data-table`.
+
+## Symulator Texas Hold'em — układ kolumn i wyrównanie
+
+| Sekcja | Min-width | Max-width | Wyrównanie | Uwagi |
+| --- | --- | --- | --- | --- |
+| Lewy panel sterowania (`.control-panel`) | 320px | 320px (desktop) | elementy w kolumnie, do góry | Zawiera pola stawki, suwak botów, akcje i log. |
+| Obszar stołu (`.table-area`) | 0 | 1fr | rozciąga się na całą dostępną szerokość | Nagłówek z linkiem powrotu + stół. |
+| Główny stół (`.poker-table`) | zależny od viewportu | wysokość `min(76vh, 650px)` | centralne pozycjonowanie elementów | Elipsa z pozycjonowaniem absolutnym miejsc graczy. |
+
+### Responsywność Symulatora
+- Dla szerokości `max-width: 1100px` layout przechodzi na jedną kolumnę (`grid-template-columns: 1fr`).
+- Panel sterowania przechodzi nad stół, z dolną ramką oddzielającą sekcje.
