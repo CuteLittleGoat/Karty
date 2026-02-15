@@ -1,0 +1,35 @@
+KOD #3 — ROZDAWANIE HOLE CARDS (dokładna kolejność 1 karta na rundę)
+
+import type { Card } from "./deck";
+
+export type PlayerState = {
+  id: string;
+  stack: number;
+  hole: Card[];
+  inHand: boolean;  // false po fold
+  committedThisRound: number; // ile włożył w aktualnej rundzie
+  committedTotal: number;     // ile włożył w całym rozdaniu
+};
+
+export function dealHoleCards(
+  deck: Card[],
+  players: PlayerState[],
+  buttonIndex: number
+): { deck: Card[]; players: PlayerState[] } {
+  const n = players.length;
+  const start = (buttonIndex + 1) % n; // pierwszy dostaje SB (lewo od buttona)
+  const d = deck.slice();
+  const ps = players.map(p => ({ ...p, hole: [] as Card[] }));
+
+  // 2 okrążenia, po 1 karcie
+  for (let round = 0; round < 2; round++) {
+    for (let offset = 0; offset < n; offset++) {
+      const i = (start + offset) % n;
+      const card = d.shift();
+      if (!card) throw new Error("Deck exhausted");
+      ps[i].hole.push(card);
+    }
+  }
+
+  return { deck: d, players: ps };
+}

@@ -1,0 +1,143 @@
+KOD #5 — LICYTACJA (No-Limit) — stan rundy + legalne akcje + „kiedy kończymy rundę”
+
+export type Action =
+  | { type: "FOLD" }
+  | { type: "CHECK" }
+  | { type: "CALL" }
+  | { type: "BET"; amount: number }    // gdy currentBet = 0
+  | { type: "RAISE"; amount: number }  // podaj docelową kwotę w tej rundzie (toTotal)
+  | { type: "ALL_IN" };
+
+export type BettingRound = {
+  currentBet: number;     // najwyższa kwota w tej rundzie (per gracz)
+  minRaiseTo: number;     // minimalny docelowy raise (toTotal)
+  lastAggressor: number | null; // index gracza, który ostatnio bet/raise
+  toAct: number;          // index gracza, który teraz ma ruch
+  startedFrom: number;    // index pierwszego gracza w tej rundzie
+  isOver: boolean;
+};
+
+export function startRound(startedFrom: number): BettingRound {
+  return {
+    currentBet: 0,
+    minRaiseTo: 0,
+    lastAggressor: null,
+    toAct: startedFrom,
+    startedFrom,
+    isOver: false,
+  };
+}
+
+// Zasada końca rundy: runda kończy się, gdy akcja wróci do lastAggressor
+// i nie ma nierównych wkładów (wszyscy aktywni wyrównali currentBet).
+export function isRoundComplete(
+  round: BettingRound,
+  players: { inHand: boolean; committedThisRound: number }[]
+): boolean {
+  if (round.lastAggressor === null) {
+    // Nikt nie betował: runda kończy się gdy wszyscy aktywni mieli możliwość check
+    // W praktyce: jeśli wróciliśmy do startedFrom i każdy aktywny ma committedThisRound == 0
+    // (tę logikę najłatwiej kontrolować licznikiem "actedThisCycle" — patrz niżej)
+    return false;
+  }
+
+  for (const p of players) {
+    if (!p.inHand) continue;
+    if (p.committedThisRound !== round.currentBet) return false;
+  }
+  return true;
+}
+
+// Pomocniczo: przesunięcie na następnego aktywnego
+export function nextActive(
+  from: number,
+  players: { inHand: boolean }[]
+): number {
+  const n = players.length;
+  let i = (from + 1) % n;
+  while (!players[i].inHand) i = (i + 1) % n;
+  return i;
+}
+
+// UWAGA: To jest szkic rdzenia zastosowania akcji. W prawdziwej grze
+// musisz pilnować stacków, all-inów i side potów. Ten kod obsługuje „czysty” round.
+export function applyActionBasic(
+  players: { stack: number; inHand: boolean; committedThisRound: number }[],
+  round: BettingRound,
+  actor: number,
+  action: Action,
+  bigBlind: number
+): { players: typeof players; round: BettingRound } {
+  const ps = players.map(p => ({ ...p }));
+  const r: BettingRound = { ...round };
+
+  const p = ps[actor];
+  const toCall = Math.max(0, r.currentBet - p.committedThisRound);
+
+  // Legalność (bardzo podstawowa)
+  if (!p.inHand) throw new Error("Actor not in hand");
+
+  if (action.type === "FOLD") {
+    p.inHand = false;
+  }
+
+  if (action.type === "CHECK") {
+    if (toCall !== 0) throw new Error("Cannot check when facing a bet");
+  }
+
+  if (action.type === "CALL") {
+    if (toCall === 0) throw new Error("Nothing to call (use check)");
+    if (p.stack < toCall) throw new Error("Insufficient stack for call (use all-in)");
+    p.stack -= toCall;
+    p.committedThisRound += toCall;
+  }
+
+  if (action.type === "BET") {
+    if (r.currentBet !== 0) throw new Error("Use RAISE, not BET");
+    const amount = action.amount;
+    if (amount < bigBlind) throw new Error("Bet must be at least BB (common rule)");
+    if (p.stack < amount) throw new Error("Insufficient stack for bet (use all-in)");
+    p.stack -= amount;
+    p.committedThisRound += amount;
+    r.currentBet = amount;
+    r.lastAggressor = actor;
+    r.minRaiseTo = amount + bigBlind; // uproszczenie
+  }
+
+  if (action.type === "RAISE") {
+    if (r.currentBet === 0) throw new Error("Use BET, not RAISE");
+    const toTotal = action.amount; // docelowo ile ma mieć w rundzie
+    if (toTotal < r.minRaiseTo) throw new Error("Raise too small");
+    const needed = toTotal - p.committedThisRound;
+    if (p.stack < needed) throw new Error("Insufficient stack for raise (use all-in)");
+    p.stack -= needed;
+    p.committedThisRound += needed;
+
+    // aktualizacja minRaiseTo (różnica)
+    const raiseSize = toTotal - r.currentBet;
+    r.currentBet = toTotal;
+    r.minRaiseTo = r.currentBet + raiseSize;
+    r.lastAggressor = actor;
+  }
+
+  if (action.type === "ALL_IN") {
+    const push = p.stack;
+    p.stack = 0;
+    p.committedThisRound += push;
+
+    // Jeśli all-in przebija currentBet, traktujemy to jako raise (może być „niepełny raise”)
+    if (p.committedThisRound > r.currentBet) {
+      const toTotal = p.committedThisRound;
+      const raiseSize = toTotal - r.currentBet;
+      r.currentBet = toTotal;
+      // Uproszczenie: pozwól minRaiseTo rosnąć, ale w realu „niepełny raise” ma specjalne zasady.
+      r.minRaiseTo = r.currentBet + Math.max(raiseSize, bigBlind);
+      r.lastAggressor = actor;
+    }
+  }
+
+  // Przejdź do następnego aktywnego
+  r.toAct = nextActive(actor, ps);
+
+  return { players: ps, round: r };
+}

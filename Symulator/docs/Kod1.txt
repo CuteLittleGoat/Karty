@@ -1,0 +1,32 @@
+KOD #1 — STRUKTURY DANYCH (TypeScript) + tasowanie talii (Fisher–Yates)
+
+type Suit = "S" | "H" | "D" | "C"; // Spades, Hearts, Diamonds, Clubs
+type Rank = "A" | "K" | "Q" | "J" | "10" | "9" | "8" | "7" | "6" | "5" | "4" | "3" | "2";
+
+export type Card = {
+  rank: Rank;
+  suit: Suit;
+};
+
+export function buildDeck52(): Card[] {
+  const suits: Suit[] = ["S", "H", "D", "C"];
+  const ranks: Rank[] = ["A","K","Q","J","10","9","8","7","6","5","4","3","2"];
+  const deck: Card[] = [];
+
+  for (const suit of suits) {
+    for (const rank of ranks) {
+      deck.push({ rank, suit });
+    }
+  }
+  return deck;
+}
+
+// Fisher–Yates (unbiased)
+export function shuffle<T>(arr: T[], rng: () => number = Math.random): T[] {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}

@@ -1,0 +1,88 @@
+KOD #7 — PRZYKŁADOWA PĘTLA „ROZEGRAJ ROZDANIE” (szkielet state machine)
+
+import { buildDeck52, shuffle } from "./deck";
+import { computePositions, moveButton } from "./positions";
+import { dealHoleCards } from "./deal";
+import { dealFlop, dealTurn, dealRiver } from "./board";
+
+type Street = "PREFLOP" | "FLOP" | "TURN" | "RIVER" | "SHOWDOWN" | "DONE";
+
+type GameState = {
+  street: Street;
+  button: number;
+  sb: number;
+  bb: number;
+  pot: number;
+  deck: any[];
+  board: { community: any[]; burn: any[] };
+  players: any[]; // PlayerState (w realu wpisz typ)
+  blinds: { sb: number; bb: number };
+};
+
+export function newHand(state: GameState): GameState {
+  const n = state.players.length;
+  const button = moveButton(state.button, n);
+  const pos = computePositions(button, n);
+
+  // reset graczy
+  const players = state.players.map((p: any) => ({
+    ...p,
+    hole: [],
+    inHand: true,
+    committedThisRound: 0,
+    committedTotal: 0,
+  }));
+
+  // zbuduj + potasuj
+  const deck = shuffle(buildDeck52());
+
+  // pobierz blindy
+  let pot = 0;
+
+  function postBlind(i: number, amount: number) {
+    const pay = Math.min(players[i].stack, amount);
+    players[i].stack -= pay;
+    players[i].committedThisRound += pay;
+    players[i].committedTotal += pay;
+    pot += pay;
+  }
+
+  postBlind(pos.smallBlind, state.blinds.sb);
+  postBlind(pos.bigBlind, state.blinds.bb);
+
+  // rozdanie
+  const dealt = dealHoleCards(deck, players, pos.button);
+
+  return {
+    ...state,
+    street: "PREFLOP",
+    button: pos.button,
+    sb: pos.smallBlind,
+    bb: pos.bigBlind,
+    pot,
+    deck: dealt.deck,
+    board: { community: [], burn: [] },
+    players: dealt.players,
+  };
+}
+
+// Dalej: startRound(...) + applyActionBasic(...) aż runda zakończona,
+// potem reset committedThisRound i przejście do FLOP/TURN/RIVER.
+export function nextStreet(state: GameState): GameState {
+  if (state.street === "PREFLOP") {
+    const { deck, board } = dealFlop(state.deck as any, state.board as any);
+    return { ...state, street: "FLOP", deck, board };
+  }
+  if (state.street === "FLOP") {
+    const { deck, board } = dealTurn(state.deck as any, state.board as any);
+    return { ...state, street: "TURN", deck, board };
+  }
+  if (state.street === "TURN") {
+    const { deck, board } = dealRiver(state.deck as any, state.board as any);
+    return { ...state, street: "RIVER", deck, board };
+  }
+  if (state.street === "RIVER") {
+    return { ...state, street: "SHOWDOWN" };
+  }
+  return { ...state, street: "DONE" };
+}
