@@ -36,7 +36,7 @@ Brak integracji z zewnętrznym backendem — stan rozgrywki utrzymywany jest w o
 
 ## 3.2 Kolorystyka
 - Tło noir-zielone (`--bg`, `--bg2`, `--felt`, `--felt2`).
-- Akcent gold (`--gold`) dla ważnych elementów i linków.
+- Akcent gold (`--gold`) dla ważnych elementów interfejsu.
 - Ciemny panel boczny (`--panel`) z ramkami (`--border`).
 
 ## 3.3 Geometria stołu

@@ -1,9 +1,8 @@
 # Symulator Texas Hold'em — instrukcja użytkownika (UI)
 
 ## 1. Jak uruchomić moduł
-1. Otwórz panel administratora w głównej aplikacji.
-2. W prawym górnym rogu kliknij przycisk **Nie dotykać!**.
-3. Otworzy się ekran symulatora z zielonym stołem i lewym panelem sterowania.
+1. Otwórz plik/adres **Symulator/index.html** w przeglądarce.
+2. Poczekaj na załadowanie widoku z zielonym stołem i lewym panelem sterowania.
 
 ## 2. Co znajduje się na ekranie
 - **Lewa kolumna (panel sterowania)**:
@@ -44,5 +43,3 @@
 - **Sprawdza / Przebija** — bot wykonał akcję stawki.
 - U gracza na dole pojawia się komunikat o aktualnym stanie i zwycięzcy.
 
-## 7. Powrót do głównej aplikacji
-- Nad stołem kliknij link **← Powrót do panelu admina**.

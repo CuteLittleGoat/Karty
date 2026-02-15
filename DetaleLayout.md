@@ -492,4 +492,3 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 - Animacje:
   - tasowanie talii (`.deck.shuffle`, `@keyframes shuffle`),
   - rozdawanie kart (`.card.dealt`, `@keyframes deal`).
-- W panelu administratora aplikacji głównej dodano przycisk `Nie dotykać!` (styl jak przycisk `Instrukcja`, wariant `.secondary`).
