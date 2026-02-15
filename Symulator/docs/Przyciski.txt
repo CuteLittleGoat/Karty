@@ -1,0 +1,48 @@
+PRZYCISKI / KONTROLKI DO SYMULATORA (TY + 1..9 BOTÓW)
+
+A) Sterowanie rozgrywką (flow)
+1) [Nowa gra] – ustawia stacki, blindy, liczbę botów, reset statystyk
+2) [Nowe rozdanie] – inicjuje rozdanie: przesunięcie buttona, pobranie blindów, tasowanie
+3) [Rozdaj karty] – rozdaje hole cards (automatycznie po kolei)
+4) [Start licytacji: Preflop] – przechodzi w tryb decyzji graczy (często możesz to łączyć z rozdaniem)
+5) [Flop] – wykonuje: burn + wyłóż 3 + start licytacji postflop
+6) [Turn] – burn + wyłóż 1 + start licytacji
+7) [River] – burn + wyłóż 1 + start licytacji
+8) [Showdown] – odkrywa karty, liczy układy, przyznaje pulę/pule
+9) [Zakończ rozdanie] – zamyka rozdanie (np. po pasach), rozdaje pulę zwycięzcy
+
+B) Przyciski decyzji GRACZA (Twoje akcje)
+1) [Fold] – pas
+2) [Check] – czekaj (aktywny tylko, gdy do calla = 0)
+3) [Call] – sprawdź (dopłać brakującą kwotę)
+4) [Bet] – postaw (gdy do calla = 0)
+5) [Raise] – podbij (gdy istnieje bet)
+6) [All-in] – wejdź za wszystko
+
+C) Kontrolki kwot (slider / input)
+1) Pole kwoty + przyciski szybkie:
+   - [Min] (minimalny bet/raise)
+   - [1/2 Pot]
+   - [Pot]
+   - [2x] (np. 2x poprzedniego betu)
+   - [Max] (all-in lub maksymalna dozwolona)
+2) Suwak (slider) kwoty z walidacją minimalnego raise
+
+D) Automatyzacja i debug (bardzo przydatne w symulatorze)
+1) [Auto-rozegraj rękę] – boty grają automatycznie do końca, Ty tylko obserwujesz (tryb treningu)
+2) [Krok] – wykonaj jeden ruch (jedna decyzja kolejnego gracza)
+3) [Następna runda licytacji] – „przeskocz” do końca rundy, jeśli gracz jest jedyny decydujący (opcjonalne)
+4) [Cofnij] – cofnij ostatnią akcję (opcjonalne; trudne przy RNG, ale mega wygodne)
+5) [Historia akcji] – pokaż log: kto, kiedy, ile bet/raise/call, pot size
+6) [Pokaż/Ukryj equity] – (opcjonalne) podgląd szans wygranej w % (jeśli liczysz Monte Carlo)
+
+E) Ustawienia stołu (przed grą lub w menu)
+1) Liczba botów (1..9)
+2) Stack startowy
+3) Blindy (SB/BB) + tempo wzrostu (opcjonalne)
+4) Limit:
+   - No-Limit (najprościej i najpopularniej)
+   - Pot-Limit (opcjonalnie)
+   - Fixed-Limit (opcjonalnie)
+5) Prędkość botów / opóźnienie animacji
+6) Profil botów (losowy / ręcznie przypisany / „wszyscy tight” itd.)
