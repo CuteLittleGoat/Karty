@@ -783,3 +783,9 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 3. Aby przejść do wybranej funkcji, klikaj karty/zakładki tak samo jak w wersji webowej (np. „Aktualności”, „Najbliższa gra”, „Czat”).
 4. Jeśli pojawi się systemowe powiadomienie Android o nowej wiadomości, kliknij je, aby wrócić do aplikacji i odczytać treść w UI.
 5. W aplikacji Android nie ma osobnego ekranu administratora wymuszanego przez URL — widok startuje jako użytkownik.
+
+## Przycisk „Nie dotykać!” (panel administratora)
+1. Wejdź do widoku administratora aplikacji głównej.
+2. W prawym górnym rogu, obok przycisku `Instrukcja`, kliknij przycisk `Nie dotykać!`.
+3. Aplikacja otworzy osobny moduł `Symulator` (`Symulator/index.html`).
+4. Aby wrócić, w module Symulator kliknij link `← Powrót do panelu admina` nad stołem.

@@ -483,3 +483,13 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 - Tło ikony (`ic_launcher_background`): `#0B1F2E`.
 - Foreground (`ic_launcher_foreground.xml`) zawiera biały kształt karty i czerwony symbol.
 - Dostępne warianty: standard (`ic_launcher`) i okrągły (`ic_launcher_round`).
+
+## 14) Symulator Texas Hold'em — detale wizualne
+- Moduł posiada układ 2-kolumnowy: lewy panel sterowania (`320px`) i prawa strefa stołu (`1fr`).
+- Stół ma eliptyczny kształt z zielonym filcem (`--felt`, `--felt2`) i obramowaniem gold.
+- Gracz jest zawsze na dole stołu, boty po półokręgu naprzeciwko.
+- Karty prywatne botów są domyślnie zakryte (`.card.hidden`), karty gracza i wspólne odkryte.
+- Animacje:
+  - tasowanie talii (`.deck.shuffle`, `@keyframes shuffle`),
+  - rozdawanie kart (`.card.dealt`, `@keyframes deal`).
+- W panelu administratora aplikacji głównej dodano przycisk `Nie dotykać!` (styl jak przycisk `Instrukcja`, wariant `.secondary`).
