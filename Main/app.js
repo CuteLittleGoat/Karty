@@ -14,7 +14,7 @@ const RULES_DOCUMENT = "rules";
 const ADMIN_MESSAGES_COLLECTION = "admin_messages";
 const ADMIN_MESSAGES_DOCUMENT = "admin_messages";
 const RULES_DEFAULT_TEXT = "";
-const DEFAULT_GAME_NOTES_TEMPLATE = "Rodzaj gry:\nAdres:\nPrzewidywani gracze:\nStack:\nWpisowe:\nRebuy:\nAdd-on:\nBlindy:\nOrganizacja:\nPodział puli:";
+const DEFAULT_GAME_NOTES_TEMPLATE = "Rodzaj gry:\nPrzewidywani gracze:\nStack:\nWpisowe:\nRebuy:\nAdd-on:\nBlindy:\nOrganizacja:\nPodział puli:";
 
 const getPreGameNotes = (game) => {
   if (typeof game?.preGameNotes === "string") {

@@ -248,7 +248,6 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 3. Kliknij **„Notatki do gry”**, aby otworzyć notatkę planistyczną dla danej gry.
 4. Dla nowo dodanej gry zobaczysz domyślny szablon:
    - `Rodzaj gry:`
-   - `Adres:`
    - `Przewidywani gracze:`
    - `Stack:`
    - `Wpisowe:`
