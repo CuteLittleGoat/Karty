@@ -498,4 +498,10 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 - Zakładka **Najbliższa gra** (admin i użytkownik) ma dodatkową kolumnę tekstową `CzyWszyscyPotwierdzili` z wartościami `Tak/Nie`.
 - Zakładka **Gry admina** w kolumnie `Nazwa` zachowuje układ `input + Szczegóły`; przycisk `Notatki do gry` nie jest renderowany w tej sekcji.
 - Zakładka **Gry użytkowników** zachowuje dostęp do przycisku `Notatki do gry` (bez zmian wizualnych w tym module).
+## 23) Stałe ostrzeżenie bezpieczeństwa w strefie gracza
+- W górnej części `.user-panel` (pod etykietą „Strefa gracza”) widoczny jest stały blok `.user-security-warning`.
+- Komponent jest pełnej szerokości panelu (`flex: 1 1 100%`), więc ostrzeżenie zawsze trafia do osobnego wiersza nad zakładkami użytkownika.
+- Warstwa wizualna ostrzeżenia używa czerwonego akcentu: obramowanie `rgba(226, 58, 75, 0.55)` oraz tło `rgba(226, 58, 75, 0.12)`.
+- Typografia: font-size `--fs-small`, line-height `1.45`, pogrubienie `600` dla szybkiej czytelności treści bezpieczeństwa.
+- Ostrzeżenie nie jest interaktywne (statyczny komunikat tekstowy), ale pozostaje zgodne z motywem noir/gold przez kontrolowany kontrast i zaokrąglenie `var(--radius-sm)`.
 

@@ -14,6 +14,11 @@ Po otwarciu strony zobaczysz układ podzielony na sekcje (karty).
 - Interfejs opisany w tym dokumencie dotyczy wyłącznie funkcji projektu **Karty**.
 - W UI **nie ma** ekranów, przycisków ani formularzy dla kolekcji: `Nekrolog_config`, `Nekrolog_refresh_jobs`, `Nekrolog_snapshots` (to zasoby innego projektu).
 
+### Ostrzeżenie bezpieczeństwa danych (widoczne w „Strefie gracza”)
+- Nad zakładkami użytkownika zawsze wyświetla się czerwone ostrzeżenie o publicznym charakterze danych.
+- Komunikat przypomina, aby **nigdy** nie wpisywać w czacie i formularzach gier danych wrażliwych (np. adres, nazwisko).
+- To ostrzeżenie jest stałym elementem interfejsu użytkownika i nie wymaga żadnego kliknięcia ani PIN-u, aby je zobaczyć.
+
 ## 2. Panel administratora — zakładki i nawigacja
 
 W karcie **„Panel Administratora”** na górze są zakładki.
