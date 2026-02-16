@@ -74,13 +74,14 @@ W tej zakładce zarządzasz listą graczy, PIN-ami i uprawnieniami.
 
 ### Dodanie gracza
 1. Otwórz zakładkę **„Gracze”**.
-2. Kliknij przycisk dodania nowego gracza (jeśli jest dostępny w widoku).
-3. Uzupełnij dane w nowym wierszu/formularzu:
+2. Sprawdź wiersz informacyjny **„Liczba dodanych graczy”** (nad tabelą) — pokazuje bieżącą liczbę graczy w aplikacji.
+3. Kliknij przycisk dodania nowego gracza (jeśli jest dostępny w widoku).
+4. Uzupełnij dane w nowym wierszu/formularzu:
    - nazwa gracza,
    - PIN,
    - dostęp do aplikacji,
    - uprawnienia zakładek.
-4. Zapisz zmiany przyciskiem w danym wierszu/sekcji.
+5. Zapisz zmiany przyciskiem w danym wierszu/sekcji.
 
 ### Edycja gracza
 1. Znajdź gracza na liście.
@@ -106,8 +107,11 @@ W tej zakładce zarządzasz listą graczy, PIN-ami i uprawnieniami.
 3. Po poprawnej autoryzacji zobaczysz tabelę tylko do odczytu z kolumnami:
    - **Rodzaj gry**,
    - **Data**,
-   - **Nazwa**.
-4. Wiersze są sortowane po kolumnie **Data**: najnowsza gra jest najwyżej.
+   - **Nazwa**,
+   - **CzyWszyscyPotwierdzili** (*Tak/Nie*).
+4. W kolumnie **CzyWszyscyPotwierdzili** wartość domyślna to **Nie**.
+5. Wartość zmienia się na **Tak** dopiero wtedy, gdy każdy gracz wpisany do szczegółów gry zostanie potwierdzony w zakładce **„Gry do potwierdzenia”**.
+6. Wiersze są sortowane po kolumnie **Data**: najnowsza gra jest najwyżej.
 
 ### Widok administratora
 1. Otwórz **Panel Administratora**.
@@ -116,9 +120,12 @@ W tej zakładce zarządzasz listą graczy, PIN-ami i uprawnieniami.
    - **Rodzaj gry**,
    - **Data**,
    - **Nazwa**,
+   - **CzyWszyscyPotwierdzili** (*Tak/Nie*),
    - **Akcje**.
-4. W kolumnie **Akcje** kliknij przycisk **„Usuń Całkowicie”**, jeżeli chcesz usunąć śmieciowy wpis.
-5. Operacja **„Usuń Całkowicie”** kasuje grę bezpośrednio z listy i z bazy danych aplikacji (narzędzie porządkowe dla admina).
+4. W kolumnie **CzyWszyscyPotwierdzili** wartość domyślna to **Nie**.
+5. Wartość przełącza się na **Tak** dopiero wtedy, gdy wszyscy gracze zapisani do gry zostaną potwierdzeni w zakładce **„Gry do potwierdzenia”**.
+6. W kolumnie **Akcje** kliknij przycisk **„Usuń Całkowicie”**, jeżeli chcesz usunąć śmieciowy wpis.
+7. Operacja **„Usuń Całkowicie”** kasuje grę bezpośrednio z listy i z bazy danych aplikacji (narzędzie porządkowe dla admina).
 
 ### Jakie gry są wyświetlane
 - Do tabeli trafiają gry utworzone w zakładkach **„Gry admina”** i **„Gry użytkowników”**.
@@ -146,6 +153,11 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 5. Wpisz treść podsumowania i kliknij **„Zapisz”**, aby zapisać notatkę po grze.
 6. Kliknij **„Usuń”**, aby całkowicie wyczyścić treść notatki po grze.
 7. Zamknij okno przyciskiem `×`, kliknięciem poza oknem lub klawiszem `Esc`.
+
+
+### Uwaga o przyciskach notatek
+- W zakładce **„Gry admina”** przy tabeli gier dostępny jest przycisk **„Szczegóły”** (bez przycisku „Notatki do gry”).
+- Przycisk **„Notatki do gry”** pozostaje dostępny w sekcji **„Gry użytkowników”**.
 
 ### Które pola wpisujesz ręcznie
 - Nazwa gracza,
@@ -213,15 +225,17 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 ### Edycja własnej gry
 1. Wybierz rok i grę z listy.
 2. Otwórz szczegóły.
-3. Zmień dane wierszy i zapisz.
+3. Przy dodawaniu nowego wiersza pole **Wypłata** domyślnie ustawiane jest na `0`.
+4. Możesz ręcznie zmienić wartość **Wypłata** na dowolną liczbę.
+5. Zmień pozostałe dane wierszy i zapisz.
 
 ### Co jest liczone automatycznie
 - Podsumowanie `+/-` per wiersz,
 - część pól podsumowań i sum.
 
 ### Notatki przy tworzeniu/edycji gry (kolumna „Nazwa”)
-1. Wejdź do tabeli gier w zakładce **„Gry admina”** albo **„Gry użytkowników”**.
-2. W kolumnie **„Nazwa”** przy każdej grze są dwa przyciski: **„Szczegóły”** i **„Notatki do gry”**.
+1. Wejdź do tabeli gier w zakładce **„Gry użytkowników”**.
+2. W kolumnie **„Nazwa”** przy każdej grze są przyciski **„Szczegóły”** i **„Notatki do gry”**.
 3. Kliknij **„Notatki do gry”**, aby otworzyć notatkę planistyczną dla danej gry.
 4. Dla nowo dodanej gry zobaczysz domyślny szablon:
    - `Rodzaj gry:`
