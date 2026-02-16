@@ -340,6 +340,7 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 
 
 ## 16) „Podsumowanie gry” — przycisk Notatki i modal
+- Domyślny szablon notatek planistycznych zawiera pola: `Rodzaj gry`, `Przewidywani gracze`, `Stack`, `Wpisowe`, `Rebuy`, `Add-on`, `Blindy`, `Organizacja`, `Podział puli` (bez pola `Adres`).
 - W nagłówku każdej karty podsumowania dodano kontener `.admin-game-summary-heading`:
   - układ poziomy `display:flex`,
   - wyrównanie pionowe `align-items:center`,

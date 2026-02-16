@@ -774,7 +774,6 @@ Skutek:
   - zamykanie (`×`, klik poza modalem, `Esc`).
 - Dodano stałą `DEFAULT_GAME_NOTES_TEMPLATE`:
   - `Rodzaj gry:`
-  - `Adres:`
   - `Przewidywani gracze:`
   - `Stack:`
   - `Wpisowe:`
