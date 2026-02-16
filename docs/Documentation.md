@@ -187,6 +187,16 @@ Poniżej zebrana jest struktura kolekcji i pól na podstawie aktualnego eksportu
 - `players`
   - dokumenty legacy/statyczne do danych historycznych graczy.
 
+- `Nekrolog_config`
+  - kolekcja obcego projektu, celowo **nieużywana** przez aplikację Karty.
+
+- `Nekrolog_snapshots`
+  - kolekcja obcego projektu, celowo **nieużywana** przez aplikację Karty.
+
+- `Nekrolog_refresh_jobs`
+  - kolekcja obcego projektu, celowo **nieużywana** przez aplikację Karty.
+  - po stronie Rules zapis jest ograniczony do dokumentu `latest`, ale aplikacja Karty nie wykonuje odczytu ani zapisu w tej kolekcji.
+
 - `Tables`
   - dokumenty gier (ID automatyczne, np. `3RAPSXbOk5Z7aChy94AN`)
     - pola dokumentu gry:
@@ -250,6 +260,10 @@ service cloud.firestore {
       }
     }
 
+    match /Collection1/{docId} {
+      allow read, write: if true;
+    }
+
     match /chat_messages/{docId} {
       allow read, write: if true;
     }
@@ -300,8 +314,20 @@ service cloud.firestore {
       }
     }
 
-    match /{document=**} {
-      allow read, write: if false;
+    // --- NEKROLOG ---
+    match /Nekrolog_config/{docId} {
+      allow read, write: if true;
+    }
+
+    match /Nekrolog_snapshots/{docId} {
+      allow read, write: if true;
+    }
+
+    // Zapis wyłącznie do stałego ID dokumentu, aby uniknąć
+    // narastania nowych dokumentów przy każdym refreshu.
+    match /Nekrolog_refresh_jobs/{docId} {
+      allow read: if true;
+      allow write: if docId == "latest";
     }
   }
 }
@@ -309,10 +335,10 @@ service cloud.firestore {
 
 ## 3.8 Wpływ aktualizacji Rules na moduły aplikacji
 
-Po dodaniu jawnych reguł dla kolekcji `admin_games_stats` i `players`:
+Po dodaniu reguł dla kolekcji `Collection1`, `Nekrolog_config`, `Nekrolog_snapshots` i `Nekrolog_refresh_jobs`:
 - moduł Statystyki może zapisywać konfigurację widocznych kolumn (`visibleColumns`) bez błędów `permission-denied`,
 - odczyt/zapis danych legacy w `players` pozostaje spójny z aktualnym schematem,
-- opis struktury Firestore i polityki dostępu w dokumentacji jest spójny.
+- kolekcje `Nekrolog_*` są oznaczone jako obce dla tego produktu i pozostają poza zakresem logiki `Main/app.js`.
 
 ---
 
@@ -1383,4 +1409,3 @@ Pakiet `MigracjaAndroid/AndroidApp` zawiera minimalny projekt Android oparty o W
   - `app/src/main/res/values/colors.xml` (`ic_launcher_background`)
 
 To usuwa błąd linkowania zasobów przy buildzie w Android Studio, kiedy manifest używa `@mipmap/ic_launcher`.
-

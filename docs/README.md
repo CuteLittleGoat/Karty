@@ -10,6 +10,10 @@ Po otwarciu strony zobaczysz układ podzielony na sekcje (karty).
 - Środek: siatka kart z funkcjami (administracja, gry, statystyki, czat, regulamin).
 - Wiele elementów pojawia się zależnie od tego, czy jesteś administratorem albo graczem z poprawnym PIN-em.
 
+### Zakres UI tej aplikacji
+- Interfejs opisany w tym dokumencie dotyczy wyłącznie funkcji projektu **Karty**.
+- W UI **nie ma** ekranów, przycisków ani formularzy dla kolekcji: `Nekrolog_config`, `Nekrolog_refresh_jobs`, `Nekrolog_snapshots` (to zasoby innego projektu).
+
 ## 2. Panel administratora — zakładki i nawigacja
 
 W karcie **„Panel Administratora”** na górze są zakładki.
@@ -797,4 +801,3 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 3. Aby przejść do wybranej funkcji, klikaj karty/zakładki tak samo jak w wersji webowej (np. „Aktualności”, „Najbliższa gra”, „Czat”).
 4. Jeśli pojawi się systemowe powiadomienie Android o nowej wiadomości, kliknij je, aby wrócić do aplikacji i odczytać treść w UI.
 5. W aplikacji Android nie ma osobnego ekranu administratora wymuszanego przez URL — widok startuje jako użytkownik.
-
