@@ -55,6 +55,44 @@ Przechowuje konfigurację połączenia Firebase jako globalny obiekt używany po
 
 ---
 
+
+## 4. Zmiany logiki UI/JS (aktualny stan)
+
+### 4.1 „Gry admina” — usunięcie przycisku „Notatki do gry”
+- W rendererze listy gier admina usunięto tworzenie przycisku `Notatki do gry` z kontenera `.admin-games-name-control`.
+- W praktyce `nameWrap` zawiera teraz wyłącznie: pole nazwy gry + przycisk `Szczegóły`.
+- Funkcja notatek przedmeczowych nadal istnieje w module „Gry użytkowników”, więc zmiana dotyczy tylko widoku admina.
+
+### 4.2 Zakładka „Gracze” — licznik graczy
+- Do HTML dodano element `#adminPlayersSummary`.
+- W `initAdminPlayers()` licznik jest aktualizowany przy każdym `renderPlayers()`:
+  - format tekstu: `Liczba dodanych graczy: X`,
+  - `X = adminPlayersState.players.length`.
+- Dzięki temu UI pokazuje aktualny stan listy po dodaniu, usunięciu i odświeżeniu danych.
+
+### 4.3 „Najbliższa gra” — kolumna `CzyWszyscyPotwierdzili`
+- Nagłówki tabel (admin + użytkownik) rozszerzono o kolumnę `CzyWszyscyPotwierdzili`.
+- `renderNextGamesTable(...)` renderuje wartość:
+  - `Tak` gdy `game.allConfirmed === true`,
+  - `Nie` w przeciwnym przypadku (wartość domyślna).
+- Dodano async pipeline:
+  - `getAllPlayersConfirmedForGame(...)` pobiera `rows` i `confirmations` dla gry,
+  - buduje unikalną listę graczy z `rows.playerName`,
+  - zwraca `true` tylko jeśli każdy gracz ma rekord `confirmed: true`.
+- Dodano `synchronizeNextGamesConfirmations()`:
+  - oblicza flagę `allConfirmed` dla gier z `Tables` i `UserGames`,
+  - aktualizuje stan `nextGamesState.adminGames` i `nextGamesState.userGames`,
+  - chroni UI przed wyścigiem asynchronicznym przez token `nextGamesState.syncToken`.
+- Re-synchronizacja uruchamia się po:
+  - snapshotach listy gier,
+  - ręcznym odświeżeniu zakładki „Najbliższa gra”,
+  - kliknięciu `Potwierdź/Anuluj` w „Gry do potwierdzenia” (admin i użytkownik).
+
+### 4.4 „Szczegóły gry” — domyślna wypłata `0`
+- W obu ścieżkach dodawania wiersza (`Gry admina` oraz manager gry użytkownika) pole `payout` jest inicjalizowane jako `"0"`.
+- Pole pozostaje edytowalne przez użytkownika formularza, więc domyślna wartość nie blokuje ręcznej zmiany.
+
+
 ## 3. Backend: model danych Firestore
 
 > Poniższy model odzwierciedla sposób użycia kolekcji i dokumentów przez logikę aplikacji.
@@ -88,7 +126,7 @@ Przechowuje konfigurację połączenia Firebase jako globalny obiekt używany po
   - `playerName`,
   - `entryFee`,
   - `rebuy`,
-  - `payout`,
+  - `payout` (domyślnie zapisywane jako tekstowa wartość `"0"` przy dodaniu nowego wiersza),
   - `summary` (`+/-`),
   - `points`,
   - `championship`.
@@ -1057,10 +1095,10 @@ Zapis wykonywany przez istniejący `savePlayers()` (`set(..., merge domyślny dl
 Brak nowej kolekcji i brak migracji krytycznej:
 - starsze rekordy bez `statsYearsAccess` są normalizowane do pustej tablicy.
 
-## 24. Aktualizacja 2026-02-13 — rozdzielenie notatek na „do gry” i „po grze”
+## 24. Obsługa notatek „do gry” i „po grze”
 
 ### 24.1 Zakres zmiany
-- Przycisk przy sekcji **Tworzenie gier** (kolumna `Nazwa`) ma etykietę **„Notatki do gry”**.
+- Przycisk przy sekcji **Tworzenie gier** (kolumna `Nazwa`) ma etykietę **„Notatki do gry”** w module **Gry użytkowników** (w module **Gry admina** przycisk nie jest renderowany).
 - Przycisk przy sekcji **Podsumowanie gry** ma etykietę **„Notatki po grze”**.
 - W widoku **Gry do potwierdzenia** przycisk podglądu notatek ma etykietę **„Notatki do gry”** i działa tylko w trybie read-only.
 

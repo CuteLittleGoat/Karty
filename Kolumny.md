@@ -322,6 +322,7 @@ Parametry sekcji kalkulatora:
 | Rodzaj gry | brak | brak | brak | brak | lewo | standard |
 | Data | brak | brak | brak | brak | lewo | standard |
 | Nazwa | brak | brak | brak | brak | lewo | standard |
+| CzyWszyscyPotwierdzili | brak | brak | brak | brak | lewo | standard |
 
 ### Widok administratora
 
@@ -330,6 +331,7 @@ Parametry sekcji kalkulatora:
 | Rodzaj gry | brak | brak | brak | brak | lewo | standard |
 | Data | brak | brak | brak | brak | lewo | standard |
 | Nazwa | brak | brak | brak | brak | lewo | standard |
+| CzyWszyscyPotwierdzili | brak | brak | brak | brak | lewo | standard |
 | Akcje | brak | wg zawartości przycisku `Usuń Całkowicie` | brak | brak | lewo | standard |
 
 Uwagi:

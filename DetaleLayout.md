@@ -492,3 +492,10 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 - Animacje:
   - tasowanie talii (`.deck.shuffle`, `@keyframes shuffle`),
   - rozdawanie kart (`.card.dealt`, `@keyframes deal`).
+
+## Aktualne detale UI (najświeższy stan)
+- Zakładka **Gracze** (admin) zawiera dodatkowy wiersz statusowy `Liczba dodanych graczy: X` nad tabelą; korzysta z klasy `status-text` (spójna typografia i kolorystyka z pozostałymi statusami).
+- Zakładka **Najbliższa gra** (admin i użytkownik) ma dodatkową kolumnę tekstową `CzyWszyscyPotwierdzili` z wartościami `Tak/Nie`.
+- Zakładka **Gry admina** w kolumnie `Nazwa` zachowuje układ `input + Szczegóły`; przycisk `Notatki do gry` nie jest renderowany w tej sekcji.
+- Zakładka **Gry użytkowników** zachowuje dostęp do przycisku `Notatki do gry` (bez zmian wizualnych w tym module).
+

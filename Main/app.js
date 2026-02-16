@@ -243,7 +243,8 @@ const nextGamesState = {
   userGames: [],
   adminUnsubscribe: null,
   userUnsubscribe: null,
-  db: null
+  db: null,
+  syncToken: 0
 };
 const debounceTimers = new Map();
 const adminRefreshHandlers = new Map();
@@ -970,7 +971,7 @@ const renderNextGamesTable = (tableBody, games, emptyMessage, options = {}) => {
   if (!games.length) {
     const emptyRow = document.createElement("tr");
     const emptyCell = document.createElement("td");
-    emptyCell.colSpan = canDeleteCompletely ? 4 : 3;
+    emptyCell.colSpan = canDeleteCompletely ? 5 : 4;
     emptyCell.textContent = emptyMessage;
     emptyRow.appendChild(emptyCell);
     tableBody.appendChild(emptyRow);
@@ -982,6 +983,7 @@ const renderNextGamesTable = (tableBody, games, emptyMessage, options = {}) => {
     row.appendChild(createCell(game.gameType || ""));
     row.appendChild(createCell(game.gameDate || ""));
     row.appendChild(createCell(game.name || ""));
+    row.appendChild(createCell(game.allConfirmed ? "Tak" : "Nie"));
 
     if (canDeleteCompletely) {
       const deleteCell = document.createElement("td");
@@ -1000,6 +1002,74 @@ const renderNextGamesTable = (tableBody, games, emptyMessage, options = {}) => {
 
     tableBody.appendChild(row);
   });
+};
+
+const getAllPlayersConfirmedForGame = async ({ db, collectionName, gameId, gameDetailsCollectionName }) => {
+  if (!db || !collectionName || !gameId || !gameDetailsCollectionName) {
+    return false;
+  }
+
+  const gameRef = db.collection(collectionName).doc(gameId);
+  const [rowsSnapshot, confirmationsSnapshot] = await Promise.all([
+    gameRef.collection(gameDetailsCollectionName).get(),
+    gameRef.collection(GAME_CONFIRMATIONS_COLLECTION).get()
+  ]);
+
+  const playerNames = Array.from(new Set(rowsSnapshot.docs
+    .map((doc) => (typeof doc.data()?.playerName === "string" ? doc.data().playerName.trim() : ""))
+    .filter(Boolean)));
+
+  if (!playerNames.length) {
+    return false;
+  }
+
+  const confirmedPlayers = new Set();
+  confirmationsSnapshot.docs.forEach((doc) => {
+    const confirmation = doc.data();
+    const playerName = typeof confirmation?.playerName === "string" ? confirmation.playerName.trim() : "";
+    if (playerName && confirmation?.confirmed === true) {
+      confirmedPlayers.add(playerName);
+    }
+  });
+
+  return playerNames.every((playerName) => confirmedPlayers.has(playerName));
+};
+
+const synchronizeNextGamesConfirmations = async () => {
+  if (!nextGamesState.db) {
+    syncNextGamesViews();
+    return;
+  }
+
+  const token = nextGamesState.syncToken + 1;
+  nextGamesState.syncToken = token;
+  const gameDetailsCollectionName = getGameDetailsCollectionName();
+
+  const enrichWithConfirmations = async (game) => {
+    const allConfirmed = await getAllPlayersConfirmedForGame({
+      db: nextGamesState.db,
+      collectionName: game.collectionName,
+      gameId: game.id,
+      gameDetailsCollectionName
+    });
+    return {
+      ...game,
+      allConfirmed
+    };
+  };
+
+  const [adminGames, userGames] = await Promise.all([
+    Promise.all(nextGamesState.adminGames.map(enrichWithConfirmations)),
+    Promise.all(nextGamesState.userGames.map(enrichWithConfirmations))
+  ]);
+
+  if (nextGamesState.syncToken !== token) {
+    return;
+  }
+
+  nextGamesState.adminGames = adminGames;
+  nextGamesState.userGames = userGames;
+  syncNextGamesViews();
 };
 
 const getCombinedOpenGames = () => {
@@ -1093,13 +1163,13 @@ const initNextGamesView = () => {
   nextGamesState.adminUnsubscribe = db.collection(GAMES_COLLECTION)
     .onSnapshot((snapshot) => {
       nextGamesState.adminGames = mapSnapshot(snapshot, GAMES_COLLECTION);
-      syncNextGamesViews();
+      void synchronizeNextGamesConfirmations();
     });
 
   nextGamesState.userUnsubscribe = db.collection(USER_GAMES_COLLECTION)
     .onSnapshot((snapshot) => {
       nextGamesState.userGames = mapSnapshot(snapshot, USER_GAMES_COLLECTION);
-      syncNextGamesViews();
+      void synchronizeNextGamesConfirmations();
     });
 
   registerAdminRefreshHandler("adminNextGameTab", async () => {
@@ -1109,7 +1179,7 @@ const initNextGamesView = () => {
     ]);
     nextGamesState.adminGames = mapSnapshot(adminGamesSnapshot, GAMES_COLLECTION);
     nextGamesState.userGames = mapSnapshot(userGamesSnapshot, USER_GAMES_COLLECTION);
-    syncNextGamesViews();
+    await synchronizeNextGamesConfirmations();
   });
 };
 
@@ -1417,6 +1487,7 @@ const initUserConfirmations = () => {
             updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
           tr.classList.add("confirmed-row");
+          void synchronizeNextGamesConfirmations();
         });
 
         const cancelButton = document.createElement("button");
@@ -1432,6 +1503,7 @@ const initUserConfirmations = () => {
             updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
           tr.classList.remove("confirmed-row");
+          void synchronizeNextGamesConfirmations();
         });
 
         const notesButton = document.createElement("button");
@@ -2292,7 +2364,7 @@ const initUserGamesManager = ({
       playerName: "",
       entryFee: "",
       rebuy: "",
-      payout: "",
+      payout: "0",
       points: "",
       championship: false,
       createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
@@ -2509,6 +2581,7 @@ const initAdminConfirmations = () => {
               }, { merge: true });
               tr.classList.add("confirmed-row");
               statusCell.textContent = "Potwierdzono";
+              void synchronizeNextGamesConfirmations();
             });
 
             const cancelButton = document.createElement("button");
@@ -2525,6 +2598,7 @@ const initAdminConfirmations = () => {
               }, { merge: true });
               tr.classList.remove("confirmed-row");
               statusCell.textContent = "Niepotwierdzono";
+              void synchronizeNextGamesConfirmations();
             });
 
             actionsWrap.append(confirmButton, cancelButton);
@@ -3164,6 +3238,7 @@ const initAdminPanelRefresh = () => {
 const initAdminPlayers = () => {
   const body = document.querySelector("#adminPlayersBody");
   const status = document.querySelector("#adminPlayersStatus");
+  const summary = document.querySelector("#adminPlayersSummary");
   const addButton = document.querySelector("#adminAddPlayer");
   const modal = document.querySelector("#playerPermissionsModal");
   const modalList = document.querySelector("#playerPermissionsList");
@@ -3174,7 +3249,7 @@ const initAdminPlayers = () => {
   const yearsModalStatus = document.querySelector("#playerStatsYearsStatus");
   const yearsModalCloseButton = document.querySelector("#playerStatsYearsClose");
 
-  if (!body || !status || !addButton || !modal || !modalList || !modalStatus) {
+  if (!body || !status || !summary || !addButton || !modal || !modalList || !modalStatus) {
     return;
   }
 
@@ -3565,6 +3640,7 @@ const initAdminPlayers = () => {
     });
 
     restoreFocusedAdminInputState(body, focusState);
+    summary.textContent = `Liczba dodanych graczy: ${adminPlayersState.players.length}`;
   };
 
   addButton.addEventListener("click", async () => {
@@ -4778,34 +4854,7 @@ const initAdminGames = () => {
       detailsButton.className = "secondary";
       detailsButton.textContent = "Szczegóły";
       detailsButton.addEventListener("click", () => openModal(game.id));
-      const notesButton = document.createElement("button");
-      notesButton.type = "button";
-      notesButton.className = "secondary";
-      notesButton.textContent = "Notatki do gry";
-      notesButton.addEventListener("click", () => {
-        summaryNotesModal.open({
-          gameId: game.id,
-          gameName: game.name || "Bez nazwy",
-          notes: getPreGameNotes(game),
-          canWrite: true,
-          onSave: async ({ notes }) => {
-            await db.collection(gamesCollectionName).doc(game.id).update({
-              preGameNotes: notes,
-              notes: firebaseApp.firestore.FieldValue.delete()
-            });
-            const target = state.games.find((entry) => entry.id === game.id);
-            if (target) {
-              target.preGameNotes = notes;
-            }
-          },
-          notesLabel: "Notatki do gry",
-          clearButtonLabel: "Domyślne",
-          clearToDefault: true,
-          textareaPlaceholder: "Wpisz notatki do gry...",
-          triggerButton: notesButton
-        });
-      });
-      nameWrap.append(nameInput, detailsButton, notesButton);
+      nameWrap.append(nameInput, detailsButton);
       nameCell.appendChild(nameWrap);
 
       const closedCell = document.createElement("td");
@@ -5359,7 +5408,7 @@ const initAdminGames = () => {
         playerName: "",
         entryFee: "",
         rebuy: "",
-        payout: "",
+        payout: "0",
         points: "",
         championship: false,
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
