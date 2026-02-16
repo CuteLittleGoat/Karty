@@ -1021,6 +1021,19 @@ button.danger {
   color: var(--muted);
 }
 
+.user-security-warning {
+  margin: 0;
+  flex: 1 1 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(226, 58, 75, 0.55);
+  background: rgba(226, 58, 75, 0.12);
+  color: rgba(255, 232, 236, 0.96);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  font-weight: 600;
+}
+
 .user-tabs {
   display: flex;
   flex-wrap: wrap;

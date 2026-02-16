@@ -454,6 +454,12 @@ Dzięki temu autoryzacja w jednej sekcji nie implikuje automatycznie dostępu do
 
 ## 7. Moduły użytkownika — logika backendowa
 
+### 7.0 Stałe ostrzeżenie bezpieczeństwa w strefie gracza
+- W `Main/index.html` w obrębie `.user-panel` dodano statyczny komunikat `<p class="user-security-warning">...</p>`.
+- Komunikat jest renderowany nad listą zakładek użytkownika i zawiera ostrzeżenie o publicznej dostępności wpisywanych treści.
+- Element ma atrybut `role="note"`, żeby semantycznie oznaczyć informację ostrzegawczą w warstwie dostępności.
+- Styl ostrzeżenia definiuje `Main/styles.css` (czerwone tło, delikatna ramka, podwyższona grubość pisma), dzięki czemu komunikat jest czytelny niezależnie od aktywnej zakładki.
+
 ## 7.1 Najbliższa gra
 - `initPinGate()` uruchamia bramkę PIN użytkownika.
 - `initNextGamesView()` pobiera dane z kolekcji `Tables` i `UserGames`, łączy je i renderuje.
