@@ -760,8 +760,9 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 ### 27.1 Wejście do zakładki
 1. Wejdź do aplikacji jako administrator.
 2. W karcie **„Panel Administratora”** kliknij zakładkę **„Kalkulator”**.
-3. Po lewej stronie zobaczysz przełączniki trybu **Tournament** i **Cash**.
-4. Po prawej stronie zobaczysz pięć tabel: **Tabela1**, **Tabela2**, **Tabela3**, **Tabela4**, **Tabela5**.
+3. W górnej części sekcji zobaczysz panel przełącznika trybu z dwoma przyciskami: **Tournament** i **Cash**.
+4. Pod panelem przełącznika zobaczysz pięć tabel: **Tabela1**, **Tabela2**, **Tabela3**, **Tabela4**, **Tabela5**.
+5. W widoku mobilnym (telefon) panel przełącznika jest zawsze osobnym blokiem nad tabelami, dzięki czemu tabele mają większą szerokość roboczą i łatwiej je przewijać poziomo.
 
 ### 27.2 Tabela1 (Suma / Buy-In / Rebuy / Liczba Rebuy)
 1. W kolumnie **Buy-In** wpisz liczbę (np. `100`).
