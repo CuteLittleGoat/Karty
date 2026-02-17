@@ -311,8 +311,9 @@ Uwagi:
 | Suma | brak | brak | brak | brak | lewo | standard |
 
 Parametry sekcji kalkulatora:
-- Lewy panel przełączania trybu: szerokość kolumny `180px` (`.admin-calculator-layout`).
-- Minimalna szerokość tabel kalkulatora: `760px`.
+- Desktop: lewy panel przełączania trybu ma szerokość kolumny `180px` (`.admin-calculator-layout`).
+- Mobile (`max-width: 720px`): układ przechodzi na 1 kolumnę; panel `Tournament/Cash` jest nad tabelami i ma układ dwóch równych przycisków.
+- Minimalna szerokość tabel kalkulatora: `760px` (desktop) oraz `680px` (mobile).
 
 
 ## Zakładka „Najbliższa gra” (admin + użytkownik)

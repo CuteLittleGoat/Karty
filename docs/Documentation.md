@@ -1307,6 +1307,7 @@ Efekt: dane i kolejność rankingu są spójne pomiędzy zakładkami **Statystyk
 Aktualna implementacja kalkulatora obejmuje:
 - `Main/index.html` — opis sekcji kalkulatora w panelu admina oraz kontenery dla tabel 1–5.
 - `Main/app.js` — pełna logika `initAdminCalculator()` (obliczenia, render, dynamiczne kolumny, modal rebuy).
+- `Main/styles.css` — układ desktop/mobile panelu kalkulatora, w tym responsywne ustawienie przełącznika trybu nad tabelami.
 
 ### 26.2 Struktura stanu w `initAdminCalculator()`
 Dla każdego trybu (`tournament`, `cash`) utrzymywany jest niezależny stan:
@@ -1378,6 +1379,12 @@ Po każdym renderze kalkulator:
 - odtwarza fokus przez `restoreFocusedAdminInputState(...)`.
 
 Dzięki temu możliwa jest pełna przebudowa widoku po zmianach bez utraty aktualnie edytowanego pola.
+
+### 26.9 Responsywność mobilna (układ przełącznika i tabel)
+- Dla szerokości `<= 720px` kontener `.admin-calculator-layout` przełącza się z dwóch kolumn na jedną (`grid-template-columns: 1fr`).
+- `.admin-calculator-switch` staje się osobnym panelem nad tabelami: ma własny padding, obramowanie i tło zgodne z innymi panelami UI.
+- W panelu mobilnym przyciski `Tournament` i `Cash` układają się obok siebie (`repeat(2, minmax(0, 1fr))`) i wypełniają szerokość panelu.
+- Minimalna szerokość tabel kalkulatora na mobile to `680px`, dzięki czemu tabele dostają większy obszar roboczy po przeniesieniu switcha nad content.
 
 
 ## 24. Czat admina i kolejność wiadomości

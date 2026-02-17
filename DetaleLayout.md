@@ -424,17 +424,18 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 
 ### 1) Układ sekcji kalkulatora
 - Kontener główny: `.admin-calculator`.
-- Layout dwukolumnowy: `.admin-calculator-layout`.
-  - Lewy panel: `.admin-calculator-switch` (szerokość kolumny 180px).
-  - Prawy panel: `.admin-calculator-content` z blokami tabel.
+- Layout bazowy dwukolumnowy: `.admin-calculator-layout`.
+  - Desktop: lewy panel `.admin-calculator-switch` (szerokość kolumny 180px) + prawy panel `.admin-calculator-content`.
+  - Mobile (`max-width: 720px`): pojedyncza kolumna, a `.admin-calculator-switch` działa jako osobny panel nad tabelami.
 - Każda tabela znajduje się w `.admin-calculator-table-wrap`.
 
 ### 2) Styl tabel i kontrolek
 - Tabele używają globalnej klasy `.admin-data-table`.
-- Dla tabel kalkulatora zachowane jest `min-width: 760px`.
+- Dla tabel kalkulatora: `min-width: 760px` (desktop) oraz `min-width: 680px` (mobile, `max-width: 720px`).
 - Pola obliczane są renderowane jako `input.admin-input[disabled]`.
 - Przycisk rebuy w Tabela2 wykorzystuje wariant wizualny `button.secondary`.
 - Akcje wierszy (`Dodaj`, `Usuń`, `Dodaj Rebuy`, `Usuń Rebuy`) używają istniejącego układu `.admin-table-actions`.
+- Mobilny panel switcha ma obramowanie (`1px solid var(--border2)`), tło `rgba(0, 0, 0, 0.32)` i padding `12px` dla spójności z panelami „Lata”.
 
 ### 3) Modal rebuy (nowy element UI)
 - Modal tworzony dynamicznie: `#adminCalculatorRebuyModal`.
