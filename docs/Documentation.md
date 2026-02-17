@@ -1324,9 +1324,7 @@ Dodatkowo stan globalny modułu zawiera:
 Funkcja `getCalculatorMetrics()` liczy wartości pochodne:
 - `totalBuyIn` = `buyIn z Tabela1 × liczba wierszy Tabela2`.
 - `totalRebuy` = suma wszystkich pól rebuy ze wszystkich wierszy Tabela2.
-- `rebuyEntriesCount` = łączna liczba niepustych pól `Rebuy1..RebuyN` we wszystkich wierszach Tabela2 (puste pola nie są liczone).
 - `sumValue` = `totalBuyIn + totalRebuy` (Tabela1 → kolumna `Suma`).
-- kolumna `Rebuy` w Tabela1 = `rebuyEntriesCount`.
 - `rebuyRowsCount` = liczba wierszy Tabela2 z co najmniej jednym niepustym polem rebuy.
 - `percentDecimal` = `% z Tabela3 / 100`.
 - `rake` = `(totalBuyIn + totalRebuy) * percentDecimal`.
@@ -1343,8 +1341,6 @@ Kliknięcie przycisku:
 4. Pozwala usuwać ostatnią kolumnę przyciskiem `Usuń Rebuy` (minimum 1 kolumna).
 5. Każda zmiana w polach rebuy natychmiast odświeża obliczenia w tabelach 1, 3, 5.
 6. Przed przebudową tabeli modala zapisywany jest stan fokusu (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`) i po renderze przywracany przez `restoreFocusedAdminInputState(...)`, co zabezpiecza przed utratą fokusu przy autozapisie/re-renderze.
-
-W Tabela1 pole `Rebuy` jest renderowane jako `readonly` (przez `createReadonlyCell`) i odzwierciedla liczbę uzupełnionych pól rebuy z modali Tabela2, a nie sumę kwot.
 
 ### 26.5 Logika eliminacji i Tabela4
 - Checkbox `Eliminated` jest nadrzędny dla pozycji w Tabela4.
