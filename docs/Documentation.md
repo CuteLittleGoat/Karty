@@ -1325,7 +1325,7 @@ Funkcja `getCalculatorMetrics()` liczy wartości pochodne:
 - `totalBuyIn` = `buyIn z Tabela1 × liczba wierszy Tabela2`.
 - `totalRebuy` = suma wszystkich pól rebuy ze wszystkich wierszy Tabela2.
 - `sumValue` = `totalBuyIn + totalRebuy` (Tabela1 → kolumna `Suma`).
-- `rebuyRowsCount` = liczba wierszy Tabela2 z co najmniej jednym niepustym polem rebuy.
+- `rebuyEntriesCount` = łączna liczba niepustych pól `Rebuy1..N` we wszystkich wierszach Tabela2.
 - `percentDecimal` = `% z Tabela3 / 100`.
 - `rake` = `(totalBuyIn + totalRebuy) * percentDecimal`.
 - `entryFee` = `totalBuyIn - (totalBuyIn * percentDecimal)`.
