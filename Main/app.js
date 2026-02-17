@@ -3048,6 +3048,8 @@ const initAdminCalculator = () => {
       return;
     }
 
+    const focusState = getFocusedAdminInputState(rebuyModal);
+
     let headerHtml = "<thead><tr>";
     row.rebuys.forEach((_, index) => {
       headerHtml += `<th>Rebuy${index + 1}</th>`;
@@ -3106,6 +3108,8 @@ const initAdminCalculator = () => {
     });
 
     rebuyModalActions.append(addButton, removeButton);
+
+    restoreFocusedAdminInputState(rebuyModal, focusState);
   };
 
   const openRebuyModal = (rowId) => {
