@@ -1340,6 +1340,7 @@ Kliknięcie przycisku:
 3. Pozwala dodać kolumnę przyciskiem `Dodaj Rebuy`.
 4. Pozwala usuwać ostatnią kolumnę przyciskiem `Usuń Rebuy` (minimum 1 kolumna).
 5. Każda zmiana w polach rebuy natychmiast odświeża obliczenia w tabelach 1, 3, 5.
+6. Przed przebudową tabeli modala zapisywany jest stan fokusu (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`) i po renderze przywracany przez `restoreFocusedAdminInputState(...)`, co zabezpiecza przed utratą fokusu przy autozapisie/re-renderze.
 
 ### 26.5 Logika eliminacji i Tabela4
 - Checkbox `Eliminated` jest nadrzędny dla pozycji w Tabela4.
