@@ -15,3 +15,4 @@
 15. Ignoruj zawartość folderu MigracjaAndroid
 16. W plikach docs/Documentation.md, docs/README.md, Kolumny.md, DetaleLayoutu.md nie przechowuj archiwalnych informacji. Mają tam być tylko aktualne informacje a nie historia zmian.
 17. W głównym folderze jest plik test.json - Umożliwia on pełen dostęp do Firebase. Możesz dowolnie modyfikować kolekcje poza trzema: Nekrolog_refresh_jobs, Nekrolog_config i Nekrolog_snapshots - one służą do innego projektu
+18. Jeżeli zmiana dotyczy edycji lub dodania nowgo pola to przeczytaj analizę Analizy/Wazne_Fokus i zadbaj, żeby nie wystąpił ten błąd
