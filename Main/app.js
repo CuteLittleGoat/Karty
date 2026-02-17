@@ -2929,6 +2929,7 @@ const initAdminCalculator = () => {
     const buyInValue = parseInteger(modeState.table1Row.buyIn);
     const totalBuyIn = modeState.table2Rows.reduce((sum) => sum + buyInValue, 0);
     const totalRebuy = modeState.table2Rows.reduce((sum, row) => sum + getRowRebuySum(row), 0);
+    const rebuyEntriesCount = modeState.table2Rows.reduce((count, row) => count + getRowRebuyCount(row), 0);
     const rebuyRowsCount = modeState.table2Rows.reduce((count, row) => count + (getRowRebuyCount(row) > 0 ? 1 : 0), 0);
     const sumValue = totalBuyIn + totalRebuy;
     const percentValue = parseInteger(modeState.table3Row.percent);
@@ -2942,6 +2943,7 @@ const initAdminCalculator = () => {
       buyInValue,
       totalBuyIn,
       totalRebuy,
+      rebuyEntriesCount,
       rebuyRowsCount,
       sumValue,
       percentValue,
@@ -3164,23 +3166,11 @@ const initAdminCalculator = () => {
     });
     buyInCell.appendChild(buyInInput);
 
-    const rebuyCell = document.createElement("td");
-    const rebuyInput = document.createElement("input");
-    rebuyInput.type = "text";
-    rebuyInput.className = "admin-input";
-    rebuyInput.value = modeState.table1Row.rebuy;
-    rebuyInput.dataset.focusTarget = "admin-calculator";
-    rebuyInput.dataset.section = "table1";
-    rebuyInput.dataset.tableId = state.mode;
-    rebuyInput.dataset.rowId = modeState.table1Row.id;
-    rebuyInput.dataset.columnKey = "rebuy";
-    rebuyInput.addEventListener("input", () => {
-      modeState.table1Row.rebuy = sanitizeInteger(rebuyInput.value);
-      rebuyInput.value = modeState.table1Row.rebuy;
-    });
-    rebuyCell.appendChild(rebuyInput);
-
-    tr.append(buyInCell, rebuyCell, createReadonlyCell(formatNumber(metrics.rebuyRowsCount)));
+    tr.append(
+      buyInCell,
+      createReadonlyCell(formatNumber(metrics.rebuyEntriesCount)),
+      createReadonlyCell(formatNumber(metrics.rebuyRowsCount))
+    );
     tbody.appendChild(tr);
 
     table.appendChild(tbody);
