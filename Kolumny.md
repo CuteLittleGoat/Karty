@@ -276,7 +276,7 @@ Uwagi:
 | LP | brak | brak | brak | brak | lewo | standard |
 | Gracz | brak | brak | brak | brak | lewo | standard |
 | Buy-In | brak | brak | brak | brak | lewo | standard |
-| Rebuy | brak | brak | brak | brak | lewo | standard |
+| Rebuy (przycisk) | brak | wg zawartości przycisku | brak | brak | lewo | standard |
 | Eliminated | brak | brak | brak | brak | lewo | standard |
 | Akcje | brak | wg zawartości | brak | brak | lewo | standard |
 
@@ -284,6 +284,7 @@ Uwagi:
 
 | Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
 | --- | --- | --- | --- | --- | --- | --- |
+| % | brak | brak | brak | brak | lewo | standard |
 | Rake | brak | brak | brak | brak | lewo | standard |
 | Wpisowe | brak | brak | brak | brak | lewo | standard |
 | Rebuy | brak | brak | brak | brak | lewo | standard |
@@ -294,19 +295,20 @@ Uwagi:
 | Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
 | --- | --- | --- | --- | --- | --- | --- |
 | LP | brak | brak | brak | brak | lewo | standard |
-| Miejsce | brak | brak | brak | brak | lewo | standard |
-| Ranking | brak | brak | brak | brak | lewo | standard |
+| Gracz | brak | brak | brak | brak | lewo | standard |
+| Wygrana | brak | brak | brak | brak | lewo | standard |
 
 ### Tabela5
 
 | Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
 | --- | --- | --- | --- | --- | --- | --- |
 | LP | brak | brak | brak | brak | lewo | standard |
-| %wygranej | brak | brak | brak | brak | lewo | standard |
+| Podział puli | brak | brak | brak | brak | lewo | standard |
 | Gracz | brak | brak | brak | brak | lewo | standard |
 | Kwota | brak | brak | brak | brak | lewo | standard |
 | Ranking | brak | brak | brak | brak | lewo | standard |
-| Rebuy1-Rebuy10 | brak | brak | brak | brak | lewo | standard |
+| Rebuy1-RebuyN (dynamicznie) | brak | brak | brak | brak | lewo | standard |
+| Suma | brak | brak | brak | brak | lewo | standard |
 
 Parametry sekcji kalkulatora:
 - Lewy panel przełączania trybu: szerokość kolumny `180px` (`.admin-calculator-layout`).

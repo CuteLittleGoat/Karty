@@ -2851,22 +2851,34 @@ const initAdminCalculator = () => {
   const firebaseApp = getFirebaseApp();
 
   const createInitialState = () => ({
-    table1Rows: [{ id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" }],
-    table2Rows: [{ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false }],
-    table3Row: { rake: "" },
-    table5Rows: [{ id: `table5-${Date.now()}-0`, winPercent: "" }]
+    table1Row: { id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" },
+    table2Rows: [{ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [""] }],
+    table3Row: { percent: "" },
+    eliminatedOrder: []
   });
 
   const state = {
     mode: "tournament",
     playerOptions: [],
     tournament: createInitialState(),
-    cash: createInitialState()
+    cash: createInitialState(),
+    rebuyModal: {
+      mode: null,
+      rowId: null
+    }
   };
 
   const getModeState = () => (state.mode === "cash" ? state.cash : state.tournament);
-
   const sanitizeInteger = (value) => String(value ?? "").replace(/[^0-9]/g, "");
+  const parseInteger = (value) => {
+    const normalized = sanitizeInteger(value);
+    return normalized ? Number.parseInt(normalized, 10) : 0;
+  };
+  const formatNumber = (value) => String(Number.isFinite(value) ? value : 0);
+  const formatPercentDisplay = (value) => {
+    const normalized = sanitizeInteger(value);
+    return normalized ? `${normalized}%` : "";
+  };
 
   const createHeader = (title) => {
     const heading = document.createElement("h4");
@@ -2880,19 +2892,246 @@ const initAdminCalculator = () => {
     return scroll;
   };
 
-  const createComputedCell = () => {
+  const createReadonlyCell = (value) => {
     const td = document.createElement("td");
     const input = document.createElement("input");
     input.type = "text";
     input.className = "admin-input";
-    input.value = "x";
+    input.value = value;
     input.disabled = true;
     td.appendChild(input);
     return td;
   };
 
+  const getModalModeState = () => {
+    if (state.rebuyModal.mode === "cash") {
+      return state.cash;
+    }
+    if (state.rebuyModal.mode === "tournament") {
+      return state.tournament;
+    }
+    return null;
+  };
+
+  const getRebuyRow = () => {
+    const modeState = getModalModeState();
+    if (!modeState || !state.rebuyModal.rowId) {
+      return null;
+    }
+    return modeState.table2Rows.find((row) => row.id === state.rebuyModal.rowId) ?? null;
+  };
+
+  const getRowRebuySum = (row) => row.rebuys.reduce((sum, value) => sum + parseInteger(value), 0);
+  const getRowRebuyCount = (row) => row.rebuys.filter((value) => sanitizeInteger(value) !== "").length;
+
+  const getCalculatorMetrics = () => {
+    const modeState = getModeState();
+    const buyInValue = parseInteger(modeState.table1Row.buyIn);
+    const totalBuyIn = modeState.table2Rows.reduce((sum) => sum + buyInValue, 0);
+    const totalRebuy = modeState.table2Rows.reduce((sum, row) => sum + getRowRebuySum(row), 0);
+    const rebuyRowsCount = modeState.table2Rows.reduce((count, row) => count + (getRowRebuyCount(row) > 0 ? 1 : 0), 0);
+    const sumValue = totalBuyIn + totalRebuy;
+    const percentValue = parseInteger(modeState.table3Row.percent);
+    const percentDecimal = percentValue / 100;
+    const rake = sumValue * percentDecimal;
+    const entryFee = totalBuyIn - (totalBuyIn * percentDecimal);
+    const rebuyAfterRake = totalRebuy - (totalRebuy * percentDecimal);
+    const pot = entryFee + rebuyAfterRake;
+
+    return {
+      buyInValue,
+      totalBuyIn,
+      totalRebuy,
+      rebuyRowsCount,
+      sumValue,
+      percentValue,
+      percentDecimal,
+      rake,
+      entryFee,
+      rebuyAfterRake,
+      pot
+    };
+  };
+
+  const getPrizeSplitPercent = (index) => {
+    if (index === 0) {
+      return 50;
+    }
+    if (index === 1) {
+      return 30;
+    }
+    if (index === 2) {
+      return 20;
+    }
+    return 0;
+  };
+
+  const getTable5Rows = () => {
+    const modeState = getModeState();
+    const metrics = getCalculatorMetrics();
+    return modeState.table2Rows.map((row, index) => {
+      const splitPercent = getPrizeSplitPercent(index);
+      const amount = metrics.entryFee * (splitPercent / 100);
+      const rebuyValues = row.rebuys.map((value) => parseInteger(value));
+      const rebuySum = rebuyValues.reduce((sum, value) => sum + value, 0);
+      return {
+        id: row.id,
+        lp: index + 1,
+        playerName: row.playerName,
+        splitPercent,
+        amount,
+        rebuyValues,
+        rebuySum,
+        total: amount + rebuySum
+      };
+    });
+  };
+
+  const getTable4Rows = () => {
+    const modeState = getModeState();
+    const table5Rows = getTable5Rows();
+    const totalPlayers = modeState.table2Rows.length;
+    const totalByPlayer = new Map(table5Rows.map((row) => [row.playerName, row.total]));
+    const activeEliminated = modeState.eliminatedOrder
+      .map((id) => modeState.table2Rows.find((row) => row.id === id))
+      .filter((row) => row && row.eliminated);
+
+    const rankedRows = [];
+    activeEliminated.forEach((row, eliminatedIndex) => {
+      const position = totalPlayers - eliminatedIndex;
+      rankedRows.push({
+        lp: position,
+        playerName: row.playerName,
+        win: totalByPlayer.get(row.playerName) ?? 0
+      });
+    });
+
+    return rankedRows.sort((a, b) => a.lp - b.lp);
+  };
+
+  const rebuyModal = document.createElement("div");
+  rebuyModal.id = "adminCalculatorRebuyModal";
+  rebuyModal.className = "modal-overlay";
+  rebuyModal.setAttribute("aria-hidden", "true");
+  rebuyModal.innerHTML = `
+    <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="adminCalculatorRebuyTitle">
+      <div class="modal-header">
+        <h3 id="adminCalculatorRebuyTitle">Rebuy gracza</h3>
+        <button type="button" class="secondary" id="adminCalculatorRebuyClose">Zamknij</button>
+      </div>
+      <div class="modal-body">
+        <div class="admin-table-scroll">
+          <table class="admin-data-table" id="adminCalculatorRebuyTable"></table>
+        </div>
+        <div class="admin-table-actions" id="adminCalculatorRebuyActions"></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(rebuyModal);
+
+  const rebuyModalCloseButton = rebuyModal.querySelector("#adminCalculatorRebuyClose");
+  const rebuyModalTable = rebuyModal.querySelector("#adminCalculatorRebuyTable");
+  const rebuyModalActions = rebuyModal.querySelector("#adminCalculatorRebuyActions");
+
+  const closeRebuyModal = () => {
+    state.rebuyModal.mode = null;
+    state.rebuyModal.rowId = null;
+    rebuyModal.classList.remove("is-visible");
+    rebuyModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+
+  const renderRebuyModal = () => {
+    const row = getRebuyRow();
+    if (!row || !rebuyModalTable || !rebuyModalActions) {
+      closeRebuyModal();
+      return;
+    }
+
+    let headerHtml = "<thead><tr>";
+    row.rebuys.forEach((_, index) => {
+      headerHtml += `<th>Rebuy${index + 1}</th>`;
+    });
+    headerHtml += "</tr></thead>";
+    rebuyModalTable.innerHTML = headerHtml;
+
+    const tbody = document.createElement("tbody");
+    const tr = document.createElement("tr");
+    row.rebuys.forEach((value, index) => {
+      const td = document.createElement("td");
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "admin-input";
+      input.value = value;
+      input.dataset.focusTarget = "admin-calculator-rebuy-modal";
+      input.dataset.section = "rebuy-modal";
+      input.dataset.tableId = state.rebuyModal.mode ?? state.mode;
+      input.dataset.rowId = row.id;
+      input.dataset.columnKey = `rebuy${index}`;
+      input.addEventListener("input", () => {
+        row.rebuys[index] = sanitizeInteger(input.value);
+        input.value = row.rebuys[index];
+        render();
+      });
+      td.appendChild(input);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+    rebuyModalTable.appendChild(tbody);
+
+    rebuyModalActions.innerHTML = "";
+
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "secondary";
+    addButton.textContent = "Dodaj Rebuy";
+    addButton.addEventListener("click", () => {
+      row.rebuys.push("");
+      renderRebuyModal();
+      render();
+    });
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "danger admin-row-delete";
+    removeButton.textContent = "Usuń Rebuy";
+    removeButton.disabled = row.rebuys.length <= 1;
+    removeButton.addEventListener("click", () => {
+      if (row.rebuys.length <= 1) {
+        return;
+      }
+      row.rebuys.pop();
+      renderRebuyModal();
+      render();
+    });
+
+    rebuyModalActions.append(addButton, removeButton);
+  };
+
+  const openRebuyModal = (rowId) => {
+    state.rebuyModal.mode = state.mode;
+    state.rebuyModal.rowId = rowId;
+    rebuyModal.classList.add("is-visible");
+    rebuyModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    renderRebuyModal();
+  };
+
+  rebuyModalCloseButton?.addEventListener("click", closeRebuyModal);
+  rebuyModal.addEventListener("click", (event) => {
+    if (event.target === rebuyModal) {
+      closeRebuyModal();
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && rebuyModal.classList.contains("is-visible")) {
+      closeRebuyModal();
+    }
+  });
+
   const renderTable1 = () => {
     const modeState = getModeState();
+    const metrics = getCalculatorMetrics();
     rootTable1.innerHTML = "";
     rootTable1.appendChild(createHeader("Tabela1"));
 
@@ -2900,48 +3139,45 @@ const initAdminCalculator = () => {
     table.className = "admin-data-table";
     table.innerHTML = `<thead><tr><th>Suma</th><th>Buy-In</th><th>Rebuy</th><th>Liczba Rebuy</th></tr></thead>`;
     const tbody = document.createElement("tbody");
+    const tr = document.createElement("tr");
 
-    modeState.table1Rows.forEach((row, index) => {
-      const tr = document.createElement("tr");
-      tr.appendChild(createComputedCell());
+    tr.appendChild(createReadonlyCell(formatNumber(metrics.sumValue)));
 
-      const buyInCell = document.createElement("td");
-      const buyInInput = document.createElement("input");
-      buyInInput.type = "text";
-      buyInInput.className = "admin-input";
-      buyInInput.value = row.buyIn;
-      buyInInput.dataset.focusTarget = "admin-calculator";
-      buyInInput.dataset.section = "table1";
-      buyInInput.dataset.tableId = state.mode;
-      buyInInput.dataset.rowId = row.id;
-      buyInInput.dataset.columnKey = "buyIn";
-      buyInInput.addEventListener("input", () => {
-        row.buyIn = sanitizeInteger(buyInInput.value);
-        buyInInput.value = row.buyIn;
-      });
-      buyInCell.appendChild(buyInInput);
-
-      const rebuyCell = document.createElement("td");
-      const rebuyInput = document.createElement("input");
-      rebuyInput.type = "text";
-      rebuyInput.className = "admin-input";
-      rebuyInput.value = row.rebuy;
-      rebuyInput.dataset.focusTarget = "admin-calculator";
-      rebuyInput.dataset.section = "table1";
-      rebuyInput.dataset.tableId = state.mode;
-      rebuyInput.dataset.rowId = row.id;
-      rebuyInput.dataset.columnKey = "rebuy";
-      rebuyInput.addEventListener("input", () => {
-        row.rebuy = sanitizeInteger(rebuyInput.value);
-        rebuyInput.value = row.rebuy;
-      });
-      rebuyCell.appendChild(rebuyInput);
-
-      tr.appendChild(buyInCell);
-      tr.appendChild(rebuyCell);
-      tr.appendChild(createComputedCell());
-      tbody.appendChild(tr);
+    const buyInCell = document.createElement("td");
+    const buyInInput = document.createElement("input");
+    buyInInput.type = "text";
+    buyInInput.className = "admin-input";
+    buyInInput.value = modeState.table1Row.buyIn;
+    buyInInput.dataset.focusTarget = "admin-calculator";
+    buyInInput.dataset.section = "table1";
+    buyInInput.dataset.tableId = state.mode;
+    buyInInput.dataset.rowId = modeState.table1Row.id;
+    buyInInput.dataset.columnKey = "buyIn";
+    buyInInput.addEventListener("input", () => {
+      modeState.table1Row.buyIn = sanitizeInteger(buyInInput.value);
+      buyInInput.value = modeState.table1Row.buyIn;
+      render();
     });
+    buyInCell.appendChild(buyInInput);
+
+    const rebuyCell = document.createElement("td");
+    const rebuyInput = document.createElement("input");
+    rebuyInput.type = "text";
+    rebuyInput.className = "admin-input";
+    rebuyInput.value = modeState.table1Row.rebuy;
+    rebuyInput.dataset.focusTarget = "admin-calculator";
+    rebuyInput.dataset.section = "table1";
+    rebuyInput.dataset.tableId = state.mode;
+    rebuyInput.dataset.rowId = modeState.table1Row.id;
+    rebuyInput.dataset.columnKey = "rebuy";
+    rebuyInput.addEventListener("input", () => {
+      modeState.table1Row.rebuy = sanitizeInteger(rebuyInput.value);
+      rebuyInput.value = modeState.table1Row.rebuy;
+    });
+    rebuyCell.appendChild(rebuyInput);
+
+    tr.append(buyInCell, rebuyCell, createReadonlyCell(formatNumber(metrics.rebuyRowsCount)));
+    tbody.appendChild(tr);
 
     table.appendChild(tbody);
     const scroll = createScroll();
@@ -2949,8 +3185,17 @@ const initAdminCalculator = () => {
     rootTable1.appendChild(scroll);
   };
 
+  const updateEliminatedOrder = (modeState, row, eliminatedChecked) => {
+    const nextOrder = modeState.eliminatedOrder.filter((id) => id !== row.id);
+    if (eliminatedChecked) {
+      nextOrder.push(row.id);
+    }
+    modeState.eliminatedOrder = nextOrder;
+  };
+
   const renderTable2 = () => {
     const modeState = getModeState();
+    const metrics = getCalculatorMetrics();
     rootTable2.innerHTML = "";
     rootTable2.appendChild(createHeader("Tabela2"));
 
@@ -2961,7 +3206,6 @@ const initAdminCalculator = () => {
 
     modeState.table2Rows.forEach((row, index) => {
       const tr = document.createElement("tr");
-
       const lpCell = document.createElement("td");
       lpCell.textContent = String(index + 1);
 
@@ -2986,8 +3230,17 @@ const initAdminCalculator = () => {
       playerSelect.dataset.columnKey = "playerName";
       playerSelect.addEventListener("change", () => {
         row.playerName = playerSelect.value;
+        render();
       });
       playerCell.appendChild(playerSelect);
+
+      const rebuyCell = document.createElement("td");
+      const rebuyButton = document.createElement("button");
+      rebuyButton.type = "button";
+      rebuyButton.className = "secondary";
+      rebuyButton.textContent = formatNumber(getRowRebuySum(row));
+      rebuyButton.addEventListener("click", () => openRebuyModal(row.id));
+      rebuyCell.appendChild(rebuyButton);
 
       const eliminatedCell = document.createElement("td");
       const eliminatedCheckbox = document.createElement("input");
@@ -3000,6 +3253,8 @@ const initAdminCalculator = () => {
       eliminatedCheckbox.dataset.columnKey = "eliminated";
       eliminatedCheckbox.addEventListener("change", () => {
         row.eliminated = eliminatedCheckbox.checked;
+        updateEliminatedOrder(modeState, row, row.eliminated);
+        render();
       });
       eliminatedCell.appendChild(eliminatedCheckbox);
 
@@ -3013,7 +3268,12 @@ const initAdminCalculator = () => {
         addButton.className = "secondary";
         addButton.textContent = "Dodaj";
         addButton.addEventListener("click", () => {
-          modeState.table2Rows.push({ id: `table2-${Date.now()}-${modeState.table2Rows.length}`, playerName: "", eliminated: false });
+          modeState.table2Rows.push({
+            id: `table2-${Date.now()}-${modeState.table2Rows.length}`,
+            playerName: "",
+            eliminated: false,
+            rebuys: [""]
+          });
           render();
         });
         actionsWrap.appendChild(addButton);
@@ -3026,12 +3286,16 @@ const initAdminCalculator = () => {
       deleteButton.disabled = modeState.table2Rows.length === 1;
       deleteButton.addEventListener("click", () => {
         modeState.table2Rows = modeState.table2Rows.filter((entry) => entry.id !== row.id);
+        modeState.eliminatedOrder = modeState.eliminatedOrder.filter((id) => id !== row.id);
+        if (!modeState.table2Rows.length) {
+          modeState.table2Rows.push({ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [""] });
+        }
         render();
       });
       actionsWrap.appendChild(deleteButton);
       actionsCell.appendChild(actionsWrap);
 
-      tr.append(lpCell, playerCell, createComputedCell(), createComputedCell(), eliminatedCell, actionsCell);
+      tr.append(lpCell, playerCell, createReadonlyCell(formatNumber(metrics.buyInValue)), rebuyCell, eliminatedCell, actionsCell);
       tbody.appendChild(tr);
     });
 
@@ -3043,32 +3307,46 @@ const initAdminCalculator = () => {
 
   const renderTable3 = () => {
     const modeState = getModeState();
+    const metrics = getCalculatorMetrics();
     rootTable3.innerHTML = "";
     rootTable3.appendChild(createHeader("Tabela3"));
 
     const table = document.createElement("table");
     table.className = "admin-data-table";
-    table.innerHTML = `<thead><tr><th>Rake</th><th>Wpisowe</th><th>Rebuy</th><th>Pot</th></tr></thead>`;
+    table.innerHTML = `<thead><tr><th>%</th><th>Rake</th><th>Wpisowe</th><th>Rebuy</th><th>Pot</th></tr></thead>`;
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
 
-    const rakeCell = document.createElement("td");
-    const rakeInput = document.createElement("input");
-    rakeInput.type = "text";
-    rakeInput.className = "admin-input";
-    rakeInput.value = modeState.table3Row.rake;
-    rakeInput.dataset.focusTarget = "admin-calculator";
-    rakeInput.dataset.section = "table3";
-    rakeInput.dataset.tableId = state.mode;
-    rakeInput.dataset.rowId = "0";
-    rakeInput.dataset.columnKey = "rake";
-    rakeInput.addEventListener("input", () => {
-      modeState.table3Row.rake = sanitizeInteger(rakeInput.value);
-      rakeInput.value = modeState.table3Row.rake;
+    const percentCell = document.createElement("td");
+    const percentInput = document.createElement("input");
+    percentInput.type = "text";
+    percentInput.className = "admin-input";
+    percentInput.value = formatPercentDisplay(modeState.table3Row.percent);
+    percentInput.dataset.focusTarget = "admin-calculator";
+    percentInput.dataset.section = "table3";
+    percentInput.dataset.tableId = state.mode;
+    percentInput.dataset.rowId = "0";
+    percentInput.dataset.columnKey = "percent";
+    percentInput.addEventListener("focus", () => {
+      percentInput.value = modeState.table3Row.percent;
     });
-    rakeCell.appendChild(rakeInput);
+    percentInput.addEventListener("input", () => {
+      modeState.table3Row.percent = sanitizeInteger(percentInput.value);
+      percentInput.value = modeState.table3Row.percent;
+      render();
+    });
+    percentInput.addEventListener("blur", () => {
+      percentInput.value = formatPercentDisplay(modeState.table3Row.percent);
+    });
+    percentCell.appendChild(percentInput);
 
-    tr.append(rakeCell, createComputedCell(), createComputedCell(), createComputedCell());
+    tr.append(
+      percentCell,
+      createReadonlyCell(formatNumber(metrics.rake)),
+      createReadonlyCell(formatNumber(metrics.entryFee)),
+      createReadonlyCell(formatNumber(metrics.rebuyAfterRake)),
+      createReadonlyCell(formatNumber(metrics.pot))
+    );
     tbody.appendChild(tr);
     table.appendChild(tbody);
 
@@ -3081,15 +3359,24 @@ const initAdminCalculator = () => {
     rootTable4.innerHTML = "";
     rootTable4.appendChild(createHeader("Tabela4"));
 
+    const modeState = getModeState();
+    const table4Rows = getTable4Rows();
     const table = document.createElement("table");
     table.className = "admin-data-table";
-    table.innerHTML = `<thead><tr><th>LP</th><th>Miejsce</th><th>Ranking</th></tr></thead>`;
+    table.innerHTML = `<thead><tr><th>LP</th><th>Gracz</th><th>Wygrana</th></tr></thead>`;
     const tbody = document.createElement("tbody");
-    for (let index = 0; index < 3; index += 1) {
+
+    for (let index = 0; index < modeState.table2Rows.length; index += 1) {
       const tr = document.createElement("tr");
+      const lp = index + 1;
+      const tableRow = table4Rows.find((row) => row.lp === lp);
       const lpCell = document.createElement("td");
-      lpCell.textContent = String(index + 1);
-      tr.append(lpCell, createComputedCell(), createComputedCell());
+      lpCell.textContent = String(lp);
+      tr.append(
+        lpCell,
+        createReadonlyCell(tableRow?.playerName ?? ""),
+        createReadonlyCell(formatNumber(tableRow?.win ?? 0))
+      );
       tbody.appendChild(tr);
     }
     table.appendChild(tbody);
@@ -3101,44 +3388,40 @@ const initAdminCalculator = () => {
 
   const renderTable5 = () => {
     const modeState = getModeState();
+    const table5Rows = getTable5Rows();
+    const rebuyColumnsCount = Math.max(1, ...modeState.table2Rows.map((row) => row.rebuys.length));
+    const rankingByPlayer = new Map(getTable4Rows().map((row) => [row.playerName, row.lp]));
+
     rootTable5.innerHTML = "";
     rootTable5.appendChild(createHeader("Tabela5"));
 
     const table = document.createElement("table");
     table.className = "admin-data-table";
-    let headerHtml = "<thead><tr><th>LP</th><th>%wygranej</th><th>Gracz</th><th>Kwota</th><th>Ranking</th>";
-    for (let i = 1; i <= 10; i += 1) {
+    let headerHtml = "<thead><tr><th>LP</th><th>Podział puli</th><th>Gracz</th><th>Kwota</th><th>Ranking</th>";
+    for (let i = 1; i <= rebuyColumnsCount; i += 1) {
       headerHtml += `<th>Rebuy${i}</th>`;
     }
-    headerHtml += "</tr></thead>";
+    headerHtml += "<th>Suma</th></tr></thead>";
     table.innerHTML = headerHtml;
 
     const tbody = document.createElement("tbody");
-    modeState.table5Rows.forEach((row, index) => {
+    table5Rows.forEach((row) => {
       const tr = document.createElement("tr");
       const lpCell = document.createElement("td");
-      lpCell.textContent = String(index + 1);
+      lpCell.textContent = String(row.lp);
 
-      const winPercentCell = document.createElement("td");
-      const winPercentInput = document.createElement("input");
-      winPercentInput.type = "text";
-      winPercentInput.className = "admin-input";
-      winPercentInput.value = row.winPercent;
-      winPercentInput.dataset.focusTarget = "admin-calculator";
-      winPercentInput.dataset.section = "table5";
-      winPercentInput.dataset.tableId = state.mode;
-      winPercentInput.dataset.rowId = row.id;
-      winPercentInput.dataset.columnKey = "winPercent";
-      winPercentInput.addEventListener("input", () => {
-        row.winPercent = sanitizeInteger(winPercentInput.value);
-        winPercentInput.value = row.winPercent;
-      });
-      winPercentCell.appendChild(winPercentInput);
+      tr.append(
+        lpCell,
+        createReadonlyCell(`${row.splitPercent}%`),
+        createReadonlyCell(row.playerName),
+        createReadonlyCell(formatNumber(row.amount)),
+        createReadonlyCell(formatNumber(rankingByPlayer.get(row.playerName) ?? 0))
+      );
 
-      tr.append(lpCell, winPercentCell, createComputedCell(), createComputedCell(), createComputedCell());
-      for (let i = 1; i <= 10; i += 1) {
-        tr.appendChild(createComputedCell());
+      for (let index = 0; index < rebuyColumnsCount; index += 1) {
+        tr.appendChild(createReadonlyCell(formatNumber(row.rebuyValues[index] ?? 0)));
       }
+      tr.appendChild(createReadonlyCell(formatNumber(row.total)));
       tbody.appendChild(tr);
     });
 
@@ -3156,6 +3439,10 @@ const initAdminCalculator = () => {
     renderTable4();
     renderTable5();
     restoreFocusedAdminInputState(calculatorContent, focusState);
+
+    if (rebuyModal.classList.contains("is-visible")) {
+      renderRebuyModal();
+    }
   };
 
   modeButtons.forEach((button) => {
@@ -3164,6 +3451,9 @@ const initAdminCalculator = () => {
       modeButtons.forEach((entry) => {
         entry.classList.toggle("is-active", entry === button);
       });
+      if (rebuyModal.classList.contains("is-visible")) {
+        closeRebuyModal();
+      }
       render();
     });
   });

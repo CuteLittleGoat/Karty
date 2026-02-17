@@ -422,43 +422,34 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 
 ## Zakładka „Kalkulator” i styl pól wyboru
 
-### 1) Panel administratora — nowa zakładka
-- Do paska `.admin-panel-tabs` dodano nową pigułkę: **Kalkulator** (`.admin-panel-tab`, `data-target="adminCalculatorTab"`).
-- Zakładka jest częścią sekcji `.admin-only`, więc widoczna tylko w trybie admina.
+### 1) Układ sekcji kalkulatora
+- Kontener główny: `.admin-calculator`.
+- Layout dwukolumnowy: `.admin-calculator-layout`.
+  - Lewy panel: `.admin-calculator-switch` (szerokość kolumny 180px).
+  - Prawy panel: `.admin-calculator-content` z blokami tabel.
+- Każda tabela znajduje się w `.admin-calculator-table-wrap`.
 
-### 2) Layout zakładki „Kalkulator”
-- Główny kontener: `.admin-calculator`.
-- Układ dwukolumnowy: `.admin-calculator-layout`.
-  - Lewa kolumna (szerokość 180px): `.admin-calculator-switch`.
-  - Prawa kolumna: `.admin-calculator-content` z blokami tabel.
-- Przełączniki trybu: `.admin-calculator-switch-button` z wariantem aktywnym `.is-active`.
-- Każda tabela osadzona w karcie: `.admin-calculator-table-wrap`.
+### 2) Styl tabel i kontrolek
+- Tabele używają globalnej klasy `.admin-data-table`.
+- Dla tabel kalkulatora zachowane jest `min-width: 760px`.
+- Pola obliczane są renderowane jako `input.admin-input[disabled]`.
+- Przycisk rebuy w Tabela2 wykorzystuje wariant wizualny `button.secondary`.
+- Akcje wierszy (`Dodaj`, `Usuń`, `Dodaj Rebuy`, `Usuń Rebuy`) używają istniejącego układu `.admin-table-actions`.
 
-### 3) Styl tabel kalkulatora
-- Tabele korzystają z globalnej klasy `.admin-data-table`.
-- Minimalna szerokość tabel kalkulatora ustawiona na `760px` (`.admin-calculator-table-wrap .admin-data-table`).
-- Sekcje tabel mają:
-  - tło `rgba(0, 0, 0, 0.25)`,
-  - obrys `1px solid var(--border2)`,
-  - zaokrąglenie `var(--radius-md)`.
+### 3) Modal rebuy (nowy element UI)
+- Modal tworzony dynamicznie: `#adminCalculatorRebuyModal`.
+- Wykorzystuje istniejące klasy modalowe:
+  - kontener: `.modal-overlay`,
+  - karta: `.modal-card.modal-card-sm`,
+  - sekcje: `.modal-header`, `.modal-body`.
+- W modalu jest tabela rebuy (`#adminCalculatorRebuyTable`) i pasek akcji (`#adminCalculatorRebuyActions`).
+- Nie dodano nowych fontów ani nowej palety kolorów; modal dziedziczy aktualny motyw noir/gold.
 
-### 4) Ujednolicenie wyglądu pól rozwijanych
-- Dodano wspólne reguły dla:
-  - `select.admin-input`,
-  - `select`,
-  - `.admin-data-table select`.
-- Zastosowano:
-  - `appearance: none` (także `-webkit-appearance`, `-moz-appearance`),
-  - tło zgodne z motywem: `rgba(0, 0, 0, 0.35)`,
-  - obramowanie `1px solid var(--border)`,
-  - kolor tekstu `var(--ink)`.
-- Dodatkowo elementy `option` mają ciemne tło, więc lista po rozwinięciu również jest zgodna z motywem UI.
-
-
-### 5) Rozmieszczenie akcji w Tabela2
-- Przyciski `Dodaj` i `Usuń` znajdują się w kolumnie akcji tabeli **Tabela2**.
-- **Tabela1** nie zawiera kolumny akcji i służy tylko do edycji pól `Buy-In` oraz `Rebuy`.
-- W **Tabela2** przycisk `Dodaj` jest widoczny tylko w ostatnim wierszu, a `Usuń` jest blokowany przy jednym wierszu.
+### 4) Kolumny i etykiety po zmianie
+- Tabela3 zyskała pierwszą kolumnę `%` z prezentacją wartości w formacie `N%` po utracie fokusu.
+- Tabela4 ma nazwy kolumn: `LP`, `Gracz`, `Wygrana`.
+- Tabela5 ma nagłówek `Podział puli` (zamiast `%wygranej`) i końcową kolumnę `Suma`.
+- Liczba kolumn `Rebuy` w Tabela5 jest dynamiczna (zależna od największej liczby pól rebuy gracza).
 
 
 ## 24) Zakładka „Najbliższa gra” — admin + użytkownik
