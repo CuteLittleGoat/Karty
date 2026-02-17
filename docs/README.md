@@ -768,7 +768,7 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 1. W kolumnie **Buy-In** wpisz liczbę (np. `100`).
 2. W kolumnie **Rebuy** możesz wpisać liczbę pomocniczą ręcznie.
 3. Kolumna **Suma** liczy się automatycznie jako: suma wszystkich wartości z kolumn **Buy-In** i **Rebuy** z **Tabela2**.
-4. Kolumna **Liczba Rebuy** liczy automatycznie ile wierszy w **Tabela2** ma co najmniej jedno uzupełnione pole rebuy w oknie szczegółów rebuy.
+4. Kolumna **Liczba Rebuy** liczy automatycznie łączną liczbę uzupełnionych pól `Rebuy1..N` we wszystkich oknach „Rebuy gracza” z **Tabela2** (puste pola nie są liczone).
 
 ### 27.3 Tabela2 (Gracz / Buy-In / Rebuy / Eliminated)
 1. W kolumnie **Gracz** kliknij listę rozwijaną i wybierz gracza.

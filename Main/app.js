@@ -2929,7 +2929,7 @@ const initAdminCalculator = () => {
     const buyInValue = parseInteger(modeState.table1Row.buyIn);
     const totalBuyIn = modeState.table2Rows.reduce((sum) => sum + buyInValue, 0);
     const totalRebuy = modeState.table2Rows.reduce((sum, row) => sum + getRowRebuySum(row), 0);
-    const rebuyRowsCount = modeState.table2Rows.reduce((count, row) => count + (getRowRebuyCount(row) > 0 ? 1 : 0), 0);
+    const rebuyEntriesCount = modeState.table2Rows.reduce((count, row) => count + getRowRebuyCount(row), 0);
     const sumValue = totalBuyIn + totalRebuy;
     const percentValue = parseInteger(modeState.table3Row.percent);
     const percentDecimal = percentValue / 100;
@@ -2942,7 +2942,7 @@ const initAdminCalculator = () => {
       buyInValue,
       totalBuyIn,
       totalRebuy,
-      rebuyRowsCount,
+      rebuyEntriesCount,
       sumValue,
       percentValue,
       percentDecimal,
@@ -3180,7 +3180,7 @@ const initAdminCalculator = () => {
     });
     rebuyCell.appendChild(rebuyInput);
 
-    tr.append(buyInCell, rebuyCell, createReadonlyCell(formatNumber(metrics.rebuyRowsCount)));
+    tr.append(buyInCell, rebuyCell, createReadonlyCell(formatNumber(metrics.rebuyEntriesCount)));
     tbody.appendChild(tr);
 
     table.appendChild(tbody);
