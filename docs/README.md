@@ -758,44 +758,65 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 > Zakładka **„Kalkulator”** jest dostępna tylko w widoku administratora.
 
 ### 27.1 Wejście do zakładki
-1. Wejdź do aplikacji w trybie administratora.
+1. Wejdź do aplikacji jako administrator.
 2. W karcie **„Panel Administratora”** kliknij zakładkę **„Kalkulator”**.
-3. Na ekranie zobaczysz:
-   - lewy panel przełączania trybu: **Tournament** / **Cash**,
-   - po prawej zestaw 5 tabel (Tabela1–Tabela5).
+3. Po lewej stronie zobaczysz przełączniki trybu **Tournament** i **Cash**.
+4. Po prawej stronie zobaczysz pięć tabel: **Tabela1**, **Tabela2**, **Tabela3**, **Tabela4**, **Tabela5**.
 
-### 27.2 Przełączanie Tournament / Cash
-1. Kliknij po lewej **„Tournament”** albo **„Cash”**.
-2. Aktywny przycisk jest podświetlony.
-3. Oba tryby mają taki sam układ tabel, ale każdy tryb przechowuje osobny stan pól w UI.
+### 27.2 Tabela1 (Suma / Buy-In / Rebuy / Liczba Rebuy)
+1. W kolumnie **Buy-In** wpisz liczbę (np. `100`).
+2. W kolumnie **Rebuy** możesz wpisać liczbę pomocniczą ręcznie.
+3. Kolumna **Suma** liczy się automatycznie jako: suma wszystkich wartości z kolumn **Buy-In** i **Rebuy** z **Tabela2**.
+4. Kolumna **Liczba Rebuy** liczy automatycznie ile wierszy w **Tabela2** ma co najmniej jedno uzupełnione pole rebuy w oknie szczegółów rebuy.
 
-### 27.3 Tabela1 — pola finansowe
-1. Otwórz zakładkę **Kalkulator**.
-2. W sekcji **Tabela1** wypełniaj pola:
-   - **Buy-In**,
-   - **Rebuy**.
-3. W tej tabeli nie ma przycisków dodawania/usuwania wiersza — służy do edycji wartości wejściowych dla istniejących pozycji.
+### 27.3 Tabela2 (Gracz / Buy-In / Rebuy / Eliminated)
+1. W kolumnie **Gracz** kliknij listę rozwijaną i wybierz gracza.
+2. Kolumna **Buy-In** jest automatycznie przepisywana z pola **Buy-In** z **Tabela1**.
+3. W kolumnie **Rebuy** kliknij przycisk z kwotą (na początku `0`).
+4. Otworzy się okno modalne „Rebuy gracza” z tabelą jednego wiersza i jedną kolumną **Rebuy1**.
+5. Wpisz wartość do **Rebuy1**.
+6. Kliknij **Dodaj Rebuy**, aby dodać **Rebuy2**, potem **Rebuy3** itd.
+7. Gdy kolumn jest minimum 2, przycisk **Usuń Rebuy** jest aktywny i usuwa zawsze ostatnią kolumnę.
+8. Zamknij okno przyciskiem **Zamknij** albo kliknięciem poza modal.
+9. Po zamknięciu na przycisku **Rebuy** w **Tabela2** zobaczysz sumę wszystkich pól Rebuy z modala dla tego gracza.
+10. Checkbox **Eliminated** ustawia gracza na końcu rankingu w **Tabela4**:
+    - pierwszy zaznaczony trafia na ostatnie miejsce,
+    - kolejni zaznaczeni trafiają kolejno wyżej (od końca),
+    - odznaczenie checkboxa usuwa gracza z listy eliminacyjnej w **Tabela4**.
+11. Przycisk **Dodaj** (tylko w ostatnim wierszu) dodaje nowy wiersz gracza.
+12. Przycisk **Usuń** usuwa wybrany wiersz (przy jednym wierszu pozostaje zablokowany).
 
-### 27.4 Tabela2 — wybór gracza i zarządzanie wierszami
-1. W sekcji **Tabela2** kliknij pole **„Gracz”**.
-2. Rozwinie się lista graczy pobierana z aktualnej listy w zakładce **„Gracze”**.
-3. Wybierz nazwę gracza z listy.
-4. Pole **Eliminated** możesz zaznaczyć/odznaczyć ręcznie.
-5. Pod ostatnim wierszem użyj przycisku **„Dodaj”**, aby utworzyć nowy wiersz w Tabeli2.
-6. W wierszu kliknij czerwony przycisk **„Usuń”**, aby usunąć dany wpis.
-7. Gdy zostaje tylko jeden wiersz, przycisk **„Usuń”** jest zablokowany.
+### 27.4 Tabela3 (% / Rake / Wpisowe / Rebuy / Pot)
+1. W pierwszej kolumnie **%** wpisz liczbę (np. `10`).
+2. Po wyjściu z pola (kliknięcie poza pole) wartość automatycznie pokaże się jako `10%`.
+3. Kolumna **Rake** liczy się automatycznie: `(suma Buy-In i Rebuy z Tabela2) × %`.
+4. Kolumna **Wpisowe** liczy się automatycznie: `suma Buy-In z Tabela2 - (suma Buy-In z Tabela2 × %)`.
+5. Kolumna **Rebuy** liczy się automatycznie: `suma Rebuy z Tabela2 - (suma Rebuy z Tabela2 × %)`.
+6. Kolumna **Pot** pokazuje automatycznie `Wpisowe + Rebuy` po odjęciu procentu.
 
-### 27.5 Pola edytowalne i nieedytowalne
-- **Edytowalne**: pola tekstowe (np. Buy-In, Rebuy, Rake, %wygranej) oraz checkbox **Eliminated**.
-- **Nieedytowalne (obliczane przez aplikację)**: pola z wpisem **„x”** — są zablokowane do klikania/edycji.
+### 27.5 Tabela4 (LP / Gracz / Wygrana)
+1. Tabela ma stałe kolumny: **LP**, **Gracz**, **Wygrana**.
+2. **Gracz** jest uzupełniany automatycznie z logiki eliminacji checkboxem **Eliminated** z **Tabela2**.
+3. **Wygrana** jest uzupełniana automatycznie z kolumny **Suma** z **Tabela5** (dla tego samego gracza).
 
-### 27.6 Spójna kolorystyka list rozwijanych
-- Lista opcji po rozwinięciu pola **Gracz** ma ciemne tło zgodne z motywem aplikacji.
-- Dotyczy to pól `select` i elementów `option`, dzięki czemu nie pojawia się domyślne szare tło systemowe.
+### 27.6 Tabela5 (dynamiczna liczba wierszy i kolumn)
+1. Liczba wierszy jest dynamiczna i równa liczbie wierszy graczy w **Tabela2**.
+2. Liczba kolumn **Rebuy** jest dynamiczna i zależy od największej liczby pól rebuy użytej przez dowolnego gracza w modalu z **Tabela2**.
+3. Nagłówek procentowy to **Podział puli** (zamiast `%wygranej`).
+4. **Podział puli** ma wartości stałe:
+   - wiersz 1 = `50%`,
+   - wiersz 2 = `30%`,
+   - wiersz 3 = `20%`,
+   - kolejne wiersze = `0%`.
+5. **Kwota** jest liczona automatycznie: `Wpisowe z Tabela3 × Podział puli`.
+6. Kolumny **Rebuy1...RebuyN** przepisują wartości z okna rebuy konkretnego gracza.
+7. Końcowa kolumna **Suma** liczy: `Kwota + wszystkie kolumny Rebuy`.
+8. Kolumna **Ranking** pokazuje pozycję gracza z **Tabela4** (jeśli gracz jest obecny na liście eliminacyjnej).
 
-### 27.7 Stabilny fokus podczas odświeżania danych
-- Podczas przebudowy widoku (np. po odświeżeniu listy graczy) aplikacja przywraca fokus do aktywnego pola w zakładce **Kalkulator**.
-- Mechanizm obejmuje pola w tabelach 1, 2, 3 i 5, więc wpisywanie i wybór opcji nie powinny przerywać pracy użytkownika.
+### 27.7 Zachowanie pól w kalkulatorze
+- Pola edytowalne: `Buy-In`, `Rebuy` (Tabela1), `Gracz`, checkbox `Eliminated`, pola `Rebuy1..N` w modalu, `%` w Tabela3.
+- Pola obliczane: `Suma`, `Liczba Rebuy`, `Rake`, `Wpisowe`, `Rebuy`, `Pot`, `Wygrana`, `Kwota`, `Suma` (Tabela5).
+- Przełączanie między trybami **Tournament/Cash** utrzymuje osobne dane dla każdego trybu.
 
 
 ## 16. Aplikacja Android — obsługa UI (wersja WebView)

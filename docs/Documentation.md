@@ -1303,84 +1303,81 @@ Efekt: dane i kolejność rankingu są spójne pomiędzy zakładkami **Statystyk
 
 ## 26. Zakładka „Kalkulator” (admin)
 
-### 26.1 Zakres zmian w kodzie
-Zmiana objęła trzy pliki frontendowe:
-- `Main/index.html` — dodanie nowej zakładki admina `Kalkulator` i kontenerów dla 5 tabel.
-- `Main/app.js` — dodanie nowego modułu `initAdminCalculator()`.
-- `Main/styles.css` — style layoutu kalkulatora oraz ujednolicenie wyglądu pól `select`.
+### 26.1 Zakres kodu
+Aktualna implementacja kalkulatora obejmuje:
+- `Main/index.html` — opis sekcji kalkulatora w panelu admina oraz kontenery dla tabel 1–5.
+- `Main/app.js` — pełna logika `initAdminCalculator()` (obliczenia, render, dynamiczne kolumny, modal rebuy).
 
-### 26.2 Struktura UI zakładki
-W panelu admina dodano nowy przycisk zakładki:
-- `data-target="adminCalculatorTab"`.
+### 26.2 Struktura stanu w `initAdminCalculator()`
+Dla każdego trybu (`tournament`, `cash`) utrzymywany jest niezależny stan:
+- `table1Row`: `{ buyIn, rebuy }`.
+- `table2Rows`: lista wierszy graczy `{ playerName, eliminated, rebuys[] }`.
+- `table3Row`: `{ percent }`.
+- `eliminatedOrder`: kolejność zaznaczeń checkboxa `Eliminated`.
 
-Nowy panel zawiera:
-- status `#adminCalculatorStatus`,
-- lewy przełącznik trybu:
-  - `data-calculator-mode="tournament"`,
-  - `data-calculator-mode="cash"`,
-- 5 kontenerów tabel:
-  - `#adminCalculatorTable1` ... `#adminCalculatorTable5`.
+Dodatkowo stan globalny modułu zawiera:
+- `playerOptions` (lista graczy z Firebase),
+- `rebuyModal` (`mode`, `rowId`) do obsługi aktywnego modala rebuy.
 
-### 26.3 Logika JS (`initAdminCalculator`)
-Moduł tworzy dwa niezależne stany lokalne UI:
-- `state.tournament`,
-- `state.cash`.
+### 26.3 Obliczenia i zależności między tabelami
+Funkcja `getCalculatorMetrics()` liczy wartości pochodne:
+- `totalBuyIn` = `buyIn z Tabela1 × liczba wierszy Tabela2`.
+- `totalRebuy` = suma wszystkich pól rebuy ze wszystkich wierszy Tabela2.
+- `sumValue` = `totalBuyIn + totalRebuy` (Tabela1 → kolumna `Suma`).
+- `rebuyRowsCount` = liczba wierszy Tabela2 z co najmniej jednym niepustym polem rebuy.
+- `percentDecimal` = `% z Tabela3 / 100`.
+- `rake` = `(totalBuyIn + totalRebuy) * percentDecimal`.
+- `entryFee` = `totalBuyIn - (totalBuyIn * percentDecimal)`.
+- `rebuyAfterRake` = `totalRebuy - (totalRebuy * percentDecimal)`.
+- `pot` = `entryFee + rebuyAfterRake`.
 
-Każdy stan zawiera szkielety danych:
-- `table1Rows` (dynamiczne wiersze z polami `buyIn`, `rebuy`),
-- `table2Rows` (wiersze wyboru graczy + `eliminated`),
-- `table3Row` (`rake`),
-- `table5Rows` (`winPercent`).
+### 26.4 Tabela2 i modal rebuy
+W kolumnie `Rebuy` w Tabela2 renderowany jest przycisk z sumą rebuy dla wiersza.
+Kliknięcie przycisku:
+1. Otwiera modal `#adminCalculatorRebuyModal`.
+2. Buduje tabelę z jednym wierszem i dynamicznymi kolumnami `Rebuy1..RebuyN`.
+3. Pozwala dodać kolumnę przyciskiem `Dodaj Rebuy`.
+4. Pozwala usuwać ostatnią kolumnę przyciskiem `Usuń Rebuy` (minimum 1 kolumna).
+5. Każda zmiana w polach rebuy natychmiast odświeża obliczenia w tabelach 1, 3, 5.
 
-Renderowane tabele:
-1. **Tabela1**: `Suma`, `Buy-In`, `Rebuy`, `Liczba Rebuy` (bez kolumny akcji).
-2. **Tabela2**: `LP`, `Gracz`, `Buy-In`, `Rebuy`, `Eliminated`, `Akcje`.
-   - `Gracz` = lista rozwijana.
-   - `Dodaj` widoczny tylko w ostatnim wierszu.
-   - `Usuń` (czerwony) po prawej stronie każdego wiersza.
-3. **Tabela3**: `Rake`, `Wpisowe`, `Rebuy`, `Pot`.
-4. **Tabela4**: `LP`, `Miejsce`, `Ranking`.
-5. **Tabela5**: `LP`, `%wygranej`, `Gracz`, `Kwota`, `Ranking`, `Rebuy1..Rebuy10`.
+### 26.5 Logika eliminacji i Tabela4
+- Checkbox `Eliminated` jest nadrzędny dla pozycji w Tabela4.
+- `eliminatedOrder` zapamiętuje kolejność zaznaczeń.
+- Gracze z aktywnym `Eliminated` są ustawiani od końca rankingu:
+  - pierwszy zaznaczony dostaje ostatnie miejsce,
+  - kolejni zajmują kolejne pozycje od końca.
+- Odznaczenie checkboxa usuwa gracza z listy eliminacyjnej.
+- Kolumna `Wygrana` pobiera wartość z kolumny `Suma` w Tabela5 dla tego samego gracza.
 
-Zasada pól:
-- pola wpisywane ręcznie = `input` aktywny,
-- pola obliczane = `input disabled` z wartością `"x"`.
+### 26.6 Tabela5 — dynamiczna siatka
+Tabela5 jest generowana dynamicznie:
+- liczba wierszy = liczba wierszy graczy w Tabela2,
+- liczba kolumn rebuy = maksymalna liczba pól rebuy użyta przez dowolny wiersz Tabela2.
 
-### 26.4 Integracja z Firebase (lista graczy)
-Lista graczy dla rozwijanego pola `Gracz` pobierana jest w czasie rzeczywistym z:
+Kolumny i reguły:
+- `Podział puli` (stałe): 50%, 30%, 20%, potem 0%.
+- `Kwota` = `Wpisowe z Tabela3 × Podział puli`.
+- `Rebuy1..RebuyN` = przepisane wartości z modala rebuy danego gracza.
+- `Suma` = `Kwota + suma wszystkich kolumn rebuy`.
+- `Ranking` = pozycja z Tabela4 (jeżeli gracz jest na liście eliminacji).
+
+### 26.7 Integracja z Firebase
+Kalkulator używa Firebase wyłącznie do pobierania listy graczy w `select`:
 - kolekcja: `app_settings`,
 - dokument: `player_access`,
-- tablica: `players[]`.
+- pole: `players[]`.
 
-Wykorzystany snapshot:
-- `firebaseApp.firestore().collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot(...)`.
+Mechanizm:
+- `onSnapshot(...)` aktualizuje `state.playerOptions` na żywo,
+- dane kalkulatora (buy-in, rebuy, procent, ranking) są aktualnie stanem lokalnym UI i nie są zapisywane do Firestore.
 
-Dzięki temu liczba i nazwy opcji są zawsze zgodne z aktualną listą graczy w panelu admina.
+### 26.8 Fokus i przebudowa widoku
+Po każdym renderze kalkulator:
+- zapisuje aktywny fokus przez `getFocusedAdminInputState(...)`,
+- renderuje wszystkie tabele,
+- odtwarza fokus przez `restoreFocusedAdminInputState(...)`.
 
-### 26.5 Rules / struktura Firebase względem kalkulatora
-Wdrożona zmiana nie zapisuje jeszcze danych tabel kalkulatora do gałęzi:
-- `calculators/{type}/sessions/{sessionId}/tables/*`.
-
-Aktualnie moduł:
-- korzysta z Firebase wyłącznie do odczytu listy graczy (snapshot),
-- nie łączy logiki z modułem „Gry do potwierdzenia”
-- pozostaje zgodny z etapowym podejściem wdrożenia jako etap UI-szkieletu.
-
-### 26.6 Ujednolicenie stylu `select`
-Dodano globalne reguły CSS dla pól wyboru:
-- `select.admin-input`,
-- `select`,
-- `.admin-data-table select`,
-- odpowiadające im elementy `option`.
-
-Cel:
-- usunięcie szarego, systemowego tła listy opcji,
-- zachowanie ciemnego motywu także po rozwinięciu dropdownu.
-
-### 26.7 Stabilizacja fokusu w zakładce „Kalkulator”
-- Funkcja `render()` w module `initAdminCalculator()` zapisuje fokus przez `getFocusedAdminInputState(...)` i odtwarza go po przebudowie przez `restoreFocusedAdminInputState(...)`.
-- Pola edycyjne i wybory w tabelach 1, 2, 3 i 5 otrzymały komplet metadanych (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`).
-- Dzięki temu odświeżenie listy graczy z `onSnapshot(...)` nie powinno przerywać wpisywania lub wyboru aktywnego pola.
+Dzięki temu możliwa jest pełna przebudowa widoku po zmianach bez utraty aktualnie edytowanego pola.
 
 
 ## 24. Czat admina i kolejność wiadomości
