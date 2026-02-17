@@ -766,9 +766,10 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 
 ### 27.2 Tabela1 (Suma / Buy-In / Rebuy / Liczba Rebuy)
 1. W kolumnie **Buy-In** wpisz liczbę (np. `100`).
-2. W kolumnie **Rebuy** możesz wpisać liczbę pomocniczą ręcznie.
-3. Kolumna **Suma** liczy się automatycznie jako: suma wszystkich wartości z kolumn **Buy-In** i **Rebuy** z **Tabela2**.
-4. Kolumna **Liczba Rebuy** liczy automatycznie ile wierszy w **Tabela2** ma co najmniej jedno uzupełnione pole rebuy w oknie szczegółów rebuy.
+2. Kolumna **Rebuy** jest liczona automatycznie i pokazuje **ilość uzupełnionych pól Rebuy1..N** ze wszystkich modali „Rebuy gracza” w **Tabela2**.
+3. Do wyniku w kolumnie **Rebuy** liczą się tylko pola, które mają wpisaną wartość (puste pola są pomijane).
+4. Kolumna **Suma** liczy się automatycznie jako: suma wszystkich wartości z kolumn **Buy-In** i **Rebuy** z **Tabela2**.
+5. Kolumna **Liczba Rebuy** liczy automatycznie ile wierszy w **Tabela2** ma co najmniej jedno uzupełnione pole rebuy w oknie szczegółów rebuy.
 
 ### 27.3 Tabela2 (Gracz / Buy-In / Rebuy / Eliminated)
 1. W kolumnie **Gracz** kliknij listę rozwijaną i wybierz gracza.
@@ -816,7 +817,7 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 8. Kolumna **Ranking** pokazuje pozycję gracza z **Tabela4** (jeśli gracz jest obecny na liście eliminacyjnej).
 
 ### 27.7 Zachowanie pól w kalkulatorze
-- Pola edytowalne: `Buy-In`, `Rebuy` (Tabela1), `Gracz`, checkbox `Eliminated`, pola `Rebuy1..N` w modalu, `%` w Tabela3.
+- Pola edytowalne: `Buy-In` (Tabela1), `Gracz`, checkbox `Eliminated`, pola `Rebuy1..N` w modalu, `%` w Tabela3.
 - Pola obliczane: `Suma`, `Liczba Rebuy`, `Rake`, `Wpisowe`, `Rebuy`, `Pot`, `Wygrana`, `Kwota`, `Suma` (Tabela5).
 - Przełączanie między trybami **Tournament/Cash** utrzymuje osobne dane dla każdego trybu.
 
