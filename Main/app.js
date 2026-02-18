@@ -3000,7 +3000,7 @@ const initAdminCalculator = () => {
     const modeState = getModeState();
     const table5Rows = getTable5Rows();
     const totalPlayers = modeState.table2Rows.length;
-    const totalByPlayerId = new Map(table5Rows.map((row) => [row.id, row.total]));
+    const totalByLp = new Map(table5Rows.map((row) => [row.lp, row.total]));
     const activeEliminated = modeState.eliminatedOrder
       .map((id) => modeState.table2Rows.find((row) => row.id === id))
       .filter((row) => row && row.eliminated);
@@ -3012,7 +3012,7 @@ const initAdminCalculator = () => {
         id: row.id,
         lp: position,
         playerName: row.playerName,
-        win: totalByPlayerId.get(row.id) ?? 0
+        win: totalByLp.get(position) ?? 0
       });
     });
 
