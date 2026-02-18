@@ -797,26 +797,22 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 6. Kolumna **Pot** pokazuje automatycznie `Wpisowe + Rebuy` po odjęciu procentu.
 
 ### 27.5 Tabela4 (LP / Gracz / Wygrana)
-1. Tabela ma stałe kolumny: **LP**, **Gracz**, **Wygrana**.
+1. Tabela ma kolumny: **LP**, **Gracz**, **Wygrana**.
 2. **Gracz** jest uzupełniany automatycznie z logiki eliminacji checkboxem **Eliminated** z **Tabela2**.
-3. **Wygrana** jest uzupełniana automatycznie z kolumny **Suma** z **Tabela5** (dla tego samego gracza).
+3. **Wygrana** jest kopią kolumny **Suma** z **Tabela5** (ta sama wartość liczbowa dla tego samego wiersza gracza).
 
 ### 27.6 Tabela5 (dynamiczna liczba wierszy i kolumn)
 1. Liczba wierszy jest dynamiczna i równa liczbie wierszy graczy w **Tabela2**.
-2. Liczba kolumn **Rebuy** jest dynamiczna i zależy od największej liczby pól rebuy użytej przez dowolnego gracza w modalu z **Tabela2**.
-3. Nagłówek procentowy to **Podział puli** (zamiast `%wygranej`).
-4. **Podział puli** ma wartości stałe:
-   - wiersz 1 = `50%`,
-   - wiersz 2 = `30%`,
-   - wiersz 3 = `20%`,
-   - kolejne wiersze = `0%`.
-5. **Kwota** jest liczona automatycznie: `Wpisowe z Tabela3 × Podział puli`.
-6. Kolumny **Rebuy1...RebuyN** przepisują wartości z okna rebuy konkretnego gracza.
-7. Końcowa kolumna **Suma** liczy: `Kwota + wszystkie kolumny Rebuy`.
+2. W Tabela5 nie ma już kolumny **Gracz**.
+3. Liczba kolumn **Rebuy** jest dynamiczna i zależy od łącznej liczby uzupełnionych pól `Rebuy` u wszystkich graczy w modalu z **Tabela2** (liczone są tylko pola niepuste).
+4. Nagłówek procentowy to **Podział puli** i jest to pole edytowalne: wpisujesz np. `10`, a po wyjściu z pola widzisz `10%`.
+5. Obliczenia **Kwota** pozostają takie same: `Wpisowe z Tabela3 × Podział puli / 100`.
+6. Kolumny **Rebuy1...RebuyN** są renderowane dynamicznie dla całej tabeli i pokazują wartości numeryczne (brak danych w danym miejscu = `0`).
+7. Końcowa kolumna **Suma** liczy: `Kwota + wszystkie kolumny Rebuy` dla danego wiersza.
 8. Kolumna **Ranking** pokazuje pozycję gracza z **Tabela4** (jeśli gracz jest obecny na liście eliminacyjnej).
 
 ### 27.7 Zachowanie pól w kalkulatorze
-- Pola edytowalne: `Buy-In`, `Rebuy` (Tabela1), `Gracz`, checkbox `Eliminated`, pola `Rebuy1..N` w modalu, `%` w Tabela3.
+- Pola edytowalne: `Buy-In`, `Rebuy` (Tabela1), `Gracz`, checkbox `Eliminated`, pola `Rebuy1..N` w modalu, `%` w Tabela3, `Podział puli` w Tabela5.
 - Pola obliczane: `Suma`, `Liczba Rebuy`, `Rake`, `Wpisowe`, `Rebuy`, `Pot`, `Wygrana`, `Kwota`, `Suma` (Tabela5).
 - Przełączanie między trybami **Tournament/Cash** utrzymuje osobne dane dla każdego trybu.
 

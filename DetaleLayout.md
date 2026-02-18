@@ -448,9 +448,10 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
 
 ### 4) Kolumny i etykiety po zmianie
 - Tabela3 zyskała pierwszą kolumnę `%` z prezentacją wartości w formacie `N%` po utracie fokusu.
-- Tabela4 ma nazwy kolumn: `LP`, `Gracz`, `Wygrana`.
-- Tabela5 ma nagłówek `Podział puli` (zamiast `%wygranej`) i końcową kolumnę `Suma`.
-- Liczba kolumn `Rebuy` w Tabela5 jest dynamiczna (zależna od największej liczby pól rebuy gracza).
+- Tabela4 ma nazwy kolumn: `LP`, `Gracz`, `Wygrana` (wartość 1:1 z kolumną `Suma` w Tabela5).
+- Tabela5 ma nagłówek `Podział puli` jako pole edytowalne i końcową kolumnę `Suma`.
+- W Tabela5 usunięto kolumnę `Gracz`.
+- Liczba kolumn `Rebuy` w Tabela5 jest dynamiczna i zależy od łącznej liczby niepustych pól rebuy wszystkich graczy (nie od maksimum na pojedynczego gracza).
 
 
 ## 24) Zakładka „Najbliższa gra” — admin + użytkownik

@@ -1314,6 +1314,7 @@ Dla każdego trybu (`tournament`, `cash`) utrzymywany jest niezależny stan:
 - `table1Row`: `{ buyIn, rebuy }`.
 - `table2Rows`: lista wierszy graczy `{ playerName, eliminated, rebuys[] }`.
 - `table3Row`: `{ percent }`.
+- `table5SplitPercents`: tablica edytowalnych wartości procentowych dla kolumny `Podział puli` w Tabela5 (wartości cyfr bez znaku `%`).
 - `eliminatedOrder`: kolejność zaznaczeń checkboxa `Eliminated`.
 
 Dodatkowo stan globalny modułu zawiera:
@@ -1349,19 +1350,21 @@ Kliknięcie przycisku:
   - pierwszy zaznaczony dostaje ostatnie miejsce,
   - kolejni zajmują kolejne pozycje od końca.
 - Odznaczenie checkboxa usuwa gracza z listy eliminacyjnej.
-- Kolumna `Wygrana` pobiera wartość z kolumny `Suma` w Tabela5 dla tego samego gracza.
+- Kolumna `Wygrana` pobiera wartość z kolumny `Suma` w Tabela5 dla tego samego wiersza gracza (mapowanie po `row.id`, nie po samej nazwie).
 
 ### 26.6 Tabela5 — dynamiczna siatka
 Tabela5 jest generowana dynamicznie:
 - liczba wierszy = liczba wierszy graczy w Tabela2,
-- liczba kolumn rebuy = maksymalna liczba pól rebuy użyta przez dowolny wiersz Tabela2.
+- liczba kolumn `Rebuy` = łączna liczba niepustych pól rebuy u wszystkich graczy (`sum(row.rebuys.filter(niepuste).length)`).
 
 Kolumny i reguły:
-- `Podział puli` (stałe): 50%, 30%, 20%, potem 0%.
-- `Kwota` = `Wpisowe z Tabela3 × Podział puli`.
-- `Rebuy1..RebuyN` = przepisane wartości z modala rebuy danego gracza.
+- Tabela5 nie renderuje kolumny `Gracz`.
+- `Podział puli` jest polem edytowalnym (`input.admin-input`) z formatowaniem `N%` na `blur`; w trakcie `focus` pokazywana jest czysta liczba.
+- `Podział puli` zapisuje wartości do `table5SplitPercents[index]`; jeżeli brak wpisu, używane są wartości domyślne z `getPrizeSplitPercent(index)` (50, 30, 20, potem 0).
+- `Kwota` = `Wpisowe z Tabela3 × (Podział puli / 100)`.
+- `Rebuy1..RebuyN` = wartości liczbowe z tablicy rebuy danego gracza; brak indeksu w wierszu daje `0`.
 - `Suma` = `Kwota + suma wszystkich kolumn rebuy`.
-- `Ranking` = pozycja z Tabela4 (jeżeli gracz jest na liście eliminacji).
+- `Ranking` = pozycja z Tabela4 (jeżeli gracz jest na liście eliminacji), mapowana po `row.id`.
 
 ### 26.7 Integracja z Firebase
 Kalkulator używa Firebase wyłącznie do pobierania listy graczy w `select`:

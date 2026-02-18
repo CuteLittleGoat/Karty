@@ -303,11 +303,10 @@ Uwagi:
 | Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
 | --- | --- | --- | --- | --- | --- | --- |
 | LP | brak | brak | brak | brak | lewo | standard |
-| Podział puli | brak | brak | brak | brak | lewo | standard |
-| Gracz | brak | brak | brak | brak | lewo | standard |
+| Podział puli (pole edytowalne) | brak | brak | brak | brak | lewo | standard |
 | Kwota | brak | brak | brak | brak | lewo | standard |
 | Ranking | brak | brak | brak | brak | lewo | standard |
-| Rebuy1-RebuyN (dynamicznie) | brak | brak | brak | brak | lewo | standard |
+| Rebuy1-RebuyN (dynamicznie, liczba kolumn = suma niepustych rebuy wszystkich graczy) | brak | brak | brak | brak | lewo | standard |
 | Suma | brak | brak | brak | brak | lewo | standard |
 
 Parametry sekcji kalkulatora:
