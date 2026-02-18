@@ -3143,29 +3143,9 @@ const initAdminCalculator = () => {
     }
   });
 
-  const hasMinimumPlayersForCalculator = () => {
-    const modeState = getModeState();
-    const filledPlayersCount = modeState.table2Rows.reduce((count, row) => {
-      return row.playerName.trim() ? count + 1 : count;
-    }, 0);
-    return filledPlayersCount >= 5;
-  };
-
-  const createEmptyInputCell = () => {
-    const td = document.createElement("td");
-    const input = document.createElement("input");
-    input.type = "text";
-    input.className = "admin-input";
-    input.value = "";
-    input.disabled = true;
-    td.appendChild(input);
-    return td;
-  };
-
   const renderTable1 = () => {
     const modeState = getModeState();
     const metrics = getCalculatorMetrics();
-    const canRenderCalculations = hasMinimumPlayersForCalculator();
     rootTable1.innerHTML = "";
     rootTable1.appendChild(createHeader("Tabela1"));
 
@@ -3174,16 +3154,6 @@ const initAdminCalculator = () => {
     table.innerHTML = `<thead><tr><th>Suma</th><th>Buy-In</th><th>Rebuy</th><th>Liczba Rebuy</th></tr></thead>`;
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
-
-    if (!canRenderCalculations) {
-      tr.append(createReadonlyCell(""), createEmptyInputCell(), createEmptyInputCell(), createReadonlyCell(""));
-      tbody.appendChild(tr);
-      table.appendChild(tbody);
-      const scroll = createScroll();
-      scroll.appendChild(table);
-      rootTable1.appendChild(scroll);
-      return;
-    }
 
     tr.appendChild(createReadonlyCell(formatNumber(metrics.sumValue)));
 
@@ -3352,7 +3322,6 @@ const initAdminCalculator = () => {
   const renderTable3 = () => {
     const modeState = getModeState();
     const metrics = getCalculatorMetrics();
-    const canRenderCalculations = hasMinimumPlayersForCalculator();
     rootTable3.innerHTML = "";
     rootTable3.appendChild(createHeader("Tabela3"));
 
@@ -3361,22 +3330,6 @@ const initAdminCalculator = () => {
     table.innerHTML = `<thead><tr><th>%</th><th>Rake</th><th>Wpisowe</th><th>Rebuy</th><th>Pot</th></tr></thead>`;
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
-
-    if (!canRenderCalculations) {
-      tr.append(
-        createEmptyInputCell(),
-        createReadonlyCell(""),
-        createReadonlyCell(""),
-        createReadonlyCell(""),
-        createReadonlyCell("")
-      );
-      tbody.appendChild(tr);
-      table.appendChild(tbody);
-      const scroll = createScroll();
-      scroll.appendChild(table);
-      rootTable3.appendChild(scroll);
-      return;
-    }
 
     const percentCell = document.createElement("td");
     const percentInput = document.createElement("input");
@@ -3422,7 +3375,6 @@ const initAdminCalculator = () => {
 
     const modeState = getModeState();
     const table4Rows = getTable4Rows();
-    const canRenderCalculations = hasMinimumPlayersForCalculator();
     const table = document.createElement("table");
     table.className = "admin-data-table";
     table.innerHTML = `<thead><tr><th>LP</th><th>Gracz</th><th>Wygrana</th></tr></thead>`;
@@ -3431,11 +3383,6 @@ const initAdminCalculator = () => {
     for (let index = 0; index < modeState.table2Rows.length; index += 1) {
       const tr = document.createElement("tr");
       const lp = index + 1;
-      if (!canRenderCalculations) {
-        tr.append(createReadonlyCell(""), createReadonlyCell(""), createReadonlyCell(""));
-        tbody.appendChild(tr);
-        continue;
-      }
       const tableRow = table4Rows.find((row) => row.lp === lp);
       const lpCell = document.createElement("td");
       lpCell.textContent = String(lp);
@@ -3455,7 +3402,6 @@ const initAdminCalculator = () => {
 
   const renderTable5 = () => {
     const modeState = getModeState();
-    const canRenderCalculations = hasMinimumPlayersForCalculator();
     const table5Rows = getTable5Rows();
     const rebuyColumnsCount = modeState.table2Rows.reduce(
       (count, row) => count + row.rebuys.filter((value) => sanitizeInteger(value) !== "").length,
@@ -3469,8 +3415,7 @@ const initAdminCalculator = () => {
     const table = document.createElement("table");
     table.className = "admin-data-table";
     let headerHtml = "<thead><tr><th>LP</th><th>Podział puli</th><th>Kwota</th><th>Ranking</th>";
-    const visibleRebuyColumnsCount = canRenderCalculations ? rebuyColumnsCount : 0;
-    for (let i = 1; i <= visibleRebuyColumnsCount; i += 1) {
+    for (let i = 1; i <= rebuyColumnsCount; i += 1) {
       headerHtml += `<th>Rebuy${i}</th>`;
     }
     headerHtml += "<th>Suma</th></tr></thead>";
@@ -3479,11 +3424,6 @@ const initAdminCalculator = () => {
     const tbody = document.createElement("tbody");
     table5Rows.forEach((row) => {
       const tr = document.createElement("tr");
-      if (!canRenderCalculations) {
-        tr.append(createReadonlyCell(""), createEmptyInputCell(), createReadonlyCell(""), createReadonlyCell(""), createReadonlyCell(""));
-        tbody.appendChild(tr);
-        return;
-      }
       const lpCell = document.createElement("td");
       lpCell.textContent = String(row.lp);
 
@@ -3517,7 +3457,7 @@ const initAdminCalculator = () => {
         createReadonlyCell(formatNumber(rankingByPlayerId.get(row.id) ?? 0))
       );
 
-      for (let index = 0; index < visibleRebuyColumnsCount; index += 1) {
+      for (let index = 0; index < rebuyColumnsCount; index += 1) {
         tr.appendChild(createReadonlyCell(formatNumber(row.rebuyValues[index] ?? 0)));
       }
       tr.appendChild(createReadonlyCell(formatNumber(row.total)));
