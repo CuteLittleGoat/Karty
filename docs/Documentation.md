@@ -1350,7 +1350,9 @@ Kliknięcie przycisku:
   - pierwszy zaznaczony dostaje ostatnie miejsce,
   - kolejni zajmują kolejne pozycje od końca.
 - Odznaczenie checkboxa usuwa gracza z listy eliminacyjnej.
-- Kolumna `Wygrana` pobiera wartość z kolumny `Suma` w Tabela5 dla tego samego wiersza gracza (mapowanie po `row.id`, nie po samej nazwie).
+- Kolumna `Wygrana` pobiera wartość z kolumny `Suma` w Tabela5 dla tego samego numeru `LP` (mapowanie `LP -> LP`).
+- Implementacyjnie `getTable4Rows()` tworzy mapę `totalByLp` na bazie `getTable5Rows()` i dla pozycji wyliczonej przez eliminację (`position`) ustawia `win = totalByLp.get(position) ?? 0`.
+- Dzięki temu zawartość `Wygrana` pozostaje stała dla danego wiersza LP i nie zależy od tego, który gracz aktualnie znajduje się w kolumnie `Gracz`.
 
 ### 26.6 Tabela5 — dynamiczna siatka
 Tabela5 jest generowana dynamicznie:

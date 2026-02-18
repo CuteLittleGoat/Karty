@@ -799,7 +799,9 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 ### 27.5 Tabela4 (LP / Gracz / Wygrana)
 1. Tabela ma kolumny: **LP**, **Gracz**, **Wygrana**.
 2. **Gracz** jest uzupełniany automatycznie z logiki eliminacji checkboxem **Eliminated** z **Tabela2**.
-3. **Wygrana** jest kopią kolumny **Suma** z **Tabela5** (ta sama wartość liczbowa dla tego samego wiersza gracza).
+3. **Wygrana** jest zawsze kopiowana z kolumny **Suma** z **Tabela5** po numerze **LP** (wiersz do wiersza: LP=1 ↔ LP=1, LP=2 ↔ LP=2 itd.).
+4. Zmiana kolejności lub podmiana gracza w kolumnie **Gracz** nie zmienia wartości **Wygrana** w tym samym LP.
+5. Checkbox **Eliminated** wpływa na przypisanie graczy do pozycji, ale nie zmienia mapowania wartości **Wygrana** względem LP.
 
 ### 27.6 Tabela5 (dynamiczna liczba wierszy i kolumn)
 1. Liczba wierszy jest dynamiczna i równa liczbie wierszy graczy w **Tabela2**.
