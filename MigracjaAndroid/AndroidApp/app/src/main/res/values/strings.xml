@@ -1,5 +1,0 @@
-<resources>
-  <string name="app_name">Karty</string>
-  <string name="notification_channel_name">Karty — wiadomości</string>
-  <string name="notification_title_default">Nowa wiadomość</string>
-</resources>
