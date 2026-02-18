@@ -764,13 +764,19 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 4. Pod panelem przełącznika zobaczysz pięć tabel: **Tabela1**, **Tabela2**, **Tabela3**, **Tabela4**, **Tabela5**.
 5. W widoku mobilnym (telefon) panel przełącznika jest zawsze osobnym blokiem nad tabelami, dzięki czemu tabele mają większą szerokość roboczą i łatwiej je przewijać poziomo.
 
-### 27.2 Tabela1 (Suma / Buy-In / Rebuy / Liczba Rebuy)
-1. W kolumnie **Buy-In** wpisz liczbę (np. `100`).
+### 27.2 Warunek startu obliczeń (minimum 5 graczy)
+1. Najpierw uzupełnij w **Tabela2** co najmniej pięć pól **Gracz** (pięć niepustych wyborów graczy).
+2. Dopóki liczba uzupełnionych graczy jest mniejsza niż 5, tabele **Tabela1**, **Tabela3**, **Tabela4** i **Tabela5** pokazują wyłącznie puste pola.
+3. W tym stanie pola wejściowe w tych tabelach są widoczne jako puste i zablokowane, a wartości obliczane nie są wyświetlane.
+4. Po wybraniu piątego gracza obliczenia i dane w tych tabelach pojawiają się automatycznie bez odświeżania strony.
+
+### 27.3 Tabela1 (Suma / Buy-In / Rebuy / Liczba Rebuy)
+1. Po spełnieniu warunku 5 graczy w kolumnie **Buy-In** wpisz liczbę (np. `100`).
 2. W kolumnie **Rebuy** możesz wpisać liczbę pomocniczą ręcznie.
 3. Kolumna **Suma** liczy się automatycznie jako: suma wszystkich wartości z kolumn **Buy-In** i **Rebuy** z **Tabela2**.
 4. Kolumna **Liczba Rebuy** liczy automatycznie łączną liczbę uzupełnionych pól `Rebuy1..N` we wszystkich oknach „Rebuy gracza” z **Tabela2** (puste pola nie są liczone).
 
-### 27.3 Tabela2 (Gracz / Buy-In / Rebuy / Eliminated)
+### 27.4 Tabela2 (Gracz / Buy-In / Rebuy / Eliminated)
 1. W kolumnie **Gracz** kliknij listę rozwijaną i wybierz gracza.
 2. Kolumna **Buy-In** jest automatycznie przepisywana z pola **Buy-In** z **Tabela1**.
 3. W kolumnie **Rebuy** kliknij przycisk z kwotą (na początku `0`).
@@ -788,7 +794,7 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 12. Przycisk **Dodaj** (tylko w ostatnim wierszu) dodaje nowy wiersz gracza.
 13. Przycisk **Usuń** usuwa wybrany wiersz (przy jednym wierszu pozostaje zablokowany).
 
-### 27.4 Tabela3 (% / Rake / Wpisowe / Rebuy / Pot)
+### 27.5 Tabela3 (% / Rake / Wpisowe / Rebuy / Pot)
 1. W pierwszej kolumnie **%** wpisz liczbę (np. `10`).
 2. Po wyjściu z pola (kliknięcie poza pole) wartość automatycznie pokaże się jako `10%`.
 3. Kolumna **Rake** liczy się automatycznie: `(suma Buy-In i Rebuy z Tabela2) × %`.
@@ -796,12 +802,12 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 5. Kolumna **Rebuy** liczy się automatycznie: `suma Rebuy z Tabela2 - (suma Rebuy z Tabela2 × %)`.
 6. Kolumna **Pot** pokazuje automatycznie `Wpisowe + Rebuy` po odjęciu procentu.
 
-### 27.5 Tabela4 (LP / Gracz / Wygrana)
+### 27.6 Tabela4 (LP / Gracz / Wygrana)
 1. Tabela ma kolumny: **LP**, **Gracz**, **Wygrana**.
 2. **Gracz** jest uzupełniany automatycznie z logiki eliminacji checkboxem **Eliminated** z **Tabela2**.
 3. **Wygrana** jest kopią kolumny **Suma** z **Tabela5** (ta sama wartość liczbowa dla tego samego wiersza gracza).
 
-### 27.6 Tabela5 (dynamiczna liczba wierszy i kolumn)
+### 27.7 Tabela5 (dynamiczna liczba wierszy i kolumn)
 1. Liczba wierszy jest dynamiczna i równa liczbie wierszy graczy w **Tabela2**.
 2. W Tabela5 nie ma już kolumny **Gracz**.
 3. Liczba kolumn **Rebuy** jest dynamiczna i zależy od łącznej liczby uzupełnionych pól `Rebuy` u wszystkich graczy w modalu z **Tabela2** (liczone są tylko pola niepuste).
@@ -811,7 +817,7 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 7. Końcowa kolumna **Suma** liczy: `Kwota + wszystkie kolumny Rebuy` dla danego wiersza.
 8. Kolumna **Ranking** pokazuje pozycję gracza z **Tabela4** (jeśli gracz jest obecny na liście eliminacyjnej).
 
-### 27.7 Zachowanie pól w kalkulatorze
+### 27.8 Zachowanie pól w kalkulatorze
 - Pola edytowalne: `Buy-In`, `Rebuy` (Tabela1), `Gracz`, checkbox `Eliminated`, pola `Rebuy1..N` w modalu, `%` w Tabela3, `Podział puli` w Tabela5.
 - Pola obliczane: `Suma`, `Liczba Rebuy`, `Rake`, `Wpisowe`, `Rebuy`, `Pot`, `Wygrana`, `Kwota`, `Suma` (Tabela5).
 - Przełączanie między trybami **Tournament/Cash** utrzymuje osobne dane dla każdego trybu.
