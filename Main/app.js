@@ -2849,6 +2849,7 @@ const initAdminCalculator = () => {
   }
 
   const firebaseApp = getFirebaseApp();
+  const CALCULATOR_COLLECTION = "calculators";
 
   const createInitialState = () => ({
     table1Row: { id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" },
@@ -2870,6 +2871,7 @@ const initAdminCalculator = () => {
   };
 
   const getModeState = () => (state.mode === "cash" ? state.cash : state.tournament);
+  const getCalculatorDocRef = (mode) => firebaseApp.firestore().collection(CALCULATOR_COLLECTION).doc(mode);
   const sanitizeInteger = (value) => String(value ?? "").replace(/[^0-9]/g, "");
   const parseInteger = (value) => {
     const normalized = sanitizeInteger(value);
@@ -2879,6 +2881,98 @@ const initAdminCalculator = () => {
   const formatPercentDisplay = (value) => {
     const normalized = sanitizeInteger(value);
     return normalized ? `${normalized}%` : "";
+  };
+
+  const normalizeCalculatorModeState = (rawState) => {
+    const baseState = createInitialState();
+    const source = rawState && typeof rawState === "object" ? rawState : {};
+    const table1Source = source.table1Row && typeof source.table1Row === "object" ? source.table1Row : {};
+    const table3Source = source.table3Row && typeof source.table3Row === "object" ? source.table3Row : {};
+
+    const table2Rows = Array.isArray(source.table2Rows)
+      ? source.table2Rows
+        .map((row, index) => {
+          const rowSource = row && typeof row === "object" ? row : {};
+          const normalizedRebuys = Array.isArray(rowSource.rebuys)
+            ? rowSource.rebuys.map((value) => sanitizeInteger(value))
+            : [];
+          return {
+            id: typeof rowSource.id === "string" && rowSource.id.trim()
+              ? rowSource.id.trim()
+              : `table2-${Date.now()}-${index}`,
+            playerName: typeof rowSource.playerName === "string" ? rowSource.playerName : "",
+            eliminated: Boolean(rowSource.eliminated),
+            rebuys: normalizedRebuys.length ? normalizedRebuys : [""]
+          };
+        })
+        .filter((row) => row.id)
+      : [];
+
+    const ensuredTable2Rows = table2Rows.length ? table2Rows : baseState.table2Rows;
+    const validIds = new Set(ensuredTable2Rows.map((row) => row.id));
+
+    return {
+      table1Row: {
+        id: baseState.table1Row.id,
+        buyIn: sanitizeInteger(table1Source.buyIn),
+        rebuy: sanitizeInteger(table1Source.rebuy)
+      },
+      table2Rows: ensuredTable2Rows,
+      table3Row: {
+        percent: sanitizeInteger(table3Source.percent)
+      },
+      table5SplitPercents: Array.isArray(source.table5SplitPercents)
+        ? source.table5SplitPercents.map((value) => sanitizeInteger(value))
+        : [],
+      eliminatedOrder: Array.isArray(source.eliminatedOrder)
+        ? source.eliminatedOrder.filter((id) => typeof id === "string" && validIds.has(id))
+        : []
+    };
+  };
+
+  const serializeCalculatorModeState = (modeState) => ({
+    table1Row: {
+      buyIn: sanitizeInteger(modeState.table1Row.buyIn),
+      rebuy: sanitizeInteger(modeState.table1Row.rebuy)
+    },
+    table2Rows: modeState.table2Rows.map((row, index) => ({
+      id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `table2-${Date.now()}-${index}`,
+      playerName: typeof row.playerName === "string" ? row.playerName : "",
+      eliminated: Boolean(row.eliminated),
+      rebuys: Array.isArray(row.rebuys) && row.rebuys.length ? row.rebuys.map((value) => sanitizeInteger(value)) : [""]
+    })),
+    table3Row: {
+      percent: sanitizeInteger(modeState.table3Row.percent)
+    },
+    table5SplitPercents: Array.isArray(modeState.table5SplitPercents)
+      ? modeState.table5SplitPercents.map((value) => sanitizeInteger(value))
+      : [],
+    eliminatedOrder: Array.isArray(modeState.eliminatedOrder)
+      ? modeState.eliminatedOrder.filter((id) => typeof id === "string")
+      : []
+  });
+
+  const persistCalculatorModeState = (mode) => {
+    if (!firebaseApp || (mode !== "tournament" && mode !== "cash")) {
+      return Promise.resolve();
+    }
+
+    const modeState = mode === "cash" ? state.cash : state.tournament;
+    const payload = serializeCalculatorModeState(modeState);
+    return getCalculatorDocRef(mode).set({
+      ...payload,
+      updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  };
+
+  const schedulePersistCalculatorModeState = (mode) => {
+    scheduleDebouncedUpdate(`admin-calculator-${mode}`, () => {
+      void persistCalculatorModeState(mode).catch(() => {
+        if (status) {
+          status.textContent = "Nie udało się zapisać danych kalkulatora.";
+        }
+      });
+    });
   };
 
   const createHeader = (title) => {
@@ -3084,6 +3178,7 @@ const initAdminCalculator = () => {
         row.rebuys[index] = sanitizeInteger(input.value);
         input.value = row.rebuys[index];
         render();
+        schedulePersistCalculatorModeState(state.rebuyModal.mode ?? state.mode);
       });
       td.appendChild(input);
       tr.appendChild(td);
@@ -3101,6 +3196,7 @@ const initAdminCalculator = () => {
       row.rebuys.push("");
       renderRebuyModal();
       render();
+      schedulePersistCalculatorModeState(state.rebuyModal.mode ?? state.mode);
     });
 
     const removeButton = document.createElement("button");
@@ -3115,6 +3211,7 @@ const initAdminCalculator = () => {
       row.rebuys.pop();
       renderRebuyModal();
       render();
+      schedulePersistCalculatorModeState(state.rebuyModal.mode ?? state.mode);
     });
 
     rebuyModalActions.append(addButton, removeButton);
@@ -3171,6 +3268,7 @@ const initAdminCalculator = () => {
       modeState.table1Row.buyIn = sanitizeInteger(buyInInput.value);
       buyInInput.value = modeState.table1Row.buyIn;
       render();
+      schedulePersistCalculatorModeState(state.mode);
     });
     buyInCell.appendChild(buyInInput);
 
@@ -3187,6 +3285,8 @@ const initAdminCalculator = () => {
     rebuyInput.addEventListener("input", () => {
       modeState.table1Row.rebuy = sanitizeInteger(rebuyInput.value);
       rebuyInput.value = modeState.table1Row.rebuy;
+      render();
+      schedulePersistCalculatorModeState(state.mode);
     });
     rebuyCell.appendChild(rebuyInput);
 
@@ -3245,6 +3345,7 @@ const initAdminCalculator = () => {
       playerSelect.addEventListener("change", () => {
         row.playerName = playerSelect.value;
         render();
+        schedulePersistCalculatorModeState(state.mode);
       });
       playerCell.appendChild(playerSelect);
 
@@ -3269,6 +3370,7 @@ const initAdminCalculator = () => {
         row.eliminated = eliminatedCheckbox.checked;
         updateEliminatedOrder(modeState, row, row.eliminated);
         render();
+        schedulePersistCalculatorModeState(state.mode);
       });
       eliminatedCell.appendChild(eliminatedCheckbox);
 
@@ -3289,6 +3391,7 @@ const initAdminCalculator = () => {
             rebuys: [""]
           });
           render();
+          schedulePersistCalculatorModeState(state.mode);
         });
         actionsWrap.appendChild(addButton);
       }
@@ -3305,6 +3408,7 @@ const initAdminCalculator = () => {
           modeState.table2Rows.push({ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [""] });
         }
         render();
+        schedulePersistCalculatorModeState(state.mode);
       });
       actionsWrap.appendChild(deleteButton);
       actionsCell.appendChild(actionsWrap);
@@ -3348,6 +3452,7 @@ const initAdminCalculator = () => {
       modeState.table3Row.percent = sanitizeInteger(percentInput.value);
       percentInput.value = modeState.table3Row.percent;
       render();
+      schedulePersistCalculatorModeState(state.mode);
     });
     percentInput.addEventListener("blur", () => {
       percentInput.value = formatPercentDisplay(modeState.table3Row.percent);
@@ -3444,6 +3549,7 @@ const initAdminCalculator = () => {
         modeState.table5SplitPercents[row.lp - 1] = sanitizeInteger(splitPercentInput.value);
         splitPercentInput.value = modeState.table5SplitPercents[row.lp - 1];
         render();
+        schedulePersistCalculatorModeState(state.mode);
       });
       splitPercentInput.addEventListener("blur", () => {
         splitPercentInput.value = formatPercentDisplay(getTable5SplitPercentValue(modeState, row.lp - 1));
@@ -3504,6 +3610,20 @@ const initAdminCalculator = () => {
     render();
     return;
   }
+
+  ["tournament", "cash"].forEach((mode) => {
+    getCalculatorDocRef(mode).onSnapshot((snapshot) => {
+      if (!snapshot.exists) {
+        return;
+      }
+      state[mode] = normalizeCalculatorModeState(snapshot.data());
+      render();
+    }, () => {
+      if (status) {
+        status.textContent = "Nie udało się pobrać zapisanych danych kalkulatora.";
+      }
+    });
+  });
 
   firebaseApp.firestore().collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
     const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];

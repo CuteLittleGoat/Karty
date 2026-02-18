@@ -1369,14 +1369,24 @@ Kolumny i reguły:
 - `Ranking` = pozycja z Tabela4 (jeżeli gracz jest na liście eliminacji), mapowana po `row.id`.
 
 ### 26.7 Integracja z Firebase
-Kalkulator używa Firebase wyłącznie do pobierania listy graczy w `select`:
+Kalkulator używa Firebase w dwóch równoległych strumieniach danych:
+
+1. **Lista graczy do `select`**
 - kolekcja: `app_settings`,
 - dokument: `player_access`,
 - pole: `players[]`.
 
+2. **Trwały zapis danych kalkulatora**
+- kolekcja: `calculators`,
+- dokumenty: `tournament` oraz `cash`,
+- zapis przez `set(..., { merge: true })` z polem `updatedAt` (`serverTimestamp`).
+
 Mechanizm:
-- `onSnapshot(...)` aktualizuje `state.playerOptions` na żywo,
-- dane kalkulatora (buy-in, rebuy, procent, ranking) są aktualnie stanem lokalnym UI i nie są zapisywane do Firestore.
+- `onSnapshot(...)` dla `app_settings/player_access` aktualizuje `state.playerOptions` na żywo.
+- `onSnapshot(...)` dla `calculators/tournament` i `calculators/cash` odtwarza zapisany stan tabel po odświeżeniu strony/przeglądarki.
+- Każda zmiana pól edytowalnych kalkulatora (Tabela1, Tabela2, modal Rebuy, Tabela3, Tabela5) wywołuje debounced zapis do odpowiedniego dokumentu trybu.
+- Dane `Tournament` i `Cash` są utrzymywane całkowicie niezależnie (oddzielne dokumenty).
+- Przy odczycie stan jest normalizowany (sanityzacja liczb, wymuszenie minimum jednego wiersza gracza, filtrowanie nieprawidłowych identyfikatorów), co zabezpiecza render przed uszkodzonym dokumentem.
 
 ### 26.8 Fokus i przebudowa widoku
 Po każdym renderze kalkulator:
