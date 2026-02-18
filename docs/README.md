@@ -169,7 +169,7 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 - Przycisk **„Notatki do gry”** pozostaje dostępny w sekcji **„Gry użytkowników”**.
 
 ### Które pola wpisujesz ręcznie
-- Nazwa gracza,
+- Nazwa gracza (w ramach jednej gry ten sam gracz może być wybrany tylko raz; po wyborze w jednym wierszu znika możliwość wybrania go w pozostałych wierszach tej samej gry),
 - wpisowe,
 - rebuy,
 - wypłata,
@@ -235,8 +235,10 @@ Sekcja służy do szczegółowej pracy na rozliczeniach i punktacji.
 1. Wybierz rok i grę z listy.
 2. Otwórz szczegóły.
 3. Przy dodawaniu nowego wiersza pole **Wypłata** domyślnie ustawiane jest na `0`.
-4. Możesz ręcznie zmienić wartość **Wypłata** na dowolną liczbę.
-5. Zmień pozostałe dane wierszy i zapisz.
+4. W kolumnie wyboru gracza każdy gracz może wystąpić tylko raz w obrębie jednej gry (nie da się drugi raz wybrać tej samej osoby w tym samym modalu).
+5. Jeżeli masz dwie różne gry, ten sam gracz może być wpisany w obu — ograniczenie działa osobno dla każdej gry.
+6. Możesz ręcznie zmienić wartość **Wypłata** na dowolną liczbę.
+7. Zmień pozostałe dane wierszy i zapisz.
 
 ### Co jest liczone automatycznie
 - Podsumowanie `+/-` per wiersz,
@@ -772,21 +774,23 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 
 ### 27.3 Tabela2 (Gracz / Buy-In / Rebuy / Eliminated)
 1. W kolumnie **Gracz** kliknij listę rozwijaną i wybierz gracza.
-2. Kolumna **Buy-In** jest automatycznie przepisywana z pola **Buy-In** z **Tabela1**.
-3. W kolumnie **Rebuy** kliknij przycisk z kwotą (na początku `0`).
-4. Otworzy się okno modalne „Rebuy gracza” z tabelą jednego wiersza i jedną kolumną **Rebuy1**.
-5. Wpisz wartość do **Rebuy1**.
-6. Kliknij **Dodaj Rebuy**, aby dodać **Rebuy2**, potem **Rebuy3** itd.
-7. Gdy kolumn jest minimum 2, przycisk **Usuń Rebuy** jest aktywny i usuwa zawsze ostatnią kolumnę.
-8. Podczas wpisywania w polach `Rebuy1..N` fokus i pozycja kursora są utrzymywane także po automatycznym odświeżeniu tabel (możesz pisać ciągiem bez ponownego klikania pola).
-9. Zamknij okno przyciskiem **Zamknij** albo kliknięciem poza modal.
-10. Po zamknięciu na przycisku **Rebuy** w **Tabela2** zobaczysz sumę wszystkich pól Rebuy z modala dla tego gracza.
-11. Checkbox **Eliminated** ustawia gracza na końcu rankingu w **Tabela4**:
+2. W ramach aktualnego trybu (**Tournament** albo **Cash**) ten sam gracz może być wybrany tylko raz na liście **Tabela2** — po wyborze w jednym wierszu jest zablokowany w pozostałych.
+3. Możesz użyć tej samej osoby raz w **Tournament** i raz w **Cash**, bo tryby działają niezależnie.
+4. Kolumna **Buy-In** jest automatycznie przepisywana z pola **Buy-In** z **Tabela1**.
+5. W kolumnie **Rebuy** kliknij przycisk z kwotą (na początku `0`).
+6. Otworzy się okno modalne „Rebuy gracza” z tabelą jednego wiersza i jedną kolumną **Rebuy1**.
+7. Wpisz wartość do **Rebuy1**.
+8. Kliknij **Dodaj Rebuy**, aby dodać **Rebuy2**, potem **Rebuy3** itd.
+9. Gdy kolumn jest minimum 2, przycisk **Usuń Rebuy** jest aktywny i usuwa zawsze ostatnią kolumnę.
+10. Podczas wpisywania w polach `Rebuy1..N` fokus i pozycja kursora są utrzymywane także po automatycznym odświeżeniu tabel (możesz pisać ciągiem bez ponownego klikania pola).
+11. Zamknij okno przyciskiem **Zamknij** albo kliknięciem poza modal.
+12. Po zamknięciu na przycisku **Rebuy** w **Tabela2** zobaczysz sumę wszystkich pól Rebuy z modala dla tego gracza.
+13. Checkbox **Eliminated** ustawia gracza na końcu rankingu w **Tabela4**:
     - pierwszy zaznaczony trafia na ostatnie miejsce,
     - kolejni zaznaczeni trafiają kolejno wyżej (od końca),
     - odznaczenie checkboxa usuwa gracza z listy eliminacyjnej w **Tabela4**.
-12. Przycisk **Dodaj** (tylko w ostatnim wierszu) dodaje nowy wiersz gracza.
-13. Przycisk **Usuń** usuwa wybrany wiersz (przy jednym wierszu pozostaje zablokowany).
+14. Przycisk **Dodaj** (tylko w ostatnim wierszu) dodaje nowy wiersz gracza.
+15. Przycisk **Usuń** usuwa wybrany wiersz (przy jednym wierszu pozostaje zablokowany).
 
 ### 27.4 Tabela3 (% / Rake / Wpisowe / Rebuy / Pot)
 1. W pierwszej kolumnie **%** wpisz liczbę (np. `10`).

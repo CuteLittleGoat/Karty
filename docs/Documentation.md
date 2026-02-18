@@ -1434,3 +1434,31 @@ Pakiet `MigracjaAndroid/AndroidApp` zawiera minimalny projekt Android oparty o W
   - `app/src/main/res/values/colors.xml` (`ic_launcher_background`)
 
 To usuwa błąd linkowania zasobów przy buildzie w Android Studio, kiedy manifest używa `@mipmap/ic_launcher`.
+
+## 27. Unikalność wyboru graczy w obrębie jednej gry i jednego trybu kalkulatora
+
+### 27.1 Zakres kodu (`Main/app.js`)
+Wprowadzono współdzielony helper:
+- `getSelectedPlayerNamesForRows(rows, currentRowId)` — zbiera `Set` zajętych nazw graczy z listy wierszy, pomijając aktualny wiersz.
+
+Helper został podpięty w trzech miejscach renderujących `select` gracza:
+1. modal szczegółów gry w module **Gry admina**,
+2. modal szczegółów gry w module **Gry użytkowników**,
+3. `Tabela2` w module **Kalkulator** (`Tournament` i `Cash`).
+
+### 27.2 Zasada blokowania opcji
+Dla każdej opcji `<option>` ustawiane jest `option.disabled = true`, jeżeli gracz jest już wybrany w innym wierszu tego samego kontekstu:
+- dla gier: kontekstem jest jedna konkretna gra (`gameId`),
+- dla kalkulatora: kontekstem jest aktualny tryb (`state.mode`: `tournament` albo `cash`).
+
+Bieżąca wartość edytowanego wiersza nie jest blokowana, aby użytkownik mógł zachować aktualny wybór i zmienić go dopiero świadomie.
+
+### 27.3 Granice ograniczenia
+- **Gry admina / Gry użytkowników:** ten sam gracz może wystąpić w wielu różnych grach, ale w każdej pojedynczej grze tylko raz.
+- **Kalkulator:** `Tournament` i `Cash` działają niezależnie — ten sam gracz może być raz w `Tournament` i raz w `Cash`, ale w obrębie jednego trybu tylko raz.
+
+### 27.4 Backend / Firebase
+- Nie dodano nowych pól i nie zmieniono schematu dokumentów.
+- Nie wymaga to migracji danych ani zmian konfiguracji Firebase.
+- Ograniczenie jest realizowane w warstwie UI podczas renderowania list `select`.
+
