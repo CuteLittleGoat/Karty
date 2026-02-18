@@ -444,6 +444,7 @@ Efekt UX: użytkownik od razu widzi, że nagłówek jest klikalnym przyciskiem i
   - karta: `.modal-card.modal-card-sm`,
   - sekcje: `.modal-header`, `.modal-body`.
 - W modalu jest tabela rebuy (`#adminCalculatorRebuyTable`) i pasek akcji (`#adminCalculatorRebuyActions`).
+- Kolumny `Rebuy1..RebuyN` w `#adminCalculatorRebuyTable` mają stałą szerokość `8ch` (`min-width: 8ch`, `width: 8ch`, `max-width: 8ch`) oraz układ `table-layout: fixed`.
 - Nie dodano nowych fontów ani nowej palety kolorów; modal dziedziczy aktualny motyw noir/gold.
 
 ### 4) Kolumny i etykiety po zmianie
