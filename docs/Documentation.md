@@ -1321,19 +1321,7 @@ Dodatkowo stan globalny modułu zawiera:
 - `playerOptions` (lista graczy z Firebase),
 - `rebuyModal` (`mode`, `rowId`) do obsługi aktywnego modala rebuy.
 
-### 26.3 Bramka obliczeń (minimum 5 uzupełnionych graczy)
-W `Main/app.js` dodano funkcję `hasMinimumPlayersForCalculator()`, która:
-- pobiera aktywny stan trybu (`getModeState()`),
-- liczy tylko niepuste wartości `playerName` w `table2Rows` (`trim()`),
-- zwraca `true` dopiero dla `filledPlayersCount >= 5`.
-
-Do renderowania pustych komórek używany jest helper `createEmptyInputCell()`, który tworzy pusty i zablokowany `input.admin-input`.
-
-Efekt bramki:
-- dla liczby graczy `< 5`: `renderTable1`, `renderTable3`, `renderTable4`, `renderTable5` renderują wyłącznie puste pola,
-- dla liczby graczy `>= 5`: uruchamiany jest pełny render danych i obliczeń.
-
-### 26.4 Obliczenia i zależności między tabelami
+### 26.3 Obliczenia i zależności między tabelami
 Funkcja `getCalculatorMetrics()` liczy wartości pochodne:
 - `totalBuyIn` = `buyIn z Tabela1 × liczba wierszy Tabela2`.
 - `totalRebuy` = suma wszystkich pól rebuy ze wszystkich wierszy Tabela2.
@@ -1345,7 +1333,7 @@ Funkcja `getCalculatorMetrics()` liczy wartości pochodne:
 - `rebuyAfterRake` = `totalRebuy - (totalRebuy * percentDecimal)`.
 - `pot` = `entryFee + rebuyAfterRake`.
 
-### 26.5 Tabela2 i modal rebuy
+### 26.4 Tabela2 i modal rebuy
 W kolumnie `Rebuy` w Tabela2 renderowany jest przycisk z sumą rebuy dla wiersza.
 Kliknięcie przycisku:
 1. Otwiera modal `#adminCalculatorRebuyModal`.
@@ -1355,7 +1343,7 @@ Kliknięcie przycisku:
 5. Każda zmiana w polach rebuy natychmiast odświeża obliczenia w tabelach 1, 3, 5.
 6. Przed przebudową tabeli modala zapisywany jest stan fokusu (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`) i po renderze przywracany przez `restoreFocusedAdminInputState(...)`, co zabezpiecza przed utratą fokusu przy autozapisie/re-renderze.
 
-### 26.6 Logika eliminacji i Tabela4
+### 26.5 Logika eliminacji i Tabela4
 - Checkbox `Eliminated` jest nadrzędny dla pozycji w Tabela4.
 - `eliminatedOrder` zapamiętuje kolejność zaznaczeń.
 - Gracze z aktywnym `Eliminated` są ustawiani od końca rankingu:
@@ -1364,7 +1352,7 @@ Kliknięcie przycisku:
 - Odznaczenie checkboxa usuwa gracza z listy eliminacyjnej.
 - Kolumna `Wygrana` pobiera wartość z kolumny `Suma` w Tabela5 dla tego samego wiersza gracza (mapowanie po `row.id`, nie po samej nazwie).
 
-### 26.7 Tabela5 — dynamiczna siatka
+### 26.6 Tabela5 — dynamiczna siatka
 Tabela5 jest generowana dynamicznie:
 - liczba wierszy = liczba wierszy graczy w Tabela2,
 - liczba kolumn `Rebuy` = łączna liczba niepustych pól rebuy u wszystkich graczy (`sum(row.rebuys.filter(niepuste).length)`).
@@ -1378,7 +1366,7 @@ Kolumny i reguły:
 - `Suma` = `Kwota + suma wszystkich kolumn rebuy`.
 - `Ranking` = pozycja z Tabela4 (jeżeli gracz jest na liście eliminacji), mapowana po `row.id`.
 
-### 26.8 Integracja z Firebase
+### 26.7 Integracja z Firebase
 Kalkulator używa Firebase wyłącznie do pobierania listy graczy w `select`:
 - kolekcja: `app_settings`,
 - dokument: `player_access`,
@@ -1388,7 +1376,7 @@ Mechanizm:
 - `onSnapshot(...)` aktualizuje `state.playerOptions` na żywo,
 - dane kalkulatora (buy-in, rebuy, procent, ranking) są aktualnie stanem lokalnym UI i nie są zapisywane do Firestore.
 
-### 26.9 Fokus i przebudowa widoku
+### 26.8 Fokus i przebudowa widoku
 Po każdym renderze kalkulator:
 - zapisuje aktywny fokus przez `getFocusedAdminInputState(...)`,
 - renderuje wszystkie tabele,
@@ -1396,7 +1384,7 @@ Po każdym renderze kalkulator:
 
 Dzięki temu możliwa jest pełna przebudowa widoku po zmianach bez utraty aktualnie edytowanego pola.
 
-### 26.10 Responsywność mobilna (układ przełącznika i tabel)
+### 26.9 Responsywność mobilna (układ przełącznika i tabel)
 - Dla szerokości `<= 720px` kontener `.admin-calculator-layout` przełącza się z dwóch kolumn na jedną (`grid-template-columns: 1fr`).
 - `.admin-calculator-switch` staje się osobnym panelem nad tabelami: ma własny padding, obramowanie i tło zgodne z innymi panelami UI.
 - W panelu mobilnym przyciski `Tournament` i `Cash` układają się obok siebie (`repeat(2, minmax(0, 1fr))`) i wypełniają szerokość panelu.
