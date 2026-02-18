@@ -817,6 +817,21 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 - Pola edytowalne: `Buy-In`, `Rebuy` (Tabela1), `Gracz`, checkbox `Eliminated`, pola `Rebuy1..N` w modalu, `%` w Tabela3, `Podział puli` w Tabela5.
 - Pola obliczane: `Suma`, `Liczba Rebuy`, `Rake`, `Wpisowe`, `Rebuy`, `Pot`, `Wygrana`, `Kwota`, `Suma` (Tabela5).
 - Przełączanie między trybami **Tournament/Cash** utrzymuje osobne dane dla każdego trybu.
+- Każda zmiana w kalkulatorze zapisuje się automatycznie; po odświeżeniu strony i po ponownym uruchomieniu przeglądarki dane wracają do ostatniego zapisanego stanu.
+
+### 27.8 Jak sprawdzić, że zapis działa po restarcie przeglądarki
+1. Wejdź do **Panel Administratora → Kalkulator**.
+2. W trybie **Tournament** wpisz przykładowe dane:
+   - `Buy-In` w **Tabela1**,
+   - wybierz gracza w **Tabela2**,
+   - ustaw `%` w **Tabela3**.
+3. Kliknij przycisk **Tournament/Cash** i przejdź na drugi tryb.
+4. W trybie **Cash** wpisz inne wartości niż w **Tournament**.
+5. Zamknij kartę aplikacji lub całkowicie zamknij przeglądarkę.
+6. Otwórz aplikację ponownie i przejdź do **Panel Administratora → Kalkulator**.
+7. Kliknij **Tournament** i sprawdź, czy wróciły dane ustawione w kroku 2.
+8. Kliknij **Cash** i sprawdź, czy wróciły dane ustawione w kroku 4.
+9. Jeśli oba tryby zachowały różne dane, zapis działa poprawnie.
 
 
 ## 16. Aplikacja Android — obsługa UI (wersja WebView)
