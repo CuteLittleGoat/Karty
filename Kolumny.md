@@ -280,6 +280,12 @@ Uwagi:
 | Eliminated | brak | brak | brak | brak | lewo | standard |
 | Akcje | brak | wg zawartości | brak | brak | lewo | standard |
 
+### Modal „Rebuy gracza” (Tabela rebuy)
+
+| Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |
+| --- | --- | --- | --- | --- | --- | --- |
+| Rebuy1-RebuyN (dynamicznie) | brak | 8ch | brak | 8ch | lewo | standard |
+
 ### Tabela3
 
 | Kolumna | Min-height | Min-width | Max-height | Max-width | Wyrównanie | Łamanie linii |

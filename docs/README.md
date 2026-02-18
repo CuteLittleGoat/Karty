@@ -782,15 +782,16 @@ Jeśli gracz jest dodany do gry, ale pole **Wpisowe** jest puste — ta gra nie 
 7. Wpisz wartość do **Rebuy1**.
 8. Kliknij **Dodaj Rebuy**, aby dodać **Rebuy2**, potem **Rebuy3** itd.
 9. Gdy kolumn jest minimum 2, przycisk **Usuń Rebuy** jest aktywny i usuwa zawsze ostatnią kolumnę.
-10. Podczas wpisywania w polach `Rebuy1..N` fokus i pozycja kursora są utrzymywane także po automatycznym odświeżeniu tabel (możesz pisać ciągiem bez ponownego klikania pola).
-11. Zamknij okno przyciskiem **Zamknij** albo kliknięciem poza modal.
-12. Po zamknięciu na przycisku **Rebuy** w **Tabela2** zobaczysz sumę wszystkich pól Rebuy z modala dla tego gracza.
-13. Checkbox **Eliminated** ustawia gracza na końcu rankingu w **Tabela4**:
+10. W oknie „Rebuy gracza” każda kolumna `Rebuy1..RebuyN` ma stałą szerokość **8 znaków** (`8ch`) — jednocześnie minimalną i maksymalną.
+11. Podczas wpisywania w polach `Rebuy1..N` fokus i pozycja kursora są utrzymywane także po automatycznym odświeżeniu tabel (możesz pisać ciągiem bez ponownego klikania pola).
+12. Zamknij okno przyciskiem **Zamknij** albo kliknięciem poza modal.
+13. Po zamknięciu na przycisku **Rebuy** w **Tabela2** zobaczysz sumę wszystkich pól Rebuy z modala dla tego gracza.
+14. Checkbox **Eliminated** ustawia gracza na końcu rankingu w **Tabela4**:
     - pierwszy zaznaczony trafia na ostatnie miejsce,
     - kolejni zaznaczeni trafiają kolejno wyżej (od końca),
     - odznaczenie checkboxa usuwa gracza z listy eliminacyjnej w **Tabela4**.
-14. Przycisk **Dodaj** (tylko w ostatnim wierszu) dodaje nowy wiersz gracza.
-15. Przycisk **Usuń** usuwa wybrany wiersz (przy jednym wierszu pozostaje zablokowany).
+15. Przycisk **Dodaj** (tylko w ostatnim wierszu) dodaje nowy wiersz gracza.
+16. Przycisk **Usuń** usuwa wybrany wiersz (przy jednym wierszu pozostaje zablokowany).
 
 ### 27.4 Tabela3 (% / Rake / Wpisowe / Rebuy / Pot)
 1. W pierwszej kolumnie **%** wpisz liczbę (np. `10`).
