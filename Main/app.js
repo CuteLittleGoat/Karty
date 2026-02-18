@@ -277,6 +277,25 @@ const getDateSortValue = (value) => {
   return Number.isFinite(parsed) ? parsed : Number.POSITIVE_INFINITY;
 };
 
+const getSelectedPlayerNamesForRows = (rows, currentRowId) => {
+  const selectedPlayers = new Set();
+  if (!Array.isArray(rows)) {
+    return selectedPlayers;
+  }
+
+  rows.forEach((row) => {
+    if (!row || row.id === currentRowId) {
+      return;
+    }
+    const playerName = typeof row.playerName === "string" ? row.playerName.trim() : "";
+    if (playerName) {
+      selectedPlayers.add(playerName);
+    }
+  });
+
+  return selectedPlayers;
+};
+
 const compareByGameDateAsc = (a, b) => {
   const dateDiff = getDateSortValue(a?.gameDate) - getDateSortValue(b?.gameDate);
   if (dateDiff !== 0) {
@@ -2177,6 +2196,7 @@ const initUserGamesManager = ({
       playerSelect.dataset.columnKey = "playerName";
       const currentPlayerName = typeof row.playerName === "string" ? row.playerName : "";
       const options = [...state.playerOptions];
+      const selectedPlayersInGame = getSelectedPlayerNamesForRows(rows, row.id);
       const emptyOption = document.createElement("option");
       emptyOption.value = "";
       emptyOption.textContent = "Wybierz gracza";
@@ -2193,6 +2213,7 @@ const initUserGamesManager = ({
         const option = document.createElement("option");
         option.value = name;
         option.textContent = name;
+        option.disabled = selectedPlayersInGame.has(name) && name !== currentPlayerName;
         playerSelect.appendChild(option);
       });
       playerSelect.value = currentPlayerName;
@@ -3310,6 +3331,7 @@ const initAdminCalculator = () => {
   const renderTable2 = () => {
     const modeState = getModeState();
     const metrics = getCalculatorMetrics();
+    const selectedPlayersInMode = getSelectedPlayerNamesForRows(modeState.table2Rows);
     rootTable2.innerHTML = "";
     rootTable2.appendChild(createHeader("Tabela2"));
 
@@ -3334,6 +3356,7 @@ const initAdminCalculator = () => {
         const option = document.createElement("option");
         option.value = playerName;
         option.textContent = playerName;
+        option.disabled = selectedPlayersInMode.has(playerName) && playerName !== row.playerName;
         playerSelect.appendChild(option);
       });
       playerSelect.value = row.playerName;
@@ -5607,6 +5630,7 @@ const initAdminGames = () => {
       playerSelect.dataset.columnKey = "playerName";
       const currentPlayerName = typeof row.playerName === "string" ? row.playerName : "";
       const options = [...state.playerOptions];
+      const selectedPlayersInGame = getSelectedPlayerNamesForRows(rows, row.id);
       const emptyOption = document.createElement("option");
       emptyOption.value = "";
       emptyOption.textContent = "Wybierz gracza";
@@ -5623,6 +5647,7 @@ const initAdminGames = () => {
         const option = document.createElement("option");
         option.value = name;
         option.textContent = name;
+        option.disabled = selectedPlayersInGame.has(name) && name !== currentPlayerName;
         playerSelect.appendChild(option);
       });
       playerSelect.value = currentPlayerName;
