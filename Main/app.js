@@ -2854,6 +2854,7 @@ const initAdminCalculator = () => {
     table1Row: { id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" },
     table2Rows: [{ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [""] }],
     table3Row: { percent: "" },
+    table5SplitPercents: [],
     eliminatedOrder: []
   });
 
@@ -2966,11 +2967,19 @@ const initAdminCalculator = () => {
     return 0;
   };
 
+  const getTable5SplitPercentValue = (modeState, index) => {
+    const rawValue = sanitizeInteger(modeState.table5SplitPercents[index]);
+    if (rawValue !== "") {
+      return rawValue;
+    }
+    return String(getPrizeSplitPercent(index));
+  };
+
   const getTable5Rows = () => {
     const modeState = getModeState();
     const metrics = getCalculatorMetrics();
     return modeState.table2Rows.map((row, index) => {
-      const splitPercent = getPrizeSplitPercent(index);
+      const splitPercent = parseInteger(getTable5SplitPercentValue(modeState, index));
       const amount = metrics.entryFee * (splitPercent / 100);
       const rebuyValues = row.rebuys.map((value) => parseInteger(value));
       const rebuySum = rebuyValues.reduce((sum, value) => sum + value, 0);
@@ -2991,7 +3000,7 @@ const initAdminCalculator = () => {
     const modeState = getModeState();
     const table5Rows = getTable5Rows();
     const totalPlayers = modeState.table2Rows.length;
-    const totalByPlayer = new Map(table5Rows.map((row) => [row.playerName, row.total]));
+    const totalByPlayerId = new Map(table5Rows.map((row) => [row.id, row.total]));
     const activeEliminated = modeState.eliminatedOrder
       .map((id) => modeState.table2Rows.find((row) => row.id === id))
       .filter((row) => row && row.eliminated);
@@ -3000,9 +3009,10 @@ const initAdminCalculator = () => {
     activeEliminated.forEach((row, eliminatedIndex) => {
       const position = totalPlayers - eliminatedIndex;
       rankedRows.push({
+        id: row.id,
         lp: position,
         playerName: row.playerName,
-        win: totalByPlayer.get(row.playerName) ?? 0
+        win: totalByPlayerId.get(row.id) ?? 0
       });
     });
 
@@ -3393,15 +3403,18 @@ const initAdminCalculator = () => {
   const renderTable5 = () => {
     const modeState = getModeState();
     const table5Rows = getTable5Rows();
-    const rebuyColumnsCount = Math.max(1, ...modeState.table2Rows.map((row) => row.rebuys.length));
-    const rankingByPlayer = new Map(getTable4Rows().map((row) => [row.playerName, row.lp]));
+    const rebuyColumnsCount = modeState.table2Rows.reduce(
+      (count, row) => count + row.rebuys.filter((value) => sanitizeInteger(value) !== "").length,
+      0
+    );
+    const rankingByPlayerId = new Map(getTable4Rows().map((row) => [row.id, row.lp]));
 
     rootTable5.innerHTML = "";
     rootTable5.appendChild(createHeader("Tabela5"));
 
     const table = document.createElement("table");
     table.className = "admin-data-table";
-    let headerHtml = "<thead><tr><th>LP</th><th>Podział puli</th><th>Gracz</th><th>Kwota</th><th>Ranking</th>";
+    let headerHtml = "<thead><tr><th>LP</th><th>Podział puli</th><th>Kwota</th><th>Ranking</th>";
     for (let i = 1; i <= rebuyColumnsCount; i += 1) {
       headerHtml += `<th>Rebuy${i}</th>`;
     }
@@ -3414,12 +3427,34 @@ const initAdminCalculator = () => {
       const lpCell = document.createElement("td");
       lpCell.textContent = String(row.lp);
 
+      const splitPercentCell = document.createElement("td");
+      const splitPercentInput = document.createElement("input");
+      splitPercentInput.type = "text";
+      splitPercentInput.className = "admin-input";
+      splitPercentInput.value = formatPercentDisplay(getTable5SplitPercentValue(modeState, row.lp - 1));
+      splitPercentInput.dataset.focusTarget = "admin-calculator";
+      splitPercentInput.dataset.section = "table5";
+      splitPercentInput.dataset.tableId = state.mode;
+      splitPercentInput.dataset.rowId = String(row.lp);
+      splitPercentInput.dataset.columnKey = "splitPercent";
+      splitPercentInput.addEventListener("focus", () => {
+        splitPercentInput.value = getTable5SplitPercentValue(modeState, row.lp - 1);
+      });
+      splitPercentInput.addEventListener("input", () => {
+        modeState.table5SplitPercents[row.lp - 1] = sanitizeInteger(splitPercentInput.value);
+        splitPercentInput.value = modeState.table5SplitPercents[row.lp - 1];
+        render();
+      });
+      splitPercentInput.addEventListener("blur", () => {
+        splitPercentInput.value = formatPercentDisplay(getTable5SplitPercentValue(modeState, row.lp - 1));
+      });
+      splitPercentCell.appendChild(splitPercentInput);
+
       tr.append(
         lpCell,
-        createReadonlyCell(`${row.splitPercent}%`),
-        createReadonlyCell(row.playerName),
+        splitPercentCell,
         createReadonlyCell(formatNumber(row.amount)),
-        createReadonlyCell(formatNumber(rankingByPlayer.get(row.playerName) ?? 0))
+        createReadonlyCell(formatNumber(rankingByPlayerId.get(row.id) ?? 0))
       );
 
       for (let index = 0; index < rebuyColumnsCount; index += 1) {
