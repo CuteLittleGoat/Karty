@@ -1,13 +1,1 @@
-{
-  "type": "service_account",
-  "project_id": "karty-turniej",
-  "private_key_id": "8a1e77395b5ac0f2068cf3f80b971083e153aa4d",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDAmLPohx54PrtQ\nHBVTmykDvshtrIOWkII2pzt0Jii00+i0A73kMUM2YpssaSpuNGdh3yxtW0JJu/H4\nVoYpN55E0AKAlWKzs+XwiHVcpcNiq72dKnuiTLrMtEF/pRcnPB90O0uJHcvV2MCO\nbzQCpQh/8jiFYlNlEpi8bBHMEP0CP5wgmYqCRgMQufuT6X1xn/uu9RUHJHLFAV/H\nTlQShsTq6bwCpo5U6ieAKoZpKzmvM83KuhyXnwUJkJBlZjcwN5TZUNTOb83/fFTy\nMv25eCnXWPEoLKWx7OS/Okh4itsQZ/+FijyQh7IeVShFDTSHi/K9XSRRLHjL4xCW\n3i2WOj/HAgMBAAECggEANgM9RUOLmIZjSrqtgnZ7wKijFhrxBms9kW1B/7dp6Bib\n5Mw91363TkvGH+TYePKqYajQkVSsGPikChTd6DZIZRz+7qe2eBZGMLhcTaDRVF08\nvpR4+tHQ+3K8Abu/bAnw+kxcyTX5gd4ZVni6WdmFsjgwgLvMDobyHbmjHhtPkW7f\nTJLsCIbtgV6DIHzwNJVfQc/jky81LdSxsd7D97bk3bp5hGs0MvjvHMIcGPBa/8aW\nr6gIecjniJeiVhAYKwISKGdZJAaaJKub4TUIq7aPGxF8bp0UkUcTnD3KYEZP/3G1\nsVKgfaQWm8kpSC4VoRRI+vrjvAKeNDG3+y+ykgMbIQKBgQD0syy0FaCUEePC2+XO\ne+5YxhAh02rwB7lUeAgTMiMC8qeGXbgsStA/1FqDobiYMN3GZrCGPn63IuN3vSni\n+wVMaVIne9n0LjQK2mMpyfqOizlEqe7D5b1aKQaiWIREaCwUqLxAlFtJ9Qmm51sm\nT9VMR+aOlTNXg49i8O1YXfo1ZwKBgQDJfZC1iGZAz6kX05XHBWIiZTKfy/sU0Ivg\nPBTYF5yD9UXumJ2BUEdE5G+eyQeB0zjyUgZXEPbHYQsPNDKhpjBEmbtPmVwmQO/r\nQYk5xxg5IIhzjwoWDXW8ZA2oOjc8t4SLx1tudAVKwL5PgQNk3zSj5G1Ko8uUpDi8\n76XxQUfGoQKBgQDaRqntygz/iCW/QCByXCJ0ldj2E30kt/8d1iR92w9YJdRCC3+q\nIuI4zdgf6zaaq5xoyllUppKqEjkOKnMewgQr8RcTmWsGYeCSfdRPBpi2ZoKjOWJ+\n5IRP1KDSWFtEGhiYJRwoDy6PfkEp3N52AmimLsz/CyBNRFG3VGqjlNEIqQKBgDlc\n+C/Wb1YQSNGxuTh5/eBQ80KvLgJVBR2HvV9wCW1ADPLKnDzOgBvK9UQ9c1ewrMvA\nMnHjMH6+0Ak6ERgYWjGNmtgkjymM30EY3VqHpgvNiUts87AnkNdbnM/CEyvEC4ZH\n8W3WthL8ILI9xpuXOENYqwzO6QyeXFDd4V53+VlBAoGBALzTHwfL9jyFDPb/iYlY\nmzCHOV0X+XzWjMHqe+vXXXle3XYVf6AX9x3Te3Gfj57q2Ljbp1BbdebBPXmXIhQB\nAvCMAXfUbCCxxqTTyAjrK4xwHvHF63oUJdcROqgTwImdQ+tsG8cYbGNRcCGzNFeJ\n8dhmzbTzeY3Ll6UfNsEt977G\n-----END PRIVATE KEY-----\n",
-  "client_email": "firebase-adminsdk-fbsvc@karty-turniej.iam.gserviceaccount.com",
-  "client_id": "110552859864468788881",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40karty-turniej.iam.gserviceaccount.com",
-  "universe_domain": "googleapis.com"
-}
+
