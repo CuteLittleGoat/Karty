@@ -43,3 +43,8 @@
 - Kolumny są dodawane dynamicznie przyciskiem `Dodaj Rebuy`.
 - Etykiety kolumn mają format `RebuyN` i używają globalnej numeracji wspólnej dla wszystkich graczy (niezależnie od tego, dla którego gracza modal jest otwarty).
 - Po usunięciu ostatniej kolumny u danego gracza etykiety kolejnych kolumn u innych graczy są automatycznie renumerowane.
+
+## Kalkulator — Tabela5
+- Na końcu tabeli znajduje się kolumna `Mod` z edytowalnym polem `.admin-input` (przyjmuje wyłącznie cyfry).
+- Kolumna `Suma` uwzględnia ręczną korektę z `Mod`.
+- Kolumny `Rebuy1..RebuyN` pokazują kwotę tylko w pojedynczym przypisanym wierszu `LP` według sekwencji cyklicznej z rosnącym zakresem (4, 5, 6, 7...).

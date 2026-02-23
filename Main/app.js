@@ -2957,6 +2957,7 @@ const initAdminCalculator = () => {
     table2Rows: [{ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [] }],
     table3Row: { percent: "" },
     table5SplitPercents: [],
+    table5Mods: [],
     eliminatedOrder: []
   });
 
@@ -3025,6 +3026,9 @@ const initAdminCalculator = () => {
       table5SplitPercents: Array.isArray(source.table5SplitPercents)
         ? source.table5SplitPercents.map((value) => sanitizeInteger(value))
         : [],
+      table5Mods: Array.isArray(source.table5Mods)
+        ? source.table5Mods.map((value) => sanitizeInteger(value))
+        : [],
       eliminatedOrder: Array.isArray(source.eliminatedOrder)
         ? source.eliminatedOrder.filter((id) => typeof id === "string" && validIds.has(id))
         : []
@@ -3047,6 +3051,9 @@ const initAdminCalculator = () => {
     },
     table5SplitPercents: Array.isArray(modeState.table5SplitPercents)
       ? modeState.table5SplitPercents.map((value) => sanitizeInteger(value))
+      : [],
+    table5Mods: Array.isArray(modeState.table5Mods)
+      ? modeState.table5Mods.map((value) => sanitizeInteger(value))
       : [],
     eliminatedOrder: Array.isArray(modeState.eliminatedOrder)
       ? modeState.eliminatedOrder.filter((id) => typeof id === "string")
@@ -3180,14 +3187,38 @@ const initAdminCalculator = () => {
     return String(getPrizeSplitPercent(index));
   };
 
+  const getTable5ModValue = (modeState, index) => sanitizeInteger(modeState.table5Mods[index]);
+
+  const getVisibleGlobalRebuyValues = (modeState) => modeState.table2Rows
+    .flatMap((row) => row.rebuys)
+    .map((value) => sanitizeInteger(value))
+    .filter((value) => value !== "")
+    .map((value) => parseInteger(value));
+
+  const getTable5TargetLpForRebuyColumn = (columnIndex) => {
+    let remaining = columnIndex;
+    let groupSize = 4;
+
+    while (remaining > groupSize) {
+      remaining -= groupSize;
+      groupSize += 1;
+    }
+
+    return remaining;
+  };
+
   const getTable5Rows = () => {
     const modeState = getModeState();
     const metrics = getCalculatorMetrics();
+    const visibleRebuyValues = getVisibleGlobalRebuyValues(modeState);
     return modeState.table2Rows.map((row, index) => {
       const splitPercent = parseInteger(getTable5SplitPercentValue(modeState, index));
       const amount = metrics.entryFee * (splitPercent / 100);
-      const rebuyValues = row.rebuys.map((value) => parseInteger(value));
+      const rebuyValues = visibleRebuyValues.map((value, rebuyIndex) => (
+        getTable5TargetLpForRebuyColumn(rebuyIndex + 1) === index + 1 ? value : null
+      ));
       const rebuySum = rebuyValues.reduce((sum, value) => sum + value, 0);
+      const modValue = parseInteger(getTable5ModValue(modeState, index));
       return {
         id: row.id,
         lp: index + 1,
@@ -3196,7 +3227,8 @@ const initAdminCalculator = () => {
         amount,
         rebuyValues,
         rebuySum,
-        total: amount + rebuySum
+        modValue,
+        total: amount + rebuySum + modValue
       };
     });
   };
@@ -3639,7 +3671,7 @@ const initAdminCalculator = () => {
     for (let i = 1; i <= rebuyColumnsCount; i += 1) {
       headerHtml += `<th>Rebuy${i}</th>`;
     }
-    headerHtml += "<th>Suma</th></tr></thead>";
+    headerHtml += "<th>Mod</th><th>Suma</th></tr></thead>";
     table.innerHTML = headerHtml;
 
     const tbody = document.createElement("tbody");
@@ -3680,8 +3712,30 @@ const initAdminCalculator = () => {
       );
 
       for (let index = 0; index < rebuyColumnsCount; index += 1) {
-        tr.appendChild(createReadonlyCell(formatNumber(row.rebuyValues[index] ?? 0)));
+        tr.appendChild(createReadonlyCell(
+          row.rebuyValues[index] == null ? "" : formatNumber(row.rebuyValues[index])
+        ));
       }
+
+      const modCell = document.createElement("td");
+      const modInput = document.createElement("input");
+      modInput.type = "text";
+      modInput.className = "admin-input";
+      modInput.value = getTable5ModValue(modeState, row.lp - 1);
+      modInput.dataset.focusTarget = "admin-calculator";
+      modInput.dataset.section = "table5";
+      modInput.dataset.tableId = state.mode;
+      modInput.dataset.rowId = String(row.lp);
+      modInput.dataset.columnKey = "mod";
+      modInput.addEventListener("input", () => {
+        modeState.table5Mods[row.lp - 1] = sanitizeInteger(modInput.value);
+        modInput.value = modeState.table5Mods[row.lp - 1];
+        render();
+        schedulePersistCalculatorModeState(state.mode);
+      });
+      modCell.appendChild(modInput);
+      tr.appendChild(modCell);
+
       tr.appendChild(createReadonlyCell(formatNumber(row.total)));
       tbody.appendChild(tr);
     });

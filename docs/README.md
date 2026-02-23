@@ -140,5 +140,10 @@
    - wpisz kwoty w polach kolumn Rebuy (tylko cyfry).
 6. W **Tabela3** wpisz `%` rake.
 7. W **Tabela4** sprawdź wyliczoną wygraną na podstawie kolejności odpadnięć.
-8. W **Tabela5** ustaw podział puli (procenty) i sprawdź podsumowanie kwoty gracza.
+8. W **Tabela5**:
+   - w kolumnie **Podział puli** wpisz procent dla każdego miejsca,
+   - kolumny **Rebuy1, Rebuy2, ...** pojawiają się automatycznie tylko dla uzupełnionych wartości z modala **Rebuy gracza**, a każda kolumna pokazuje kwotę tylko w jednym docelowym wierszu,
+   - przypisanie wierszy działa sekwencyjnie i cyklicznie z wydłużeniem: Rebuy1→wiersz 1, Rebuy2→wiersz 2, Rebuy3→wiersz 3, Rebuy4→wiersz 4, potem Rebuy5→wiersz 1 ... Rebuy9→wiersz 5, potem Rebuy10→wiersz 1 ... Rebuy15→wiersz 6 itd.,
+   - w kolumnie **Mod** wpisz ręczną korektę (tylko cyfry), jeśli chcesz zwiększyć końcową kwotę konkretnego wiersza,
+   - kolumna **Suma** liczy: `Kwota + przypisane Rebuy + Mod`.
 9. Wszystkie zmiany zapisują się automatycznie po chwili — nie ma osobnego przycisku zapisu.
