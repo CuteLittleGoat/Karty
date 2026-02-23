@@ -3189,11 +3189,14 @@ const initAdminCalculator = () => {
 
   const getTable5ModValue = (modeState, index) => sanitizeInteger(modeState.table5Mods[index]);
 
-  const getVisibleGlobalRebuyValues = (modeState) => modeState.table2Rows
+  const getVisibleGlobalRebuyValues = (modeState, percentDecimal) => modeState.table2Rows
     .flatMap((row) => row.rebuys)
     .map((value) => sanitizeInteger(value))
     .filter((value) => value !== "")
-    .map((value) => parseInteger(value));
+    .map((value) => {
+      const rebuyValue = parseInteger(value);
+      return rebuyValue - (rebuyValue * percentDecimal);
+    });
 
   const getTable5TargetLpForRebuyColumn = (columnIndex) => {
     let remaining = columnIndex;
@@ -3210,7 +3213,7 @@ const initAdminCalculator = () => {
   const getTable5Rows = () => {
     const modeState = getModeState();
     const metrics = getCalculatorMetrics();
-    const visibleRebuyValues = getVisibleGlobalRebuyValues(modeState);
+    const visibleRebuyValues = getVisibleGlobalRebuyValues(modeState, metrics.percentDecimal);
     return modeState.table2Rows.map((row, index) => {
       const splitPercent = parseInteger(getTable5SplitPercentValue(modeState, index));
       const amount = metrics.entryFee * (splitPercent / 100);
@@ -3236,24 +3239,12 @@ const initAdminCalculator = () => {
   const getTable4Rows = () => {
     const modeState = getModeState();
     const table5Rows = getTable5Rows();
-    const totalPlayers = modeState.table2Rows.length;
-    const totalByLp = new Map(table5Rows.map((row) => [row.lp, row.total]));
-    const activeEliminated = modeState.eliminatedOrder
-      .map((id) => modeState.table2Rows.find((row) => row.id === id))
-      .filter((row) => row && row.eliminated);
-
-    const rankedRows = [];
-    activeEliminated.forEach((row, eliminatedIndex) => {
-      const position = totalPlayers - eliminatedIndex;
-      rankedRows.push({
-        id: row.id,
-        lp: position,
-        playerName: row.playerName,
-        win: totalByLp.get(position) ?? 0
-      });
-    });
-
-    return rankedRows.sort((a, b) => a.lp - b.lp);
+    return modeState.table2Rows.map((row, index) => ({
+      id: row.id,
+      lp: index + 1,
+      playerName: row.playerName,
+      win: table5Rows[index]?.total ?? 0
+    }));
   };
 
   const rebuyModal = document.createElement("div");

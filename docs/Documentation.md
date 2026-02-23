@@ -164,8 +164,10 @@ W kalkulatorze:
 - modal rebuy startuje bez kolumn; kolumny powstają dopiero po kliknięciu `Dodaj Rebuy`,
 - nazwy kolumn rebuy są numerowane globalnie względem wszystkich graczy w kolejności wierszy Tabela2 (`Rebuy1..n`),
 - Tabela5 renderuje wartości rebuy kolumnowo: każda kolumna `RebuyN` wyświetla wartość wyłącznie w jednym wierszu (`LP`) wyliczanym przez cykle 4, 5, 6, 7... pozycji (np. `Rebuy1..4` -> wiersze 1..4, `Rebuy5..9` -> wiersze 1..5, `Rebuy10..15` -> wiersze 1..6),
-- kolumna `Mod` w Tabela5 jest edytowalna, przechowywana w `table5Mods` i dodawana do `Suma` według wzoru `Suma = Kwota + suma przypisanych rebuy + Mod`,
+- każda wartość `RebuyN` prezentowana w Tabela5 jest najpierw redukowana o procent z `table3Row.percent` (`rebuyPoRake = rebuy - rebuy*percent/100`),
+- kolumna `Mod` w Tabela5 jest edytowalna, przechowywana w `table5Mods` i dodawana do `Suma` według wzoru `Suma = Kwota + suma przypisanych rebuy(po rake) + Mod`,
 - usunięcie ostatniego rebuy u gracza powoduje renumerację kolejnych kolumn rebuy u następnych graczy.
+- Tabela4 nie opiera już kolumny `Wygrana` o nazwę gracza ani kolejność `eliminatedOrder`; wartość `Wygrana` dla danego `LP` jest kopią `Suma` z tego samego `LP` w Tabela5.
 
 ## 5. Obliczenia finansowe i statystyczne
 
