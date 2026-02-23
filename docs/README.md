@@ -139,7 +139,11 @@
    - kliknij **Usuń Rebuy**, aby usunąć ostatnią kolumnę tylko dla bieżącego gracza; numeracja automatycznie przelicza się globalnie także dla pozostałych graczy,
    - wpisz kwoty w polach kolumn Rebuy (tylko cyfry).
 6. W **Tabela3** wpisz `%` rake.
-7. W **Tabela4** sprawdź kolumnę **Wygrana** — każdy wiersz LP ma dokładnie tę samą wartość co **Suma** w tym samym LP w **Tabela5**.
+7. W **Tabela4**: 
+   - kolumna **Gracz** wypełnia się tylko tymi osobami, które mają zaznaczone **Eliminated** w **Tabela2**,
+   - kolejność jest od końca tabeli: pierwszy zaznaczony gracz trafia na ostatnie miejsce, drugi na przedostatnie itd.,
+   - po odznaczeniu **Eliminated** gracz znika z **Tabela4**, a pozostali automatycznie przesuwają się niżej (bliżej końca),
+   - kolumna **Wygrana** w danym LP zawsze pokazuje tę samą wartość co **Suma** z tego samego LP w **Tabela5**.
 8. W **Tabela5**:
    - w kolumnie **Podział puli** wpisz procent dla każdego miejsca,
    - kolumny **Rebuy1, Rebuy2, ...** pojawiają się automatycznie tylko dla uzupełnionych wartości z modala **Rebuy gracza**, a każda kolumna pokazuje kwotę tylko w jednym docelowym wierszu,

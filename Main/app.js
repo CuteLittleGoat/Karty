@@ -3239,12 +3239,37 @@ const initAdminCalculator = () => {
   const getTable4Rows = () => {
     const modeState = getModeState();
     const table5Rows = getTable5Rows();
-    return modeState.table2Rows.map((row, index) => ({
-      id: row.id,
-      lp: index + 1,
-      playerName: row.playerName,
-      win: table5Rows[index]?.total ?? 0
-    }));
+    const rowById = new Map(modeState.table2Rows.map((row) => [row.id, row]));
+    const activeEliminatedIds = modeState.table2Rows
+      .filter((row) => row.eliminated)
+      .map((row) => row.id);
+    const orderedEliminatedIds = modeState.eliminatedOrder
+      .filter((id) => activeEliminatedIds.includes(id));
+
+    activeEliminatedIds.forEach((id) => {
+      if (!orderedEliminatedIds.includes(id)) {
+        orderedEliminatedIds.push(id);
+      }
+    });
+
+    const playerNameByLp = new Map();
+    orderedEliminatedIds.forEach((id, index) => {
+      const lp = modeState.table2Rows.length - index;
+      const row = rowById.get(id);
+      if (lp > 0 && row) {
+        playerNameByLp.set(lp, row.playerName);
+      }
+    });
+
+    return modeState.table2Rows.map((row, index) => {
+      const lp = index + 1;
+      return {
+        id: row.id,
+        lp,
+        playerName: playerNameByLp.get(lp) ?? "",
+        win: table5Rows[index]?.total ?? 0
+      };
+    });
   };
 
   const rebuyModal = document.createElement("div");
