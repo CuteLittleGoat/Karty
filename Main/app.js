@@ -112,8 +112,8 @@ const STATS_COLUMN_CONFIG = [
   { key: "championshipCount", label: "Mistrzostwo", editable: false, weight: false, value: (row) => row.championshipCount },
   { key: "weight1", label: "Waga1", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight1", manual?.weight1) },
   { key: "meetingsCount", label: "Ilość Spotkań", editable: false, weight: false, value: (row) => row.meetingsCount },
-  { key: "participationPercent", label: "% udział", editable: false, weight: false, value: (row) => `${row.participationPercent}%` },
   { key: "weight2", label: "Waga2", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight2", manual?.weight2) },
+  { key: "participationPercent", label: "% udział", editable: false, weight: false, value: (row) => `${row.participationPercent}%` },
   { key: "points", label: "Punkty", editable: false, weight: false, value: (row) => row.pointsSum },
   { key: "weight3", label: "Waga3", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight3", manual?.weight3) },
   { key: "plusMinusSum", label: "(+/-)", editable: false, weight: false, value: (row) => row.plusMinusSum },
@@ -125,7 +125,6 @@ const STATS_COLUMN_CONFIG = [
   { key: "playedGamesPoolSum", label: "Suma z rozegranych gier", editable: false, weight: false, value: (row) => row.playedGamesPoolSum },
   { key: "percentAllGames", label: "% Rozegranych gier", editable: false, weight: false, value: (row) => `${row.percentAllGames}%` },
   { key: "percentPlayedGames", label: "% Wszystkich gier", editable: false, weight: false, value: (row) => `${row.percentPlayedGames}%` },
-  { key: "weight7", label: "Waga7", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight7", manual?.weight7) },
   {
     key: "result",
     label: "Wynik",
@@ -142,7 +141,7 @@ const STATS_COLUMN_CONFIG = [
 const DEFAULT_VISIBLE_STATS_COLUMNS = STATS_COLUMN_CONFIG
   .filter((column) => !column.weight)
   .map((column) => column.key);
-const WEIGHT_STATS_FIELDS = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
+const WEIGHT_STATS_FIELDS = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6"];
 
 const getDefaultStatsManualFieldValue = (field, value) => {
   if (WEIGHT_STATS_FIELDS.includes(field)) {
@@ -159,15 +158,12 @@ const getComputedStatsResultValue = (row, manualEntry = {}, getDefaultManualFiel
   const weight4 = parseIntegerOrZero(getDefaultManualFieldValue("weight4", manualEntry.weight4));
   const weight5 = parseIntegerOrZero(getDefaultManualFieldValue("weight5", manualEntry.weight5));
   const weight6 = parseIntegerOrZero(getDefaultManualFieldValue("weight6", manualEntry.weight6));
-  const weight7 = parseIntegerOrZero(getDefaultManualFieldValue("weight7", manualEntry.weight7));
-
   return (row.championshipCount * weight1)
     + (row.participationPercent * weight2)
     + (row.pointsSum * weight3)
     + (row.plusMinusSum * weight4)
     + (row.payoutSum * weight5)
-    + (row.depositsSum * weight6)
-    + (row.percentAllGames * weight7);
+    + (row.depositsSum * weight6);
 };
 
 const sortRankingRowsByResult = (rows) => {
@@ -1398,6 +1394,10 @@ const initUserConfirmations = () => {
   const refreshButton = document.querySelector("#confirmationsRefresh");
   const status = document.querySelector("#confirmationsStatus");
   const body = document.querySelector("#confirmationsBody");
+  const detailsModal = document.querySelector("#confirmationsDetailsModal");
+  const detailsMeta = document.querySelector("#confirmationsDetailsMeta");
+  const detailsBody = document.querySelector("#confirmationsDetailsBody");
+  const detailsClose = document.querySelector("#confirmationsDetailsClose");
   const firebaseApp = getFirebaseApp();
 
   if (!input || !submitButton || !pinStatus || !refreshButton || !status || !body) {
@@ -1413,6 +1413,62 @@ const initUserConfirmations = () => {
 
   const db = firebaseApp.firestore();
   const summaryNotesModal = getSummaryNotesModalController();
+
+  const closeDetailsModal = () => {
+    if (!detailsModal) {
+      return;
+    }
+    detailsModal.classList.remove("is-visible");
+    detailsModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+
+  const openDetailsModal = async ({ collectionName, game }) => {
+    if (!detailsModal || !detailsMeta || !detailsBody) {
+      return;
+    }
+
+    detailsBody.innerHTML = "";
+    const rowsSnapshot = await db.collection(collectionName).doc(game.id).collection(gameDetailsCollectionName).orderBy("createdAt", "asc").get();
+    const rows = rowsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const gamePool = rows.reduce((sum, row) => sum + parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy), 0);
+    detailsMeta.textContent = `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"} | Pula: ${gamePool}`;
+
+    if (!rows.length) {
+      const emptyRow = document.createElement("tr");
+      const emptyCell = document.createElement("td");
+      emptyCell.colSpan = 8;
+      emptyCell.textContent = "Brak graczy w tej grze.";
+      emptyRow.appendChild(emptyCell);
+      detailsBody.appendChild(emptyRow);
+    }
+
+    rows.forEach((row, index) => {
+      const tr = document.createElement("tr");
+      const lpCell = document.createElement("td");
+      lpCell.textContent = String(index + 1);
+      const playerCell = document.createElement("td");
+      playerCell.textContent = row.playerName || "-";
+      const entryFeeCell = document.createElement("td");
+      entryFeeCell.textContent = String(parseIntegerOrZero(row.entryFee));
+      const rebuyCell = document.createElement("td");
+      rebuyCell.textContent = String(parseIntegerOrZero(row.rebuy));
+      const payoutCell = document.createElement("td");
+      payoutCell.textContent = String(parseIntegerOrZero(row.payout));
+      const profitCell = document.createElement("td");
+      profitCell.textContent = String(parseIntegerOrZero(row.payout) - (parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy)));
+      const pointsCell = document.createElement("td");
+      pointsCell.textContent = String(parseIntegerOrZero(row.points));
+      const championshipCell = document.createElement("td");
+      championshipCell.textContent = row.championship ? "Tak" : "Nie";
+      tr.append(lpCell, playerCell, entryFeeCell, rebuyCell, payoutCell, profitCell, pointsCell, championshipCell);
+      detailsBody.appendChild(tr);
+    });
+
+    detailsModal.classList.add("is-visible");
+    detailsModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  };
   const gamesCollectionName = getGamesCollectionName();
   const userGamesCollectionName = getUserGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
@@ -1525,6 +1581,14 @@ const initUserConfirmations = () => {
           void synchronizeNextGamesConfirmations();
         });
 
+        const detailsButton = document.createElement("button");
+        detailsButton.type = "button";
+        detailsButton.className = "secondary";
+        detailsButton.textContent = "Szczegóły";
+        detailsButton.addEventListener("click", async () => {
+          await openDetailsModal({ collectionName, game });
+        });
+
         const notesButton = document.createElement("button");
         notesButton.type = "button";
         notesButton.className = "secondary";
@@ -1544,7 +1608,7 @@ const initUserConfirmations = () => {
           });
         });
 
-        actionsWrap.append(confirmButton, cancelButton, notesButton);
+        actionsWrap.append(confirmButton, cancelButton, detailsButton, notesButton);
         actionsCell.appendChild(actionsWrap);
         tr.append(gameTypeCell, dateCell, nameCell, actionsCell);
         body.appendChild(tr);
@@ -1595,6 +1659,17 @@ const initUserConfirmations = () => {
     await readData("server");
     refreshButton.disabled = false;
   });
+
+  if (detailsClose) {
+    detailsClose.addEventListener("click", closeDetailsModal);
+  }
+  if (detailsModal) {
+    detailsModal.addEventListener("click", (event) => {
+      if (event.target === detailsModal) {
+        closeDetailsModal();
+      }
+    });
+  }
 
   updateConfirmationsVisibility();
   if (getConfirmationsPinGateState() && getConfirmationsVerifiedPlayer()) {
@@ -2182,9 +2257,14 @@ const initUserGamesManager = ({
     modalBody.innerHTML = "";
 
     const rows = state.detailsByGame.get(gameId) ?? [];
-    rows.forEach((row) => {
+    const gamePool = rows.reduce((sum, row) => sum + parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy), 0);
+    modalMeta.textContent = `${modalMeta.textContent} | Pula: ${gamePool}`;
+    rows.forEach((row, index) => { 
       const tr = document.createElement("tr");
       const writeEnabled = canWrite();
+
+      const lpCell = document.createElement("td");
+      lpCell.textContent = String(index + 1);
 
       const playerCell = document.createElement("td");
       const playerSelect = document.createElement("select");
@@ -2285,7 +2365,7 @@ const initUserGamesManager = ({
       });
       deleteCell.appendChild(deleteButton);
 
-      tr.append(playerCell, entryFeeCell, rebuyCell, payoutCell, profitCell, pointsCell, championshipCell, deleteCell);
+      tr.append(lpCell, playerCell, entryFeeCell, rebuyCell, payoutCell, profitCell, pointsCell, championshipCell, deleteCell);
       modalBody.appendChild(tr);
     });
 
@@ -4387,7 +4467,7 @@ const initStatisticsView = ({
   const db = firebaseApp.firestore();
   const gamesCollectionName = getGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
-  const manualStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
+  const manualStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6"];
   const state = {
     years: [],
     selectedYear: loadSavedSelectedGamesYear(selectedYearStorageKey),
@@ -4428,8 +4508,7 @@ const initStatisticsView = ({
         weight3: getDefaultManualFieldValue("weight3", entry.weight3),
         weight4: getDefaultManualFieldValue("weight4", entry.weight4),
         weight5: getDefaultManualFieldValue("weight5", entry.weight5),
-        weight6: getDefaultManualFieldValue("weight6", entry.weight6),
-        weight7: getDefaultManualFieldValue("weight7", entry.weight7)
+        weight6: getDefaultManualFieldValue("weight6", entry.weight6)
       }))
       .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"));
 
@@ -4981,7 +5060,7 @@ const initAdminGames = () => {
   const db = firebaseApp.firestore();
   const gamesCollectionName = getGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
-  const manualStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6", "weight7"];
+  const manualStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6"];
   const adminGamesPlayersStatsTable = playersStatsBody.closest("table");
   const weightHeaderButtons = Array.from(adminGamesPlayersStatsTable?.querySelectorAll(".admin-weight-bulk-button") ?? []);
 
@@ -5090,8 +5169,7 @@ const initAdminGames = () => {
         weight3: getDefaultManualFieldValue("weight3", entry.weight3),
         weight4: getDefaultManualFieldValue("weight4", entry.weight4),
         weight5: getDefaultManualFieldValue("weight5", entry.weight5),
-        weight6: getDefaultManualFieldValue("weight6", entry.weight6),
-        weight7: getDefaultManualFieldValue("weight7", entry.weight7)
+        weight6: getDefaultManualFieldValue("weight6", entry.weight6)
       }))
       .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"));
   };
@@ -5560,7 +5638,7 @@ const initAdminGames = () => {
     if (!statistics.playerRows.length) {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
-      td.colSpan = 19;
+      td.colSpan = 18;
       td.textContent = "Brak graczy z uzupełnionym wpisowym w wybranym roku.";
       tr.appendChild(td);
       playersStatsBody.appendChild(tr);
@@ -5581,8 +5659,8 @@ const initAdminGames = () => {
         createReadOnlyCell(row.championshipCount),
         createEditableCell(row.playerName, "weight1"),
         createReadOnlyCell(row.meetingsCount),
-        createReadOnlyCell(`${row.participationPercent}%`),
         createEditableCell(row.playerName, "weight2"),
+        createReadOnlyCell(`${row.participationPercent}%`),
         createReadOnlyCell(row.pointsSum),
         createEditableCell(row.playerName, "weight3"),
         createReadOnlyCell(row.plusMinusSum),
@@ -5593,7 +5671,6 @@ const initAdminGames = () => {
         createEditableCell(row.playerName, "weight6"),
         createReadOnlyCell(row.playedGamesPoolSum),
         createReadOnlyCell(`${row.percentAllGames}%`),
-        createEditableCell(row.playerName, "weight7"),
         createReadOnlyCell(`${row.percentPlayedGames}%`),
         resultCell
       );
@@ -5617,8 +5694,13 @@ const initAdminGames = () => {
     modalBody.innerHTML = "";
 
     const rows = state.detailsByGame.get(gameId) ?? [];
-    rows.forEach((row) => {
+    const gamePool = rows.reduce((sum, row) => sum + parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy), 0);
+    modalMeta.textContent = `${modalMeta.textContent} | Pula: ${gamePool}`;
+    rows.forEach((row, index) => { 
       const tr = document.createElement("tr");
+
+      const lpCell = document.createElement("td");
+      lpCell.textContent = String(index + 1);
 
       const playerCell = document.createElement("td");
       const playerSelect = document.createElement("select");
@@ -5711,7 +5793,7 @@ const initAdminGames = () => {
       });
       deleteCell.appendChild(deleteButton);
 
-      tr.append(playerCell, entryFeeCell, rebuyCell, payoutCell, profitCell, pointsCell, championshipCell, deleteCell);
+      tr.append(lpCell, playerCell, entryFeeCell, rebuyCell, payoutCell, profitCell, pointsCell, championshipCell, deleteCell);
       modalBody.appendChild(tr);
     });
 
