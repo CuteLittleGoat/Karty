@@ -14,3 +14,4 @@
 14. Folderu Analizy nie uwzględniaj w żadnych dokumentacjach i instrukcjach
 15. W plikach docs/Documentation.md, docs/README.md, Kolumny.md, DetaleLayoutu.md nie przechowuj archiwalnych informacji. Mają tam być tylko aktualne informacje a nie historia zmian.
 17. Jeżeli zmiana dotyczy edycji lub dodania nowgo pola to przeczytaj analizę Analizy/Wazne_Fokus i zadbaj, żeby nie wystąpił ten błąd
+W ustawieniach środowiska istnienie tajny klucz FIREBASE_SERVICE_ACCOUNT_JSON - daje on dostęp do Firebase. Możesz w pełni modyfikować kolekcje poza Nekrolog_config, Nekrolog_refresh_jobs i Nekrolog_snapshots należą one do innego projektu i nie możesz nic tam zmieniać
