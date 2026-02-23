@@ -3676,14 +3676,13 @@ const initAdminCalculator = () => {
       (count, row) => count + row.rebuys.filter((value) => sanitizeInteger(value) !== "").length,
       0
     );
-    const rankingByPlayerId = new Map(getTable4Rows().map((row) => [row.id, row.lp]));
 
     rootTable5.innerHTML = "";
     rootTable5.appendChild(createHeader("Tabela5"));
 
     const table = document.createElement("table");
     table.className = "admin-data-table";
-    let headerHtml = "<thead><tr><th>LP</th><th>Podział puli</th><th>Kwota</th><th>Ranking</th>";
+    let headerHtml = "<thead><tr><th>LP</th><th>Podział puli</th><th>Kwota</th>";
     for (let i = 1; i <= rebuyColumnsCount; i += 1) {
       headerHtml += `<th>Rebuy${i}</th>`;
     }
@@ -3723,8 +3722,7 @@ const initAdminCalculator = () => {
       tr.append(
         lpCell,
         splitPercentCell,
-        createReadonlyCell(formatNumber(row.amount)),
-        createReadonlyCell(formatNumber(rankingByPlayerId.get(row.id) ?? 0))
+        createReadonlyCell(formatNumber(row.amount))
       );
 
       for (let index = 0; index < rebuyColumnsCount; index += 1) {

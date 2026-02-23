@@ -93,7 +93,6 @@ Uwagi:
 1. LP
 2. Podział puli
 3. Kwota
-4. Ranking
-5. Rebuy1..RebuyN (dynamicznie, tylko dla uzupełnionych wartości)
-6. Mod
-7. Suma
+4. Rebuy1..RebuyN (dynamicznie, tylko dla uzupełnionych wartości)
+5. Mod
+6. Suma

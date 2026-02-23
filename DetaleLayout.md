@@ -46,5 +46,6 @@
 
 ## Kalkulator — Tabela5
 - Na końcu tabeli znajduje się kolumna `Mod` z edytowalnym polem `.admin-input` (przyjmuje wyłącznie cyfry).
+- Kolumna `Ranking` nie jest renderowana w Tabela5.
 - Kolumna `Suma` uwzględnia ręczną korektę z `Mod`.
 - Kolumny `Rebuy1..RebuyN` pokazują kwotę tylko w pojedynczym przypisanym wierszu `LP` według sekwencji cyklicznej z rosnącym zakresem (4, 5, 6, 7...).
