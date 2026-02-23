@@ -1,180 +1,178 @@
-# Kolumny — szerokości, wyrównania i formatowanie
+# Kolumny w tabelach — wersja do wydruku i ręcznych zmian
 
-Poniżej znajduje się aktualny spis kolumn tabel UI w aplikacji Karty, z naciskiem na parametry layoutu (min/max szerokości, wyrównanie, łamanie) oraz zachowanie pól wejściowych.
-
-## Ustawienia globalne dla tabel
-
-| Parametr | Wartość | Gdzie obowiązuje |
-| --- | --- | --- |
-| Szerokość tabeli | `width: 100%` | `.admin-data-table` |
-| Minimalna szerokość tabeli | `min-width: 860px` | `.admin-data-table` |
-| Maksymalna szerokość tabeli | brak | globalnie |
-| Wyrównanie komórek (`th`, `td`) | lewo (`text-align: left`) | globalnie |
-| Łamanie linii w komórkach | domyślne przeglądarki (brak wymuszenia `nowrap` dla komórek tabel) | globalnie |
-| Padding komórek | `10px 8px` | globalnie |
-
-Dodatkowe wyjątki globalne:
-- `.players-table` ma `min-width: 700px`.
-- `.admin-games-players-stats-table` ma `min-width: 2300px`.
-- Tabele kalkulatora (`.admin-calculator-table-wrap .admin-data-table`) mają `min-width: 760px` (na małych ekranach `680px`).
-- Modal `#adminCalculatorRebuyTable` ma układ stały (`table-layout: fixed`) i każda komórka ma dokładnie `8ch` (`min/width/max = 8ch`).
+Ten dokument jest przygotowany tak, aby można go wydrukować i łatwo podmieniać wartości.
+Opisuje aktualny stan kolumn w aplikacji prostym językiem (bez nazw technicznych z kodu).
 
 ---
 
-## 1) Gracze (panel admina)
-**Tabela:** `players-table` (`min-width: 700px`)
+## Zasady ogólne dla większości tabel
 
-| Kolumna | Min-width | Max-width | Wyrównanie | Łamanie | Detale formatowania |
-| --- | --- | --- | --- | --- | --- |
-| Aplikacja | auto | brak | środek (komórka `.players-app-cell`) | standard | Komórka ma stałą szerokość `88px`; checkbox ma `18x18px`. |
-| Nazwa | auto | brak | lewo | standard | Pole tekstowe (`input`). |
-| PIN | auto | brak | lewo | standard | Pole przyjmuje tylko cyfry (sanityzacja do 5 cyfr). |
-| Uprawnienia | auto | brak | lewo | standard | Lista tagów uprawnień + przycisk edycji. |
-| Akcje | auto | brak | lewo | standard | Przyciski akcji (np. usuń). |
-
----
-
-## 2) Gry admina / Gry użytkowników / Najbliższa gra
-**Tabela bazowa:** `.admin-data-table` (`min-width: 860px`)
-
-| Kolumna | Min-width | Max-width | Wyrównanie | Łamanie | Detale formatowania |
-| --- | --- | --- | --- | --- | --- |
-| Rodzaj Gry / Rodzaj gry | auto | brak | lewo | standard | `select` z opcjami typu gry. |
-| Data | auto | brak | lewo | standard | `input type="date"`. |
-| Nazwa | auto | brak | lewo | standard | `input` tekstowy. |
-| CzyZamknięta / CzyWszyscyPotwierdzili | auto | brak | lewo | standard | Checkbox (`true/false`). |
-| Akcje | auto | brak | lewo | standard | Przyciski (np. szczegóły / usuń). |
+| Obszar | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| Główne tabele w panelach | 860 px | brak stałego limitu | do lewej | Tabela zajmuje całą dostępną szerokość sekcji. |
+| Tabela graczy | 700 px | brak stałego limitu | do lewej (kolumna z polem wyboru wizualnie na środku) | Kolumna z polem wyboru ma około 88 px. |
+| Szeroka tabela statystyk graczy | 2300 px | brak stałego limitu | do lewej | Na mniejszych ekranach wymaga przesuwania poziomego. |
+| Tabele kalkulatora | 760 px (na małych ekranach 680 px) | brak stałego limitu | do lewej | Dostosowane do pracy na mniejszych ekranach. |
+| Tabela rebuy w oknie kalkulatora | stała szerokość każdej kolumny: 8 znaków | stała szerokość każdej kolumny: 8 znaków | do lewej | Wszystkie kolumny tej tabeli mają jednakową szerokość. |
 
 ---
 
-## 3) Szczegóły gry (modal) — admin i użytkownik
-**Tabela bazowa:** `.admin-data-table` (`min-width: 860px`)
+## 1) Gracze (panel administratora)
 
-| Kolumna | Min-width | Max-width | Wyrównanie | Łamanie | Detale formatowania |
-| --- | --- | --- | --- | --- | --- |
-| LP | auto | brak | lewo | standard | Numer porządkowy. |
-| Gracz | auto | brak | lewo | standard | `select` z listą graczy. |
-| Wpisowe | auto | brak | lewo | standard | Pole liczbowe (sanityzacja do liczby całkowitej). |
-| Rebuy/Add-on | auto | brak | lewo | standard | Pole liczbowe (sanityzacja do liczby całkowitej). |
-| Wypłata | auto | brak | lewo | standard | Pole liczbowe (sanityzacja do liczby całkowitej). |
-| +/- | auto | brak | lewo | standard | Pole tylko odczyt: `Wypłata - (Wpisowe + Rebuy/Add-on)`. |
-| Punkty | auto | brak | lewo | standard | Pole liczbowe (sanityzacja do liczby całkowitej). |
-| Mistrzostwo | auto | brak | lewo | standard | Checkbox (w podsumowaniach renderowany jako `✓` / `Tak/Nie`). |
-| Akcje (tylko admin) | auto | brak | lewo | standard | Przycisk usuwania wiersza. |
+| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| Aplikacja | automatyczna (wizualnie ok. 88 px) | brak stałego limitu | środek | Pole wyboru ma rozmiar około 18 x 18 px. |
+| Nazwa | automatyczna | brak stałego limitu | do lewej | Pole tekstowe. |
+| PIN | automatyczna | brak stałego limitu | do lewej | Przyjmuje wyłącznie cyfry, maksymalnie 5 cyfr. |
+| Uprawnienia | automatyczna | brak stałego limitu | do lewej | Lista uprawnień i przycisk edycji. |
+| Akcje | automatyczna | brak stałego limitu | do lewej | Przyciski działań (np. usuwanie). |
+
+---
+
+## 2) Listy gier (administrator, użytkownik, najbliższa gra)
+
+| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| Rodzaj gry | automatyczna | brak stałego limitu | do lewej | Lista wyboru typu gry. |
+| Data | automatyczna | brak stałego limitu | do lewej | Pole daty. |
+| Nazwa | automatyczna | brak stałego limitu | do lewej | Pole tekstowe. |
+| Status zamknięcia / potwierdzeń | automatyczna | brak stałego limitu | do lewej | Pole wyboru tak/nie. |
+| Akcje | automatyczna | brak stałego limitu | do lewej | Przyciski (np. szczegóły, usuwanie). |
+
+---
+
+## 3) Szczegóły gry (okno szczegółów)
+
+| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| LP | automatyczna | brak stałego limitu | do lewej | Numer porządkowy. |
+| Gracz | automatyczna | brak stałego limitu | do lewej | Lista wyboru gracza. |
+| Wpisowe | automatyczna | brak stałego limitu | do lewej | Pole liczbowe. |
+| Rebuy / Add-on | automatyczna | brak stałego limitu | do lewej | Pole liczbowe. |
+| Wypłata | automatyczna | brak stałego limitu | do lewej | Pole liczbowe. |
+| +/- | automatyczna | brak stałego limitu | do lewej | Pole wyliczane automatycznie. |
+| Punkty | automatyczna | brak stałego limitu | do lewej | Pole liczbowe. |
+| Mistrzostwo | automatyczna | brak stałego limitu | do lewej | Pole wyboru tak/nie. |
+| Akcje (część administratora) | automatyczna | brak stałego limitu | do lewej | Przycisk usuwania wiersza. |
 
 ---
 
 ## 4) Gry do potwierdzenia (strefa gracza)
-**Tabela:** `.confirmations-table` + `.admin-data-table` (`min-width: 860px`)
 
-| Kolumna | Min-width | Max-width | Wyrównanie | Łamanie | Detale formatowania |
-| --- | --- | --- | --- | --- | --- |
-| Rodzaj Gry | auto | brak | lewo | standard | Wartość tekstowa. |
-| Data | auto | brak | lewo | standard | Data gry. |
-| Nazwa | auto | brak | lewo | standard | Nazwa gry. |
-| Potwierdzenie | auto | brak | lewo | standard | Status/akcja potwierdzenia udziału. |
+| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| Rodzaj gry | automatyczna | brak stałego limitu | do lewej | Wartość informacyjna. |
+| Data | automatyczna | brak stałego limitu | do lewej | Data gry. |
+| Nazwa | automatyczna | brak stałego limitu | do lewej | Nazwa gry. |
+| Potwierdzenie | automatyczna | brak stałego limitu | do lewej | Status i działanie potwierdzające. |
 
 ---
 
-## 5) Statystyki (Gry admina + Statystyki)
+## 5) Statystyki
 
-### 5.1 Tabela „Opis / Wartość”
-**Tabela bazowa:** `.admin-data-table` (`min-width: 860px`)
+### 5.1 Podsumowanie „Opis / Wartość”
 
-| Kolumna | Min-width | Max-width | Wyrównanie | Łamanie | Detale formatowania |
-| --- | --- | --- | --- | --- | --- |
-| Opis | auto | brak | lewo | standard | Etykieta metryki. |
-| Wartość | auto | brak | lewo | standard | Wartość liczbowa/tekstowa. |
+| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| Opis | automatyczna | brak stałego limitu | do lewej | Nazwa wskaźnika. |
+| Wartość | automatyczna | brak stałego limitu | do lewej | Wartość liczbowa lub tekstowa. |
 
-### 5.2 Tabela graczy statystyk
-**Tabela:** `.admin-games-players-stats-table` (`min-width: 2300px`)
+### 5.2 Rozbudowana tabela statystyk graczy
 
-| Kolumna | Min-width | Max-width | Wyrównanie | Łamanie | Detale formatowania |
-| --- | --- | --- | --- | --- | --- |
-| Gracz | auto | brak | lewo | standard | Nazwa gracza. |
-| Mistrzostwo | auto | brak | lewo | standard | Liczba zwycięstw. |
-| Waga1 | auto | brak | lewo | standard | Edytowalne pole liczbowe (integer). |
-| Ilość Spotkań | auto | brak | lewo | standard | Pole tylko odczyt. |
-| Waga2 | auto | brak | lewo | standard | Edytowalne pole liczbowe (integer). |
-| % udział | auto | brak | lewo | standard | Użytkownik nie wpisuje `%`; znak `%` jest doklejany automatycznie w widoku. |
-| Punkty | auto | brak | lewo | standard | Pole tylko odczyt. |
-| Waga3 | auto | brak | lewo | standard | Edytowalne pole liczbowe (integer). |
-| (+/-) | auto | brak | lewo | standard | Pole tylko odczyt. |
-| Waga4 | auto | brak | lewo | standard | Edytowalne pole liczbowe (integer). |
-| Wypłata | auto | brak | lewo | standard | Pole tylko odczyt. |
-| Waga5 | auto | brak | lewo | standard | Edytowalne pole liczbowe (integer). |
-| Wpłaty | auto | brak | lewo | standard | Pole tylko odczyt. |
-| Waga6 | auto | brak | lewo | standard | Edytowalne pole liczbowe (integer). |
-| Suma z rozegranych gier | auto | brak | lewo | standard | Pole tylko odczyt. |
-| % Rozegranych gier | auto | brak | lewo | standard | `%` dodawany automatycznie. |
-| % Wszystkich gier | auto | brak | lewo | standard | `%` dodawany automatycznie. |
-| Wynik / Wyniki | auto | brak | lewo | standard | Wynik końcowy. |
+| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| Gracz | automatyczna | brak stałego limitu | do lewej | Nazwa gracza. |
+| Mistrzostwo | automatyczna | brak stałego limitu | do lewej | Liczba zwycięstw. |
+| Waga 1 | automatyczna | brak stałego limitu | do lewej | Pole edytowalne (liczba całkowita). |
+| Ilość spotkań | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+| Waga 2 | automatyczna | brak stałego limitu | do lewej | Pole edytowalne (liczba całkowita). |
+| Udział procentowy | automatyczna | brak stałego limitu | do lewej | Znak % dodawany automatycznie. |
+| Punkty | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+| Waga 3 | automatyczna | brak stałego limitu | do lewej | Pole edytowalne (liczba całkowita). |
+| Bilans (+/-) | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+| Waga 4 | automatyczna | brak stałego limitu | do lewej | Pole edytowalne (liczba całkowita). |
+| Wypłata | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+| Waga 5 | automatyczna | brak stałego limitu | do lewej | Pole edytowalne (liczba całkowita). |
+| Wpłaty | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+| Waga 6 | automatyczna | brak stałego limitu | do lewej | Pole edytowalne (liczba całkowita). |
+| Suma z rozegranych gier | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+| Procent rozegranych gier | automatyczna | brak stałego limitu | do lewej | Znak % dodawany automatycznie. |
+| Procent wszystkich gier | automatyczna | brak stałego limitu | do lewej | Znak % dodawany automatycznie. |
+| Wynik końcowy | automatyczna | brak stałego limitu | do lewej | Wartość końcowa rankingu. |
 
 ### 5.3 Ranking
-**Tabela:** `.admin-games-ranking-table` (`min-width: 100%` kontenera)
 
-| Kolumna | Min-width | Max-width | Wyrównanie | Łamanie | Detale formatowania |
-| --- | --- | --- | --- | --- | --- |
-| Miejsce | auto | brak | lewo | standard | Pozycja rankingowa. |
-| Gracz | auto | brak | lewo | standard | Nazwa gracza. |
-| Wynik | auto | brak | lewo | standard | Wynik punktowy. |
+| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| Miejsce | automatyczna | brak stałego limitu | do lewej | Pozycja w rankingu. |
+| Gracz | automatyczna | brak stałego limitu | do lewej | Nazwa gracza. |
+| Wynik | automatyczna | brak stałego limitu | do lewej | Wynik punktowy. |
 
 ---
 
 ## 6) Kalkulator
 
-### 6.1 Tabela1
-| Kolumna | Min-width | Max-width | Wyrównanie | Łamanie | Detale formatowania |
-| --- | --- | --- | --- | --- | --- |
-| Suma | auto | brak | lewo | standard | Tylko odczyt. |
-| Buy-In | auto | brak | lewo | standard | Pole cyfr (sanityzacja do integer). |
-| Rebuy | auto | brak | lewo | standard | Pole cyfr (sanityzacja do integer). |
-| Liczba Rebuy | auto | brak | lewo | standard | Tylko odczyt, liczba rebuy. |
+### 6.1 Tabela podsumowania wejść
 
-### 6.2 Tabela2
-| Kolumna | Min-width | Max-width | Wyrównanie | Łamanie | Detale formatowania |
-| --- | --- | --- | --- | --- | --- |
-| LP | auto | brak | lewo | standard | Numer porządkowy. |
-| Gracz | auto | brak | lewo | standard | `select` (blokuje duplikaty w tym samym trybie). |
-| Buy-In | auto | brak | lewo | standard | Tylko odczyt. |
-| Rebuy | auto | brak | lewo | standard | Przycisk otwierający modal rebuy. |
-| Eliminated | auto | brak | lewo | standard | Checkbox eliminacji. |
-| Akcje | auto | brak | lewo | standard | Usuń/dodaj wiersz. |
+| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| Suma | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+| Buy-In | automatyczna | brak stałego limitu | do lewej | Pole liczbowe. |
+| Rebuy | automatyczna | brak stałego limitu | do lewej | Pole liczbowe. |
+| Liczba Rebuy | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
 
-### 6.3 Tabela3
-| Kolumna | Min-width | Max-width | Wyrównanie | Łamanie | Detale formatowania |
-| --- | --- | --- | --- | --- | --- |
-| % | auto | brak | lewo | standard | Użytkownik wpisuje cyfry; po blur aplikacja pokazuje wartość z `%` (np. `10` → `10%`). |
-| Rake | auto | brak | lewo | standard | Tylko odczyt. |
-| Wpisowe | auto | brak | lewo | standard | Tylko odczyt. |
-| Rebuy | auto | brak | lewo | standard | Tylko odczyt. |
-| Pot | auto | brak | lewo | standard | Tylko odczyt. |
+### 6.2 Tabela uczestników
 
-### 6.4 Tabela4
-| Kolumna | Min-width | Max-width | Wyrównanie | Łamanie | Detale formatowania |
-| --- | --- | --- | --- | --- | --- |
-| LP | auto | brak | lewo | standard | Numer miejsca. |
-| Gracz | auto | brak | lewo | standard | Tylko odczyt, wyliczane z kolejności eliminacji. |
-| Wygrana | auto | brak | lewo | standard | Tylko odczyt. |
+| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| LP | automatyczna | brak stałego limitu | do lewej | Numer porządkowy. |
+| Gracz | automatyczna | brak stałego limitu | do lewej | Lista wyboru, bez duplikowania tej samej osoby w tym samym trybie. |
+| Buy-In | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+| Rebuy | automatyczna | brak stałego limitu | do lewej | Przycisk otwierający okno rebuy. |
+| Eliminacja | automatyczna | brak stałego limitu | do lewej | Pole wyboru tak/nie. |
+| Akcje | automatyczna | brak stałego limitu | do lewej | Dodawanie i usuwanie wiersza. |
 
-### 6.5 Tabela5
-| Kolumna | Min-width | Max-width | Wyrównanie | Łamanie | Detale formatowania |
-| --- | --- | --- | --- | --- | --- |
-| LP | auto | brak | lewo | standard | Numer porządkowy. |
-| Podział puli | auto | brak | lewo | standard | Pole procentowe: wpis cyfr, po blur automatyczne `%`. |
-| Kwota | auto | brak | lewo | standard | Tylko odczyt. |
-| Rebuy1..RebuyN | auto | brak | lewo | standard | Kolumny dynamiczne, tworzone tylko dla istniejących wartości rebuy. |
-| Mod | auto | brak | lewo | standard | Tylko odczyt/obliczenia pośrednie. |
-| Suma | auto | brak | lewo | standard | Tylko odczyt. |
+### 6.3 Tabela wartości procentowych i puli
 
-### 6.6 Modal rebuy (kalkulator)
-| Kolumna | Min-width | Max-width | Wyrównanie | Łamanie | Detale formatowania |
-| --- | --- | --- | --- | --- | --- |
-| Rebuy1..RebuyN | `8ch` | `8ch` | lewo | standard | Każda kolumna ma stałe `8ch` (`min/width/max`), `table-layout: fixed`; pola akceptują tylko cyfry. |
+| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| Procent | automatyczna | brak stałego limitu | do lewej | Wpisujesz liczbę, znak % dodaje się automatycznie. |
+| Rake | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+| Wpisowe | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+| Rebuy | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+| Pot | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+
+### 6.4 Tabela wygranych
+
+| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| LP | automatyczna | brak stałego limitu | do lewej | Numer miejsca. |
+| Gracz | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+| Wygrana | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+
+### 6.5 Tabela podziału puli
+
+| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| LP | automatyczna | brak stałego limitu | do lewej | Numer porządkowy. |
+| Podział puli | automatyczna | brak stałego limitu | do lewej | Wpisujesz liczbę, znak % dodaje się automatycznie. |
+| Kwota | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+| Kolumny kolejnych rebuy | automatyczna | brak stałego limitu | do lewej | Pojawiają się tylko, gdy są potrzebne. |
+| Mod | automatyczna | brak stałego limitu | do lewej | Pole pomocnicze do obliczeń. |
+| Suma | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
+
+### 6.6 Tabela rebuy w osobnym oknie
+
+| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| Rebuy 1, Rebuy 2, kolejne | stała szerokość: 8 znaków | stała szerokość: 8 znaków | do lewej | Wszystkie kolumny mają identyczną szerokość dla łatwego porównania. |
 
 ---
 
-## 7) Reguły danych wejściowych istotne dla kolumn
-- Pola kwotowe i punktowe są sanityzowane do liczb całkowitych (usuwane znaki nienumeryczne, obsługa minusów zależnie od sekcji).
-- W polach procentowych (Statystyki `%` i Kalkulator `%`) użytkownik wpisuje samą liczbę, a `%` jest dodawany automatycznie przez render.
-- Brak dedykowanych reguł CSS `text-align: right` dla kolumn numerycznych — liczby są wyrównane do lewej tak jak reszta tabel.
+## 7) Zasady wpisywania danych
+
+| Obszar | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| Pola liczbowe | nie dotyczy | nie dotyczy | do lewej | Aplikacja usuwa nieprawidłowe znaki i zostawia poprawną liczbę. |
+| Pola procentowe | nie dotyczy | nie dotyczy | do lewej | Użytkownik wpisuje samą liczbę, a znak % dodaje się automatycznie. |
+| Spójność prezentacji liczb i tekstu | nie dotyczy | nie dotyczy | do lewej | Liczby są ułożone tak samo jak tekst dla jednolitego wyglądu. |
