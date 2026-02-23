@@ -167,7 +167,9 @@ W kalkulatorze:
 - każda wartość `RebuyN` prezentowana w Tabela5 jest najpierw redukowana o procent z `table3Row.percent` (`rebuyPoRake = rebuy - rebuy*percent/100`),
 - kolumna `Mod` w Tabela5 jest edytowalna, przechowywana w `table5Mods` i dodawana do `Suma` według wzoru `Suma = Kwota + suma przypisanych rebuy(po rake) + Mod`,
 - usunięcie ostatniego rebuy u gracza powoduje renumerację kolejnych kolumn rebuy u następnych graczy.
-- Tabela4 nie opiera już kolumny `Wygrana` o nazwę gracza ani kolejność `eliminatedOrder`; wartość `Wygrana` dla danego `LP` jest kopią `Suma` z tego samego `LP` w Tabela5.
+- Tabela4 uzupełnia kolumnę `Gracz` wyłącznie dla graczy z aktywnym checkboxem `Eliminated` w Tabela2; kolejność opiera się na `eliminatedOrder` i jest mapowana od końca tabeli (pierwszy wyeliminowany trafia na ostatnie `LP`, kolejni na miejsca wyżej),
+- odznaczenie `Eliminated` usuwa gracza z Tabela4 i powoduje automatyczne „zsunięcie” pozostałych wyeliminowanych na niższe miejsca, zgodnie z ich kolejnością eliminacji,
+- kolumna `Wygrana` w Tabela4 działa niezależnie od nazw graczy i zawsze kopiuje `Suma` z tego samego `LP` w Tabela5.
 
 ## 5. Obliczenia finansowe i statystyczne
 
