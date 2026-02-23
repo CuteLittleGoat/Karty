@@ -1,199 +1,287 @@
-# Karty — dokumentacja techniczna (kod + Firebase)
+# Karty — dokumentacja techniczna aplikacji
 
-## 1. Struktura kodu
-- `Main/index.html` — pełny układ UI, tabele, zakładki, modale.
-- `Main/styles.css` — motyw noir/gold, responsywność, tabele, formularze, modale.
-- `Main/app.js` — logika aplikacji, renderowanie, obliczenia, PIN-gate, integracja Firestore.
-- `config/firebase-config.js` — konfiguracja połączenia Firebase dla frontendu.
+## 1. Zakres dokumentu
+Ten dokument opisuje aktualny stan aplikacji od strony technicznej: architekturę frontendu, działanie wszystkich modułów UI, logikę biznesową, walidacje, mechanizmy zapisu i odczytu danych, style oraz komponenty.
 
-## 2. Główne moduły w `Main/app.js`
-- **PIN i sesja**: przechowywanie stanu dostępu do kart użytkownika (`sessionStorage`).
-- **Gracze i uprawnienia**: lista graczy, PIN, dostęp do zakładek, lata statystyk.
-- **Gry admina (`Tables`)**: CRUD gier, szczegóły gry (`rows`), potwierdzenia (`confirmations`), podsumowania i ranking.
-- **Gry użytkowników (`UserGames`)**: ten sam model danych co gry admina + pola autora gry.
-- **Potwierdzenia użytkownika**: lista gier wymagających potwierdzenia, akcje Potwierdź/Anuluj, podgląd Szczegółów.
-- **Statystyki**: agregaty roczne, wagi ręczne (Waga1–Waga6), wynik końcowy i ranking.
-- **Czat**: publikacja wiadomości, retencja czasowa i moderacja.
-- **Regulamin i Aktualności**: centralne dokumenty konfiguracyjne.
-- **Kalkulator**: dynamiczne tabele (Tournament/Cash), zapis stanu do Firestore.
+> Cel: umożliwić odtworzenie aplikacji przez innego developera wyłącznie na podstawie tej dokumentacji i kodu źródłowego.
 
-## 3. Aktualny model danych Firestore (wierna struktura używana przez kod)
+Dokument **celowo nie zawiera**:
+- opisu struktury Firebase (schematów kolekcji/dokumentów),
+- skryptu bootstrapującego bazę.
 
-### 3.1 Kolekcje główne
-1. `app_settings`
-   - `player_access`
-     - `players: Array<{ id, name, pin, appEnabled, permissions, statsYearsAccess }>`
-     - `updatedAt`
-   - `rules`
-     - `text`, `updatedAt`, `createdAt`, `source`
-   - (opcjonalnie) `next_game` — ustawienia PIN dla sekcji najbliższej gry.
+## 2. Architektura aplikacji
 
-2. `admin_messages`
-   - `admin_messages`
-     - `message`, `createdAt`, `source`
+### 2.1 Warstwa prezentacji
+- `Main/index.html` zawiera kompletny, statyczny szkielet interfejsu:
+  - panel administratora (zakładki i sekcje robocze),
+  - strefę gracza (zakładki użytkownika),
+  - modale (szczegóły gier, uprawnienia, notatki, instrukcja, rebuy kalkulatora).
 
-3. `chat_messages`
-   - dokumenty wiadomości:
-     - `text`, `authorName`, `authorId`, `createdAt`, `expireAt`, `source`
+### 2.2 Warstwa stylów
+- `Main/styles.css` odpowiada za:
+  - system zmiennych CSS (kolory, cienie, spacing, promienie, rozmiary fontów),
+  - motyw dark/noir z akcentami złota i zieleni,
+  - layout panelowy, tabele, formularze, przyciski, modale,
+  - responsywność i przewijanie poziome dla szerokich tabel,
+  - klasy statusowe/rankingowe oraz wizualne stany elementów (hover/focus/active).
 
-4. `Tables` (gry admina)
-   - dokument gry:
-     - `gameType`, `gameDate`, `name`, `isClosed`, `preGameNotes`, `postGameNotes`, `createdAt`
-   - subkolekcja `rows`:
-     - `playerName`, `entryFee`, `rebuy`, `payout`, `points`, `championship`, `createdAt`
-   - subkolekcja `confirmations`:
-     - `playerId`, `playerName`, `confirmed`, `updatedBy`, `updatedAt`
+### 2.3 Warstwa logiki
+- `Main/app.js` realizuje:
+  - inicjalizację modułów,
+  - obsługę zakładek admin/user,
+  - PIN-gate i sesje dostępu per moduł,
+  - CRUD danych aplikacji,
+  - renderowanie tabel i modali,
+  - obliczenia statystyk, rankingów i kalkulatora,
+  - integrację z Firestore (subskrypcje i zapisy debounced),
+  - eksport danych statystycznych.
 
-5. `UserGames` (gry użytkowników)
-   - dokument gry:
-     - `gameType`, `gameDate`, `name`, `isClosed`, `preGameNotes`, `postGameNotes`, `createdAt`
-     - `createdByPlayerId`, `createdByPlayerName`
-   - subkolekcja `rows` — jak w `Tables/rows`
-   - subkolekcja `confirmations` — jak w `Tables/confirmations`
+### 2.4 Konfiguracja integracji
+- `config/firebase-config.js` dostarcza konfigurację klienta Firebase używaną przez frontend (`window.firebaseConfig`).
 
-6. `admin_games_stats`
-   - dokument roku (np. `2026`):
-     - `rows` (ręczne wartości wag na gracza)
-     - `visibleColumns` (kolumny widoczne dla użytkownika)
+## 3. UI i komponenty (pełny zakres)
 
-7. `calculators`
-   - dokumenty trybu (`tournament`, `cash`) z polami stanu kalkulatora i `updatedAt`.
+## 3.1 Panel administratora
+Panel składa się z 10 zakładek.
 
-### 3.2 Kolekcje wyłączone z projektu Karty
-- `Nekrolog_refresh_jobs`
-- `Nekrolog_config`
-- `Nekrolog_snapshots`
+### A) Aktualności
+- Pole tekstowe wiadomości + akcja publikacji.
+- Natychmiastowe odświeżenie sekcji „Aktualności” po stronie gracza.
+- Komunikaty statusu (powodzenie/błąd).
 
-## 4. Node.js — skrypt tworzący identyczny szkielet bazy
+### B) Czat
+- Widok listy wiadomości.
+- Moderacja pojedynczych wiadomości.
+- Akcja czyszczenia wpisów starszych niż 30 dni.
 
-Poniższy skrypt tworzy dokumenty bazowe i minimalną strukturę kolekcji zgodną z aplikacją.
+### C) Regulamin
+- Edytor tekstu regulaminu.
+- Zapis centralnej treści wyświetlanej w strefie gracza.
 
-```js
-// scripts/bootstrap-firestore.js
-const admin = require('firebase-admin');
-const serviceAccount = require('../test.json');
+### D) Gracze
+- Tabela zarządzania graczami z polami:
+  - aktywność aplikacji,
+  - nazwa,
+  - PIN,
+  - akcje.
+- Dodawanie/usuwanie/edycja graczy.
+- Modal uprawnień zakładek (dostępy per użytkownik).
+- Modal dostępnych lat statystyk (filtrowanie widoku statystyk gracza).
+- Podsumowanie liczby graczy + statusy operacji.
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+### E) Gry admina
+- Lista gier z filtrem po roku.
+- Dodawanie nowych gier z walidacją daty i domyślnym nazewnictwem.
+- Edycja metadanych gry (typ, data, nazwa, status zamknięcia).
+- Modal „Szczegóły gry”:
+  - dynamiczne wiersze graczy,
+  - edycja wpisowego, rebuy/add-on, wypłaty, punktów,
+  - flaga mistrzostwa,
+  - usuwanie wierszy,
+  - kolumna LP,
+  - metryka puli gry.
+- Sekcja podsumowań i notatek (przed/po grze).
+- Sekcja agregacji per rok:
+  - tabela metryk globalnych,
+  - tabela statystyk graczy,
+  - ranking z kolorowaniem pozycji.
 
-const db = admin.firestore();
+### F) Statystyki (admin)
+- Wybór roku.
+- Tabela metryk globalnych.
+- Tabela statystyk per gracz.
+- Wagi `Waga1–Waga6` edytowalne ręcznie.
+- Hurtowa zmiana wag przyciskami nagłówkowymi.
+- Sterowanie widocznością kolumn dla widoku gracza.
+- Ranking liczony z formuły ważonej.
+- Eksport XLSX.
 
-async function main() {
-  // app_settings
-  await db.collection('app_settings').doc('player_access').set({
-    players: [],
-    updatedAt: admin.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
+### G) Gry użytkowników (admin)
+- Analogiczny moduł do „Gry admina”, ale operujący na grach tworzonych przez użytkowników.
+- Podgląd autora gry i pełna administracyjna edycja wpisów.
 
-  await db.collection('app_settings').doc('rules').set({
-    text: '',
-    source: 'bootstrap',
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
+### H) Najbliższa gra (admin)
+- Tabela aktywnych najbliższych gier.
+- Informacja, czy wszyscy gracze potwierdzili udział.
 
-  await db.collection('app_settings').doc('next_game').set({
-    pin: ''
-  }, { merge: true });
+### I) Gry do potwierdzenia (admin)
+- Lista gier z panelem statusów potwierdzeń.
+- Podgląd szczegółów gry i notatek.
+- Ręczna korekta statusów potwierdzeń.
 
-  // admin messages
-  await db.collection('admin_messages').doc('admin_messages').set({
-    message: '',
-    source: 'bootstrap',
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
+### J) Kalkulator
+- Dwa tryby działania: `Tournament` i `Cash`.
+- Zestaw pięciu tabel dynamicznych:
+  1. Parametry wejściowe puli (`Buy-In`, `Rebuy`, liczby rebuy).
+  2. Lista graczy i ich rebuye.
+  3. Procent podziału.
+  4. Kolejność eliminacji.
+  5. Wynikowe wypłaty.
+- Modal szczegółowej edycji wielu rebuy jednego gracza.
+- Auto-przeliczenia wartości po każdej zmianie.
+- Debounced autosave stanu obu trybów.
 
-  // stats skeleton (current year)
-  const year = String(new Date().getFullYear());
-  await db.collection('admin_games_stats').doc(year).set({
-    rows: [],
-    visibleColumns: []
-  }, { merge: true });
+## 3.2 Strefa gracza
+Strefa gracza składa się z 7 zakładek.
 
-  // calculators skeleton
-  await db.collection('calculators').doc('tournament').set({
-    updatedAt: admin.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
-  await db.collection('calculators').doc('cash').set({
-    updatedAt: admin.firestore.FieldValue.serverTimestamp()
-  }, { merge: true });
+### A) Najbliższa gra
+- PIN-gate (5 cyfr).
+- Tabela odczytu najbliższych gier.
+- Informacja o pełnym/niepełnym potwierdzeniu składu.
 
-  // sample game in Tables (creates subcollection shape)
-  const tableRef = await db.collection('Tables').add({
-    gameType: 'Cashout',
-    gameDate: '2026-01-01',
-    name: 'Gra 1',
-    isClosed: false,
-    preGameNotes: '',
-    postGameNotes: '',
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
-  });
+### B) Aktualności
+- Odczyt ostatniego komunikatu administratora.
 
-  await tableRef.collection('rows').add({
-    playerName: '',
-    entryFee: '',
-    rebuy: '',
-    payout: '0',
-    points: '',
-    championship: false,
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
-  });
+### C) Regulamin
+- Odczyt aktualnych zasad.
 
-  await tableRef.collection('confirmations').doc('sample-player').set({
-    playerId: 'sample-player',
-    playerName: 'Sample',
-    confirmed: false,
-    updatedBy: 'bootstrap',
-    updatedAt: admin.firestore.FieldValue.serverTimestamp()
-  });
+### D) Czat
+- PIN-gate.
+- Lista wiadomości i formularz wysyłki.
+- Autor wiadomości identyfikowany graczem zalogowanym PIN-em.
 
-  // sample game in UserGames
-  const userGameRef = await db.collection('UserGames').add({
-    gameType: 'Cashout',
-    gameDate: '2026-01-01',
-    name: 'Gra użytkownika 1',
-    isClosed: false,
-    preGameNotes: '',
-    postGameNotes: '',
-    createdByPlayerId: 'admin',
-    createdByPlayerName: 'Administrator',
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
-  });
+### E) Gry do potwierdzenia
+- PIN-gate.
+- Lista aktywnych gier.
+- Akcje: `Potwierdź`, `Anuluj`, `Szczegóły`, `Notatki do gry`.
+- Modal szczegółów gry tylko do odczytu.
 
-  await userGameRef.collection('rows').add({
-    playerName: '',
-    entryFee: '',
-    rebuy: '',
-    payout: '0',
-    points: '',
-    championship: false,
-    createdAt: admin.firestore.FieldValue.serverTimestamp()
-  });
+### F) Gry użytkowników
+- PIN-gate.
+- Lista lat + lista gier w roku.
+- Tworzenie nowej gry przez użytkownika.
+- Edycja własnych wpisów gry i szczegółów graczy.
+- Notatki przed grą oraz podgląd metryki puli.
 
-  await userGameRef.collection('confirmations').doc('sample-player').set({
-    playerId: 'sample-player',
-    playerName: 'Sample',
-    confirmed: false,
-    updatedBy: 'bootstrap',
-    updatedAt: admin.firestore.FieldValue.serverTimestamp()
-  });
+### G) Statystyki
+- PIN-gate.
+- Lista lat dostępnych dla danego gracza.
+- Tabele metryk i ranking.
+- Eksport XLSX.
 
-  console.log('Firestore bootstrap completed.');
-}
+## 3.3 Modale i warstwa interakcji
+Aplikacja korzysta z wielu modali zarządzanych klasą `is-visible` i atrybutami `aria-hidden`:
+- instrukcja,
+- notatki podsumowania,
+- uprawnienia gracza,
+- lata statystyk,
+- szczegóły gry admina,
+- szczegóły gry użytkownika (admin i gracz),
+- szczegóły gry z potwierdzeń,
+- modal rebuy kalkulatora.
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
-```
+Wspólne zachowania:
+- zamknięcie przez `X`, klik poza modalem, `Escape`,
+- blokada scrolla tła (`body.modal-open`),
+- odtwarzanie focusu na aktywnych inputach po rerenderze.
 
-## 5. Wzory obliczeń i zachowanie UI
-- **Pula gry** = suma wszystkich `entryFee + rebuy` dla graczy danej gry.
-- **+/− w szczegółach** = `payout - (entryFee + rebuy)`.
-- **LP w szczegółach** = numer porządkowy na podstawie kolejności wiersza.
-- **Wynik statystyk** = suma ważona pól: mistrzostwa, udziału, punktów, bilansu, wypłat, wpłat (Waga1–Waga6).
+## 4. Logika biznesowa i obliczenia
 
-## 6. Weryfikacja dokumentacji vs kod
-- Struktura kolekcji i pól została odtworzona z rzeczywistego użycia w `Main/app.js`.
-- Skrypt Node.js buduje minimalną strukturę, którą aplikacja potrafi odczytać i rozbudować podczas pracy.
+### 4.1 PIN i dostęp
+- Każdy obszar chroniony PIN-em ma osobny klucz sesji (`sessionStorage`), co pozwala niezależnie autoryzować zakładki.
+- PIN jest zawsze 5-cyfrowy; inputy sanitizują znaki nienumeryczne.
+- Po poprawnym PIN zapisywany jest identyfikator gracza dla modułów zależnych od tożsamości (czat, potwierdzenia, gry użytkowników, statystyki).
+
+### 4.2 Uprawnienia gracza
+- Mechanizm uprawnień działa per zakładka.
+- Zakładki „Aktualności” i „Regulamin” pozostają globalnie dostępne.
+- Widoczność zakładek i sekcji jest aktualizowana dynamicznie po zmianach administracyjnych.
+
+### 4.3 Gry, szczegóły i notatki
+- Każda gra posiada metadane + listę wierszy graczy.
+- Pula gry liczona jest jako suma wpłat (`wpisowe + rebuy/add-on`).
+- Bilans gracza: `wypłata - (wpisowe + rebuy)`.
+- Wspierane są notatki przed grą i po grze.
+- Zaimplementowana jest migracja czyszcząca legacy pole `notes` (zastąpione przez `preGameNotes`/`postGameNotes`).
+
+### 4.4 Potwierdzenia obecności
+- Moduł potwierdzeń agreguje aktywne gry z wielu źródeł.
+- Dla każdej gry liczony jest stan „czy wszyscy potwierdzili”.
+- Użytkownik może potwierdzić i cofnąć potwierdzenie; admin może nadpisywać statusy.
+
+### 4.5 Statystyki i ranking
+- Dane statystyczne agregowane są rocznie.
+- Wzór wyniku rankingowego:
+  - `mistrzostwa * Waga1`
+  - `+ procent udziału * Waga2`
+  - `+ punkty * Waga3`
+  - `+ (+/-) * Waga4`
+  - `+ wypłaty * Waga5`
+  - `+ wpłaty * Waga6`
+- Domyślna wartość każdej wagi to `1`.
+- Ranking sortowany malejąco po wyniku i rosnąco alfabetycznie przy remisie.
+
+### 4.6 Kalkulator
+- Dla każdego trybu (`Tournament`, `Cash`) utrzymywany jest osobny stan.
+- Stan obejmuje:
+  - parametry buy-in/rebuy,
+  - listę graczy,
+  - wielokrotne rebuye,
+  - procenty podziału,
+  - kolejność eliminacji,
+  - wyliczone wypłaty.
+- Walidacja wejść jest numeryczna (cyfry).
+- Zapisy są odroczone (`debounce`), aby ograniczyć liczbę operacji zapisu.
+
+## 5. Integracja backendowa (bez opisu schematu)
+
+### 5.1 Charakter integracji
+- Frontend korzysta z Firebase/Firestore jako backendu typu BaaS.
+- Dominują operacje:
+  - subskrypcje czasu rzeczywistego (`onSnapshot`) dla list i paneli,
+  - zapisy częściowe (`set(..., { merge: true })`),
+  - aktualizacje (`update`),
+  - usuwanie (`delete`) elementów i kolekcji podrzędnych.
+
+### 5.2 Obsługa błędów
+- Błędy backendowe są normalizowane i mapowane na komunikaty dla UI.
+- Każdy moduł posiada własne pole statusu tekstowego (`aria-live`) sygnalizujące powodzenie/niepowodzenie.
+
+### 5.3 Spójność danych
+- Używany jest mechanizm odświeżeń panelu admina.
+- Wybrane operacje zapisowe są debounced.
+- Widoki roczne przechowują ostatni wybór roku lokalnie (`localStorage`) dla zachowania kontekstu pracy.
+
+## 6. System stylów, typografia, UX
+
+### 6.1 Fonty
+Aplikacja ładuje fonty Google:
+- `Cinzel` (nagłówki główne),
+- `Cormorant Garamond` (podtytuły),
+- `Rajdhani` (elementy panelowe),
+- `Inter` (tekst użytkowy).
+
+### 6.2 Kolorystyka i motyw
+- Motyw ciemny oparty o zielenie stołu + złote akcenty.
+- Kontrast wzmacniany cieniami i glow (`--glow-gold`, `--glow-neon`).
+- Styl spójny dla tabel, formularzy i przycisków akcji.
+
+### 6.3 Responsywność
+- Layout oparty o CSS Grid i sekcje kartowe.
+- Szerokie tabele renderowane w kontenerach z poziomym scrollowaniem.
+- Formularze i nagłówki adaptują się przez `flex-wrap`.
+
+## 7. Inicjalizacja aplikacji
+- Funkcja `bootstrap()` uruchamia moduły w kolejności:
+  - zakładki admin/user,
+  - moduły wiadomości, regulaminu, czatu,
+  - zarządzanie graczami,
+  - gry admina/użytkowników,
+  - potwierdzenia,
+  - statystyki,
+  - kalkulator,
+  - modal instrukcji.
+- Każdy moduł ma własną funkcję `init...`, dzięki czemu kod jest podzielony domenowo.
+
+## 8. Wskazówki implementacyjne do odtworzenia aplikacji
+Aby odtworzyć aplikację 1:1:
+1. Odtwórz strukturę HTML z identycznymi identyfikatorami (`id`) i klasami CSS.
+2. Zachowaj pełny system PIN-gate na poziomie zakładek.
+3. Zaimplementuj ten sam model stanów lokalnych (gracze, gry, lata, rankingi, kalkulator).
+4. Odtwórz wszystkie modale i ich cykl życia (otwieranie/zamykanie/focus).
+5. Wdróż te same formuły statystyk i rankingów.
+6. Wdróż kalkulator 5-tabelowy z modalem rebuy i autosave.
+7. Dodaj komunikaty statusowe per sekcja z `aria-live`.
+8. Zachowaj motyw wizualny (zmienne CSS, fonty, cienie, tabele, kolorystykę rankingów).
+
+To są elementy krytyczne dla zgodności funkcjonalnej i UX z obecną wersją aplikacji.
