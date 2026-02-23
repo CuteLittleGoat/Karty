@@ -60,3 +60,40 @@ Kolejność fragmentu środkowego:
 Uwagi:
 - Kolumna `Waga7` została usunięta.
 - Wynik końcowy liczony jest tylko na wagach Waga1–Waga6.
+
+
+## 7. Kalkulator
+### Tabela1
+1. Suma
+2. Buy-In
+3. Rebuy
+4. Liczba Rebuy
+
+### Tabela2
+1. LP
+2. Gracz
+3. Rebuy
+4. Eliminated
+5. Dodaj
+6. Usuń
+
+### Tabela3
+1. Rake
+2. Rake kwota
+3. Buy-In
+4. Rebuy
+5. Pot
+
+### Tabela4
+1. LP
+2. Gracz
+3. Wygrana
+
+### Tabela5
+1. LP
+2. Podział puli
+3. Kwota
+4. Ranking
+5. Rebuy1..RebuyN (dynamicznie, tylko dla uzupełnionych wartości)
+6. Mod
+7. Suma

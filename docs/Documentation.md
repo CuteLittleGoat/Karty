@@ -154,6 +154,7 @@ Model obejmuje:
 - `table2Rows` (gracze, eliminacje, lista rebuy per gracz),
 - `table3Row` (procent),
 - `table5SplitPercents` (podział puli),
+- `table5Mods` (ręczna korekta doliczana do sumy wiersza w Tabela5),
 - `eliminatedOrder` (kolejność odpadnięć).
 
 W kalkulatorze:
@@ -162,6 +163,8 @@ W kalkulatorze:
 - możliwa jest edycja rebuy przez dedykowany modal.
 - modal rebuy startuje bez kolumn; kolumny powstają dopiero po kliknięciu `Dodaj Rebuy`,
 - nazwy kolumn rebuy są numerowane globalnie względem wszystkich graczy w kolejności wierszy Tabela2 (`Rebuy1..n`),
+- Tabela5 renderuje wartości rebuy kolumnowo: każda kolumna `RebuyN` wyświetla wartość wyłącznie w jednym wierszu (`LP`) wyliczanym przez cykle 4, 5, 6, 7... pozycji (np. `Rebuy1..4` -> wiersze 1..4, `Rebuy5..9` -> wiersze 1..5, `Rebuy10..15` -> wiersze 1..6),
+- kolumna `Mod` w Tabela5 jest edytowalna, przechowywana w `table5Mods` i dodawana do `Suma` według wzoru `Suma = Kwota + suma przypisanych rebuy + Mod`,
 - usunięcie ostatniego rebuy u gracza powoduje renumerację kolejnych kolumn rebuy u następnych graczy.
 
 ## 5. Obliczenia finansowe i statystyczne
