@@ -35,3 +35,11 @@
 
 ## Strefa gracza
 - Usunięto czerwony komunikat ostrzegawczy wyświetlany wcześniej nad zakładkami użytkownika.
+
+
+## Kalkulator — modal „Rebuy gracza”
+- Modal otwierany z kolumny `Rebuy` w `Tabela2`.
+- Widok startowy modala nie pokazuje żadnych kolumn rebuy.
+- Kolumny są dodawane dynamicznie przyciskiem `Dodaj Rebuy`.
+- Etykiety kolumn mają format `RebuyN` i używają globalnej numeracji wspólnej dla wszystkich graczy (niezależnie od tego, dla którego gracza modal jest otwarty).
+- Po usunięciu ostatniej kolumny u danego gracza etykiety kolejnych kolumn u innych graczy są automatycznie renumerowane.

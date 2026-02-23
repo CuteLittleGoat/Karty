@@ -151,7 +151,7 @@ result = championshipCount * weight1
 Kalkulator przechowuje osobny stan dla dwóch trybów (`calculators/tournament`, `calculators/cash`).
 Model obejmuje:
 - `table1Row` (buy-in, rebuy),
-- `table2Rows` (gracze, eliminacje, lista rebuy),
+- `table2Rows` (gracze, eliminacje, lista rebuy per gracz),
 - `table3Row` (procent),
 - `table5SplitPercents` (podział puli),
 - `eliminatedOrder` (kolejność odpadnięć).
@@ -160,6 +160,9 @@ W kalkulatorze:
 - liczby są sanityzowane do cyfr,
 - stan jest debouncowany i automatycznie zapisywany do Firestore,
 - możliwa jest edycja rebuy przez dedykowany modal.
+- modal rebuy startuje bez kolumn; kolumny powstają dopiero po kliknięciu `Dodaj Rebuy`,
+- nazwy kolumn rebuy są numerowane globalnie względem wszystkich graczy w kolejności wierszy Tabela2 (`Rebuy1..n`),
+- usunięcie ostatniego rebuy u gracza powoduje renumerację kolejnych kolumn rebuy u następnych graczy.
 
 ## 5. Obliczenia finansowe i statystyczne
 
@@ -323,7 +326,7 @@ async function ensureBaseDocuments() {
   for (const mode of ["tournament", "cash"]) {
     await db.collection("calculators").doc(mode).set({
       table1Row: { buyIn: "", rebuy: "" },
-      table2Rows: [{ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [""] }],
+      table2Rows: [{ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [] }],
       table3Row: { percent: "" },
       table5SplitPercents: [],
       eliminatedOrder: [],

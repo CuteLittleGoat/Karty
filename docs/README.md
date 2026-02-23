@@ -120,3 +120,25 @@
 2. Otwieraj każdą grę z listy.
 3. Zmieniaj status potwierdzeń graczy.
 
+
+
+### 3.9 Kalkulator
+1. Wejdź w zakładkę **Kalkulator**.
+2. Nad tabelami kliknij tryb **Tournament** lub **Cash**.
+3. W **Tabela1** wpisz wartości Buy-In i Rebuy (pole Liczba Rebuy liczy tylko niepuste wpisy Rebuy graczy).
+4. W **Tabela2**: 
+   - w kolumnie **Gracz** wybierz gracza z listy,
+   - w kolumnie **Rebuy** kliknij przycisk z kwotą, aby otworzyć okno **Rebuy gracza**,
+   - zaznacz **Eliminated**, jeśli gracz odpadł,
+   - kliknij **Dodaj** w ostatnim wierszu, aby dodać kolejnego gracza,
+   - kliknij **Usuń** w wierszu, aby usunąć gracza.
+5. W oknie **Rebuy gracza**:
+   - po otwarciu domyślnie nie ma żadnej kolumny,
+   - kliknij **Dodaj Rebuy**, aby dodać nową kolumnę (np. Rebuy1, Rebuy2, ...),
+   - numeracja Rebuy jest wspólna dla wszystkich graczy (globalna),
+   - kliknij **Usuń Rebuy**, aby usunąć ostatnią kolumnę tylko dla bieżącego gracza; numeracja automatycznie przelicza się globalnie także dla pozostałych graczy,
+   - wpisz kwoty w polach kolumn Rebuy (tylko cyfry).
+6. W **Tabela3** wpisz `%` rake.
+7. W **Tabela4** sprawdź wyliczoną wygraną na podstawie kolejności odpadnięć.
+8. W **Tabela5** ustaw podział puli (procenty) i sprawdź podsumowanie kwoty gracza.
+9. Wszystkie zmiany zapisują się automatycznie po chwili — nie ma osobnego przycisku zapisu.

@@ -2954,7 +2954,7 @@ const initAdminCalculator = () => {
 
   const createInitialState = () => ({
     table1Row: { id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" },
-    table2Rows: [{ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [""] }],
+    table2Rows: [{ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [] }],
     table3Row: { percent: "" },
     table5SplitPercents: [],
     eliminatedOrder: []
@@ -3003,7 +3003,7 @@ const initAdminCalculator = () => {
               : `table2-${Date.now()}-${index}`,
             playerName: typeof rowSource.playerName === "string" ? rowSource.playerName : "",
             eliminated: Boolean(rowSource.eliminated),
-            rebuys: normalizedRebuys.length ? normalizedRebuys : [""]
+            rebuys: normalizedRebuys
           };
         })
         .filter((row) => row.id)
@@ -3040,7 +3040,7 @@ const initAdminCalculator = () => {
       id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `table2-${Date.now()}-${index}`,
       playerName: typeof row.playerName === "string" ? row.playerName : "",
       eliminated: Boolean(row.eliminated),
-      rebuys: Array.isArray(row.rebuys) && row.rebuys.length ? row.rebuys.map((value) => sanitizeInteger(value)) : [""]
+      rebuys: Array.isArray(row.rebuys) ? row.rebuys.map((value) => sanitizeInteger(value)) : []
     })),
     table3Row: {
       percent: sanitizeInteger(modeState.table3Row.percent)
@@ -3119,6 +3119,16 @@ const initAdminCalculator = () => {
 
   const getRowRebuySum = (row) => row.rebuys.reduce((sum, value) => sum + parseInteger(value), 0);
   const getRowRebuyCount = (row) => row.rebuys.filter((value) => sanitizeInteger(value) !== "").length;
+  const getRowRebuyGlobalOffset = (modeState, rowId) => {
+    let offset = 0;
+    for (const row of modeState.table2Rows) {
+      if (row.id === rowId) {
+        return offset;
+      }
+      offset += row.rebuys.length;
+    }
+    return offset;
+  };
 
   const getCalculatorMetrics = () => {
     const modeState = getModeState();
@@ -3255,9 +3265,12 @@ const initAdminCalculator = () => {
 
     const focusState = getFocusedAdminInputState(rebuyModal);
 
+    const modeState = state.rebuyModal.mode === "cash" ? state.cash : state.tournament;
+    const rowGlobalOffset = getRowRebuyGlobalOffset(modeState, row.id);
+
     let headerHtml = "<thead><tr>";
     row.rebuys.forEach((_, index) => {
-      headerHtml += `<th>Rebuy${index + 1}</th>`;
+      headerHtml += `<th>Rebuy${rowGlobalOffset + index + 1}</th>`;
     });
     headerHtml += "</tr></thead>";
     rebuyModalTable.innerHTML = headerHtml;
@@ -3304,9 +3317,9 @@ const initAdminCalculator = () => {
     removeButton.type = "button";
     removeButton.className = "danger admin-row-delete";
     removeButton.textContent = "Usuń Rebuy";
-    removeButton.disabled = row.rebuys.length <= 1;
+    removeButton.disabled = row.rebuys.length === 0;
     removeButton.addEventListener("click", () => {
-      if (row.rebuys.length <= 1) {
+      if (row.rebuys.length === 0) {
         return;
       }
       row.rebuys.pop();
@@ -3491,7 +3504,7 @@ const initAdminCalculator = () => {
             id: `table2-${Date.now()}-${modeState.table2Rows.length}`,
             playerName: "",
             eliminated: false,
-            rebuys: [""]
+            rebuys: []
           });
           render();
           schedulePersistCalculatorModeState(state.mode);
@@ -3508,7 +3521,7 @@ const initAdminCalculator = () => {
         modeState.table2Rows = modeState.table2Rows.filter((entry) => entry.id !== row.id);
         modeState.eliminatedOrder = modeState.eliminatedOrder.filter((id) => id !== row.id);
         if (!modeState.table2Rows.length) {
-          modeState.table2Rows.push({ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [""] });
+          modeState.table2Rows.push({ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [] });
         }
         render();
         schedulePersistCalculatorModeState(state.mode);
