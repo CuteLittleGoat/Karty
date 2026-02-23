@@ -175,8 +175,8 @@
                           <th>Mistrzostwo</th>
                           <th><button type="button" class="admin-weight-bulk-button" data-weight-key="weight1">Waga1</button></th>
                           <th>Ilość Spotkań</th>
-                          <th>% udział</th>
                           <th><button type="button" class="admin-weight-bulk-button" data-weight-key="weight2">Waga2</button></th>
+                          <th>% udział</th>
                           <th>Punkty</th>
                           <th><button type="button" class="admin-weight-bulk-button" data-weight-key="weight3">Waga3</button></th>
                           <th>(+/-)</th>
@@ -188,7 +188,6 @@
                           <th>Suma z rozegranych gier</th>
                           <th>% Rozegranych gier</th>
                           <th>% Wszystkich gier</th>
-                          <th><button type="button" class="admin-weight-bulk-button" data-weight-key="weight7">Waga7</button></th>
                           <th>Wyniki</th>
                         </tr>
                       </thead>
@@ -307,8 +306,8 @@
                           <th>Mistrzostwo</th>
                           <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight1">Waga1</button></th>
                           <th>Ilość Spotkań</th>
-                          <th>% udział</th>
                           <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight2">Waga2</button></th>
+                          <th>% udział</th>
                           <th>Punkty</th>
                           <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight3">Waga3</button></th>
                           <th>(+/-)</th>
@@ -320,7 +319,6 @@
                           <th>Suma z rozegranych gier</th>
                           <th>% Rozegranych gier</th>
                           <th>% Wszystkich gier</th>
-                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight7">Waga7</button></th>
                           <th>Wynik</th>
                         </tr>
                       </thead>
@@ -387,11 +385,6 @@
             <div class="user-view">
               <span class="user-view-label">Strefa gracza</span>
             </div>
-            <p class="user-security-warning" role="note">
-              Uwaga! Wszystkie wpisane dane są zapisywane na niestrzeżonym serwerze. Wszystkie wpisane dane są
-              publicznie dostępne (jak ktoś wie gdzie szukać). W czacie czy przy tworzeniu gier NIGDY nie podawaj
-              wrażliwych danych takich jak adres czy nazwisko!
-            </p>
             <div class="user-tabs" role="tablist" aria-label="Zakładki użytkownika">
               <button class="tab-button is-active" type="button" data-target="nextGameTab">
                 Najbliższa gra
@@ -669,8 +662,8 @@
                               <th>Mistrzostwo</th>
                               <th>Waga1</th>
                               <th>Ilość Spotkań</th>
-                              <th>% udział</th>
                               <th>Waga2</th>
+                              <th>% udział</th>
                               <th>Punkty</th>
                               <th>Waga3</th>
                               <th>(+/-)</th>
@@ -681,7 +674,6 @@
                               <th>Waga6</th>
                               <th>Suma z rozegranych gier</th>
                               <th>% Rozegranych gier</th>
-                              <th>Waga7</th>
                               <th>% Wszystkich gier</th>
                               <th>Wynik</th>
                             </tr>
@@ -796,6 +788,7 @@
             <table class="admin-data-table">
               <thead>
                 <tr>
+                  <th>LP</th>
                   <th>Gracz</th>
                   <th><button type="button" class="admin-weight-bulk-button game-entry-fee-bulk-button" data-target-modal="userGameDetailsModal">Wpisowe</button></th>
                   <th>Rebuy/Add-on</th>
@@ -828,6 +821,7 @@
             <table class="admin-data-table">
               <thead>
                 <tr>
+                  <th>LP</th>
                   <th>Gracz</th>
                   <th><button type="button" class="admin-weight-bulk-button game-entry-fee-bulk-button" data-target-modal="playerUserGameDetailsModal">Wpisowe</button></th>
                   <th>Rebuy/Add-on</th>
@@ -860,6 +854,7 @@
             <table class="admin-data-table">
               <thead>
                 <tr>
+                  <th>LP</th>
                   <th>Gracz</th>
                   <th><button type="button" class="admin-weight-bulk-button game-entry-fee-bulk-button" data-target-modal="gameDetailsModal">Wpisowe</button></th>
                   <th>Rebuy/Add-on</th>
@@ -875,6 +870,35 @@
           </div>
           <div class="admin-table-actions">
             <button id="gameDetailsAddRow" class="secondary" type="button">Dodaj</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="confirmationsDetailsModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmationsDetailsTitle">
+        <div class="modal-header">
+          <h3 id="confirmationsDetailsTitle">Szczegóły gry</h3>
+          <button id="confirmationsDetailsClose" class="icon-button" type="button" aria-label="Zamknij okno">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="confirmationsDetailsMeta" class="status-text"></p>
+          <div class="admin-table-scroll">
+            <table class="admin-data-table">
+              <thead>
+                <tr>
+                  <th>LP</th>
+                  <th>Gracz</th>
+                  <th>Wpisowe</th>
+                  <th>Rebuy/Add-on</th>
+                  <th>Wypłata</th>
+                  <th>+/-</th>
+                  <th>Punkty</th>
+                  <th>Mistrzostwo</th>
+                </tr>
+              </thead>
+              <tbody id="confirmationsDetailsBody"></tbody>
+            </table>
           </div>
         </div>
       </div>
