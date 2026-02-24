@@ -3203,7 +3203,7 @@ const initAdminCalculator = () => {
   });
 
   const createInitialCashState = () => ({
-    table8Row: { rake: "" },
+    table8Row: { rake: "", rakeValue: "0" },
     table9Rows: [{ id: `table9-${Date.now()}-0`, playerName: "", buyIn: "0", payout: "0", rebuys: [] }]
   });
 
@@ -3272,7 +3272,8 @@ const initAdminCalculator = () => {
 
       return {
         table8Row: {
-          rake: sanitizeInteger(table8Source.rake)
+          rake: sanitizeInteger(table8Source.rake),
+          rakeValue: sanitizeInteger(table8Source.rakeValue)
         },
         table9Rows: table9Rows.length ? table9Rows : baseCashState.table9Rows
       };
@@ -3331,7 +3332,8 @@ const initAdminCalculator = () => {
     if (mode === "cash") {
       return {
         table8Row: {
-          rake: sanitizeInteger(modeState.table8Row?.rake)
+          rake: sanitizeInteger(modeState.table8Row?.rake),
+          rakeValue: sanitizeInteger(modeState.table8Row?.rakeValue)
         },
         table9Rows: Array.isArray(modeState.table9Rows)
           ? modeState.table9Rows.map((row, index) => ({
@@ -3594,26 +3596,28 @@ const initAdminCalculator = () => {
     const totalRebuy = cashState.table9Rows.reduce((sum, row) => sum + getRowRebuySum(row), 0);
     const rakePercent = parseInteger(cashState.table8Row.rake);
     const rakeDecimal = rakePercent / 100;
-    const totalRakeBuyIn = totalBuyIn * rakeDecimal;
-    const totalRakeRebuy = totalRebuy * rakeDecimal;
-    const totalRakeSum = totalRakeBuyIn + totalRakeRebuy;
-    const pot = totalRakeSum - (totalRakeSum * rakeDecimal);
+    const buyInAfterPercent = totalBuyIn * (1 - rakeDecimal);
+    const rebuyAfterPercent = totalRebuy * (1 - rakeDecimal);
+    const totalAfterPercent = buyInAfterPercent + rebuyAfterPercent;
+    const rakeValue = parseInteger(cashState.table8Row.rakeValue);
+    const pot = totalAfterPercent - rakeValue;
 
     return {
       totalBuyIn,
       totalRebuy,
       rakePercent,
       rakeDecimal,
-      totalRakeBuyIn,
-      totalRakeRebuy,
-      totalRakeSum,
+      buyInAfterPercent,
+      rebuyAfterPercent,
+      totalAfterPercent,
+      rakeValue,
       pot
     };
   };
 
   const getCashTable10Rows = () => {
     const metrics = getCashMetrics();
-    const sumValue = metrics.totalRakeSum;
+    const sumValue = metrics.totalAfterPercent;
     return state.cash.table9Rows
       .map((row) => {
         const payout = parseInteger(row.payout);
@@ -4134,9 +4138,9 @@ const initAdminCalculator = () => {
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
     tr.append(
-      createReadonlyCell(formatNumber(metrics.totalRakeBuyIn)),
-      createReadonlyCell(formatNumber(metrics.totalRakeRebuy)),
-      createReadonlyCell(formatNumber(metrics.totalRakeSum))
+      createReadonlyCell(formatNumber(metrics.buyInAfterPercent)),
+      createReadonlyCell(formatNumber(metrics.rebuyAfterPercent)),
+      createReadonlyCell(formatNumber(metrics.totalAfterPercent))
     );
     tbody.appendChild(tr);
     table.appendChild(tbody);
@@ -4153,7 +4157,7 @@ const initAdminCalculator = () => {
 
     const table = document.createElement("table");
     table.className = "admin-data-table";
-    table.innerHTML = "<thead><tr><th>Rake</th><th>Pot</th></tr></thead>";
+    table.innerHTML = "<thead><tr><th>%</th><th>Rake</th><th>Pot</th></tr></thead>";
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
 
@@ -4181,7 +4185,25 @@ const initAdminCalculator = () => {
     });
     rakeCell.appendChild(rakeInput);
 
-    tr.append(rakeCell, createReadonlyCell(formatNumber(metrics.pot)));
+    const rakeValueCell = document.createElement("td");
+    const rakeValueInput = document.createElement("input");
+    rakeValueInput.type = "text";
+    rakeValueInput.className = "admin-input";
+    rakeValueInput.value = state.cash.table8Row.rakeValue;
+    rakeValueInput.dataset.focusTarget = "admin-calculator";
+    rakeValueInput.dataset.section = "table8";
+    rakeValueInput.dataset.tableId = "cash";
+    rakeValueInput.dataset.rowId = "0";
+    rakeValueInput.dataset.columnKey = "rakeValue";
+    rakeValueInput.addEventListener("input", () => {
+      state.cash.table8Row.rakeValue = sanitizeInteger(rakeValueInput.value);
+      rakeValueInput.value = state.cash.table8Row.rakeValue;
+      render();
+      schedulePersistCalculatorModeState("cash");
+    });
+    rakeValueCell.appendChild(rakeValueInput);
+
+    tr.append(rakeCell, rakeValueCell, createReadonlyCell(formatNumber(metrics.pot)));
     tbody.appendChild(tr);
     table.appendChild(tbody);
 
@@ -4196,8 +4218,22 @@ const initAdminCalculator = () => {
 
     const table = document.createElement("table");
     table.className = "admin-data-table";
-    table.innerHTML = "<thead><tr><th>Gracz</th><th>Buy-In</th><th>Rebuy</th><th>Wypłata</th><th>+/-</th><th></th></tr></thead>";
+    table.innerHTML = "<thead><tr><th>Gracz</th><th><button type=\"button\" class=\"secondary\" data-cash-buyin-bulk>Buy-In</button></th><th>Rebuy</th><th>Wypłata</th><th>+/-</th><th></th></tr></thead>";
     const tbody = document.createElement("tbody");
+
+    const bulkBuyInButton = table.querySelector("[data-cash-buyin-bulk]");
+    bulkBuyInButton?.addEventListener("click", () => {
+      const promptValue = window.prompt("Podaj wartość Buy-In dla wszystkich graczy.", "0");
+      if (promptValue === null) {
+        return;
+      }
+      const sanitizedValue = sanitizeInteger(promptValue) || "0";
+      state.cash.table9Rows.forEach((entry) => {
+        entry.buyIn = sanitizedValue;
+      });
+      render();
+      schedulePersistCalculatorModeState("cash");
+    });
 
     state.cash.table9Rows.forEach((row, index) => {
       const tr = document.createElement("tr");

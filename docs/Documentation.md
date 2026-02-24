@@ -169,23 +169,26 @@ Kalkulator zapisuje dane w `calculators/tournament` oraz `calculators/cash`.
 
 #### Cash
 - Dodano osobny model danych `cash`:
-  - `table8Row.rake` — procent rake,
+  - `table8Row.rake` — procent wykorzystywany w obliczeniach (kolumna `%`),
+  - `table8Row.rakeValue` — ręcznie wpisywana kwota rake,
   - `table9Rows[]` — wiersze graczy (`playerName`, `buyIn`, `payout`, `rebuys`).
 - Normalizacja i serializacja danych do Firestore są rozdzielone dla trybu `cash` i `tournament`.
 - Modal rebuy działa dla obu trybów; w trybie Cash operuje na `table9Rows[].rebuys`.
 
 Dodane obliczenia Cash:
 - **Tabela7**:
-  - `buyInAfterRake = suma(Buy-In z Tabela9) * (Rake/100)`
-  - `rebuyAfterRake = suma(Rebuy z Tabela9) * (Rake/100)`
-  - `sum = buyInAfterRake + rebuyAfterRake`
+  - `buyInAfterPercent = suma(Buy-In z Tabela9) * (1 - rake/100)`
+  - `rebuyAfterPercent = suma(Rebuy z Tabela9) * (1 - rake/100)`
+  - `sum = buyInAfterPercent + rebuyAfterPercent`
 - **Tabela8**:
-  - `Rake` jako pole procentowe (format z `%` po blur),
-  - `Pot = sum - (sum * Rake/100)`.
+  - kolumna `%` to to samo pole danych `table8Row.rake` (format z `%` po blur),
+  - kolumna `Rake` to pole `table8Row.rakeValue` (wartość liczbowa),
+  - `Pot = Suma(Tabela7) - Rake`.
 - **Tabela9**:
   - unikalny wybór gracza per tabela,
   - dropdown `Gracz` renderuje wyłącznie dostępne osoby (gracze zajęci w innych wierszach są ukrywani),
-  - ręczna edycja `Buy-In` i `Wypłata`,
+  - przycisk w nagłówku kolumny `Buy-In` uruchamia `window.prompt` i zbiorczo ustawia Buy-In dla wszystkich wierszy,
+  - ręczna edycja pojedynczych pól `Buy-In` i `Wypłata` nadal jest dostępna po akcji zbiorczej,
   - `Rebuy` z modala,
   - `+/- = Wypłata - (Buy-In + suma Rebuy)`.
 - **Tabela10**:

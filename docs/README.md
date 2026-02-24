@@ -128,27 +128,31 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 #### Cash — Tabela7
 1. W Tabela7 nie wpisujesz ręcznie danych.
-2. Kolumna **Buy-In** pokazuje sumę Buy-In z Tabela9 przemnożoną przez procent z **Rake** (Tabela8).
-3. Kolumna **Rebuy** pokazuje sumę Rebuy z Tabela9 przemnożoną przez procent z **Rake** (Tabela8).
-4. Kolumna **Suma** pokazuje `Buy-In + Rebuy` z Tabela7.
+2. Kolumna **Buy-In** pokazuje sumę Buy-In z Tabela9 pomniejszoną o procent z kolumny **%** (Tabela8).
+3. Kolumna **Rebuy** pokazuje sumę Rebuy z Tabela9 pomniejszoną o procent z kolumny **%** (Tabela8).
+4. Przykład: suma Buy-In = `100`, `%` = `10` → w Tabela7 zobaczysz `90`.
+5. Kolumna **Suma** pokazuje `Buy-In + Rebuy` z Tabela7.
 
 #### Cash — Tabela8
-1. W kolumnie **Rake** wpisz liczbę (np. `10`).
+1. W kolumnie **%** wpisz liczbę (np. `10`).
 2. Po wyjściu z pola aplikacja pokaże wartość jako procent (`10%`).
-3. Kolumna **Pot** wylicza wartość z kolumny **Suma** (Tabela7) pomniejszoną o procent z **Rake** (Tabela8).
+3. W kolumnie **Rake** wpisz wartość liczbową (kwotę rake).
+4. Kolumna **Pot** wylicza wartość: `Suma z Tabela7 - Rake z Tabela8`.
 
 #### Cash — Tabela9
 1. W kolumnie **Gracz** wybierz gracza z listy.
 2. Ten sam gracz nie może wystąpić dwa razy w Tabela9.
 3. Lista **Gracz** pokazuje tylko dostępne osoby; gracz już użyty w innym wierszu znika z listy do czasu zwolnienia miejsca.
-4. W kolumnie **Buy-In** wpisz kwotę ręcznie (nowy wiersz startuje od `0`).
-5. W kolumnie **Rebuy** kliknij przycisk z kwotą, aby otworzyć modal rebuy dla tego gracza.
-6. W modalu kliknij **Dodaj Rebuy** / **Usuń Rebuy** i wpisuj kwoty; przycisk w tabeli pokazuje sumę pozycji.
-7. Numeracja rebuy dla Cash jest liczona niezależnie od trybu Tournament.
-8. W kolumnie **Wypłata** wpisz kwotę ręcznie (nowy wiersz startuje od `0`).
-9. Kolumna **+/-** liczy automatycznie: `Wypłata - (Buy-In + Rebuy)`.
-10. W ostatnim wierszu kliknij **Dodaj**, aby dopisać kolejny wiersz.
-11. W dowolnym wierszu kliknij **Usuń**, aby go usunąć.
+4. W nagłówku kolumny **Buy-In** kliknij przycisk **Buy-In**, aby otworzyć okno wpisania jednej wartości dla wszystkich wierszy.
+5. Po zatwierdzeniu ta wartość zostanie wpisana do wszystkich pól **Buy-In**.
+6. Każdy wiersz nadal możesz później edytować ręcznie (domyślnie nowy wiersz ma `0`).
+7. W kolumnie **Rebuy** kliknij przycisk z kwotą, aby otworzyć modal rebuy dla tego gracza.
+8. W modalu kliknij **Dodaj Rebuy** / **Usuń Rebuy** i wpisuj kwoty; przycisk w tabeli pokazuje sumę pozycji.
+9. Numeracja rebuy dla Cash jest liczona niezależnie od trybu Tournament.
+10. W kolumnie **Wypłata** wpisz kwotę ręcznie (nowy wiersz startuje od `0`).
+11. Kolumna **+/-** liczy automatycznie: `Wypłata - (Buy-In + Rebuy)`.
+12. W ostatnim wierszu kliknij **Dodaj**, aby dopisać kolejny wiersz.
+13. W dowolnym wierszu kliknij **Usuń**, aby go usunąć.
 
 #### Cash — Tabela10
 1. Tabela10 jest automatyczna i sortowana malejąco po kolumnie **+/-**.
