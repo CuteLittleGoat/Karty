@@ -307,6 +307,11 @@ const getSelectedPlayerNamesForRows = (rows, currentRowId) => {
   return selectedPlayers;
 };
 
+const getAvailablePlayerNamesForRow = (rows, currentRowId, playerOptions, currentPlayerName = "") => {
+  const selectedPlayers = getSelectedPlayerNamesForRows(rows, currentRowId);
+  return playerOptions.filter((playerName) => playerName === currentPlayerName || !selectedPlayers.has(playerName));
+};
+
 const compareByGameDateAsc = (a, b) => {
   const dateDiff = getDateSortValue(a?.gameDate) - getDateSortValue(b?.gameDate);
   if (dateDiff !== 0) {
@@ -2440,7 +2445,7 @@ const initUserGamesManager = ({
       playerSelect.dataset.columnKey = "playerName";
       const currentPlayerName = typeof row.playerName === "string" ? row.playerName : "";
       const options = [...state.playerOptions];
-      const selectedPlayersInGame = getSelectedPlayerNamesForRows(rows, row.id);
+      const availableOptions = getAvailablePlayerNamesForRow(rows, row.id, options, currentPlayerName);
       const emptyOption = document.createElement("option");
       emptyOption.value = "";
       emptyOption.textContent = "Wybierz gracza";
@@ -2453,11 +2458,10 @@ const initUserGamesManager = ({
         legacyOption.selected = true;
         playerSelect.appendChild(legacyOption);
       }
-      options.forEach((name) => {
+      availableOptions.forEach((name) => {
         const option = document.createElement("option");
         option.value = name;
         option.textContent = name;
-        option.disabled = selectedPlayersInGame.has(name) && name !== currentPlayerName;
         playerSelect.appendChild(option);
       });
       playerSelect.value = currentPlayerName;
@@ -3832,7 +3836,6 @@ const initAdminCalculator = () => {
   const renderTable2 = () => {
     const modeState = getModeState();
     const metrics = getCalculatorMetrics();
-    const selectedPlayersInMode = getSelectedPlayerNamesForRows(modeState.table2Rows);
     rootTable2.innerHTML = "";
     rootTable2.appendChild(createHeader("Tabela2"));
 
@@ -3853,11 +3856,11 @@ const initAdminCalculator = () => {
       defaultOption.value = "";
       defaultOption.textContent = "Wybierz gracza";
       playerSelect.appendChild(defaultOption);
-      state.playerOptions.forEach((playerName) => {
+      const availablePlayers = getAvailablePlayerNamesForRow(modeState.table2Rows, row.id, state.playerOptions, row.playerName);
+      availablePlayers.forEach((playerName) => {
         const option = document.createElement("option");
         option.value = playerName;
         option.textContent = playerName;
-        option.disabled = selectedPlayersInMode.has(playerName) && playerName !== row.playerName;
         playerSelect.appendChild(option);
       });
       playerSelect.value = row.playerName;
@@ -4198,7 +4201,6 @@ const initAdminCalculator = () => {
 
     state.cash.table9Rows.forEach((row, index) => {
       const tr = document.createElement("tr");
-      const rowSelectedPlayers = getSelectedPlayerNamesForRows(state.cash.table9Rows, row.id);
 
       const playerCell = document.createElement("td");
       const playerSelect = document.createElement("select");
@@ -4207,11 +4209,11 @@ const initAdminCalculator = () => {
       defaultOption.value = "";
       defaultOption.textContent = "Wybierz gracza";
       playerSelect.appendChild(defaultOption);
-      state.playerOptions.forEach((playerName) => {
+      const availablePlayers = getAvailablePlayerNamesForRow(state.cash.table9Rows, row.id, state.playerOptions, row.playerName);
+      availablePlayers.forEach((playerName) => {
         const option = document.createElement("option");
         option.value = playerName;
         option.textContent = playerName;
-        option.disabled = rowSelectedPlayers.has(playerName) && playerName !== row.playerName;
         playerSelect.appendChild(option);
       });
       playerSelect.value = row.playerName;
@@ -6406,7 +6408,7 @@ const initAdminGames = () => {
       playerSelect.dataset.columnKey = "playerName";
       const currentPlayerName = typeof row.playerName === "string" ? row.playerName : "";
       const options = [...state.playerOptions];
-      const selectedPlayersInGame = getSelectedPlayerNamesForRows(rows, row.id);
+      const availableOptions = getAvailablePlayerNamesForRow(rows, row.id, options, currentPlayerName);
       const emptyOption = document.createElement("option");
       emptyOption.value = "";
       emptyOption.textContent = "Wybierz gracza";
@@ -6419,11 +6421,10 @@ const initAdminGames = () => {
         legacyOption.selected = true;
         playerSelect.appendChild(legacyOption);
       }
-      options.forEach((name) => {
+      availableOptions.forEach((name) => {
         const option = document.createElement("option");
         option.value = name;
         option.textContent = name;
-        option.disabled = selectedPlayersInGame.has(name) && name !== currentPlayerName;
         playerSelect.appendChild(option);
       });
       playerSelect.value = currentPlayerName;

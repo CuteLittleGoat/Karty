@@ -93,7 +93,8 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 6. W oknie szczegółów:
    - dodawaj/usuwaj graczy,
    - edytuj dane finansowe i punkty,
-   - korzystaj z kolumny **LP**.
+   - korzystaj z kolumny **LP**,
+   - po rozwinięciu listy **Gracz** widzisz tylko dostępnych graczy (osoby już wybrane w innych wierszach są ukryte).
 7. W pasku metadanych szczegółów widzisz: Nazwa, Rodzaj gry, Data, **Pula**.
 8. W sekcji podsumowania gry możesz otworzyć **Notatki po grze**.
 9. W sekcji statystyk kolejność kolumn to: Ilość Spotkań, **Waga2**, **% udział**, Punkty.
@@ -139,14 +140,15 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 #### Cash — Tabela9
 1. W kolumnie **Gracz** wybierz gracza z listy.
 2. Ten sam gracz nie może wystąpić dwa razy w Tabela9.
-3. W kolumnie **Buy-In** wpisz kwotę ręcznie (nowy wiersz startuje od `0`).
-4. W kolumnie **Rebuy** kliknij przycisk z kwotą, aby otworzyć modal rebuy dla tego gracza.
-5. W modalu kliknij **Dodaj Rebuy** / **Usuń Rebuy** i wpisuj kwoty; przycisk w tabeli pokazuje sumę pozycji.
-6. Numeracja rebuy dla Cash jest liczona niezależnie od trybu Tournament.
-7. W kolumnie **Wypłata** wpisz kwotę ręcznie (nowy wiersz startuje od `0`).
-8. Kolumna **+/-** liczy automatycznie: `Wypłata - (Buy-In + Rebuy)`.
-9. W ostatnim wierszu kliknij **Dodaj**, aby dopisać kolejny wiersz.
-10. W dowolnym wierszu kliknij **Usuń**, aby go usunąć.
+3. Lista **Gracz** pokazuje tylko dostępne osoby; gracz już użyty w innym wierszu znika z listy do czasu zwolnienia miejsca.
+4. W kolumnie **Buy-In** wpisz kwotę ręcznie (nowy wiersz startuje od `0`).
+5. W kolumnie **Rebuy** kliknij przycisk z kwotą, aby otworzyć modal rebuy dla tego gracza.
+6. W modalu kliknij **Dodaj Rebuy** / **Usuń Rebuy** i wpisuj kwoty; przycisk w tabeli pokazuje sumę pozycji.
+7. Numeracja rebuy dla Cash jest liczona niezależnie od trybu Tournament.
+8. W kolumnie **Wypłata** wpisz kwotę ręcznie (nowy wiersz startuje od `0`).
+9. Kolumna **+/-** liczy automatycznie: `Wypłata - (Buy-In + Rebuy)`.
+10. W ostatnim wierszu kliknij **Dodaj**, aby dopisać kolejny wiersz.
+11. W dowolnym wierszu kliknij **Usuń**, aby go usunąć.
 
 #### Cash — Tabela10
 1. Tabela10 jest automatyczna i sortowana malejąco po kolumnie **+/-**.

@@ -73,3 +73,5 @@
 - Pole edycji to `.summary-notes-editor` (contenteditable) z ciemnym tłem, obramowaniem w kolorze motywu i `white-space: pre-wrap`.
 - Każdy przycisk koloru ma dedykowaną stylistykę zgodną z kolorem (złote, zielone, czerwone, jasne tło).
 - W trybie odczytu (np. „Gry do Potwierdzenia”) modal pokazuje zapisane kolory tekstu bez możliwości edycji i ukrywa kontrolki edycji (przyciski kolorów, `Zapisz`, `Domyślne`).
+
+- Lista `Gracz` w formularzach szczegółów gry i kalkulatora pokazuje wyłącznie dostępne osoby; po wybraniu gracza w jednym wierszu znika on z listy w pozostałych wierszach do czasu zwolnienia.
