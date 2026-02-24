@@ -3044,6 +3044,7 @@ const initUserTabs = () => {
 
     updatePinVisibility();
     updateChatVisibility();
+    updateConfirmationsVisibility();
     updateUserGamesVisibility();
     updateStatisticsVisibility();
     updateEveningPlanVisibility();
