@@ -8,18 +8,14 @@ const USER_GAMES_PIN_STORAGE_KEY = "userGamesPinVerified";
 const USER_GAMES_PLAYER_ID_STORAGE_KEY = "userGamesPlayerId";
 const STATISTICS_PIN_STORAGE_KEY = "statisticsPinVerified";
 const STATISTICS_PLAYER_ID_STORAGE_KEY = "statisticsPlayerId";
-const EVENING_PLAN_PIN_STORAGE_KEY = "eveningPlanPinVerified";
-const EVENING_PLAN_PLAYER_ID_STORAGE_KEY = "eveningPlanPlayerId";
 const PLAYER_ZONE_PIN_STORAGE_KEY = "playerZonePinVerified";
 const PLAYER_ZONE_PLAYER_ID_STORAGE_KEY = "playerZonePlayerId";
 const PLAYER_ACCESS_COLLECTION = "app_settings";
 const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
-const EVENING_PLAN_DOCUMENT = "evening_plan";
 const ADMIN_MESSAGES_COLLECTION = "admin_messages";
 const ADMIN_MESSAGES_DOCUMENT = "admin_messages";
 const RULES_DEFAULT_TEXT = "";
-const EVENING_PLAN_DEFAULT_HTML = "";
 const DEFAULT_GAME_NOTES_TEMPLATE = "Rodzaj gry:\nPrzewidywani gracze:\nStack:\nWpisowe:\nRebuy:\nAdd-on:\nBlindy:\nOrganizacja:\nPodział puli:";
 
 const getPreGameNotes = (game) => {
@@ -83,16 +79,11 @@ const AVAILABLE_PLAYER_TABS = [
     key: "statsTab",
     label: "Statystyki"
   },
-  {
-    key: "eveningPlanTab",
-    label: "Plan wieczoru"
-  }
 ];
 
 
 const PLAYER_ZONE_SECTION_PERMISSION_MAP = {
   nextGameTab: "nextGameTab",
-  eveningPlanTab: "eveningPlanTab",
   chatTab: "chatTab",
   confirmationsTab: "confirmationsTab",
   userGamesTab: "userGamesTab",
@@ -1006,28 +997,6 @@ const setStatisticsVerifiedPlayerId = (playerId) => {
 
 const getStatisticsVerifiedPlayer = () => {
   const playerId = sessionStorage.getItem(STATISTICS_PLAYER_ID_STORAGE_KEY);
-  if (!playerId) {
-    return null;
-  }
-  return adminPlayersState.players.find((player) => player.id === playerId) ?? null;
-};
-
-const getEveningPlanPinGateState = () => sessionStorage.getItem(EVENING_PLAN_PIN_STORAGE_KEY) === "1";
-
-const setEveningPlanPinGateState = (isVerified) => {
-  sessionStorage.setItem(EVENING_PLAN_PIN_STORAGE_KEY, isVerified ? "1" : "0");
-};
-
-const setEveningPlanVerifiedPlayerId = (playerId) => {
-  if (playerId) {
-    sessionStorage.setItem(EVENING_PLAN_PLAYER_ID_STORAGE_KEY, playerId);
-    return;
-  }
-  sessionStorage.removeItem(EVENING_PLAN_PLAYER_ID_STORAGE_KEY);
-};
-
-const getEveningPlanVerifiedPlayer = () => {
-  const playerId = sessionStorage.getItem(EVENING_PLAN_PLAYER_ID_STORAGE_KEY);
   if (!playerId) {
     return null;
   }
@@ -2001,76 +1970,6 @@ const initStatisticsTab = () => {
   synchronizeStatisticsAccessState();
 };
 
-const updateEveningPlanVisibility = () => {
-  const gate = document.querySelector("#eveningPlanPinGate");
-  const content = document.querySelector("#eveningPlanContent");
-  if (!gate || !content) {
-    return;
-  }
-
-  const isVerified = getEveningPlanPinGateState();
-  gate.style.display = isVerified ? "none" : "block";
-  content.classList.toggle("is-visible", isVerified);
-};
-
-const synchronizeEveningPlanAccessState = () => {
-  if (!getEveningPlanPinGateState()) {
-    updateEveningPlanVisibility();
-    return;
-  }
-
-  const verifiedPlayer = getEveningPlanVerifiedPlayer();
-  if (!verifiedPlayer || !isPlayerAllowedForTab(verifiedPlayer, "eveningPlanTab")) {
-    setEveningPlanPinGateState(false);
-    setEveningPlanVerifiedPlayerId("");
-  }
-
-  updateEveningPlanVisibility();
-};
-
-const initEveningPlanTab = () => {
-  const input = document.querySelector("#eveningPlanPinInput");
-  const submitButton = document.querySelector("#eveningPlanPinSubmit");
-  const pinStatus = document.querySelector("#eveningPlanPinStatus");
-
-  if (!input || !submitButton || !pinStatus) {
-    return;
-  }
-
-  const verifyPin = () => {
-    const pinValue = sanitizePin(input.value);
-    if (!isPinValid(pinValue)) {
-      pinStatus.textContent = "Wpisz komplet 5 cyfr.";
-      return;
-    }
-
-    const player = adminPlayersState.playerByPin.get(pinValue);
-    if (player && isPlayerAllowedForTab(player, "eveningPlanTab")) {
-      setEveningPlanPinGateState(true);
-      setEveningPlanVerifiedPlayerId(player.id);
-      pinStatus.textContent = `PIN poprawny. Witaj ${player.name || "graczu"}.`;
-      updateEveningPlanVisibility();
-      return;
-    }
-
-    pinStatus.textContent = "Błędny PIN lub brak uprawnień do zakładki „Plan wieczoru”.";
-  };
-
-  input.addEventListener("input", () => {
-    input.value = sanitizePin(input.value);
-  });
-
-  submitButton.addEventListener("click", verifyPin);
-  input.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-      verifyPin();
-    }
-  });
-
-  updateEveningPlanVisibility();
-  synchronizeEveningPlanAccessState();
-};
-
 const initUserGamesManager = ({
   yearsListSelector,
   addGameButtonSelector,
@@ -3034,14 +2933,12 @@ const initUserTabs = () => {
     setConfirmationsPinGateState(hasSectionAccess("confirmationsTab"));
     setUserGamesPinGateState(hasSectionAccess("userGamesTab"));
     setStatisticsPinGateState(hasSectionAccess("statsTab"));
-    setEveningPlanPinGateState(hasSectionAccess("eveningPlanTab"));
 
     const playerId = player?.id || "";
     setChatVerifiedPlayerId(hasSectionAccess("chatTab") ? playerId : "");
     setConfirmationsVerifiedPlayerId(hasSectionAccess("confirmationsTab") ? playerId : "");
     setUserGamesVerifiedPlayerId(hasSectionAccess("userGamesTab") ? playerId : "");
     setStatisticsVerifiedPlayerId(hasSectionAccess("statsTab") ? playerId : "");
-    setEveningPlanVerifiedPlayerId(hasSectionAccess("eveningPlanTab") ? playerId : "");
 
     if (!hasSectionAccess("chatTab") && typeof chatState.unsubscribe === "function") {
       chatState.unsubscribe();
@@ -3053,7 +2950,6 @@ const initUserTabs = () => {
     updateConfirmationsVisibility();
     updateUserGamesVisibility();
     updateStatisticsVisibility();
-    updateEveningPlanVisibility();
   };
 
   const setActiveZoneSection = (target) => {
@@ -4663,7 +4559,6 @@ const initAdminPlayers = () => {
         rebuildPinMap();
         renderPlayers();
         synchronizeStatisticsAccessState();
-        synchronizeEveningPlanAccessState();
         window.dispatchEvent(new CustomEvent("statistics-access-updated"));
       },
       () => {
@@ -6592,196 +6487,6 @@ const initRulesDisplay = () => {
     );
 };
 
-const PLAN_COLOR_MAP = {
-  gold: "var(--gold)",
-  green: "var(--neon)",
-  red: "var(--ruby2)",
-  white: "var(--ink)"
-};
-
-const sanitizeEveningPlanHtml = (rawHtml) => {
-  if (typeof rawHtml !== "string" || !rawHtml.trim()) {
-    return EVENING_PLAN_DEFAULT_HTML;
-  }
-
-  const parser = new DOMParser();
-  const documentFragment = parser.parseFromString(`<div>${rawHtml}</div>`, "text/html");
-  const root = documentFragment.body.firstElementChild;
-  if (!root) {
-    return EVENING_PLAN_DEFAULT_HTML;
-  }
-
-  const allowedColors = new Set(Object.values(PLAN_COLOR_MAP));
-  const cleanNode = (node) => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      return document.createTextNode(node.textContent ?? "");
-    }
-
-    if (node.nodeType !== Node.ELEMENT_NODE) {
-      return null;
-    }
-
-    const tag = node.tagName.toLowerCase();
-    if (tag === "br") {
-      return document.createElement("br");
-    }
-
-    if (tag === "span") {
-      const next = document.createElement("span");
-      const colorValue = (node.style.color || "").trim();
-      if (allowedColors.has(colorValue)) {
-        next.style.color = colorValue;
-      }
-      Array.from(node.childNodes).forEach((child) => {
-        const cleaned = cleanNode(child);
-        if (cleaned) {
-          next.appendChild(cleaned);
-        }
-      });
-      return next;
-    }
-
-    const fragment = document.createDocumentFragment();
-    Array.from(node.childNodes).forEach((child) => {
-      const cleaned = cleanNode(child);
-      if (cleaned) {
-        fragment.appendChild(cleaned);
-      }
-    });
-    return fragment;
-  };
-
-  const output = document.createElement("div");
-  Array.from(root.childNodes).forEach((child) => {
-    const cleaned = cleanNode(child);
-    if (cleaned) {
-      output.appendChild(cleaned);
-    }
-  });
-
-  return output.innerHTML;
-};
-
-const initAdminEveningPlan = () => {
-  const input = document.querySelector("#adminEveningPlanInput");
-  const saveButton = document.querySelector("#adminEveningPlanSave");
-  const status = document.querySelector("#adminEveningPlanStatus");
-  const colorButtons = document.querySelectorAll("[data-plan-color]");
-
-  if (!input || !saveButton || !status) {
-    return;
-  }
-
-  const firebaseApp = getFirebaseApp();
-  if (!firebaseApp) {
-    input.contentEditable = "false";
-    saveButton.disabled = true;
-    status.textContent = "Uzupełnij konfigurację Firebase, aby edytować plan wieczoru.";
-    return;
-  }
-
-  const db = firebaseApp.firestore();
-  const docRef = db.collection(PLAYER_ACCESS_COLLECTION).doc(EVENING_PLAN_DOCUMENT);
-  let isSaving = false;
-
-  const applyColor = (colorKey) => {
-    const selectedColor = PLAN_COLOR_MAP[colorKey];
-    const selection = window.getSelection();
-    if (!selectedColor || !selection || selection.rangeCount === 0 || selection.isCollapsed) {
-      status.textContent = "Zaznacz fragment tekstu, a potem wybierz kolor.";
-      return;
-    }
-
-    const range = selection.getRangeAt(0);
-    if (!input.contains(range.commonAncestorContainer)) {
-      status.textContent = "Kolor możesz nadać tylko tekstowi z pola Plan wieczoru.";
-      return;
-    }
-
-    const fragment = range.extractContents();
-    const span = document.createElement("span");
-    span.style.color = selectedColor;
-    span.appendChild(fragment);
-    range.insertNode(span);
-    selection.removeAllRanges();
-
-    const normalized = sanitizeEveningPlanHtml(input.innerHTML);
-    input.innerHTML = normalized;
-    status.textContent = "Kolor zastosowany. Kliknij Zapisz, aby utrwalić zmiany.";
-  };
-
-  colorButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      applyColor(button.dataset.planColor);
-    });
-  });
-
-  registerAdminRefreshHandler("adminEveningPlanTab", async () => {
-    await docRef.get({ source: "server" });
-  });
-
-  docRef.onSnapshot((snapshot) => {
-    const data = snapshot.data();
-    const normalizedHtml = sanitizeEveningPlanHtml(typeof data?.html === "string" ? data.html : EVENING_PLAN_DEFAULT_HTML);
-    if (!input.matches(":focus") || !isSaving) {
-      input.innerHTML = normalizedHtml || "";
-    }
-    status.textContent = normalizedHtml ? "Plan wieczoru jest aktualny." : "Brak zapisanego planu wieczoru.";
-    saveButton.disabled = false;
-    isSaving = false;
-  }, () => {
-    status.textContent = "Nie udało się pobrać planu wieczoru. Sprawdź konfigurację Firestore.";
-  });
-
-  saveButton.addEventListener("click", () => {
-    if (isSaving) {
-      return;
-    }
-
-    const normalizedHtml = sanitizeEveningPlanHtml(input.innerHTML);
-    input.innerHTML = normalizedHtml;
-    isSaving = true;
-    saveButton.disabled = true;
-    status.textContent = "Zapisywanie planu wieczoru...";
-
-    void docRef.set({
-      html: normalizedHtml,
-      updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
-      source: "web-admin"
-    }, { merge: true }).catch(() => {
-      isSaving = false;
-      saveButton.disabled = false;
-      status.textContent = "Nie udało się zapisać planu wieczoru.";
-    });
-  });
-};
-
-const initEveningPlanDisplay = () => {
-  const output = document.querySelector("#eveningPlanOutput");
-  const status = document.querySelector("#eveningPlanStatus");
-
-  if (!output || !status) {
-    return;
-  }
-
-  const firebaseApp = getFirebaseApp();
-  if (!firebaseApp) {
-    output.textContent = "Brak połączenia z Firebase.";
-    status.textContent = "Uzupełnij konfigurację Firebase, aby zobaczyć plan wieczoru.";
-    return;
-  }
-
-  firebaseApp.firestore().collection(PLAYER_ACCESS_COLLECTION).doc(EVENING_PLAN_DOCUMENT).onSnapshot((snapshot) => {
-    const data = snapshot.data();
-    const normalizedHtml = sanitizeEveningPlanHtml(typeof data?.html === "string" ? data.html : EVENING_PLAN_DEFAULT_HTML);
-    output.innerHTML = normalizedHtml || "Administrator jeszcze nie dodał planu wieczoru.";
-    status.textContent = "";
-  }, () => {
-    output.textContent = "Nie udało się pobrać planu wieczoru.";
-    status.textContent = "Sprawdź reguły Firestore i konfigurację projektu.";
-  });
-};
-
 const initInstructionModal = () => {
   const openButton = document.querySelector("#adminInstructionButton");
   const modal = document.querySelector("#instructionModal");
@@ -6871,7 +6576,6 @@ const bootstrap = async () => {
   initAdminMessaging();
   initAdminChat();
   initAdminRules();
-  initAdminEveningPlan();
   initAdminGames();
   initAdminUserGames();
   initAdminConfirmations();
@@ -6883,12 +6587,10 @@ const bootstrap = async () => {
   initUserConfirmations();
   initUserGamesTab();
   initStatisticsTab();
-  initEveningPlanTab();
   initPlayerUserGames();
   initStatisticsViews();
   initLatestMessage();
   initRulesDisplay();
-  initEveningPlanDisplay();
   initInstructionModal();
 };
 

@@ -25,14 +25,13 @@ Panel admina zawiera zakładki:
 1. **Aktualności** (`adminNewsTab`) — edycja wiadomości globalnej (`adminMessageInput`, `adminMessageSend`).
 2. **Czat** (`adminChatTab`) — moderacja czatu (`adminChatCleanup`, `adminChatList`).
 3. **Regulamin** (`adminRulesTab`) — edycja treści regulaminu (`adminRulesInput`, `adminRulesSave`).
-4. **Plan wieczoru** (`adminEveningPlanTab`) — edycja harmonogramu z kolorowaniem zaznaczeń (`adminEveningPlanInput`, `planColorGold|Green|Red|White`, `adminEveningPlanSave`).
-5. **Gracze** (`adminPlayersTab`) — dodawanie/edycja/usuwanie graczy i PIN-ów (`adminPlayersBody`, `adminAddPlayer`).
-6. **Gry admina** (`adminGamesTab`) — CRUD gier, szczegóły gier, notatki, statystyki, ranking.
-7. **Statystyki** (`adminStatisticsTab`) — zestawienia roczne, wagi, eksport.
-8. **Gry użytkowników** (`adminUserGamesTab`) — administracyjne zarządzanie grami tworzonymi przez graczy.
-9. **Najbliższa gra** (`adminNextGameTab`) — podgląd najbliższych gier i statusów potwierdzeń.
-10. **Gry do potwierdzenia** (`adminConfirmationsTab`) — przegląd i ręczna aktualizacja potwierdzeń.
-11. **Kalkulator** (`adminCalculatorTab`) — moduł obliczeń `tournament/cash` oparty o 5 tabel.
+4. **Gracze** (`adminPlayersTab`) — dodawanie/edycja/usuwanie graczy i PIN-ów (`adminPlayersBody`, `adminAddPlayer`).
+5. **Gry admina** (`adminGamesTab`) — CRUD gier, szczegóły gier, notatki, statystyki, ranking.
+6. **Statystyki** (`adminStatisticsTab`) — zestawienia roczne, wagi, eksport.
+7. **Gry użytkowników** (`adminUserGamesTab`) — administracyjne zarządzanie grami tworzonymi przez graczy.
+8. **Najbliższa gra** (`adminNextGameTab`) — podgląd najbliższych gier i statusów potwierdzeń.
+9. **Gry do potwierdzenia** (`adminConfirmationsTab`) — przegląd i ręczna aktualizacja potwierdzeń.
+10. **Kalkulator** (`adminCalculatorTab`) — moduł obliczeń `tournament/cash` oparty o 5 tabel.
 
 Dodatkowo globalny przycisk odświeżania panelu: `adminPanelRefresh`.
 
@@ -42,7 +41,6 @@ Widok użytkownika ma 3 zakładki główne: `updatesTab` (Aktualności), `rulesT
 W `playerZoneTab` działa jedna bramka PIN (`playerZonePinInput`, `playerZonePinSubmit`) i po poprawnej autoryzacji renderowany jest layout dwukolumnowy. W tej samej sesji przeglądarki użytkownik nie wpisuje już PIN-u ponownie dla sekcji:
 - lewy panel `Sekcja` (`playerZoneSectionsList`) z przyciskami:
   - Najbliższa Gra (`nextGameTab`),
-  - Plan Wieczoru (`eveningPlanTab`),
   - Czat (`chatTab`),
   - Gry do Potwierdzenia (`confirmationsTab`),
   - Gry Użytkowników (`userGamesTab`),
@@ -51,7 +49,7 @@ W `playerZoneTab` działa jedna bramka PIN (`playerZonePinInput`, `playerZonePin
 
 Uprawnienia działają dwupoziomowo:
 1. `playerZoneTab` — dostęp do wejścia do Strefy Gracza,
-2. osobne uprawnienia sekcyjne (`nextGameTab`, `eveningPlanTab`, `chatTab`, `confirmationsTab`, `userGamesTab`, `statsTab`) — widoczność poszczególnych przycisków i sekcji.
+2. osobne uprawnienia sekcyjne (`nextGameTab`, `chatTab`, `confirmationsTab`, `userGamesTab`, `statsTab`) — widoczność poszczególnych przycisków i sekcji.
 
 ### 3.3 Modale i okna dialogowe
 W aplikacji występują m.in. poniższe modale:
@@ -84,8 +82,8 @@ W aplikacji występują m.in. poniższe modale:
 - PIN ma długość 5 (`PIN_LENGTH = 5`).
 - Dane autoryzacji są przechowywane w `sessionStorage`; reset przeglądarki/aplikacji czyści sesję i wymusza ponowne wpisanie PIN-u.
 - Funkcje `sanitizePin`, `isPinValid`, `generateRandomPin` obsługują walidację i format.
-- Po poprawnym PIN-ie dla `playerZoneTab` funkcja `syncPlayerZoneSectionAccess` ustawia stan autoryzacji sekcji (`nextGameTab`, `chatTab`, `confirmationsTab`, `userGamesTab`, `statsTab`, `eveningPlanTab`) zgodnie z uprawnieniami gracza i zapisuje `playerId` do odpowiednich kluczy sesji.
-- W tej samej synchronizacji wykonywane są funkcje aktualizacji widoczności każdej sekcji (`updatePinVisibility`, `updateChatVisibility`, `updateConfirmationsVisibility`, `updateUserGamesVisibility`, `updateStatisticsVisibility`, `updateEveningPlanVisibility`), dzięki czemu przejście do „Gry do potwierdzenia” nie wyświetla wtórnej bramki PIN po autoryzacji Strefy Gracza.
+- Po poprawnym PIN-ie dla `playerZoneTab` funkcja `syncPlayerZoneSectionAccess` ustawia stan autoryzacji sekcji (`nextGameTab`, `chatTab`, `confirmationsTab`, `userGamesTab`, `statsTab`) zgodnie z uprawnieniami gracza i zapisuje `playerId` do odpowiednich kluczy sesji.
+- W tej samej synchronizacji wykonywane są funkcje aktualizacji widoczności każdej sekcji (`updatePinVisibility`, `updateChatVisibility`, `updateConfirmationsVisibility`, `updateUserGamesVisibility`, `updateStatisticsVisibility`), dzięki czemu przejście do „Gry do potwierdzenia” nie wyświetla wtórnej bramki PIN po autoryzacji Strefy Gracza.
 - Zmiana sekcji w obrębie Strefy Gracza nie resetuje już autoryzacji; ponowna weryfikacja jest wymagana dopiero po utracie sesji (`sessionStorage`).
 
 ### 4.3 Zarządzanie graczami
@@ -138,14 +136,10 @@ Dodatkowa logika własności dla `UserGames` (strefa gracza):
   - usuwa pojedyncze wiadomości,
   - uruchamia cleanup wiadomości starszych niż 30 dni.
 
-### 4.7 Aktualności, regulamin i plan wieczoru
+### 4.7 Aktualności i regulamin
 - Aktualności: dokument `admin_messages/admin_messages`.
 - Regulamin: dokument `app_settings/rules`.
-- Plan wieczoru: dokument `app_settings/evening_plan` z polem `html` (sanityzowany HTML: tekst + `span` z dozwolonymi kolorami + `br`).
-- W adminie kolorowanie działa przez zaznaczenie zakresu i kliknięcie przycisku koloru; aplikacja opakowuje zakres w `span` z kolorem (`--gold`, `--neon`, `--ruby2`, `--ink`), następnie sanitizuje i zapisuje.
-- Przyciski kolorów w pasku `admin-plan-color-actions` mają dedykowane style tła zgodne z nazwą (`Złoty`/`Zielony`/`Czerwony`/`Biały`), aby wizualnie wskazywać wybierany kolor tekstu jeszcze przed kliknięciem.
-- Widok gracza renderuje `innerHTML` po sanitizacji i jest tylko do odczytu.
-- Wszystkie trzy moduły mają live update przez `onSnapshot`.
+- Oba moduły mają live update przez `onSnapshot`.
 
 ### 4.8 Statystyki i ranking
 - Konfiguracja kolumn: `STATS_COLUMN_CONFIG`.
@@ -272,12 +266,7 @@ Aplikacja odczytuje konfigurację z `window.firebaseConfig`:
 - `updatedAt`
 - `source`
 
-3. `evening_plan`
-- `html: string` (sanityzowany HTML planu wieczoru)
-- `updatedAt`
-- `source`
-
-4. (opcjonalnie) `next_game`
+3. (opcjonalnie) `next_game`
 - ustawienia związane z bramką PIN najbliższej gry.
 
 ### B) `admin_messages`

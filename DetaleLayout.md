@@ -40,7 +40,7 @@
   - lewy panel boczny z nagłówkiem `Sekcja`,
   - prawa kolumna z aktywną sekcją.
 - Przyciski w lewym panelu używają stylu `.admin-games-year-button` (spójnego wizualnie z panelami „Lata”).
-- Sekcje `Najbliższa Gra`, `Plan Wieczoru`, `Czat`, `Gry do Potwierdzenia`, `Gry Użytkowników`, `Statystyki` są renderowane jako `.player-zone-panel` i przełączane klasą `.is-active`.
+- Sekcje `Najbliższa Gra`, `Czat`, `Gry do Potwierdzenia`, `Gry Użytkowników`, `Statystyki` są renderowane jako `.player-zone-panel` i przełączane klasą `.is-active`.
 
 
 ## Kalkulator — panel „Rodzaj gry”
@@ -62,16 +62,9 @@
 - Kolumny `Rebuy1..RebuyN` pokazują kwotę tylko w pojedynczym przypisanym wierszu `LP` według sekwencji cyklicznej z rosnącym zakresem (4, 5, 6, 7...).
 
 
-## Plan wieczoru
-- Zakładka admina: `adminEveningPlanTab` z edytorem `.admin-plan-editor` (contenteditable) i paskiem przycisków kolorów.
-- Przyciski kolorów: `Złoty`, `Zielony`, `Czerwony`, `Biały` (mapowane do kolorów motywu: `--gold`, `--neon`, `--ruby2`, `--ink`) i renderowane z odpowiadającym im tłem przycisku (złote, zielone, czerwone, jasne/białe).
-- Zakładka gracza: `eveningPlanTab` z bramką PIN (`#eveningPlanPinGate`) i widokiem tylko do odczytu `.evening-plan-output`.
-- Edytor i widok planu używają `white-space: pre-wrap`, dzięki czemu zachowują podziały linii wpisane przez admina.
-
-
 ## Modal „Notatki do gry”
 - Modal `#summaryNotesModal` ma pasek kolorowania `.summary-notes-color-actions` umieszczony pod tytułem i nad polem tekstu.
 - Przyciski kolorów: `#summaryNotesColorGold`, `#summaryNotesColorGreen`, `#summaryNotesColorRed`, `#summaryNotesColorWhite`.
-- Pole edycji to `.summary-notes-editor` (contenteditable) ze stylami jak dla edytora planu wieczoru: ciemne tło, obramowanie w kolorze motywu, `white-space: pre-wrap`.
-- Każdy przycisk koloru ma tę samą stylistykę co odpowiednik z „Planu wieczoru” (złote, zielone, czerwone, jasne tło).
+- Pole edycji to `.summary-notes-editor` (contenteditable) z ciemnym tłem, obramowaniem w kolorze motywu i `white-space: pre-wrap`.
+- Każdy przycisk koloru ma dedykowaną stylistykę zgodną z kolorem (złote, zielone, czerwone, jasne tło).
 - W trybie odczytu (np. „Gry do Potwierdzenia”) modal pokazuje zapisane kolory tekstu bez możliwości edycji i ukrywa kontrolki edycji (przyciski kolorów, `Zapisz`, `Domyślne`).

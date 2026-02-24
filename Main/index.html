@@ -37,7 +37,6 @@
             <button class="admin-panel-tab is-active" type="button" data-target="adminNewsTab">Aktualności</button>
             <button class="admin-panel-tab" type="button" data-target="adminChatTab">Czat</button>
             <button class="admin-panel-tab" type="button" data-target="adminRulesTab">Regulamin</button>
-            <button class="admin-panel-tab" type="button" data-target="adminEveningPlanTab">Plan wieczoru</button>
             <button class="admin-panel-tab" type="button" data-target="adminPlayersTab">Gracze</button>
             <button class="admin-panel-tab" type="button" data-target="adminGamesTab">Gry admina</button>
             <button class="admin-panel-tab" type="button" data-target="adminStatisticsTab">Statystyki</button>
@@ -94,35 +93,6 @@
               <div class="admin-rules-actions">
                 <button id="adminRulesSave" class="primary" type="button">Zapisz</button>
                 <span id="adminRulesStatus" class="status-text" aria-live="polite"></span>
-              </div>
-            </div>
-          </div>
-          <div id="adminEveningPlanTab" class="admin-panel-content" role="tabpanel">
-            <div class="admin-rules admin-evening-plan">
-              <div class="card-header">
-                <h3>Plan wieczoru</h3>
-                <p>Wpisz plan i pokoloruj wybrane fragmenty: złoty, zielony, czerwony lub biały.</p>
-              </div>
-              <label for="adminEveningPlanInput">Treść planu wieczoru</label>
-              <div class="admin-plan-color-actions" role="toolbar" aria-label="Kolory tekstu planu wieczoru">
-                <button id="planColorGold" class="secondary" type="button" data-plan-color="gold">Złoty</button>
-                <button id="planColorGreen" class="secondary" type="button" data-plan-color="green">Zielony</button>
-                <button id="planColorRed" class="secondary" type="button" data-plan-color="red">Czerwony</button>
-                <button id="planColorWhite" class="secondary" type="button" data-plan-color="white">Biały</button>
-              </div>
-              <div
-                id="adminEveningPlanInput"
-                class="admin-plan-editor"
-                contenteditable="true"
-                data-focus-target="evening-plan-editor"
-                data-section="admin-evening-plan"
-                data-column-key="text"
-                role="textbox"
-                aria-label="Treść planu wieczoru"
-              ></div>
-              <div class="admin-rules-actions">
-                <button id="adminEveningPlanSave" class="primary" type="button">Zapisz</button>
-                <span id="adminEveningPlanStatus" class="status-text" aria-live="polite"></span>
               </div>
             </div>
           </div>
@@ -488,7 +458,6 @@
                     </div>
                     <div id="playerZoneSectionsList" class="admin-games-years-list player-zone-sections-list">
                       <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="nextGameTab">Najbliższa Gra</button>
-                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="eveningPlanTab">Plan Wieczoru</button>
                       <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="chatTab">Czat</button>
                       <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="confirmationsTab">Gry do Potwierdzenia</button>
                       <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="userGamesTab">Gry Użytkowników</button>
@@ -517,37 +486,6 @@
                         </div>
                       </div>
                     </div>
-                    <div id="eveningPlanTab" class="player-zone-panel" role="tabpanel">
-              <div id="eveningPlanPinGate" class="pin-gate" aria-live="polite">
-                <div class="pin-card">
-                  <p class="pin-title">Wpisz PIN z uprawnieniem Plan wieczoru, aby zobaczyć harmonogram.</p>
-                  <div class="pin-inputs">
-                    <input
-                      id="eveningPlanPinInput"
-                      type="tel"
-                      inputmode="numeric"
-                      pattern="[0-9]{5}"
-                      autocomplete="one-time-code"
-                      maxlength="5"
-                      minlength="5"
-                      placeholder="PIN (5 cyfr)"
-                    />
-                    <button id="eveningPlanPinSubmit" class="primary" type="button">Otwórz</button>
-                  </div>
-                  <p id="eveningPlanPinStatus" class="status-text"></p>
-                </div>
-              </div>
-              <div id="eveningPlanContent" class="next-game-content">
-                <div class="card-header">
-                  <h2>Plan wieczoru</h2>
-                </div>
-                <div class="latest-message latest-rules latest-evening-plan">
-                  <label for="eveningPlanOutput">Plan wydarzeń</label>
-                  <div id="eveningPlanOutput" class="evening-plan-output" aria-live="polite"></div>
-                  <p id="eveningPlanStatus" class="status-text" aria-live="polite"></p>
-                </div>
-              </div>
-            </div>
             <div id="chatTab" class="player-zone-panel" role="tabpanel">
               <div id="chatPinGate" class="pin-gate" aria-live="polite">
                 <div class="pin-card">
