@@ -66,6 +66,7 @@ W aplikacji występują m.in. poniższe modale:
 ### 3.4 Kluczowe przyciski i akcje UI
 - Przyciski `Dodaj` w zakładkach gier — tworzą nowe dokumenty gry z domyślnymi polami.
 - `Szczegóły` — otwiera modal z tabelą graczy (`rows`) i natychmiastową edycją danych.
+- We wszystkich selectach `Gracz` (szczegóły gier oraz kalkulator) lista pokazuje tylko dostępnych graczy; już wybrani w innych wierszach są filtrowani podczas renderu.
 - `Usuń` przy wierszu gracza — usuwa rekord z subkolekcji `rows`.
 - `Eksportuj` (statystyki) — eksport widoków statystycznych do pliku.
 - `adminChatCleanup` — kasowanie wiadomości czatu starszych niż 30 dni.
@@ -74,6 +75,7 @@ W aplikacji występują m.in. poniższe modale:
 ## 4. Logika aplikacji (`Main/app.js`) — szczegółowy opis
 
 ### 4.1 Inicjalizacja i konfiguracja
+- `getAvailablePlayerNamesForRow(rows, currentRowId, playerOptions, currentPlayerName)` filtruje listę wyboru graczy do wartości dostępnych dla aktualnie edytowanego wiersza.
 - `bootstrap()` uruchamia całą aplikację i inicjuje wszystkie moduły.
 - `getFirebaseApp()` pobiera konfigurację z `window.firebaseConfig`.
 - Aplikacja korzysta z dynamicznych nazw kolekcji (`tablesCollection`, `gamesCollection`, `gameDetailsCollection`, `userGamesCollection`) z configu.
@@ -182,6 +184,7 @@ Dodane obliczenia Cash:
   - `Pot = sum - (sum * Rake/100)`.
 - **Tabela9**:
   - unikalny wybór gracza per tabela,
+  - dropdown `Gracz` renderuje wyłącznie dostępne osoby (gracze zajęci w innych wierszach są ukrywani),
   - ręczna edycja `Buy-In` i `Wypłata`,
   - `Rebuy` z modala,
   - `+/- = Wypłata - (Buy-In + suma Rebuy)`.

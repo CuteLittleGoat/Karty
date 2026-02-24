@@ -43,6 +43,8 @@ Opisuje aktualny stan kolumn w aplikacji prostym językiem (bez nazw technicznyc
 
 ## 3) Szczegóły gry (okno szczegółów)
 
+W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego wiersza; gracze już wybrani w innych wierszach tej samej gry są ukrywani (aktualnie wybrana wartość wiersza pozostaje widoczna).
+
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
 | LP | automatyczna | brak stałego limitu | do lewej | Numer porządkowy. |
@@ -131,7 +133,7 @@ Opisuje aktualny stan kolumn w aplikacji prostym językiem (bez nazw technicznyc
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
-| Gracz | automatyczna | brak stałego limitu | do lewej | Lista wyboru, bez powtórzeń tego samego gracza w Cash. |
+| Gracz | automatyczna | brak stałego limitu | do lewej | Lista wyboru pokazuje tylko dostępnych graczy; osoby już wskazane w innych wierszach Cash są ukryte. |
 | Buy-In | automatyczna | brak stałego limitu | do lewej | Pole liczbowe, domyślnie 0. |
 | Rebuy | automatyczna | brak stałego limitu | do lewej | Przycisk z sumą rebuy, otwiera modal. |
 | Wypłata | automatyczna | brak stałego limitu | do lewej | Pole liczbowe, domyślnie 0. |
@@ -162,7 +164,7 @@ Opisuje aktualny stan kolumn w aplikacji prostym językiem (bez nazw technicznyc
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
 | LP | automatyczna | brak stałego limitu | do lewej | Numer porządkowy. |
-| Gracz | automatyczna | brak stałego limitu | do lewej | Lista wyboru, bez duplikowania tej samej osoby w tym samym trybie. |
+| Gracz | automatyczna | brak stałego limitu | do lewej | Lista wyboru pokazuje tylko dostępnych graczy; osoba wybrana w innym wierszu Tournament jest ukryta. |
 | Buy-In | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
 | Rebuy | automatyczna | brak stałego limitu | do lewej | Przycisk otwierający okno rebuy. |
 | Eliminacja | automatyczna | brak stałego limitu | do lewej | Pole wyboru tak/nie. |
