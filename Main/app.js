@@ -1827,7 +1827,9 @@ const initUserGamesManager = ({
   modalAddRowButtonSelector,
   selectedYearStorageKey,
   canWrite,
-  createGamePayload
+  createGamePayload,
+  canAccessGame = () => true,
+  canEditGame = () => true
 }) => {
   const yearsList = document.querySelector(yearsListSelector);
   const addGameButton = document.querySelector(addGameButtonSelector);
@@ -1878,8 +1880,13 @@ const initUserGamesManager = ({
     if (!state.selectedYear) {
       return [];
     }
-    return state.games.filter((game) => extractYearFromDate(game.gameDate) === state.selectedYear).sort(compareByGameDateAsc);
+    return state.games
+      .filter((game) => canAccessGame(game))
+      .filter((game) => extractYearFromDate(game.gameDate) === state.selectedYear)
+      .sort(compareByGameDateAsc);
   };
+
+  const hasWriteAccessToGame = (game) => canWrite() && canEditGame(game);
 
   const syncYearsAfterLocalGameUpdate = (gameId, nextValues) => {
     const targetGame = state.games.find((game) => game.id === gameId);
@@ -1983,7 +1990,7 @@ const initUserGamesManager = ({
           gameId: game.id,
           gameName: game.name || "Bez nazwy",
           notes: getPostGameNotes(game),
-          canWrite: canWrite(),
+          canWrite: hasWriteAccessToGame(game),
           onSave: async ({ notes }) => {
             await db.collection(gamesCollectionName).doc(game.id).update({
               postGameNotes: notes,
@@ -2101,7 +2108,7 @@ const initUserGamesManager = ({
 
     games.forEach((game) => {
       const row = document.createElement("tr");
-      const writeEnabled = canWrite();
+      const writeEnabled = hasWriteAccessToGame(game);
 
       const gameTypeCell = document.createElement("td");
       const gameTypeSelect = document.createElement("select");
@@ -2119,7 +2126,7 @@ const initUserGamesManager = ({
       gameTypeSelect.value = game.gameType === "Turniej" ? "Turniej" : "Cashout";
       gameTypeSelect.disabled = !writeEnabled;
       gameTypeSelect.addEventListener("change", () => {
-        if (!canWrite()) return;
+        if (!hasWriteAccessToGame(game)) return;
         void db.collection(gamesCollectionName).doc(game.id).update({ gameType: gameTypeSelect.value });
       });
       gameTypeCell.appendChild(gameTypeSelect);
@@ -2135,7 +2142,7 @@ const initUserGamesManager = ({
       dateInput.value = game.gameDate ?? getFormattedCurrentDate();
       dateInput.disabled = !writeEnabled;
       dateInput.addEventListener("change", () => {
-        if (!canWrite()) return;
+        if (!hasWriteAccessToGame(game)) return;
         const nextDate = dateInput.value || getFormattedCurrentDate();
         const currentName = typeof game.name === "string" ? game.name.trim() : "";
         const updatePayload = { gameDate: nextDate };
@@ -2162,7 +2169,7 @@ const initUserGamesManager = ({
       nameInput.placeholder = "Nazwa gry";
       nameInput.disabled = !writeEnabled;
       nameInput.addEventListener("input", () => {
-        if (!canWrite()) return;
+        if (!hasWriteAccessToGame(game)) return;
         const value = nameInput.value;
         scheduleDebouncedUpdate(`user-game-name-${game.id}`, () => {
           void db.collection(gamesCollectionName).doc(game.id).update({ name: value });
@@ -2188,7 +2195,7 @@ const initUserGamesManager = ({
           gameId: game.id,
           gameName: game.name || "Bez nazwy",
           notes: getPreGameNotes(game),
-          canWrite: canWrite(),
+          canWrite: hasWriteAccessToGame(game),
           onSave: async ({ notes }) => {
             await db.collection(gamesCollectionName).doc(game.id).update({
               preGameNotes: notes,
@@ -2215,7 +2222,7 @@ const initUserGamesManager = ({
       closedInput.checked = Boolean(game.isClosed);
       closedInput.disabled = !writeEnabled;
       closedInput.addEventListener("change", () => {
-        if (!canWrite()) return;
+        if (!hasWriteAccessToGame(game)) return;
         void db.collection(gamesCollectionName).doc(game.id).update({ isClosed: closedInput.checked });
       });
       closedCell.appendChild(closedInput);
@@ -2227,7 +2234,7 @@ const initUserGamesManager = ({
       deleteButton.textContent = "Usuń";
       deleteButton.disabled = !writeEnabled;
       deleteButton.addEventListener("click", async () => {
-        if (!canWrite()) return;
+        if (!hasWriteAccessToGame(game)) return;
         const gameRef = db.collection(gamesCollectionName).doc(game.id);
         const detailsSnapshot = await gameRef.collection(gameDetailsCollectionName).get();
         const confirmationsSnapshot = await gameRef.collection(GAME_CONFIRMATIONS_COLLECTION).get();
@@ -2261,7 +2268,7 @@ const initUserGamesManager = ({
     modalMeta.textContent = `${modalMeta.textContent} | Pula: ${gamePool}`;
     rows.forEach((row, index) => { 
       const tr = document.createElement("tr");
-      const writeEnabled = canWrite();
+      const writeEnabled = hasWriteAccessToGame(game);
 
       const lpCell = document.createElement("td");
       lpCell.textContent = String(index + 1);
@@ -2299,7 +2306,7 @@ const initUserGamesManager = ({
       playerSelect.value = currentPlayerName;
       playerSelect.disabled = !writeEnabled;
       playerSelect.addEventListener("change", () => {
-        if (!canWrite()) return;
+        if (!hasWriteAccessToGame(game)) return;
         void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ playerName: playerSelect.value });
       });
       playerCell.appendChild(playerSelect);
@@ -2318,7 +2325,7 @@ const initUserGamesManager = ({
         input.value = rawValue;
         input.disabled = !writeEnabled;
         input.addEventListener("input", () => {
-          if (!canWrite()) return;
+          if (!hasWriteAccessToGame(game)) return;
           input.value = sanitizeIntegerInput(input.value);
           scheduleDebouncedUpdate(`user-detail-${gameId}-${row.id}-${key}`, () => {
             void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ [key]: input.value });
@@ -2348,7 +2355,7 @@ const initUserGamesManager = ({
       championshipInput.checked = Boolean(row.championship);
       championshipInput.disabled = !writeEnabled;
       championshipInput.addEventListener("change", () => {
-        if (!canWrite()) return;
+        if (!hasWriteAccessToGame(game)) return;
         void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ championship: championshipInput.checked });
       });
       championshipCell.appendChild(championshipInput);
@@ -2360,7 +2367,7 @@ const initUserGamesManager = ({
       deleteButton.textContent = "Usuń";
       deleteButton.disabled = !writeEnabled;
       deleteButton.addEventListener("click", () => {
-        if (!canWrite()) return;
+        if (!hasWriteAccessToGame(game)) return;
         void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).delete();
       });
       deleteCell.appendChild(deleteButton);
@@ -2369,12 +2376,13 @@ const initUserGamesManager = ({
       modalBody.appendChild(tr);
     });
 
-    modalAddRowButton.disabled = !canWrite();
+    modalAddRowButton.disabled = !hasWriteAccessToGame(game);
     restoreFocusedAdminInputState(modalBody, focusState);
   };
 
   const synchronizeYearsFromGames = () => {
-    state.years = normalizeYearList(state.games.map((game) => extractYearFromDate(game.gameDate)).filter((year) => Number.isInteger(year)));
+    const visibleGames = state.games.filter((game) => canAccessGame(game));
+    state.years = normalizeYearList(visibleGames.map((game) => extractYearFromDate(game.gameDate)).filter((year) => Number.isInteger(year)));
     if (!state.selectedYear || !state.years.includes(state.selectedYear)) {
       state.selectedYear = state.years[0] ?? null;
     }
@@ -2461,6 +2469,10 @@ const initUserGamesManager = ({
     if (!state.activeGameIdInModal || !canWrite()) {
       return;
     }
+    const activeGame = state.games.find((game) => game.id === state.activeGameIdInModal);
+    if (!activeGame || !hasWriteAccessToGame(activeGame)) {
+      return;
+    }
     await db.collection(gamesCollectionName).doc(state.activeGameIdInModal).collection(gameDetailsCollectionName).add({
       playerName: "",
       entryFee: "",
@@ -2479,6 +2491,11 @@ const initUserGamesManager = ({
       }
       if (!state.activeGameIdInModal) {
         status.textContent = "Otwórz szczegóły gry, aby zbiorczo ustawić wpisowe.";
+        return;
+      }
+      const activeGame = state.games.find((game) => game.id === state.activeGameIdInModal);
+      if (!activeGame || !hasWriteAccessToGame(activeGame)) {
+        status.textContent = "Brak uprawnień do edycji tej gry.";
         return;
       }
       const promptValue = window.prompt("Podaj wartość wpisowego dla wszystkich graczy.", "0");
@@ -2552,6 +2569,14 @@ const initPlayerUserGames = () => {
     canWrite: () => {
       const player = getUserGamesVerifiedPlayer();
       return getUserGamesPinGateState() && Boolean(player) && isPlayerAllowedForTab(player, "userGamesTab");
+    },
+    canAccessGame: (game) => {
+      const player = getUserGamesVerifiedPlayer();
+      return Boolean(player) && game?.createdByPlayerId === player.id;
+    },
+    canEditGame: (game) => {
+      const player = getUserGamesVerifiedPlayer();
+      return Boolean(player) && game?.createdByPlayerId === player.id;
     },
     createGamePayload: () => {
       const player = getUserGamesVerifiedPlayer();
