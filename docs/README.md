@@ -44,19 +44,20 @@
 ### 2.6 Gry użytkowników
 1. Kliknij **Gry użytkowników**.
 2. Wpisz PIN i kliknij **Otwórz**.
-3. W lewym panelu kliknij rok.
-4. Kliknij **Dodaj**, aby utworzyć nową grę.
-5. W tabeli gier możesz zmienić: Rodzaj Gry, Data, Nazwa, CzyZamknięta.
-6. W kolumnie Nazwa kliknij:
+3. Po zalogowaniu widzisz **tylko gry utworzone przez siebie** (na podstawie Twojego PIN-u). Gry innych graczy nie są pokazywane w tym widoku.
+4. W lewym panelu kliknij rok.
+5. Kliknij **Dodaj**, aby utworzyć nową grę.
+6. W tabeli gier możesz zmienić: Rodzaj Gry, Data, Nazwa, CzyZamknięta — tylko dla własnych gier.
+7. W kolumnie Nazwa kliknij:
    - **Szczegóły** — edycja graczy w grze,
    - **Notatki do gry** — notatki przedmeczowe.
-7. W oknie **Szczegóły**:
+8. W oknie **Szczegóły**:
    - kliknij **Dodaj** aby dodać gracza,
    - wypełnij Gracz, Wpisowe, Rebuy/Add-on, Wypłata, Punkty,
    - zaznacz **Mistrzostwo** jeśli dotyczy,
    - usuń wiersz przyciskiem **Usuń**.
-8. W nagłówku szczegółów widzisz: Nazwa, Rodzaj gry, Data, **Pula**.
-9. W tabeli szczegółów pierwsza kolumna to **LP**.
+9. W nagłówku szczegółów widzisz: Nazwa, Rodzaj gry, Data, **Pula**.
+10. W tabeli szczegółów pierwsza kolumna to **LP**.
 
 ### 2.7 Statystyki
 1. Kliknij **Statystyki**.
@@ -111,9 +112,10 @@
 
 ### 3.7 Gry użytkowników (panel admina)
 1. Wejdź w **Gry użytkowników**.
-2. Wybierz rok.
-3. Dodawaj gry i edytuj je jak w wersji gracza.
-4. W **Szczegółach** działa kolumna **LP** i podgląd **Pula**.
+2. Administrator widzi wszystkie gry użytkowników (bez ograniczenia do jednego właściciela).
+3. Wybierz rok.
+4. Dodawaj gry i edytuj je jak w wersji gracza.
+5. W **Szczegółach** działa kolumna **LP** i podgląd **Pula**.
 
 ### 3.8 Gry do potwierdzenia (panel admina)
 1. Wejdź w **Gry do potwierdzenia**.

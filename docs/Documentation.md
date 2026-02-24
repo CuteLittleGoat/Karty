@@ -112,6 +112,13 @@ Obsługiwane akcje:
 - aktualizacja danych gracza (gracz, wpisowe, rebuy, wypłata, punkty, mistrzostwo),
 - notatki przed grą i po grze.
 
+Dodatkowa logika własności dla `UserGames` (strefa gracza):
+- po weryfikacji PIN `getUserGamesVerifiedPlayer()` wyznacza aktywnego właściciela,
+- lista gier gracza jest filtrowana po `createdByPlayerId === verifiedPlayer.id`,
+- lata i podsumowania są liczone wyłącznie z gier widocznych dla właściciela,
+- edycja gry/szczegółów/notatek jest dozwolona tylko, gdy `canWrite() && createdByPlayerId === verifiedPlayer.id`,
+- panel administratora `adminUserGamesTab` pozostaje bez ograniczenia właścicielskiego (pełny wgląd i edycja wszystkich wpisów).
+
 ### 4.5 Potwierdzenia obecności
 - Widoki potwierdzeń łączą dane z gier admina i gier użytkowników.
 - Dla każdej gry można ustawić potwierdzenie przez gracza (`confirmed = true/false`).
@@ -274,6 +281,8 @@ Aplikacja odczytuje konfigurację z `window.firebaseConfig`:
 Jak `Tables`, plus:
 - `createdByPlayerId`,
 - `createdByPlayerName`.
+
+Pola `createdByPlayerId` / `createdByPlayerName` są używane przez logikę UI do separacji danych między graczami (PIN -> właściciel gry), bez zmiany struktury dokumentów Firestore.
 
 ### F) `admin_games_stats`
 - dokumenty roczne (ID = rok, np. `2026`):
