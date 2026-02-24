@@ -606,7 +606,6 @@ select:disabled,
   gap: 8px;
 }
 
-#planColorGold,
 #summaryNotesColorGold {
   background: linear-gradient(180deg, rgba(212, 175, 55, 0.3), rgba(212, 175, 55, 0.14));
   border-color: var(--gold-line);
@@ -614,7 +613,6 @@ select:disabled,
   box-shadow: var(--glow-gold);
 }
 
-#planColorGreen,
 #summaryNotesColorGreen {
   background: rgba(43, 227, 139, 0.2);
   border-color: rgba(43, 227, 139, 0.6);
@@ -622,7 +620,6 @@ select:disabled,
   box-shadow: var(--glow-neon);
 }
 
-#planColorRed,
 #summaryNotesColorRed {
   background: rgba(226, 58, 75, 0.24);
   border-color: rgba(226, 58, 75, 0.72);
@@ -630,46 +627,11 @@ select:disabled,
   box-shadow: 0 0 18px rgba(226, 58, 75, 0.28);
 }
 
-#planColorWhite,
 #summaryNotesColorWhite {
   background: rgba(237, 235, 230, 0.2);
   border-color: rgba(237, 235, 230, 0.5);
   color: rgba(237, 235, 230, 0.98);
   box-shadow: 0 0 16px rgba(237, 235, 230, 0.18);
-}
-
-.admin-plan-editor {
-  min-height: 180px;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.35);
-  color: var(--ink);
-  font-family: var(--font-text);
-  font-size: var(--fs-body);
-  line-height: 1.6;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.admin-plan-editor:focus {
-  outline: none;
-  border-color: rgba(212, 175, 55, 0.55);
-  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18), 0 0 12px rgba(43, 227, 139, 0.18);
-}
-
-.evening-plan-output {
-  min-height: 170px;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.35);
-  color: var(--ink);
-  font-family: var(--font-text);
-  font-size: var(--fs-body);
-  line-height: 1.6;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 
 .admin-tournaments {

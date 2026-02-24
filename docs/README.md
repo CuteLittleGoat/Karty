@@ -31,17 +31,12 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 2. Nie wpisujesz ponownie PIN-u — po wejściu do Strefy sekcja otwiera się od razu.
 3. Odczytaj tabelę: Rodzaj gry, Data, Nazwa, CzyWszyscyPotwierdzili.
 
-### 2.5 Sekcja: Plan Wieczoru
-1. Kliknij po lewej **Plan Wieczoru**.
-2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
-3. Odczytaj harmonogram w wersji tylko do podglądu.
-
-### 2.6 Sekcja: Czat
+### 2.5 Sekcja: Czat
 1. Kliknij po lewej **Czat**.
 2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
 3. Wpisz wiadomość i kliknij **Wyślij**.
 
-### 2.7 Sekcja: Gry do Potwierdzenia
+### 2.6 Sekcja: Gry do Potwierdzenia
 1. Kliknij po lewej **Gry do Potwierdzenia**.
 2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
 3. Po przechodzeniu między sekcjami panelu bocznego aplikacja nie prosi ponownie o PIN w tej sekcji — ponowna autoryzacja będzie dopiero po nowej sesji przeglądarki.
@@ -50,7 +45,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 6. W tym oknie (tryb tylko do odczytu) tekst notatek jest wyświetlany dokładnie w kolorach zapisanych wcześniej przez osobę edytującą notatkę (złoty, zielony, czerwony, biały).
 7. W widoku tylko do odczytu nie ma przycisków edycyjnych: nie zobaczysz przycisków kolorów, **Zapisz** ani **Domyślne**.
 
-### 2.8 Sekcja: Gry Użytkowników
+### 2.7 Sekcja: Gry Użytkowników
 1. Kliknij po lewej **Gry Użytkowników**.
 2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
 3. Wybierz rok po lewej i zarządzaj własnymi grami.
@@ -61,7 +56,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 8. Kliknij **Zapisz**, aby utrwalić tekst wraz z kolorami.
 9. Przycisk **Domyślne** przywraca domyślny szablon notatki do gry.
 
-### 2.9 Sekcja: Statystyki
+### 2.8 Sekcja: Statystyki
 1. Kliknij po lewej **Statystyki**.
 2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
 3. Wybierz rok po lewej i przeglądaj statystyki/ranking.
@@ -82,23 +77,14 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 2. Edytuj treść.
 3. Kliknij **Zapisz**.
 
-### 3.4 Plan wieczoru
-1. Wejdź w zakładkę **Plan wieczoru**.
-2. Kliknij w pole **Treść planu wieczoru** i wpisz harmonogram (np. data, godzina, opis punktu programu).
-3. Aby pokolorować fragment, zaznacz myszką tylko ten fragment tekstu.
-4. Kliknij odpowiedni przycisk koloru: **Złoty** (złote tło), **Zielony** (zielone tło), **Czerwony** (czerwone tło) albo **Biały** (jasne tło).
-5. Powtarzaj zaznaczanie i kolorowanie dla kolejnych fragmentów.
-6. Po zakończeniu kliknij **Zapisz**.
-7. Po zapisie sprawdź w strefie gracza zakładkę **Plan wieczoru** — treść i kolory powinny być identyczne.
-
-### 3.5 Gracze
+### 3.4 Gracze
 1. Wejdź w **Gracze**.
 2. Kliknij **Dodaj**, aby dodać nowy wpis gracza.
 3. Uzupełnij: Nazwa, PIN, dostęp do aplikacji.
-4. Kliknij **Edytuj** w kolumnie uprawnień i zaznacz dostęp do **Strefa Gracza** oraz do konkretnych sekcji w Strefie (Najbliższa gra, Plan wieczoru, Czat, Gry do potwierdzenia, Gry użytkowników, Statystyki).
+4. Kliknij **Edytuj** w kolumnie uprawnień i zaznacz dostęp do **Strefa Gracza** oraz do konkretnych sekcji w Strefie (Najbliższa gra, Czat, Gry do potwierdzenia, Gry użytkowników, Statystyki).
 5. Dla **Statystyk** użyj przycisku **Lata**, aby wskazać lata widoczne dla gracza.
 
-### 3.6 Gry admina
+### 3.5 Gry admina
 1. Wejdź w **Gry admina**.
 2. Wybierz rok po lewej stronie.
 3. Kliknij **Dodaj**, aby dodać grę.
@@ -112,28 +98,28 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 8. W sekcji podsumowania gry możesz otworzyć **Notatki po grze**.
 9. W sekcji statystyk kolejność kolumn to: Ilość Spotkań, **Waga2**, **% udział**, Punkty.
 
-### 3.7 Statystyki (panel admina)
+### 3.6 Statystyki (panel admina)
 1. Wejdź w **Statystyki**.
 2. Wybierz rok.
 3. Edytuj wagi przez pola Waga1–Waga6.
 4. Ustawiaj widoczność kolumn dla użytkownika przez checkboxy w nagłówkach.
 5. Użyj **Eksportuj**.
 
-### 3.8 Gry użytkowników (panel admina)
+### 3.7 Gry użytkowników (panel admina)
 1. Wejdź w **Gry użytkowników**.
 2. Administrator widzi wszystkie gry użytkowników (bez ograniczenia do jednego właściciela).
 3. Wybierz rok.
 4. Dodawaj gry i edytuj je jak w wersji gracza.
 5. W **Szczegółach** działa kolumna **LP** i podgląd **Pula**.
 
-### 3.9 Gry do potwierdzenia (panel admina)
+### 3.8 Gry do potwierdzenia (panel admina)
 1. Wejdź w **Gry do potwierdzenia**.
 2. Otwieraj każdą grę z listy.
 3. Zmieniaj status potwierdzeń graczy.
 
 
 
-### 3.10 Kalkulator
+### 3.9 Kalkulator
 1. Wejdź w zakładkę **Kalkulator**.
 2. Po lewej stronie sekcji kliknij panel **Rodzaj gry** (działa jak panel „Lata” w innych zakładkach).
 3. W panelu **Rodzaj gry** kliknij przycisk **Tournament** albo **Cash**, aby przełączyć zestaw danych kalkulatora.
