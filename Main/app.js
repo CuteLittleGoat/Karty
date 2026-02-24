@@ -2906,68 +2906,33 @@ const initUserTabs = () => {
     return;
   }
 
-  const resetSectionGateState = (target) => {
-    if (target === "nextGameTab") {
-      setPinGateState(false);
-      const pinInput = document.querySelector("#nextGamePinInput");
-      const pinStatus = document.querySelector("#nextGamePinStatus");
-      if (pinInput) pinInput.value = "";
-      if (pinStatus) pinStatus.textContent = "";
-      updatePinVisibility();
+  const syncPlayerZoneSectionAccess = (player) => {
+    const hasSectionAccess = (sectionKey) => Boolean(player) && isPlayerAllowedForTab(player, sectionKey);
+
+    setPinGateState(hasSectionAccess("nextGameTab"));
+    setChatPinGateState(hasSectionAccess("chatTab"));
+    setConfirmationsPinGateState(hasSectionAccess("confirmationsTab"));
+    setUserGamesPinGateState(hasSectionAccess("userGamesTab"));
+    setStatisticsPinGateState(hasSectionAccess("statsTab"));
+    setEveningPlanPinGateState(hasSectionAccess("eveningPlanTab"));
+
+    const playerId = player?.id || "";
+    setChatVerifiedPlayerId(hasSectionAccess("chatTab") ? playerId : "");
+    setConfirmationsVerifiedPlayerId(hasSectionAccess("confirmationsTab") ? playerId : "");
+    setUserGamesVerifiedPlayerId(hasSectionAccess("userGamesTab") ? playerId : "");
+    setStatisticsVerifiedPlayerId(hasSectionAccess("statsTab") ? playerId : "");
+    setEveningPlanVerifiedPlayerId(hasSectionAccess("eveningPlanTab") ? playerId : "");
+
+    if (!hasSectionAccess("chatTab") && typeof chatState.unsubscribe === "function") {
+      chatState.unsubscribe();
+      chatState.unsubscribe = null;
     }
 
-    if (target === "chatTab") {
-      setChatPinGateState(false);
-      setChatVerifiedPlayerId("");
-      const input = document.querySelector("#chatPinInput");
-      const status = document.querySelector("#chatPinStatus");
-      if (input) input.value = "";
-      if (status) status.textContent = "";
-      if (typeof chatState.unsubscribe === "function") {
-        chatState.unsubscribe();
-        chatState.unsubscribe = null;
-      }
-      updateChatVisibility();
-    }
-
-    if (target === "confirmationsTab") {
-      setConfirmationsPinGateState(false);
-      setConfirmationsVerifiedPlayerId("");
-      const input = document.querySelector("#confirmationsPinInput");
-      const status = document.querySelector("#confirmationsPinStatus");
-      if (input) input.value = "";
-      if (status) status.textContent = "";
-    }
-
-    if (target === "userGamesTab") {
-      setUserGamesPinGateState(false);
-      setUserGamesVerifiedPlayerId("");
-      const input = document.querySelector("#userGamesPinInput");
-      const status = document.querySelector("#userGamesPinStatus");
-      if (input) input.value = "";
-      if (status) status.textContent = "";
-      updateUserGamesVisibility();
-    }
-
-    if (target === "statsTab") {
-      setStatisticsPinGateState(false);
-      setStatisticsVerifiedPlayerId("");
-      const input = document.querySelector("#statisticsPinInput");
-      const status = document.querySelector("#statisticsPinStatus");
-      if (input) input.value = "";
-      if (status) status.textContent = "";
-      updateStatisticsVisibility();
-    }
-
-    if (target === "eveningPlanTab") {
-      setEveningPlanPinGateState(false);
-      setEveningPlanVerifiedPlayerId("");
-      const input = document.querySelector("#eveningPlanPinInput");
-      const status = document.querySelector("#eveningPlanPinStatus");
-      if (input) input.value = "";
-      if (status) status.textContent = "";
-      updateEveningPlanVisibility();
-    }
+    updatePinVisibility();
+    updateChatVisibility();
+    updateUserGamesVisibility();
+    updateStatisticsVisibility();
+    updateEveningPlanVisibility();
   };
 
   const setActiveZoneSection = (target) => {
@@ -2978,9 +2943,6 @@ const initUserTabs = () => {
     zonePanels.forEach((panel) => {
       panel.classList.toggle("is-active", panel.id === target);
     });
-    if (target) {
-      resetSectionGateState(target);
-    }
   };
 
   const renderPlayerZoneSections = () => {
@@ -3040,8 +3002,10 @@ const initUserTabs = () => {
       if (player && isPlayerAllowedForTab(player, "playerZoneTab")) {
         setPlayerZonePinGateState(true);
         setPlayerZoneVerifiedPlayerId(player.id || "");
+        syncPlayerZoneSectionAccess(player);
         zonePinStatus.textContent = `PIN poprawny. Witaj ${player.name || "graczu"}.`;
       } else {
+        syncPlayerZoneSectionAccess(null);
         zonePinStatus.textContent = "Błędny PIN lub brak uprawnień do zakładki „Strefa Gracza”.";
       }
       updatePlayerZoneVisibility();
@@ -3064,10 +3028,6 @@ const initUserTabs = () => {
     panels.forEach((panel) => panel.classList.toggle("is-active", panel.id === target));
 
     if (target === "playerZoneTab") {
-      setPlayerZonePinGateState(false);
-      setPlayerZoneVerifiedPlayerId("");
-      if (zonePinInput) zonePinInput.value = "";
-      if (zonePinStatus) zonePinStatus.textContent = "";
       updatePlayerZoneVisibility();
     }
   };
@@ -3080,6 +3040,12 @@ const initUserTabs = () => {
       }
     });
   });
+
+  if (!getPlayerZonePinGateState()) {
+    syncPlayerZoneSectionAccess(null);
+  } else {
+    syncPlayerZoneSectionAccess(getPlayerZoneVerifiedPlayer());
+  }
 
   setActiveTab("updatesTab");
 

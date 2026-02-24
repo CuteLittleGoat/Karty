@@ -39,7 +39,7 @@ Dodatkowo globalny przycisk odświeżania panelu: `adminPanelRefresh`.
 ### 3.2 Strefa gracza
 Widok użytkownika ma 3 zakładki główne: `updatesTab` (Aktualności), `rulesTab` (Regulamin) i `playerZoneTab` (Strefa Gracza).
 
-W `playerZoneTab` działa dodatkowa bramka PIN (`playerZonePinInput`, `playerZonePinSubmit`) i dopiero po poprawnej autoryzacji renderowany jest layout dwukolumnowy:
+W `playerZoneTab` działa jedna bramka PIN (`playerZonePinInput`, `playerZonePinSubmit`) i po poprawnej autoryzacji renderowany jest layout dwukolumnowy. W tej samej sesji przeglądarki użytkownik nie wpisuje już PIN-u ponownie dla sekcji:
 - lewy panel `Sekcja` (`playerZoneSectionsList`) z przyciskami:
   - Najbliższa Gra (`nextGameTab`),
   - Plan Wieczoru (`eveningPlanTab`),
@@ -82,10 +82,10 @@ W aplikacji występują m.in. poniższe modale:
 
 ### 4.2 Kontrola dostępu PIN i sesja
 - PIN ma długość 5 (`PIN_LENGTH = 5`).
-- Dane autoryzacji są przechowywane w `sessionStorage` osobno dla różnych sekcji (np. czat, gry, statystyki).
+- Dane autoryzacji są przechowywane w `sessionStorage`; reset przeglądarki/aplikacji czyści sesję i wymusza ponowne wpisanie PIN-u.
 - Funkcje `sanitizePin`, `isPinValid`, `generateRandomPin` obsługują walidację i format.
-- Dla każdej sekcji istnieją gettery/settery stanu PIN + zapamiętanie zweryfikowanego gracza.
-- Strefa Gracza używa niezależnych kluczy sesji (`PLAYER_ZONE_PIN_STORAGE_KEY`, `PLAYER_ZONE_PLAYER_ID_STORAGE_KEY`) i waliduje uprawnienie `playerZoneTab`. Sekcja `Plan wieczoru` nadal używa własnych kluczy (`EVENING_PLAN_PIN_STORAGE_KEY`, `EVENING_PLAN_PLAYER_ID_STORAGE_KEY`) oraz uprawnienia `eveningPlanTab`.
+- Po poprawnym PIN-ie dla `playerZoneTab` funkcja `syncPlayerZoneSectionAccess` ustawia stan autoryzacji sekcji (`nextGameTab`, `chatTab`, `confirmationsTab`, `userGamesTab`, `statsTab`, `eveningPlanTab`) zgodnie z uprawnieniami gracza i zapisuje `playerId` do odpowiednich kluczy sesji.
+- Zmiana sekcji w obrębie Strefy Gracza nie resetuje już autoryzacji; ponowna weryfikacja jest wymagana dopiero po utracie sesji (`sessionStorage`).
 
 ### 4.3 Zarządzanie graczami
 - Gracze są trzymani w dokumencie `app_settings/player_access` jako tablica `players`.
