@@ -1156,6 +1156,20 @@ button.danger {
   display: grid;
 }
 
+.player-zone-sections-list {
+  width: 100%;
+}
+
+.player-zone-panel {
+  display: none;
+  gap: var(--gap-3);
+}
+
+.player-zone-panel.is-active {
+  display: grid;
+}
+
+
 .user-construction {
   margin: 0;
   font-family: var(--font-title);
