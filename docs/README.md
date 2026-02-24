@@ -2,9 +2,11 @@
 
 ## 1. Start aplikacji
 1. Otwórz stronę aplikacji.
-2. Na górze widzisz **Panel Administratora** (zakładki admina).
-3. Niżej widzisz od razu pasek zakładek użytkownika (bez osobnego nagłówka nad zakładkami).
-4. Kliknięcie nazwy zakładki przełącza zawartość widoku.
+2. W wersji **PC** główna zawartość aplikacji rozciąga się prawie na całą szerokość okna (zostają tylko niewielkie marginesy po bokach).
+3. W panelach z układem 3-kolumnowym (np. **Lata / treść / Ranking**) szerokość paneli bocznych zostaje stała, a rozszerza się głównie kolumna środkowa z tabelami.
+4. Na górze widzisz **Panel Administratora** (zakładki admina).
+5. Niżej widzisz od razu pasek zakładek użytkownika (bez osobnego nagłówka nad zakładkami).
+6. Kliknięcie nazwy zakładki przełącza zawartość widoku.
 
 ## 2. Widok użytkownika
 

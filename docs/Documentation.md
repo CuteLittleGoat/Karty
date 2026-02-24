@@ -239,8 +239,11 @@ Zmienne CSS definiują m.in.:
 Styl wizualny to ciemny motyw „noir + gold + neon”, z kartami, delikatnym gradientem i obwódkami.
 
 ### 6.3 Layout i komponenty
+- kontener strony (`.page`) ma szerokość `min(1720px, 100%)`, dzięki czemu na desktopie aplikacja wykorzystuje prawie całe okno,
+- wewnętrzny odstęp kontenera pozostaje `24px` na boki (`padding: 40px 24px 80px`),
 - siatka główna (`.grid`) oparta o `auto-fit` + `minmax`,
 - wspólna klasa karty (`.card`),
+- w layoutach wielokolumnowych (np. `.admin-games-layout`) szerokości paneli bocznych są stałe (`220px` i `260px`), a rozszerza się kolumna centralna (`minmax(0, 1fr)`),
 - spójny styl tabel (`.admin-data-table`),
 - dedykowane klasy dla modali (`.modal-overlay`, `.modal-card`),
 - klasy statusów i akcji (`.status-text`, `.primary`, `.secondary`, `.danger`).

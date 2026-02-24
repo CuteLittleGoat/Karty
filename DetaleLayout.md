@@ -14,6 +14,9 @@
 
 ## Układ
 - Główny layout kartowy z sekcją admina i sekcją użytkownika.
+- Kontener strony `.page` ma szerokość `min(1720px, 100%)`, dzięki czemu widok PC wypełnia prawie całe okno i nie jest już „wąsko” wyśrodkowany.
+- Zewnętrzne marginesy wizualne na PC wynikają z wewnętrznego paddingu kontenera (`24px` po lewej i prawej).
+- W układach z panelami bocznymi (np. `Lata / środek / Ranking` oraz `Sekcja / środek`) szerokość paneli bocznych pozostaje jak dotąd, a dodatkowa szerokość trafia do centralnej części z tabelami.
 - W zakładkach z dużymi tabelami działa poziomy scroll (`.admin-table-scroll`).
 
 ## Modale szczegółów gier
