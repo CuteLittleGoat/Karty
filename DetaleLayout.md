@@ -43,6 +43,11 @@
 - Sekcje `Najbliższa Gra`, `Plan Wieczoru`, `Czat`, `Gry do Potwierdzenia`, `Gry Użytkowników`, `Statystyki` są renderowane jako `.player-zone-panel` i przełączane klasą `.is-active`.
 
 
+## Kalkulator — panel „Rodzaj gry”
+- Po lewej stronie kalkulatora znajduje się osobny panel boczny z nagłówkiem `Rodzaj gry`.
+- Panel używa kontenera `.admin-calculator-sidebar` z takim samym stylem karty jak panele typu „Lata”.
+- Wewnątrz panelu są dwa przyciski trybu: `Tournament` i `Cash` (`.admin-calculator-switch-button`).
+
 ## Kalkulator — modal „Rebuy gracza”
 - Modal otwierany z kolumny `Rebuy` w `Tabela2`.
 - Widok startowy modala nie pokazuje żadnych kolumn rebuy.

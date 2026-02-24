@@ -125,27 +125,28 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 3.10 Kalkulator
 1. Wejdź w zakładkę **Kalkulator**.
-2. Nad tabelami kliknij tryb **Tournament** lub **Cash**.
-3. W **Tabela1** wpisz wartości Buy-In i Rebuy (pole Liczba Rebuy liczy tylko niepuste wpisy Rebuy graczy).
-4. W **Tabela2**: 
+2. Po lewej stronie sekcji kliknij panel **Rodzaj gry** (działa jak panel „Lata” w innych zakładkach).
+3. W panelu **Rodzaj gry** kliknij przycisk **Tournament** albo **Cash**, aby przełączyć zestaw danych kalkulatora.
+4. W **Tabela1** wpisz wartości Buy-In i Rebuy (pole Liczba Rebuy liczy tylko niepuste wpisy Rebuy graczy).
+5. W **Tabela2**:
    - w kolumnie **Gracz** wybierz gracza z listy,
    - w kolumnie **Rebuy** kliknij przycisk z kwotą, aby otworzyć okno **Rebuy gracza**,
    - zaznacz **Eliminated**, jeśli gracz odpadł,
    - kliknij **Dodaj** w ostatnim wierszu, aby dodać kolejnego gracza,
    - kliknij **Usuń** w wierszu, aby usunąć gracza.
-5. W oknie **Rebuy gracza**:
+6. W oknie **Rebuy gracza**:
    - po otwarciu domyślnie nie ma żadnej kolumny,
    - kliknij **Dodaj Rebuy**, aby dodać nową kolumnę (np. Rebuy1, Rebuy2, ...),
    - numeracja Rebuy jest wspólna dla wszystkich graczy (globalna),
    - kliknij **Usuń Rebuy**, aby usunąć ostatnią kolumnę tylko dla bieżącego gracza; numeracja automatycznie przelicza się globalnie także dla pozostałych graczy,
    - wpisz kwoty w polach kolumn Rebuy (tylko cyfry).
-6. W **Tabela3** wpisz `%` rake.
-7. W **Tabela4**: 
+7. W **Tabela3** wpisz `%` rake.
+8. W **Tabela4**:
    - kolumna **Gracz** wypełnia się tylko tymi osobami, które mają zaznaczone **Eliminated** w **Tabela2**,
    - kolejność jest od końca tabeli: pierwszy zaznaczony gracz trafia na ostatnie miejsce, drugi na przedostatnie itd.,
    - po odznaczeniu **Eliminated** gracz znika z **Tabela4**, a pozostali automatycznie przesuwają się niżej (bliżej końca),
    - kolumna **Wygrana** w danym LP zawsze pokazuje tę samą wartość co **Suma** z tego samego LP w **Tabela5**.
-8. W **Tabela5**:
+9. W **Tabela5**:
    - w kolumnie **Podział puli** wpisz procent dla każdego miejsca,
    - kolumna **Ranking** nie występuje (układ tabeli zawiera: LP, Podział puli, Kwota, Rebuy..., Mod, Suma),
    - kolumny **Rebuy1, Rebuy2, ...** pojawiają się automatycznie tylko dla uzupełnionych wartości z modala **Rebuy gracza**, a każda kolumna pokazuje kwotę tylko w jednym docelowym wierszu,
@@ -153,4 +154,4 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
   - każda kwota Rebuy widoczna w **Tabela5** jest automatycznie pomniejszana o `%` z **Tabela3** (np. 100 przy 10% daje 90),
    - w kolumnie **Mod** wpisz ręczną korektę dodatnią lub ujemną (np. `120` albo `-50`), aby zwiększyć lub zmniejszyć końcową kwotę konkretnego wiersza,
    - kolumna **Suma** liczy: `Kwota + przypisane Rebuy (po odjęciu %) + Mod`.
-9. Wszystkie zmiany zapisują się automatycznie po chwili — nie ma osobnego przycisku zapisu.
+10. Wszystkie zmiany zapisują się automatycznie po chwili — nie ma osobnego przycisku zapisu.
