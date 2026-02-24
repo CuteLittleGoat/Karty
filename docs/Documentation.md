@@ -31,7 +31,7 @@ Panel admina zawiera zakładki:
 7. **Gry użytkowników** (`adminUserGamesTab`) — administracyjne zarządzanie grami tworzonymi przez graczy.
 8. **Najbliższa gra** (`adminNextGameTab`) — podgląd najbliższych gier i statusów potwierdzeń.
 9. **Gry do potwierdzenia** (`adminConfirmationsTab`) — przegląd i ręczna aktualizacja potwierdzeń.
-10. **Kalkulator** (`adminCalculatorTab`) — moduł obliczeń `tournament/cash` oparty o 5 tabel.
+10. **Kalkulator** (`adminCalculatorTab`) — moduł obliczeń z pełnym układem 5 tabel dla trybu `tournament` i wyczyszczonym widokiem dla trybu `cash`.
 
 Dodatkowo globalny przycisk odświeżania panelu: `adminPanelRefresh`.
 
@@ -161,6 +161,7 @@ result = championshipCount * weight1
 ### 4.9 Kalkulator (Tournament / Cash)
 Kalkulator przechowuje osobny stan dla dwóch trybów (`calculators/tournament`, `calculators/cash`).
 W układzie UI lewa kolumna kalkulatora to osobny panel `Rodzaj gry` (`.admin-calculator-sidebar`) z nagłówkiem i przyciskami przełączania trybu.
+Tryb `cash` renderuje obecnie wyłącznie placeholder (`.admin-calculator-cash-empty`) i czyści wszystkie kontenery tabel (`#adminCalculatorTable1..5`), dzięki czemu sekcja jest gotowa pod nową logikę bez mieszania z dotychczasowymi tabelami.
 Model obejmuje:
 - `table1Row` (buy-in, rebuy),
 - `table2Rows` (gracze, eliminacje, lista rebuy per gracz),
@@ -174,6 +175,7 @@ W kalkulatorze:
 - stan jest debouncowany i automatycznie zapisywany do Firestore,
 - przełączniki `Tournament` / `Cash` są osadzone w kontenerze `.admin-calculator-switch` wewnątrz panelu `.admin-calculator-sidebar`,
 - możliwa jest edycja rebuy przez dedykowany modal.
+- pełne renderowanie Tabela1..Tabela5 działa tylko w trybie `tournament`; przełączenie na `cash` pomija render tabel i kończy się na komunikacie informacyjnym.
 - modal rebuy startuje bez kolumn; kolumny powstają dopiero po kliknięciu `Dodaj Rebuy`,
 - nazwy kolumn rebuy są numerowane globalnie względem wszystkich graczy w kolejności wierszy Tabela2 (`Rebuy1..n`),
 - Tabela5 renderuje wartości rebuy kolumnowo: każda kolumna `RebuyN` wyświetla wartość wyłącznie w jednym wierszu (`LP`) wyliczanym przez cykle 4, 5, 6, 7... pozycji (np. `Rebuy1..4` -> wiersze 1..4, `Rebuy5..9` -> wiersze 1..5, `Rebuy10..15` -> wiersze 1..6),

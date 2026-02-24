@@ -48,6 +48,11 @@
 - Panel używa kontenera `.admin-calculator-sidebar` z takim samym stylem karty jak panele typu „Lata”.
 - Wewnątrz panelu są dwa przyciski trybu: `Tournament` i `Cash` (`.admin-calculator-switch-button`).
 
+## Kalkulator — widok „Cash”
+- Po kliknięciu przycisku `Cash` sekcja po prawej jest celowo wyczyszczona (bez tabel 1–5).
+- Widoczny jest tylko blok informacyjny `.admin-calculator-cash-empty` z nagłówkiem i krótkim opisem.
+- Blok używa obramowania przerywanego (`1px dashed`) i ciemnego tła, aby odróżnić stan „w przygotowaniu” od aktywnego układu tabel turniejowych.
+
 ## Kalkulator — modal „Rebuy gracza”
 - Modal otwierany z kolumny `Rebuy` w `Tabela2`.
 - Widok startowy modala nie pokazuje żadnych kolumn rebuy.

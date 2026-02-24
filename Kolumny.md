@@ -112,7 +112,13 @@ Opisuje aktualny stan kolumn w aplikacji prostym językiem (bez nazw technicznyc
 
 ## 6) Kalkulator
 
-### 6.1 Tabela podsumowania wejść
+### 6.0 Widok trybu Cash
+
+| Obszar | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
+| --- | --- | --- | --- | --- |
+| Sekcja informacyjna Cash | automatyczna | brak stałego limitu | do lewej | W trybie Cash nie ma kolumn tabel; widoczny jest wyłącznie komunikat o wyczyszczonej sekcji (PC i mobilnie). |
+
+### 6.1 Tabela podsumowania wejść (Tournament)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
@@ -121,7 +127,7 @@ Opisuje aktualny stan kolumn w aplikacji prostym językiem (bez nazw technicznyc
 | Rebuy | automatyczna | brak stałego limitu | do lewej | Pole liczbowe. |
 | Liczba Rebuy | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
 
-### 6.2 Tabela uczestników
+### 6.2 Tabela uczestników (Tournament)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
@@ -132,7 +138,7 @@ Opisuje aktualny stan kolumn w aplikacji prostym językiem (bez nazw technicznyc
 | Eliminacja | automatyczna | brak stałego limitu | do lewej | Pole wyboru tak/nie. |
 | Akcje | automatyczna | brak stałego limitu | do lewej | Dodawanie i usuwanie wiersza. |
 
-### 6.3 Tabela wartości procentowych i puli
+### 6.3 Tabela wartości procentowych i puli (Tournament)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
@@ -142,7 +148,7 @@ Opisuje aktualny stan kolumn w aplikacji prostym językiem (bez nazw technicznyc
 | Rebuy | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
 | Pot | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
 
-### 6.4 Tabela wygranych
+### 6.4 Tabela wygranych (Tournament)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
@@ -150,7 +156,7 @@ Opisuje aktualny stan kolumn w aplikacji prostym językiem (bez nazw technicznyc
 | Gracz | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
 | Wygrana | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
 
-### 6.5 Tabela podziału puli
+### 6.5 Tabela podziału puli (Tournament)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
@@ -161,7 +167,7 @@ Opisuje aktualny stan kolumn w aplikacji prostym językiem (bez nazw technicznyc
 | Mod | automatyczna | brak stałego limitu | do lewej | Pole pomocnicze do obliczeń. |
 | Suma | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
 
-### 6.6 Tabela rebuy w osobnym oknie
+### 6.6 Tabela rebuy w osobnym oknie (Tournament)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
