@@ -118,23 +118,24 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
-| Buy-In | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, wynik z Tabela9 i Rake z Tabela8. |
-| Rebuy | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, wynik z Tabela9 i Rake z Tabela8. |
+| Buy-In | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, suma Buy-In z Tabela9 pomniejszona o wartość z kolumny `%` (Tabela8). |
+| Rebuy | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, suma Rebuy z Tabela9 pomniejszona o wartość z kolumny `%` (Tabela8). |
 | Suma | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, suma Buy-In i Rebuy z Tabela7. |
 
 ### 6.1 Tabela8 (Cash)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
-| Rake | automatyczna | brak stałego limitu | do lewej | Wpis liczbowy, znak % dodawany automatycznie. |
-| Pot | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, wynik z Tabela7 i Rake. |
+| % | automatyczna | brak stałego limitu | do lewej | Wpis liczbowy, znak `%` dodawany automatycznie po opuszczeniu pola. |
+| Rake | automatyczna | brak stałego limitu | do lewej | Wpis liczbowy kwoty rake. |
+| Pot | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, wynik `Suma z Tabela7 - Rake z Tabela8`. |
 
 ### 6.2 Tabela9 (Cash)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
 | Gracz | automatyczna | brak stałego limitu | do lewej | Lista wyboru pokazuje tylko dostępnych graczy; osoby już wskazane w innych wierszach Cash są ukryte. |
-| Buy-In | automatyczna | brak stałego limitu | do lewej | Pole liczbowe, domyślnie 0. |
+| Buy-In | automatyczna | brak stałego limitu | do lewej | W nagłówku znajduje się przycisk do zbiorczego ustawienia wartości Buy-In dla wszystkich wierszy; każde pole można potem edytować ręcznie, domyślnie 0. |
 | Rebuy | automatyczna | brak stałego limitu | do lewej | Przycisk z sumą rebuy, otwiera modal. |
 | Wypłata | automatyczna | brak stałego limitu | do lewej | Pole liczbowe, domyślnie 0. |
 | +/- | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, wynik Wypłata-(Buy-In+Rebuy). |
