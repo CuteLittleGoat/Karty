@@ -22,42 +22,39 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 1. Kliknij zakładkę **Strefa Gracza**.
 2. Wpisz 5-cyfrowy PIN gracza, który ma nadane uprawnienie **Strefa Gracza** w panelu **Gracze**.
 3. Kliknij **Otwórz**.
-4. Po lewej stronie zobaczysz panel **Sekcja** z przyciskami funkcji.
-5. Administrator może włączać/wyłączać każdy przycisk osobno dla danego gracza.
+4. Po poprawnym PIN-ie aplikacja zapamięta sesję w tej karcie przeglądarki i od razu odblokuje wszystkie sekcje, do których masz uprawnienia.
+5. Po lewej stronie zobaczysz panel **Sekcja** z przyciskami funkcji.
+6. PIN podajesz ponownie dopiero po restarcie aplikacji/przeglądarki (nowa sesja).
 
 ### 2.4 Sekcja: Najbliższa Gra
 1. W **Strefie Gracza** kliknij po lewej **Najbliższa Gra**.
-2. Wpisz PIN z uprawnieniem **Najbliższa gra**.
-3. Kliknij **Otwórz**.
-4. Odczytaj tabelę: Rodzaj gry, Data, Nazwa, CzyWszyscyPotwierdzili.
+2. Nie wpisujesz ponownie PIN-u — po wejściu do Strefy sekcja otwiera się od razu.
+3. Odczytaj tabelę: Rodzaj gry, Data, Nazwa, CzyWszyscyPotwierdzili.
 
 ### 2.5 Sekcja: Plan Wieczoru
 1. Kliknij po lewej **Plan Wieczoru**.
-2. Wpisz PIN z uprawnieniem **Plan wieczoru**.
-3. Kliknij **Otwórz**.
-4. Odczytaj harmonogram w wersji tylko do podglądu.
+2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
+3. Odczytaj harmonogram w wersji tylko do podglądu.
 
 ### 2.6 Sekcja: Czat
 1. Kliknij po lewej **Czat**.
-2. Wpisz PIN z uprawnieniem **Czat** i kliknij **Otwórz**.
+2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
 3. Wpisz wiadomość i kliknij **Wyślij**.
 
 ### 2.7 Sekcja: Gry do Potwierdzenia
 1. Kliknij po lewej **Gry do Potwierdzenia**.
-2. Wpisz PIN i kliknij **Otwórz**.
+2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
 3. Dla gry użyj: **Potwierdź**, **Anuluj**, **Szczegóły**, **Notatki do gry**.
 
 ### 2.8 Sekcja: Gry Użytkowników
 1. Kliknij po lewej **Gry Użytkowników**.
-2. Wpisz PIN z uprawnieniem **Gry użytkowników**.
-3. Kliknij **Otwórz**.
-4. Wybierz rok po lewej i zarządzaj własnymi grami.
+2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
+3. Wybierz rok po lewej i zarządzaj własnymi grami.
 
 ### 2.9 Sekcja: Statystyki
 1. Kliknij po lewej **Statystyki**.
-2. Wpisz PIN z uprawnieniem **Statystyki**.
-3. Kliknij **Otwórz**.
-4. Wybierz rok po lewej i przeglądaj statystyki/ranking.
+2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
+3. Wybierz rok po lewej i przeglądaj statystyki/ranking.
 
 ## 3. Panel Administratora
 
