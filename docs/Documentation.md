@@ -37,6 +37,7 @@ Panel admina zawiera zakładki:
 Dodatkowo globalny przycisk odświeżania panelu: `adminPanelRefresh`.
 
 ### 3.2 Strefa gracza
+W widoku użytkownika nie ma osobnego nagłówka „Strefa gracza”; interfejs zaczyna się bezpośrednio od paska zakładek.
 Strefa gracza obejmuje zakładki:
 - Najbliższa gra,
 - Czat,
