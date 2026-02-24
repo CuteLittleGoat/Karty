@@ -54,6 +54,6 @@
 
 ## Plan wieczoru
 - Zakładka admina: `adminEveningPlanTab` z edytorem `.admin-plan-editor` (contenteditable) i paskiem przycisków kolorów.
-- Przyciski kolorów: `Złoty`, `Zielony`, `Czerwony`, `Biały` (mapowane do kolorów motywu: `--gold`, `--neon`, `--ruby2`, `--ink`).
+- Przyciski kolorów: `Złoty`, `Zielony`, `Czerwony`, `Biały` (mapowane do kolorów motywu: `--gold`, `--neon`, `--ruby2`, `--ink`) i renderowane z odpowiadającym im tłem przycisku (złote, zielone, czerwone, jasne/białe).
 - Zakładka gracza: `eveningPlanTab` z bramką PIN (`#eveningPlanPinGate`) i widokiem tylko do odczytu `.evening-plan-output`.
 - Edytor i widok planu używają `white-space: pre-wrap`, dzięki czemu zachowują podziały linii wpisane przez admina.

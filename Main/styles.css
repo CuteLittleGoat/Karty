@@ -591,6 +591,34 @@ select:disabled,
   gap: 8px;
 }
 
+#planColorGold {
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.3), rgba(212, 175, 55, 0.14));
+  border-color: var(--gold-line);
+  color: rgba(237, 235, 230, 0.96);
+  box-shadow: var(--glow-gold);
+}
+
+#planColorGreen {
+  background: rgba(43, 227, 139, 0.2);
+  border-color: rgba(43, 227, 139, 0.6);
+  color: rgba(237, 235, 230, 0.95);
+  box-shadow: var(--glow-neon);
+}
+
+#planColorRed {
+  background: rgba(226, 58, 75, 0.24);
+  border-color: rgba(226, 58, 75, 0.72);
+  color: rgba(237, 235, 230, 0.95);
+  box-shadow: 0 0 18px rgba(226, 58, 75, 0.28);
+}
+
+#planColorWhite {
+  background: rgba(237, 235, 230, 0.2);
+  border-color: rgba(237, 235, 230, 0.5);
+  color: rgba(237, 235, 230, 0.98);
+  box-shadow: 0 0 16px rgba(237, 235, 230, 0.18);
+}
+
 .admin-plan-editor {
   min-height: 180px;
   padding: 10px 12px;

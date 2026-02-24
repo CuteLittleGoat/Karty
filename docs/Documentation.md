@@ -141,6 +141,7 @@ Dodatkowa logika własności dla `UserGames` (strefa gracza):
 - Regulamin: dokument `app_settings/rules`.
 - Plan wieczoru: dokument `app_settings/evening_plan` z polem `html` (sanityzowany HTML: tekst + `span` z dozwolonymi kolorami + `br`).
 - W adminie kolorowanie działa przez zaznaczenie zakresu i kliknięcie przycisku koloru; aplikacja opakowuje zakres w `span` z kolorem (`--gold`, `--neon`, `--ruby2`, `--ink`), następnie sanitizuje i zapisuje.
+- Przyciski kolorów w pasku `admin-plan-color-actions` mają dedykowane style tła zgodne z nazwą (`Złoty`/`Zielony`/`Czerwony`/`Biały`), aby wizualnie wskazywać wybierany kolor tekstu jeszcze przed kliknięciem.
 - Widok gracza renderuje `innerHTML` po sanitizacji i jest tylko do odczytu.
 - Wszystkie trzy moduły mają live update przez `onSnapshot`.
 
