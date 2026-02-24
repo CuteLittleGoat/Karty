@@ -74,4 +74,4 @@
 - Przyciski kolorów: `#summaryNotesColorGold`, `#summaryNotesColorGreen`, `#summaryNotesColorRed`, `#summaryNotesColorWhite`.
 - Pole edycji to `.summary-notes-editor` (contenteditable) ze stylami jak dla edytora planu wieczoru: ciemne tło, obramowanie w kolorze motywu, `white-space: pre-wrap`.
 - Każdy przycisk koloru ma tę samą stylistykę co odpowiednik z „Planu wieczoru” (złote, zielone, czerwone, jasne tło).
-- W trybie odczytu (np. „Gry do Potwierdzenia”) modal pokazuje zapisane kolory tekstu bez możliwości edycji.
+- W trybie odczytu (np. „Gry do Potwierdzenia”) modal pokazuje zapisane kolory tekstu bez możliwości edycji i ukrywa kontrolki edycji (przyciski kolorów, `Zapisz`, `Domyślne`).

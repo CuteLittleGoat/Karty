@@ -48,6 +48,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 4. Dla gry użyj: **Potwierdź**, **Anuluj**, **Szczegóły**, **Notatki do gry**.
 5. Po kliknięciu **Notatki do gry** otworzy się okno z tytułem w formacie „Notatki do gry: Nazwa gry”.
 6. W tym oknie (tryb tylko do odczytu) tekst notatek jest wyświetlany dokładnie w kolorach zapisanych wcześniej przez osobę edytującą notatkę (złoty, zielony, czerwony, biały).
+7. W widoku tylko do odczytu nie ma przycisków edycyjnych: nie zobaczysz przycisków kolorów, **Zapisz** ani **Domyślne**.
 
 ### 2.8 Sekcja: Gry Użytkowników
 1. Kliknij po lewej **Gry Użytkowników**.

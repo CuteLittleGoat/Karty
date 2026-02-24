@@ -198,6 +198,7 @@ W kalkulatorze:
 - Kolory mapują się na zmienne motywu: `gold -> var(--gold)`, `green -> var(--neon)`, `red -> var(--ruby2)`, `white -> var(--ink)`.
 - Przed zapisem notatki HTML jest sanityzowany (`sanitizeRichTextWithAllowedColors`) — zostają wyłącznie bezpieczne elementy: tekst, `br`, `span` z dozwolonym kolorem.
 - Ta sama zawartość HTML jest renderowana w trybie tylko do odczytu w zakładce gracza **Gry do Potwierdzenia**, więc użytkownik widzi dokładnie te kolory, które zapisano podczas edycji.
+- Gdy modal działa w trybie tylko do odczytu (`canWrite=false`), ukrywane są elementy edycji: pasek kolorów oraz przyciski `Zapisz` i `Domyślne`; pozostaje sam podgląd treści.
 
 ## 5. Obliczenia finansowe i statystyczne
 
