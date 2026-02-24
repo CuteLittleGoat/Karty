@@ -9,8 +9,9 @@
 9. Każda zmiana dotycząca wyglądu jakiegoś elementu musi mieć odzwierciedlenie w zawartości pliku DetaleLayout.md
 10. Plik DetaleLayout.md to repozytorium użytych fontów, styli, kolorów itp.
 11. Jeżeli zmiana dotyczny wyglądu pod kątem szerokości kolumn, wyrównania itp to zaktualizuj plik Kolumny.md
-12. Jeżeli polecenie użytkownika nie dotyczy zmiany kodu a tylko analizy to wnioski zapisz w folderze Analizy w nowoutworzonym pliku o odekwatnej nazwie do przeprowadzanej analizy
-13. Jeżeli zapisujesz plik z wynikami analizy to w pliku uwzględnij prompt użytkownika, żeby zachować kontekst zapisanych odpowiedzi
-14. Folderu Analizy nie uwzględniaj w żadnych dokumentacjach i instrukcjach
-15. W plikach docs/Documentation.md, docs/README.md, Kolumny.md, DetaleLayoutu.md nie przechowuj archiwalnych informacji. Mają tam być tylko aktualne informacje a nie historia zmian.
+12. W pliku Kolumny.md ma być spis wszystkich kolumn występujących w aplikacji wraz ze wskazaniem dokładnie w którym miejscu aplikacji one występują. Plik ma nie zawierać danych technicznych tylko opisowe (np. wyrównanie do lewej). Plik ma zawierać informacje dotyczące formatowania zarówno w wersji PC jak i mobilnej
+13. Jeżeli polecenie użytkownika nie dotyczy zmiany kodu a tylko analizy to wnioski zapisz w folderze Analizy w nowoutworzonym pliku o odekwatnej nazwie do przeprowadzanej analizy
+14. Jeżeli zapisujesz plik z wynikami analizy to w pliku uwzględnij prompt użytkownika, żeby zachować kontekst zapisanych odpowiedzi
+15. Folderu Analizy nie uwzględniaj w żadnych dokumentacjach i instrukcjach
+16. W plikach docs/Documentation.md, docs/README.md, Kolumny.md, DetaleLayoutu.md nie przechowuj archiwalnych informacji. Mają tam być tylko aktualne informacje a nie historia zmian.
 17. Jeżeli zmiana dotyczy edycji lub dodania nowgo pola to przeczytaj analizę Analizy/Wazne_Fokus i zadbaj, żeby nie wystąpił ten błąd
