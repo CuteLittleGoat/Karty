@@ -410,6 +410,76 @@ const comparePlayerStatsByPlusMinusDesc = (a, b) => {
   return String(a?.playerName ?? "").localeCompare(String(b?.playerName ?? ""), "pl");
 };
 
+const NOTES_COLOR_MAP = {
+  gold: "var(--gold)",
+  green: "var(--neon)",
+  red: "var(--ruby2)",
+  white: "var(--ink)"
+};
+
+const sanitizeRichTextWithAllowedColors = (rawHtml, allowedColorMap) => {
+  if (typeof rawHtml !== "string" || !rawHtml.trim()) {
+    return "";
+  }
+
+  const parser = new DOMParser();
+  const documentFragment = parser.parseFromString(`<div>${rawHtml}</div>`, "text/html");
+  const root = documentFragment.body.firstElementChild;
+  if (!root) {
+    return "";
+  }
+
+  const allowedColors = new Set(Object.values(allowedColorMap));
+  const cleanNode = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return document.createTextNode(node.textContent ?? "");
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return null;
+    }
+
+    const tag = node.tagName.toLowerCase();
+    if (tag === "br") {
+      return document.createElement("br");
+    }
+
+    if (tag === "span") {
+      const next = document.createElement("span");
+      const colorValue = (node.style.color || "").trim();
+      if (allowedColors.has(colorValue)) {
+        next.style.color = colorValue;
+      }
+      Array.from(node.childNodes).forEach((child) => {
+        const cleaned = cleanNode(child);
+        if (cleaned) {
+          next.appendChild(cleaned);
+        }
+      });
+      return next;
+    }
+
+    const fragment = document.createDocumentFragment();
+    Array.from(node.childNodes).forEach((child) => {
+      const cleaned = cleanNode(child);
+      if (cleaned) {
+        fragment.appendChild(cleaned);
+      }
+    });
+    return fragment;
+  };
+
+  const output = document.createElement("div");
+  Array.from(root.childNodes).forEach((child) => {
+    const cleaned = cleanNode(child);
+    if (cleaned) {
+      output.appendChild(cleaned);
+    }
+  });
+
+  return output.innerHTML;
+};
+
 const getSummaryNotesModalController = (() => {
   let cachedController = null;
 
@@ -420,13 +490,14 @@ const getSummaryNotesModalController = (() => {
 
     const modal = document.querySelector("#summaryNotesModal");
     const title = document.querySelector("#summaryNotesTitle");
-    const textarea = document.querySelector("#summaryNotesInput");
+    const editor = document.querySelector("#summaryNotesInput");
     const status = document.querySelector("#summaryNotesStatus");
     const saveButton = document.querySelector("#summaryNotesSave");
     const clearButton = document.querySelector("#summaryNotesClear");
     const closeButton = document.querySelector("#summaryNotesClose");
+    const colorButtons = document.querySelectorAll("[data-notes-color]");
 
-    if (!modal || !title || !textarea || !status || !saveButton || !clearButton || !closeButton) {
+    if (!modal || !title || !editor || !status || !saveButton || !clearButton || !closeButton) {
       cachedController = {
         open: () => {}
       };
@@ -445,6 +516,37 @@ const getSummaryNotesModalController = (() => {
       clearToDefault: false,
       readOnlyMessage: "Brak uprawnień do edycji notatek.",
       textareaPlaceholder: "Wpisz notatki..."
+    };
+
+    const applyColor = (colorKey) => {
+      if (!state.canWrite) {
+        status.textContent = state.readOnlyMessage;
+        return;
+      }
+
+      const selectedColor = NOTES_COLOR_MAP[colorKey];
+      const selection = window.getSelection();
+      if (!selectedColor || !selection || selection.rangeCount === 0 || selection.isCollapsed) {
+        status.textContent = "Zaznacz fragment tekstu, a potem wybierz kolor.";
+        return;
+      }
+
+      const range = selection.getRangeAt(0);
+      if (!editor.contains(range.commonAncestorContainer)) {
+        status.textContent = "Kolor możesz nadać tylko tekstowi notatek.";
+        return;
+      }
+
+      const fragment = range.extractContents();
+      const span = document.createElement("span");
+      span.style.color = selectedColor;
+      span.appendChild(fragment);
+      range.insertNode(span);
+      selection.removeAllRanges();
+
+      const normalized = sanitizeRichTextWithAllowedColors(editor.innerHTML, NOTES_COLOR_MAP);
+      editor.innerHTML = normalized;
+      status.textContent = "Kolor zastosowany. Kliknij Zapisz, aby utrwalić zmiany.";
     };
 
     const closeModal = () => {
@@ -472,7 +574,8 @@ const getSummaryNotesModalController = (() => {
     }) => {
       state.gameId = String(gameId ?? "");
       state.gameName = String(gameName ?? "Bez nazwy");
-      const normalizedNotes = typeof notes === "string" ? notes : "";
+      const rawNotes = typeof notes === "string" ? notes : "";
+      const normalizedNotes = sanitizeRichTextWithAllowedColors(rawNotes, NOTES_COLOR_MAP);
       state.notes = normalizedNotes;
       state.notesLabel = String(notesLabel ?? "Notatki");
       state.canWrite = Boolean(canWrite);
@@ -484,9 +587,11 @@ const getSummaryNotesModalController = (() => {
       state.textareaPlaceholder = String(textareaPlaceholder ?? "Wpisz notatki...");
 
       title.textContent = `${state.notesLabel}: ${state.gameName}`;
-      textarea.value = state.notes;
-      textarea.placeholder = state.textareaPlaceholder;
-      textarea.disabled = !state.canWrite;
+      editor.innerHTML = state.notes;
+      editor.dataset.placeholder = state.textareaPlaceholder;
+      editor.contentEditable = state.canWrite ? "true" : "false";
+      editor.setAttribute("aria-readonly", state.canWrite ? "false" : "true");
+      editor.classList.toggle("is-readonly", !state.canWrite);
       saveButton.disabled = !state.canWrite;
       clearButton.disabled = !state.canWrite;
       clearButton.textContent = state.clearButtonLabel;
@@ -495,8 +600,7 @@ const getSummaryNotesModalController = (() => {
       modal.classList.add("is-visible");
       modal.setAttribute("aria-hidden", "false");
       document.body.classList.add("modal-open");
-      textarea.focus();
-      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+      editor.focus();
     };
 
     const persist = async (value) => {
@@ -509,7 +613,7 @@ const getSummaryNotesModalController = (() => {
       try {
         await state.onSave({ gameId: state.gameId, notes: value });
         state.notes = value;
-        textarea.value = value;
+        editor.innerHTML = value;
         status.textContent = "Notatki zapisane.";
       } catch (error) {
         status.textContent = "Nie udało się zapisać notatek.";
@@ -520,12 +624,22 @@ const getSummaryNotesModalController = (() => {
     };
 
     saveButton.addEventListener("click", () => {
-      void persist(textarea.value);
+      const normalizedValue = sanitizeRichTextWithAllowedColors(editor.innerHTML, NOTES_COLOR_MAP);
+      editor.innerHTML = normalizedValue;
+      void persist(normalizedValue);
     });
 
     clearButton.addEventListener("click", () => {
-      const nextValue = state.clearToDefault ? DEFAULT_GAME_NOTES_TEMPLATE : "";
+      const nextValue = state.clearToDefault
+        ? sanitizeRichTextWithAllowedColors(DEFAULT_GAME_NOTES_TEMPLATE, NOTES_COLOR_MAP)
+        : "";
       void persist(nextValue);
+    });
+
+    colorButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        applyColor(button.dataset.notesColor);
+      });
     });
 
     closeButton.addEventListener("click", closeModal);

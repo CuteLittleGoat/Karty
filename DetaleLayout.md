@@ -62,3 +62,11 @@
 - Przyciski kolorów: `Złoty`, `Zielony`, `Czerwony`, `Biały` (mapowane do kolorów motywu: `--gold`, `--neon`, `--ruby2`, `--ink`) i renderowane z odpowiadającym im tłem przycisku (złote, zielone, czerwone, jasne/białe).
 - Zakładka gracza: `eveningPlanTab` z bramką PIN (`#eveningPlanPinGate`) i widokiem tylko do odczytu `.evening-plan-output`.
 - Edytor i widok planu używają `white-space: pre-wrap`, dzięki czemu zachowują podziały linii wpisane przez admina.
+
+
+## Modal „Notatki do gry”
+- Modal `#summaryNotesModal` ma pasek kolorowania `.summary-notes-color-actions` umieszczony pod tytułem i nad polem tekstu.
+- Przyciski kolorów: `#summaryNotesColorGold`, `#summaryNotesColorGreen`, `#summaryNotesColorRed`, `#summaryNotesColorWhite`.
+- Pole edycji to `.summary-notes-editor` (contenteditable) ze stylami jak dla edytora planu wieczoru: ciemne tło, obramowanie w kolorze motywu, `white-space: pre-wrap`.
+- Każdy przycisk koloru ma tę samą stylistykę co odpowiednik z „Planu wieczoru” (złote, zielone, czerwone, jasne tło).
+- W trybie odczytu (np. „Gry do Potwierdzenia”) modal pokazuje zapisane kolory tekstu bez możliwości edycji.
