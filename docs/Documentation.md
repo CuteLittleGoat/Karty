@@ -37,20 +37,21 @@ Panel admina zawiera zakładki:
 Dodatkowo globalny przycisk odświeżania panelu: `adminPanelRefresh`.
 
 ### 3.2 Strefa gracza
-W widoku użytkownika nie ma osobnego nagłówka „Strefa gracza”; interfejs zaczyna się bezpośrednio od paska zakładek.
-Strefa gracza obejmuje zakładki:
-- Najbliższa gra,
-- Czat,
-- Gry do potwierdzenia,
-- Gry użytkowników,
-- Statystyki,
-- Plan wieczoru,
-- oraz sekcje informacyjne (Aktualności/Regulamin).
+Widok użytkownika ma 3 zakładki główne: `updatesTab` (Aktualności), `rulesTab` (Regulamin) i `playerZoneTab` (Strefa Gracza).
 
-Dostęp do części zakładek jest kontrolowany przez:
-- PIN 5-cyfrowy,
-- uprawnienia przypisane graczowi (`permissions`),
-- listę lat statystyk dostępnych dla konkretnego gracza (`statsYearsAccess`).
+W `playerZoneTab` działa dodatkowa bramka PIN (`playerZonePinInput`, `playerZonePinSubmit`) i dopiero po poprawnej autoryzacji renderowany jest layout dwukolumnowy:
+- lewy panel `Sekcja` (`playerZoneSectionsList`) z przyciskami:
+  - Najbliższa Gra (`nextGameTab`),
+  - Plan Wieczoru (`eveningPlanTab`),
+  - Czat (`chatTab`),
+  - Gry do Potwierdzenia (`confirmationsTab`),
+  - Gry Użytkowników (`userGamesTab`),
+  - Statystyki (`statsTab`),
+- prawa kolumna z aktywną sekcją (`.player-zone-panel`).
+
+Uprawnienia działają dwupoziomowo:
+1. `playerZoneTab` — dostęp do wejścia do Strefy Gracza,
+2. osobne uprawnienia sekcyjne (`nextGameTab`, `eveningPlanTab`, `chatTab`, `confirmationsTab`, `userGamesTab`, `statsTab`) — widoczność poszczególnych przycisków i sekcji.
 
 ### 3.3 Modale i okna dialogowe
 W aplikacji występują m.in. poniższe modale:
@@ -84,7 +85,7 @@ W aplikacji występują m.in. poniższe modale:
 - Dane autoryzacji są przechowywane w `sessionStorage` osobno dla różnych sekcji (np. czat, gry, statystyki).
 - Funkcje `sanitizePin`, `isPinValid`, `generateRandomPin` obsługują walidację i format.
 - Dla każdej sekcji istnieją gettery/settery stanu PIN + zapamiętanie zweryfikowanego gracza.
-- Nowa sekcja `Plan wieczoru` używa niezależnych kluczy sesji (`EVENING_PLAN_PIN_STORAGE_KEY`, `EVENING_PLAN_PLAYER_ID_STORAGE_KEY`) i waliduje uprawnienie `eveningPlanTab`.
+- Strefa Gracza używa niezależnych kluczy sesji (`PLAYER_ZONE_PIN_STORAGE_KEY`, `PLAYER_ZONE_PLAYER_ID_STORAGE_KEY`) i waliduje uprawnienie `playerZoneTab`. Sekcja `Plan wieczoru` nadal używa własnych kluczy (`EVENING_PLAN_PIN_STORAGE_KEY`, `EVENING_PLAN_PLAYER_ID_STORAGE_KEY`) oraz uprawnienia `eveningPlanTab`.
 
 ### 4.3 Zarządzanie graczami
 - Gracze są trzymani w dokumencie `app_settings/player_access` jako tablica `players`.

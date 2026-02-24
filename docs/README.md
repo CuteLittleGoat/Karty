@@ -6,72 +6,58 @@
 3. Niżej widzisz od razu pasek zakładek użytkownika (bez osobnego nagłówka nad zakładkami).
 4. Kliknięcie nazwy zakładki przełącza zawartość widoku.
 
-## 2. Strefa gracza
+## 2. Widok użytkownika
 
-### 2.1 Najbliższa gra
-1. Kliknij zakładkę **Najbliższa gra**.
-2. Wpisz 5-cyfrowy PIN.
+W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Regulamin**, **Strefa Gracza**.
+
+### 2.1 Aktualności
+1. Kliknij zakładkę **Aktualności**.
+2. Odczytaj pole **Najnowsze** z ostatnią wiadomością od administratora.
+
+### 2.2 Regulamin
+1. Kliknij zakładkę **Regulamin**.
+2. Odczytaj pole **Obowiązujące zasady**.
+
+### 2.3 Strefa Gracza
+1. Kliknij zakładkę **Strefa Gracza**.
+2. Wpisz 5-cyfrowy PIN gracza, który ma nadane uprawnienie **Strefa Gracza** w panelu **Gracze**.
 3. Kliknij **Otwórz**.
-4. Zobaczysz tabelę tylko do odczytu: Rodzaj gry, Data, Nazwa, CzyWszyscyPotwierdzili.
-5. Kliknij **Odśwież**, aby pobrać aktualny stan.
+4. Po lewej stronie zobaczysz panel **Sekcja** z przyciskami funkcji.
+5. Administrator może włączać/wyłączać każdy przycisk osobno dla danego gracza.
 
-### 2.2 Aktualności
-1. Kliknij **Aktualności**.
-2. Odczytaj najnowszy komunikat opublikowany przez administratora.
-
-### 2.3 Regulamin
-1. Kliknij **Regulamin**.
-2. Odczytaj aktualny tekst zasad gry.
-
-### 2.4 Plan wieczoru
-1. Kliknij **Plan wieczoru**.
-2. Wpisz 5-cyfrowy PIN gracza, który ma nadane uprawnienie **Plan wieczoru** w panelu admina.
+### 2.4 Sekcja: Najbliższa Gra
+1. W **Strefie Gracza** kliknij po lewej **Najbliższa Gra**.
+2. Wpisz PIN z uprawnieniem **Najbliższa gra**.
 3. Kliknij **Otwórz**.
-4. Odczytaj harmonogram (widok jest tylko do odczytu, bez możliwości edycji).
-5. Kolory fragmentów (złoty, zielony, czerwony, biały) są nadawane przez administratora i są widoczne dokładnie tak samo w strefie gracza.
+4. Odczytaj tabelę: Rodzaj gry, Data, Nazwa, CzyWszyscyPotwierdzili.
 
-### 2.5 Czat
-1. Kliknij **Czat**.
-2. Wpisz PIN i kliknij **Otwórz**.
-3. W polu tekstowym wpisz wiadomość.
-4. Kliknij **Wyślij**.
-5. Wiadomość pojawi się na liście czatu.
+### 2.5 Sekcja: Plan Wieczoru
+1. Kliknij po lewej **Plan Wieczoru**.
+2. Wpisz PIN z uprawnieniem **Plan wieczoru**.
+3. Kliknij **Otwórz**.
+4. Odczytaj harmonogram w wersji tylko do podglądu.
 
-### 2.6 Gry do potwierdzenia
-1. Kliknij **Gry do potwierdzenia**.
-2. Wpisz PIN i kliknij **Otwórz**.
-3. W każdym wierszu gry użyj:
-   - **Potwierdź** — ustawiasz obecność,
-   - **Anuluj** — cofnięcie potwierdzenia,
-   - **Szczegóły** — otwierasz podgląd tabeli graczy (tylko odczyt),
-   - **Notatki do gry** — otwierasz notatki przedmeczowe (tylko odczyt).
-4. W oknie **Szczegóły** zobaczysz nagłówek z: Nazwa, Rodzaj gry, Data, Pula.
-5. W tabeli szczegółów pierwsza kolumna to **LP** (numer porządkowy gracza).
+### 2.6 Sekcja: Czat
+1. Kliknij po lewej **Czat**.
+2. Wpisz PIN z uprawnieniem **Czat** i kliknij **Otwórz**.
+3. Wpisz wiadomość i kliknij **Wyślij**.
 
-### 2.7 Gry użytkowników
-1. Kliknij **Gry użytkowników**.
+### 2.7 Sekcja: Gry do Potwierdzenia
+1. Kliknij po lewej **Gry do Potwierdzenia**.
 2. Wpisz PIN i kliknij **Otwórz**.
-3. Po zalogowaniu widzisz **tylko gry utworzone przez siebie** (na podstawie Twojego PIN-u). Gry innych graczy nie są pokazywane w tym widoku.
-4. W lewym panelu kliknij rok.
-5. Kliknij **Dodaj**, aby utworzyć nową grę.
-6. W tabeli gier możesz zmienić: Rodzaj Gry, Data, Nazwa, CzyZamknięta — tylko dla własnych gier.
-7. W kolumnie Nazwa kliknij:
-   - **Szczegóły** — edycja graczy w grze,
-   - **Notatki do gry** — notatki przedmeczowe.
-8. W oknie **Szczegóły**:
-   - kliknij **Dodaj** aby dodać gracza,
-   - wypełnij Gracz, Wpisowe, Rebuy/Add-on, Wypłata, Punkty,
-   - zaznacz **Mistrzostwo** jeśli dotyczy,
-   - usuń wiersz przyciskiem **Usuń**.
-9. W nagłówku szczegółów widzisz: Nazwa, Rodzaj gry, Data, **Pula**.
-10. W tabeli szczegółów pierwsza kolumna to **LP**.
+3. Dla gry użyj: **Potwierdź**, **Anuluj**, **Szczegóły**, **Notatki do gry**.
 
-### 2.8 Statystyki
-1. Kliknij **Statystyki**.
-2. Wpisz PIN i kliknij **Otwórz**.
-3. Wybierz rok po lewej stronie.
-4. Odczytaj tabelę statystyk oraz ranking.
-5. Kliknij **Eksportuj**, jeśli chcesz pobrać plik XLSX.
+### 2.8 Sekcja: Gry Użytkowników
+1. Kliknij po lewej **Gry Użytkowników**.
+2. Wpisz PIN z uprawnieniem **Gry użytkowników**.
+3. Kliknij **Otwórz**.
+4. Wybierz rok po lewej i zarządzaj własnymi grami.
+
+### 2.9 Sekcja: Statystyki
+1. Kliknij po lewej **Statystyki**.
+2. Wpisz PIN z uprawnieniem **Statystyki**.
+3. Kliknij **Otwórz**.
+4. Wybierz rok po lewej i przeglądaj statystyki/ranking.
 
 ## 3. Panel Administratora
 
@@ -102,7 +88,7 @@
 1. Wejdź w **Gracze**.
 2. Kliknij **Dodaj**, aby dodać nowy wpis gracza.
 3. Uzupełnij: Nazwa, PIN, dostęp do aplikacji.
-4. Kliknij **Edytuj** w kolumnie uprawnień i zaznacz zakładki dostępne dla gracza (w tym **Plan wieczoru**, jeśli gracz ma widzieć harmonogram).
+4. Kliknij **Edytuj** w kolumnie uprawnień i zaznacz dostęp do **Strefa Gracza** oraz do konkretnych sekcji w Strefie (Najbliższa gra, Plan wieczoru, Czat, Gry do potwierdzenia, Gry użytkowników, Statystyki).
 5. Dla **Statystyk** użyj przycisku **Lata**, aby wskazać lata widoczne dla gracza.
 
 ### 3.6 Gry admina

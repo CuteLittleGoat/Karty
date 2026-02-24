@@ -34,8 +34,13 @@
 - Sekwencja kolumn: `Ilość Spotkań`, `Waga2`, `% udział`, `Punkty`.
 
 ## Strefa gracza
-- Usunięto czerwony komunikat ostrzegawczy wyświetlany wcześniej nad zakładkami użytkownika.
-- Nad zakładkami użytkownika nie jest renderowany tekstowy nagłówek „Strefa gracza”; sekcja zaczyna się bezpośrednio od listy zakładek.
+- Górny pasek użytkownika zawiera 3 zakładki: `Aktualności`, `Regulamin`, `Strefa Gracza`.
+- `Strefa Gracza` ma własną bramkę PIN (`#playerZonePinGate`).
+- Po autoryzacji widoczny jest layout dwukolumnowy:
+  - lewy panel boczny z nagłówkiem `Sekcja`,
+  - prawa kolumna z aktywną sekcją.
+- Przyciski w lewym panelu używają stylu `.admin-games-year-button` (spójnego wizualnie z panelami „Lata”).
+- Sekcje `Najbliższa Gra`, `Plan Wieczoru`, `Czat`, `Gry do Potwierdzenia`, `Gry Użytkowników`, `Statystyki` są renderowane jako `.player-zone-panel` i przełączane klasą `.is-active`.
 
 
 ## Kalkulator — modal „Rebuy gracza”

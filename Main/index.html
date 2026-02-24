@@ -413,69 +413,18 @@
         <section class="card next-game-card">
           <div class="user-panel">
             <div class="user-tabs" role="tablist" aria-label="Zakładki użytkownika">
-              <button class="tab-button is-active" type="button" data-target="nextGameTab">
-                Najbliższa gra
-              </button>
-              <button class="tab-button" type="button" data-target="updatesTab">
+              <button class="tab-button is-active" type="button" data-target="updatesTab">
                 Aktualności
               </button>
               <button class="tab-button" type="button" data-target="rulesTab">
                 Regulamin
               </button>
-              <button class="tab-button" type="button" data-target="eveningPlanTab">
-                Plan wieczoru
-              </button>
-              <button class="tab-button" type="button" data-target="chatTab">
-                Czat
-              </button>
-              <button class="tab-button" type="button" data-target="confirmationsTab">
-                Gry do potwierdzenia
-              </button>
-              <button class="tab-button" type="button" data-target="userGamesTab">
-                Gry użytkowników
-              </button>
-              <button class="tab-button" type="button" data-target="statsTab">
-                Statystyki
+              <button class="tab-button" type="button" data-target="playerZoneTab">
+                Strefa Gracza
               </button>
             </div>
           </div>
           <div class="user-tab-content">
-            <div id="nextGameTab" class="tab-panel is-active" role="tabpanel">
-              <div id="nextGamePinGate" class="pin-gate" aria-live="polite">
-                <div class="pin-card">
-                  <p class="pin-title">Wpisz PIN, aby zobaczyć szczegóły najbliższej gry.</p>
-                  <div class="pin-inputs">
-                    <input
-                      id="nextGamePinInput"
-                      type="tel"
-                      inputmode="numeric"
-                      pattern="[0-9]{5}"
-                      autocomplete="one-time-code"
-                      maxlength="5"
-                      minlength="5"
-                      placeholder="PIN (5 cyfr)"
-                    />
-                    <button id="nextGamePinSubmit" class="primary" type="button">Otwórz</button>
-                  </div>
-                  <p id="nextGamePinStatus" class="status-text"></p>
-                </div>
-              </div>
-              <div id="nextGameContent" class="next-game-content">
-                <div class="admin-table-scroll">
-                  <table class="admin-data-table">
-                    <thead>
-                      <tr>
-                        <th>Rodzaj gry</th>
-                        <th>Data</th>
-                        <th>Nazwa</th>
-                        <th>CzyWszyscyPotwierdzili</th>
-                      </tr>
-                    </thead>
-                    <tbody id="nextGameTableBody"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
             <div id="updatesTab" class="tab-panel" role="tabpanel">
               <div class="card-header">
                 <h2>Aktualności</h2>
@@ -506,7 +455,64 @@
                 <p id="rulesStatus" class="status-text" aria-live="polite"></p>
               </div>
             </div>
-            <div id="eveningPlanTab" class="tab-panel" role="tabpanel">
+            <div id="playerZoneTab" class="tab-panel" role="tabpanel">
+              <div id="playerZonePinGate" class="pin-gate" aria-live="polite">
+                <div class="pin-card">
+                  <p class="pin-title">Wpisz PIN z uprawnieniem Strefa Gracza, aby wejść do tej sekcji.</p>
+                  <div class="pin-inputs">
+                    <input
+                      id="playerZonePinInput"
+                      type="tel"
+                      inputmode="numeric"
+                      pattern="[0-9]{5}"
+                      autocomplete="one-time-code"
+                      maxlength="5"
+                      minlength="5"
+                      placeholder="PIN (5 cyfr)"
+                    />
+                    <button id="playerZonePinSubmit" class="primary" type="button">Otwórz</button>
+                  </div>
+                  <p id="playerZonePinStatus" class="status-text"></p>
+                </div>
+              </div>
+              <div id="playerZoneContent" class="user-games-content">
+                <div class="admin-games-layout player-zone-layout">
+                  <aside class="admin-games-sidebar">
+                    <div class="card-header admin-games-sidebar-header">
+                      <h3>Sekcja</h3>
+                    </div>
+                    <div id="playerZoneSectionsList" class="admin-games-years-list player-zone-sections-list">
+                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="nextGameTab">Najbliższa Gra</button>
+                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="eveningPlanTab">Plan Wieczoru</button>
+                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="chatTab">Czat</button>
+                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="confirmationsTab">Gry do Potwierdzenia</button>
+                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="userGamesTab">Gry Użytkowników</button>
+                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="statsTab">Statystyki</button>
+                    </div>
+                    <p id="playerZoneSectionsStatus" class="status-text" aria-live="polite"></p>
+                  </aside>
+                  <section class="admin-games-content player-zone-sections-content">
+                    <div id="nextGameTab" class="player-zone-panel" role="tabpanel">
+                      <div id="nextGamePinGate" class="pin-gate" aria-live="polite">
+                        <div class="pin-card">
+                          <p class="pin-title">Wpisz PIN, aby zobaczyć szczegóły najbliższej gry.</p>
+                          <div class="pin-inputs">
+                            <input id="nextGamePinInput" type="tel" inputmode="numeric" pattern="[0-9]{5}" autocomplete="one-time-code" maxlength="5" minlength="5" placeholder="PIN (5 cyfr)" />
+                            <button id="nextGamePinSubmit" class="primary" type="button">Otwórz</button>
+                          </div>
+                          <p id="nextGamePinStatus" class="status-text"></p>
+                        </div>
+                      </div>
+                      <div id="nextGameContent" class="next-game-content">
+                        <div class="admin-table-scroll">
+                          <table class="admin-data-table">
+                            <thead><tr><th>Rodzaj gry</th><th>Data</th><th>Nazwa</th><th>CzyWszyscyPotwierdzili</th></tr></thead>
+                            <tbody id="nextGameTableBody"></tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="eveningPlanTab" class="player-zone-panel" role="tabpanel">
               <div id="eveningPlanPinGate" class="pin-gate" aria-live="polite">
                 <div class="pin-card">
                   <p class="pin-title">Wpisz PIN z uprawnieniem Plan wieczoru, aby zobaczyć harmonogram.</p>
@@ -537,7 +543,7 @@
                 </div>
               </div>
             </div>
-            <div id="chatTab" class="tab-panel" role="tabpanel">
+            <div id="chatTab" class="player-zone-panel" role="tabpanel">
               <div id="chatPinGate" class="pin-gate" aria-live="polite">
                 <div class="pin-card">
                   <p class="pin-title">Wpisz PIN z uprawnieniem Czat, aby dołączyć do rozmowy.</p>
@@ -574,7 +580,7 @@
                 </div>
               </div>
             </div>
-            <div id="confirmationsTab" class="tab-panel" role="tabpanel">
+            <div id="confirmationsTab" class="player-zone-panel" role="tabpanel">
               <div id="confirmationsPinGate" class="pin-gate" aria-live="polite">
                 <div class="pin-card">
                   <p class="pin-title">Wpisz PIN, aby przejść do listy gier do potwierdzenia.</p>
@@ -614,7 +620,7 @@
                 </div>
               </div>
             </div>
-            <div id="userGamesTab" class="tab-panel" role="tabpanel">
+            <div id="userGamesTab" class="player-zone-panel" role="tabpanel">
               <div id="userGamesPinGate" class="pin-gate" aria-live="polite">
                 <div class="pin-card">
                   <p class="pin-title">Wpisz PIN z uprawnieniem Gry użytkowników, aby wejść do tej sekcji.</p>
@@ -669,7 +675,7 @@
                 </div>
               </div>
             </div>
-            <div id="statsTab" class="tab-panel" role="tabpanel">
+            <div id="statsTab" class="player-zone-panel" role="tabpanel">
               <div id="statisticsPinGate" class="pin-gate" aria-live="polite">
                 <div class="pin-card">
                   <p class="pin-title">Wpisz PIN z uprawnieniem Statystyki, aby wejść do tej sekcji.</p>
@@ -761,6 +767,10 @@
                       </table>
                     </div>
                   </aside>
+                </div>
+              </div>
+                    </div>
+                  </section>
                 </div>
               </div>
             </div>
