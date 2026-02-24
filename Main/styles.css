@@ -606,28 +606,32 @@ select:disabled,
   gap: 8px;
 }
 
-#planColorGold {
+#planColorGold,
+#summaryNotesColorGold {
   background: linear-gradient(180deg, rgba(212, 175, 55, 0.3), rgba(212, 175, 55, 0.14));
   border-color: var(--gold-line);
   color: rgba(237, 235, 230, 0.96);
   box-shadow: var(--glow-gold);
 }
 
-#planColorGreen {
+#planColorGreen,
+#summaryNotesColorGreen {
   background: rgba(43, 227, 139, 0.2);
   border-color: rgba(43, 227, 139, 0.6);
   color: rgba(237, 235, 230, 0.95);
   box-shadow: var(--glow-neon);
 }
 
-#planColorRed {
+#planColorRed,
+#summaryNotesColorRed {
   background: rgba(226, 58, 75, 0.24);
   border-color: rgba(226, 58, 75, 0.72);
   color: rgba(237, 235, 230, 0.95);
   box-shadow: 0 0 18px rgba(226, 58, 75, 0.28);
 }
 
-#planColorWhite {
+#planColorWhite,
+#summaryNotesColorWhite {
   background: rgba(237, 235, 230, 0.2);
   border-color: rgba(237, 235, 230, 0.5);
   color: rgba(237, 235, 230, 0.98);
@@ -856,6 +860,30 @@ select:disabled,
   outline: none;
   border-color: rgba(212, 175, 55, 0.6);
   box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.16);
+}
+
+.summary-notes-color-actions {
+  margin-bottom: 10px;
+}
+
+.summary-notes-editor {
+  min-height: 180px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.summary-notes-editor[contenteditable="true"] {
+  resize: none;
+}
+
+.summary-notes-editor.is-readonly {
+  opacity: 0.9;
+}
+
+.summary-notes-editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+  pointer-events: none;
 }
 
 .admin-players {

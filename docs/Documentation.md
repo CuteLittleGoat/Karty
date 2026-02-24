@@ -15,7 +15,7 @@ Całość działa po stronie przeglądarki i komunikuje się bezpośrednio z Fir
 ## 2. Struktura plików i odpowiedzialności
 - `Main/index.html` — kompletny układ interfejsu (zakładki admina i gracza, tabele, sekcje, wszystkie modale i ich przyciski/ID). 
 - `Main/app.js` — pełna logika: inicjalizacja Firebase, subskrypcje `onSnapshot`, renderowanie tabel, walidacje, obliczenia, synchronizacja zakładek, obsługa modali i sesji PIN.
-- `Main/styles.css` — design system (zmienne CSS, fonty, kolory, responsywność, style paneli/tabel/modali/statusów).
+- `Main/styles.css` — design system (zmienne CSS, fonty, kolory, responsywność, style paneli/tabel/modali/statusów), w tym style edytora notatek `.summary-notes-editor` i paska kolorów `.summary-notes-color-actions`.
 - `config/firebase-config.js` — konfiguracja projektu Firebase + nazwy kolekcji używanych przez aplikację.
 
 ## 3. UI — komplet funkcjonalności i elementów sterujących
@@ -55,7 +55,7 @@ Uprawnienia działają dwupoziomowo:
 
 ### 3.3 Modale i okna dialogowe
 W aplikacji występują m.in. poniższe modale:
-- `summaryNotesModal` — notatki do podsumowania gry (zapis/reset do szablonu).
+- `summaryNotesModal` — notatki do podsumowania gry (zapis/reset do szablonu) z paskiem kolorowania tekstu (złoty/zielony/czerwony/biały) umieszczonym pod tytułem modala i nad edytorem.
 - `instructionModal` — podgląd instrukcji użytkownika ładowanej z dokumentacji.
 - `playerPermissionsModal` — wybór zakładek dostępnych dla gracza.
 - `playerStatsYearsModal` — wybór lat statystyk dostępnych dla gracza.
@@ -190,6 +190,14 @@ W kalkulatorze:
 - odznaczenie `Eliminated` usuwa gracza z Tabela4 i powoduje automatyczne „zsunięcie” pozostałych wyeliminowanych na niższe miejsca, zgodnie z ich kolejnością eliminacji,
 - kolumna `Wygrana` w Tabela4 działa niezależnie od nazw graczy i zawsze kopiuje `Suma` z tego samego `LP` w Tabela5.
 
+
+### 4.11 Kolorowe notatki do gry (Gry użytkowników + Gry do potwierdzenia)
+- `summaryNotesModal` używa teraz edytora `contenteditable` (`#summaryNotesInput`) zamiast klasycznego `textarea`, dzięki czemu możliwe jest kolorowanie wybranych fragmentów tekstu.
+- Przyciski `summaryNotesColorGold|Green|Red|White` wywołują kolorowanie tylko zaznaczenia wewnątrz edytora notatek.
+- Kolory mapują się na zmienne motywu: `gold -> var(--gold)`, `green -> var(--neon)`, `red -> var(--ruby2)`, `white -> var(--ink)`.
+- Przed zapisem notatki HTML jest sanityzowany (`sanitizeRichTextWithAllowedColors`) — zostają wyłącznie bezpieczne elementy: tekst, `br`, `span` z dozwolonym kolorem.
+- Ta sama zawartość HTML jest renderowana w trybie tylko do odczytu w zakładce gracza **Gry do Potwierdzenia**, więc użytkownik widzi dokładnie te kolory, które zapisano podczas edycji.
+
 ## 5. Obliczenia finansowe i statystyczne
 
 ### 5.1 Na poziomie pojedynczej gry
@@ -286,7 +294,7 @@ Aplikacja odczytuje konfigurację z `window.firebaseConfig`:
 - dokument gry:
   - `gameType`, `gameDate`, `name`,
   - `isClosed`,
-  - `preGameNotes`, `postGameNotes`,
+  - `preGameNotes`, `postGameNotes` (sanityzowany HTML notatek; obsługa kolorów tekstu),
   - `createdAt`.
 - subkolekcja `rows`:
   - `playerName`, `entryFee`, `rebuy`, `payout`, `points`, `championship`, `createdAt`.

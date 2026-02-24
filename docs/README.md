@@ -45,11 +45,19 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 1. Kliknij po lewej **Gry do Potwierdzenia**.
 2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
 3. Dla gry użyj: **Potwierdź**, **Anuluj**, **Szczegóły**, **Notatki do gry**.
+4. Po kliknięciu **Notatki do gry** otworzy się okno z tytułem w formacie „Notatki do gry: Nazwa gry”.
+5. W tym oknie (tryb tylko do odczytu) tekst notatek jest wyświetlany dokładnie w kolorach zapisanych wcześniej przez osobę edytującą notatkę (złoty, zielony, czerwony, biały).
 
 ### 2.8 Sekcja: Gry Użytkowników
 1. Kliknij po lewej **Gry Użytkowników**.
 2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
 3. Wybierz rok po lewej i zarządzaj własnymi grami.
+4. Przy wybranej grze kliknij **Notatki do gry**.
+5. W otwartym oknie najpierw zaznacz fragment wpisanego tekstu w polu notatek.
+6. Kliknij przycisk koloru nad polem tekstowym: **Złoty**, **Zielony**, **Czerwony** albo **Biały**.
+7. Powtórz zaznaczanie i kolorowanie dla kolejnych fragmentów.
+8. Kliknij **Zapisz**, aby utrwalić tekst wraz z kolorami.
+9. Przycisk **Domyślne** przywraca domyślny szablon notatki do gry.
 
 ### 2.9 Sekcja: Statystyki
 1. Kliknij po lewej **Statystyki**.
