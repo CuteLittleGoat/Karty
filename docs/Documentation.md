@@ -165,6 +165,7 @@ result = championshipCount * weight1
 
 ### 4.9 Kalkulator (Tournament / Cash)
 Kalkulator przechowuje osobny stan dla dwóch trybów (`calculators/tournament`, `calculators/cash`).
+W układzie UI lewa kolumna kalkulatora to osobny panel `Rodzaj gry` (`.admin-calculator-sidebar`) z nagłówkiem i przyciskami przełączania trybu.
 Model obejmuje:
 - `table1Row` (buy-in, rebuy),
 - `table2Rows` (gracze, eliminacje, lista rebuy per gracz),
@@ -176,6 +177,7 @@ Model obejmuje:
 W kalkulatorze:
 - liczby w polach kalkulatora są sanityzowane do cyfr, a `table5Mods` dopuszcza także znak minus na początku (wartości ujemne),
 - stan jest debouncowany i automatycznie zapisywany do Firestore,
+- przełączniki `Tournament` / `Cash` są osadzone w kontenerze `.admin-calculator-switch` wewnątrz panelu `.admin-calculator-sidebar`,
 - możliwa jest edycja rebuy przez dedykowany modal.
 - modal rebuy startuje bez kolumn; kolumny powstają dopiero po kliknięciu `Dodaj Rebuy`,
 - nazwy kolumn rebuy są numerowane globalnie względem wszystkich graczy w kolejności wierszy Tabela2 (`Rebuy1..n`),
