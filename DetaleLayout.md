@@ -49,3 +49,10 @@
 - Kolumna `Ranking` nie jest renderowana w Tabela5.
 - Kolumna `Suma` uwzględnia ręczną korektę z `Mod`.
 - Kolumny `Rebuy1..RebuyN` pokazują kwotę tylko w pojedynczym przypisanym wierszu `LP` według sekwencji cyklicznej z rosnącym zakresem (4, 5, 6, 7...).
+
+
+## Plan wieczoru
+- Zakładka admina: `adminEveningPlanTab` z edytorem `.admin-plan-editor` (contenteditable) i paskiem przycisków kolorów.
+- Przyciski kolorów: `Złoty`, `Zielony`, `Czerwony`, `Biały` (mapowane do kolorów motywu: `--gold`, `--neon`, `--ruby2`, `--ink`).
+- Zakładka gracza: `eveningPlanTab` z bramką PIN (`#eveningPlanPinGate`) i widokiem tylko do odczytu `.evening-plan-output`.
+- Edytor i widok planu używają `white-space: pre-wrap`, dzięki czemu zachowują podziały linii wpisane przez admina.
