@@ -455,6 +455,25 @@ select:disabled,
   min-width: 760px;
 }
 
+.admin-calculator-cash-empty {
+  padding: 18px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border2);
+  background: rgba(0, 0, 0, 0.2);
+  display: grid;
+  gap: 8px;
+}
+
+.admin-calculator-cash-empty h4 {
+  margin: 0;
+  font-family: var(--font-subtitle);
+  letter-spacing: 0.06em;
+}
+
+.admin-calculator-cash-empty p {
+  margin: 0;
+}
+
 .summary-table {
   min-width: 480px;
 }

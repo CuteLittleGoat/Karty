@@ -4010,8 +4010,28 @@ const initAdminCalculator = () => {
     rootTable5.appendChild(scroll);
   };
 
+  const renderCashPlaceholder = () => {
+    [rootTable1, rootTable2, rootTable3, rootTable4, rootTable5].forEach((root) => {
+      root.innerHTML = "";
+    });
+
+    const cashPlaceholder = document.createElement("div");
+    cashPlaceholder.className = "admin-calculator-cash-empty";
+    cashPlaceholder.innerHTML = `
+      <h4>Sekcja Cash</h4>
+      <p>Zawartość tej sekcji została wyczyszczona i jest gotowa pod nowy układ tabel.</p>
+    `;
+    rootTable1.appendChild(cashPlaceholder);
+  };
+
   const render = () => {
     const focusState = getFocusedAdminInputState(calculatorContent);
+    if (state.mode === "cash") {
+      renderCashPlaceholder();
+      restoreFocusedAdminInputState(calculatorContent, focusState);
+      return;
+    }
+
     renderTable1();
     renderTable2();
     renderTable3();
