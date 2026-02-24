@@ -85,6 +85,7 @@ W aplikacji występują m.in. poniższe modale:
 - Dane autoryzacji są przechowywane w `sessionStorage`; reset przeglądarki/aplikacji czyści sesję i wymusza ponowne wpisanie PIN-u.
 - Funkcje `sanitizePin`, `isPinValid`, `generateRandomPin` obsługują walidację i format.
 - Po poprawnym PIN-ie dla `playerZoneTab` funkcja `syncPlayerZoneSectionAccess` ustawia stan autoryzacji sekcji (`nextGameTab`, `chatTab`, `confirmationsTab`, `userGamesTab`, `statsTab`, `eveningPlanTab`) zgodnie z uprawnieniami gracza i zapisuje `playerId` do odpowiednich kluczy sesji.
+- W tej samej synchronizacji wykonywane są funkcje aktualizacji widoczności każdej sekcji (`updatePinVisibility`, `updateChatVisibility`, `updateConfirmationsVisibility`, `updateUserGamesVisibility`, `updateStatisticsVisibility`, `updateEveningPlanVisibility`), dzięki czemu przejście do „Gry do potwierdzenia” nie wyświetla wtórnej bramki PIN po autoryzacji Strefy Gracza.
 - Zmiana sekcji w obrębie Strefy Gracza nie resetuje już autoryzacji; ponowna weryfikacja jest wymagana dopiero po utracie sesji (`sessionStorage`).
 
 ### 4.3 Zarządzanie graczami

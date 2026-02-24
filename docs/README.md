@@ -44,9 +44,10 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 ### 2.7 Sekcja: Gry do Potwierdzenia
 1. Kliknij po lewej **Gry do Potwierdzenia**.
 2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
-3. Dla gry użyj: **Potwierdź**, **Anuluj**, **Szczegóły**, **Notatki do gry**.
-4. Po kliknięciu **Notatki do gry** otworzy się okno z tytułem w formacie „Notatki do gry: Nazwa gry”.
-5. W tym oknie (tryb tylko do odczytu) tekst notatek jest wyświetlany dokładnie w kolorach zapisanych wcześniej przez osobę edytującą notatkę (złoty, zielony, czerwony, biały).
+3. Po przechodzeniu między sekcjami panelu bocznego aplikacja nie prosi ponownie o PIN w tej sekcji — ponowna autoryzacja będzie dopiero po nowej sesji przeglądarki.
+4. Dla gry użyj: **Potwierdź**, **Anuluj**, **Szczegóły**, **Notatki do gry**.
+5. Po kliknięciu **Notatki do gry** otworzy się okno z tytułem w formacie „Notatki do gry: Nazwa gry”.
+6. W tym oknie (tryb tylko do odczytu) tekst notatek jest wyświetlany dokładnie w kolorach zapisanych wcześniej przez osobę edytującą notatkę (złoty, zielony, czerwony, biały).
 
 ### 2.8 Sekcja: Gry Użytkowników
 1. Kliknij po lewej **Gry Użytkowników**.
