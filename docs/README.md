@@ -150,6 +150,6 @@
    - kolumny **Rebuy1, Rebuy2, ...** pojawiają się automatycznie tylko dla uzupełnionych wartości z modala **Rebuy gracza**, a każda kolumna pokazuje kwotę tylko w jednym docelowym wierszu,
    - przypisanie wierszy działa sekwencyjnie i cyklicznie z wydłużeniem: Rebuy1→wiersz 1, Rebuy2→wiersz 2, Rebuy3→wiersz 3, Rebuy4→wiersz 4, potem Rebuy5→wiersz 1 ... Rebuy9→wiersz 5, potem Rebuy10→wiersz 1 ... Rebuy15→wiersz 6 itd.,
   - każda kwota Rebuy widoczna w **Tabela5** jest automatycznie pomniejszana o `%` z **Tabela3** (np. 100 przy 10% daje 90),
-   - w kolumnie **Mod** wpisz ręczną korektę (tylko cyfry), jeśli chcesz zwiększyć końcową kwotę konkretnego wiersza,
+   - w kolumnie **Mod** wpisz ręczną korektę dodatnią lub ujemną (np. `120` albo `-50`), aby zwiększyć lub zmniejszyć końcową kwotę konkretnego wiersza,
    - kolumna **Suma** liczy: `Kwota + przypisane Rebuy (po odjęciu %) + Mod`.
 9. Wszystkie zmiany zapisują się automatycznie po chwili — nie ma osobnego przycisku zapisu.

@@ -2975,9 +2975,22 @@ const initAdminCalculator = () => {
   const getModeState = () => (state.mode === "cash" ? state.cash : state.tournament);
   const getCalculatorDocRef = (mode) => firebaseApp.firestore().collection(CALCULATOR_COLLECTION).doc(mode);
   const sanitizeInteger = (value) => String(value ?? "").replace(/[^0-9]/g, "");
+  const sanitizeSignedInteger = (value) => {
+    const normalized = String(value ?? "").replace(/\s+/g, "");
+    const hasLeadingMinus = normalized.startsWith("-");
+    const digits = normalized.replace(/\D/g, "");
+    if (!digits) {
+      return hasLeadingMinus ? "-" : "";
+    }
+    return `${hasLeadingMinus ? "-" : ""}${digits}`;
+  };
   const parseInteger = (value) => {
     const normalized = sanitizeInteger(value);
     return normalized ? Number.parseInt(normalized, 10) : 0;
+  };
+  const parseSignedInteger = (value) => {
+    const normalized = sanitizeSignedInteger(value);
+    return normalized && normalized !== "-" ? Number.parseInt(normalized, 10) : 0;
   };
   const formatNumber = (value) => String(Number.isFinite(value) ? value : 0);
   const formatPercentDisplay = (value) => {
@@ -3027,7 +3040,7 @@ const initAdminCalculator = () => {
         ? source.table5SplitPercents.map((value) => sanitizeInteger(value))
         : [],
       table5Mods: Array.isArray(source.table5Mods)
-        ? source.table5Mods.map((value) => sanitizeInteger(value))
+        ? source.table5Mods.map((value) => sanitizeSignedInteger(value))
         : [],
       eliminatedOrder: Array.isArray(source.eliminatedOrder)
         ? source.eliminatedOrder.filter((id) => typeof id === "string" && validIds.has(id))
@@ -3053,7 +3066,7 @@ const initAdminCalculator = () => {
       ? modeState.table5SplitPercents.map((value) => sanitizeInteger(value))
       : [],
     table5Mods: Array.isArray(modeState.table5Mods)
-      ? modeState.table5Mods.map((value) => sanitizeInteger(value))
+      ? modeState.table5Mods.map((value) => sanitizeSignedInteger(value))
       : [],
     eliminatedOrder: Array.isArray(modeState.eliminatedOrder)
       ? modeState.eliminatedOrder.filter((id) => typeof id === "string")
@@ -3187,7 +3200,7 @@ const initAdminCalculator = () => {
     return String(getPrizeSplitPercent(index));
   };
 
-  const getTable5ModValue = (modeState, index) => sanitizeInteger(modeState.table5Mods[index]);
+  const getTable5ModValue = (modeState, index) => sanitizeSignedInteger(modeState.table5Mods[index]);
 
   const getVisibleGlobalRebuyValues = (modeState, percentDecimal) => modeState.table2Rows
     .flatMap((row) => row.rebuys)
@@ -3221,7 +3234,7 @@ const initAdminCalculator = () => {
         getTable5TargetLpForRebuyColumn(rebuyIndex + 1) === index + 1 ? value : null
       ));
       const rebuySum = rebuyValues.reduce((sum, value) => sum + value, 0);
-      const modValue = parseInteger(getTable5ModValue(modeState, index));
+      const modValue = parseSignedInteger(getTable5ModValue(modeState, index));
       return {
         id: row.id,
         lp: index + 1,
@@ -3742,7 +3755,7 @@ const initAdminCalculator = () => {
       modInput.dataset.rowId = String(row.lp);
       modInput.dataset.columnKey = "mod";
       modInput.addEventListener("input", () => {
-        modeState.table5Mods[row.lp - 1] = sanitizeInteger(modInput.value);
+        modeState.table5Mods[row.lp - 1] = sanitizeSignedInteger(modInput.value);
         modInput.value = modeState.table5Mods[row.lp - 1];
         render();
         schedulePersistCalculatorModeState(state.mode);

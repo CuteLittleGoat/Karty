@@ -158,14 +158,14 @@ Model obejmuje:
 - `eliminatedOrder` (kolejność odpadnięć).
 
 W kalkulatorze:
-- liczby są sanityzowane do cyfr,
+- liczby w polach kalkulatora są sanityzowane do cyfr, a `table5Mods` dopuszcza także znak minus na początku (wartości ujemne),
 - stan jest debouncowany i automatycznie zapisywany do Firestore,
 - możliwa jest edycja rebuy przez dedykowany modal.
 - modal rebuy startuje bez kolumn; kolumny powstają dopiero po kliknięciu `Dodaj Rebuy`,
 - nazwy kolumn rebuy są numerowane globalnie względem wszystkich graczy w kolejności wierszy Tabela2 (`Rebuy1..n`),
 - Tabela5 renderuje wartości rebuy kolumnowo: każda kolumna `RebuyN` wyświetla wartość wyłącznie w jednym wierszu (`LP`) wyliczanym przez cykle 4, 5, 6, 7... pozycji (np. `Rebuy1..4` -> wiersze 1..4, `Rebuy5..9` -> wiersze 1..5, `Rebuy10..15` -> wiersze 1..6),
 - każda wartość `RebuyN` prezentowana w Tabela5 jest najpierw redukowana o procent z `table3Row.percent` (`rebuyPoRake = rebuy - rebuy*percent/100`),
-- kolumna `Mod` w Tabela5 jest edytowalna, przechowywana w `table5Mods` i dodawana do `Suma` według wzoru `Suma = Kwota + suma przypisanych rebuy(po rake) + Mod`,
+- kolumna `Mod` w Tabela5 jest edytowalna, przechowywana w `table5Mods`, akceptuje liczby dodatnie i ujemne i jest dodawana do `Suma` według wzoru `Suma = Kwota + suma przypisanych rebuy(po rake) + Mod`,
 - Tabela5 nie zawiera kolumny `Ranking`; układ to `LP`, `Podział puli`, `Kwota`, `Rebuy1..n`, `Mod`, `Suma`,
 - usunięcie ostatniego rebuy u gracza powoduje renumerację kolejnych kolumn rebuy u następnych graczy.
 - Tabela4 uzupełnia kolumnę `Gracz` wyłącznie dla graczy z aktywnym checkboxem `Eliminated` w Tabela2; kolejność opiera się na `eliminatedOrder` i jest mapowana od końca tabeli (pierwszy wyeliminowany trafia na ostatnie `LP`, kolejni na miejsca wyżej),
