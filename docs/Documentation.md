@@ -25,13 +25,14 @@ Panel admina zawiera zakładki:
 1. **Aktualności** (`adminNewsTab`) — edycja wiadomości globalnej (`adminMessageInput`, `adminMessageSend`).
 2. **Czat** (`adminChatTab`) — moderacja czatu (`adminChatCleanup`, `adminChatList`).
 3. **Regulamin** (`adminRulesTab`) — edycja treści regulaminu (`adminRulesInput`, `adminRulesSave`).
-4. **Gracze** (`adminPlayersTab`) — dodawanie/edycja/usuwanie graczy i PIN-ów (`adminPlayersBody`, `adminAddPlayer`).
-5. **Gry admina** (`adminGamesTab`) — CRUD gier, szczegóły gier, notatki, statystyki, ranking.
-6. **Statystyki** (`adminStatisticsTab`) — zestawienia roczne, wagi, eksport.
-7. **Gry użytkowników** (`adminUserGamesTab`) — administracyjne zarządzanie grami tworzonymi przez graczy.
-8. **Najbliższa gra** (`adminNextGameTab`) — podgląd najbliższych gier i statusów potwierdzeń.
-9. **Gry do potwierdzenia** (`adminConfirmationsTab`) — przegląd i ręczna aktualizacja potwierdzeń.
-10. **Kalkulator** (`adminCalculatorTab`) — moduł obliczeń `tournament/cash` oparty o 5 tabel.
+4. **Plan wieczoru** (`adminEveningPlanTab`) — edycja harmonogramu z kolorowaniem zaznaczeń (`adminEveningPlanInput`, `planColorGold|Green|Red|White`, `adminEveningPlanSave`).
+5. **Gracze** (`adminPlayersTab`) — dodawanie/edycja/usuwanie graczy i PIN-ów (`adminPlayersBody`, `adminAddPlayer`).
+6. **Gry admina** (`adminGamesTab`) — CRUD gier, szczegóły gier, notatki, statystyki, ranking.
+7. **Statystyki** (`adminStatisticsTab`) — zestawienia roczne, wagi, eksport.
+8. **Gry użytkowników** (`adminUserGamesTab`) — administracyjne zarządzanie grami tworzonymi przez graczy.
+9. **Najbliższa gra** (`adminNextGameTab`) — podgląd najbliższych gier i statusów potwierdzeń.
+10. **Gry do potwierdzenia** (`adminConfirmationsTab`) — przegląd i ręczna aktualizacja potwierdzeń.
+11. **Kalkulator** (`adminCalculatorTab`) — moduł obliczeń `tournament/cash` oparty o 5 tabel.
 
 Dodatkowo globalny przycisk odświeżania panelu: `adminPanelRefresh`.
 
@@ -42,6 +43,7 @@ Strefa gracza obejmuje zakładki:
 - Gry do potwierdzenia,
 - Gry użytkowników,
 - Statystyki,
+- Plan wieczoru,
 - oraz sekcje informacyjne (Aktualności/Regulamin).
 
 Dostęp do części zakładek jest kontrolowany przez:
@@ -81,6 +83,7 @@ W aplikacji występują m.in. poniższe modale:
 - Dane autoryzacji są przechowywane w `sessionStorage` osobno dla różnych sekcji (np. czat, gry, statystyki).
 - Funkcje `sanitizePin`, `isPinValid`, `generateRandomPin` obsługują walidację i format.
 - Dla każdej sekcji istnieją gettery/settery stanu PIN + zapamiętanie zweryfikowanego gracza.
+- Nowa sekcja `Plan wieczoru` używa niezależnych kluczy sesji (`EVENING_PLAN_PIN_STORAGE_KEY`, `EVENING_PLAN_PLAYER_ID_STORAGE_KEY`) i waliduje uprawnienie `eveningPlanTab`.
 
 ### 4.3 Zarządzanie graczami
 - Gracze są trzymani w dokumencie `app_settings/player_access` jako tablica `players`.
@@ -132,10 +135,13 @@ Dodatkowa logika własności dla `UserGames` (strefa gracza):
   - usuwa pojedyncze wiadomości,
   - uruchamia cleanup wiadomości starszych niż 30 dni.
 
-### 4.7 Aktualności i regulamin
+### 4.7 Aktualności, regulamin i plan wieczoru
 - Aktualności: dokument `admin_messages/admin_messages`.
 - Regulamin: dokument `app_settings/rules`.
-- Oba moduły mają live update przez `onSnapshot`.
+- Plan wieczoru: dokument `app_settings/evening_plan` z polem `html` (sanityzowany HTML: tekst + `span` z dozwolonymi kolorami + `br`).
+- W adminie kolorowanie działa przez zaznaczenie zakresu i kliknięcie przycisku koloru; aplikacja opakowuje zakres w `span` z kolorem (`--gold`, `--neon`, `--ruby2`, `--ink`), następnie sanitizuje i zapisuje.
+- Widok gracza renderuje `innerHTML` po sanitizacji i jest tylko do odczytu.
+- Wszystkie trzy moduły mają live update przez `onSnapshot`.
 
 ### 4.8 Statystyki i ranking
 - Konfiguracja kolumn: `STATS_COLUMN_CONFIG`.
@@ -251,7 +257,12 @@ Aplikacja odczytuje konfigurację z `window.firebaseConfig`:
 - `updatedAt`
 - `source`
 
-3. (opcjonalnie) `next_game`
+3. `evening_plan`
+- `html: string` (sanityzowany HTML planu wieczoru)
+- `updatedAt`
+- `source`
+
+4. (opcjonalnie) `next_game`
 - ustawienia związane z bramką PIN najbliższej gry.
 
 ### B) `admin_messages`

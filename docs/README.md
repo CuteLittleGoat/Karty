@@ -23,14 +23,21 @@
 1. Kliknij **Regulamin**.
 2. Odczytaj aktualny tekst zasad gry.
 
-### 2.4 Czat
+### 2.4 Plan wieczoru
+1. Kliknij **Plan wieczoru**.
+2. Wpisz 5-cyfrowy PIN gracza, który ma nadane uprawnienie **Plan wieczoru** w panelu admina.
+3. Kliknij **Otwórz**.
+4. Odczytaj harmonogram (widok jest tylko do odczytu, bez możliwości edycji).
+5. Kolory fragmentów (złoty, zielony, czerwony, biały) są nadawane przez administratora i są widoczne dokładnie tak samo w strefie gracza.
+
+### 2.5 Czat
 1. Kliknij **Czat**.
 2. Wpisz PIN i kliknij **Otwórz**.
 3. W polu tekstowym wpisz wiadomość.
 4. Kliknij **Wyślij**.
 5. Wiadomość pojawi się na liście czatu.
 
-### 2.5 Gry do potwierdzenia
+### 2.6 Gry do potwierdzenia
 1. Kliknij **Gry do potwierdzenia**.
 2. Wpisz PIN i kliknij **Otwórz**.
 3. W każdym wierszu gry użyj:
@@ -41,7 +48,7 @@
 4. W oknie **Szczegóły** zobaczysz nagłówek z: Nazwa, Rodzaj gry, Data, Pula.
 5. W tabeli szczegółów pierwsza kolumna to **LP** (numer porządkowy gracza).
 
-### 2.6 Gry użytkowników
+### 2.7 Gry użytkowników
 1. Kliknij **Gry użytkowników**.
 2. Wpisz PIN i kliknij **Otwórz**.
 3. Po zalogowaniu widzisz **tylko gry utworzone przez siebie** (na podstawie Twojego PIN-u). Gry innych graczy nie są pokazywane w tym widoku.
@@ -59,7 +66,7 @@
 9. W nagłówku szczegółów widzisz: Nazwa, Rodzaj gry, Data, **Pula**.
 10. W tabeli szczegółów pierwsza kolumna to **LP**.
 
-### 2.7 Statystyki
+### 2.8 Statystyki
 1. Kliknij **Statystyki**.
 2. Wpisz PIN i kliknij **Otwórz**.
 3. Wybierz rok po lewej stronie.
@@ -82,14 +89,23 @@
 2. Edytuj treść.
 3. Kliknij **Zapisz**.
 
-### 3.4 Gracze
+### 3.4 Plan wieczoru
+1. Wejdź w zakładkę **Plan wieczoru**.
+2. Kliknij w pole **Treść planu wieczoru** i wpisz harmonogram (np. data, godzina, opis punktu programu).
+3. Aby pokolorować fragment, zaznacz myszką tylko ten fragment tekstu.
+4. Kliknij odpowiedni przycisk koloru: **Złoty**, **Zielony**, **Czerwony** albo **Biały**.
+5. Powtarzaj zaznaczanie i kolorowanie dla kolejnych fragmentów.
+6. Po zakończeniu kliknij **Zapisz**.
+7. Po zapisie sprawdź w strefie gracza zakładkę **Plan wieczoru** — treść i kolory powinny być identyczne.
+
+### 3.5 Gracze
 1. Wejdź w **Gracze**.
 2. Kliknij **Dodaj**, aby dodać nowy wpis gracza.
 3. Uzupełnij: Nazwa, PIN, dostęp do aplikacji.
-4. Kliknij **Uprawnienia**, aby zaznaczyć dostępne zakładki.
-5. Kliknij **Lata statystyk**, aby wskazać lata widoczne dla gracza.
+4. Kliknij **Edytuj** w kolumnie uprawnień i zaznacz zakładki dostępne dla gracza (w tym **Plan wieczoru**, jeśli gracz ma widzieć harmonogram).
+5. Dla **Statystyk** użyj przycisku **Lata**, aby wskazać lata widoczne dla gracza.
 
-### 3.5 Gry admina
+### 3.6 Gry admina
 1. Wejdź w **Gry admina**.
 2. Wybierz rok po lewej stronie.
 3. Kliknij **Dodaj**, aby dodać grę.
@@ -103,28 +119,28 @@
 8. W sekcji podsumowania gry możesz otworzyć **Notatki po grze**.
 9. W sekcji statystyk kolejność kolumn to: Ilość Spotkań, **Waga2**, **% udział**, Punkty.
 
-### 3.6 Statystyki (panel admina)
+### 3.7 Statystyki (panel admina)
 1. Wejdź w **Statystyki**.
 2. Wybierz rok.
 3. Edytuj wagi przez pola Waga1–Waga6.
 4. Ustawiaj widoczność kolumn dla użytkownika przez checkboxy w nagłówkach.
 5. Użyj **Eksportuj**.
 
-### 3.7 Gry użytkowników (panel admina)
+### 3.8 Gry użytkowników (panel admina)
 1. Wejdź w **Gry użytkowników**.
 2. Administrator widzi wszystkie gry użytkowników (bez ograniczenia do jednego właściciela).
 3. Wybierz rok.
 4. Dodawaj gry i edytuj je jak w wersji gracza.
 5. W **Szczegółach** działa kolumna **LP** i podgląd **Pula**.
 
-### 3.8 Gry do potwierdzenia (panel admina)
+### 3.9 Gry do potwierdzenia (panel admina)
 1. Wejdź w **Gry do potwierdzenia**.
 2. Otwieraj każdą grę z listy.
 3. Zmieniaj status potwierdzeń graczy.
 
 
 
-### 3.9 Kalkulator
+### 3.10 Kalkulator
 1. Wejdź w zakładkę **Kalkulator**.
 2. Nad tabelami kliknij tryb **Tournament** lub **Cash**.
 3. W **Tabela1** wpisz wartości Buy-In i Rebuy (pole Liczba Rebuy liczy tylko niepuste wpisy Rebuy graczy).
