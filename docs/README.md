@@ -3,7 +3,7 @@
 ## 1. Start aplikacji
 1. Otwórz stronę aplikacji.
 2. Na górze widzisz **Panel Administratora** (zakładki admina).
-3. Niżej widzisz **Strefę gracza** (zakładki użytkownika).
+3. Niżej widzisz od razu pasek zakładek użytkownika (bez osobnego nagłówka nad zakładkami).
 4. Kliknięcie nazwy zakładki przełącza zawartość widoku.
 
 ## 2. Strefa gracza

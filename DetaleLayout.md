@@ -35,6 +35,7 @@
 
 ## Strefa gracza
 - Usunięto czerwony komunikat ostrzegawczy wyświetlany wcześniej nad zakładkami użytkownika.
+- Nad zakładkami użytkownika nie jest renderowany tekstowy nagłówek „Strefa gracza”; sekcja zaczyna się bezpośrednio od listy zakładek.
 
 
 ## Kalkulator — modal „Rebuy gracza”
