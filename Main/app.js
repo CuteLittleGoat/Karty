@@ -495,6 +495,7 @@ const getSummaryNotesModalController = (() => {
     const saveButton = document.querySelector("#summaryNotesSave");
     const clearButton = document.querySelector("#summaryNotesClear");
     const closeButton = document.querySelector("#summaryNotesClose");
+    const colorActions = document.querySelector(".summary-notes-color-actions");
     const colorButtons = document.querySelectorAll("[data-notes-color]");
 
     if (!modal || !title || !editor || !status || !saveButton || !clearButton || !closeButton) {
@@ -594,7 +595,12 @@ const getSummaryNotesModalController = (() => {
       editor.classList.toggle("is-readonly", !state.canWrite);
       saveButton.disabled = !state.canWrite;
       clearButton.disabled = !state.canWrite;
+      saveButton.hidden = !state.canWrite;
+      clearButton.hidden = !state.canWrite;
       clearButton.textContent = state.clearButtonLabel;
+      if (colorActions) {
+        colorActions.hidden = !state.canWrite;
+      }
       status.textContent = state.canWrite ? "" : state.readOnlyMessage;
 
       modal.classList.add("is-visible");
