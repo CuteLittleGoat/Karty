@@ -31,7 +31,7 @@ Panel admina zawiera zakładki:
 7. **Gry użytkowników** (`adminUserGamesTab`) — administracyjne zarządzanie grami tworzonymi przez graczy.
 8. **Najbliższa gra** (`adminNextGameTab`) — podgląd najbliższych gier i statusów potwierdzeń.
 9. **Gry do potwierdzenia** (`adminConfirmationsTab`) — przegląd i ręczna aktualizacja potwierdzeń.
-10. **Kalkulator** (`adminCalculatorTab`) — moduł obliczeń z pełnym układem 5 tabel dla trybu `tournament` i wyczyszczonym widokiem dla trybu `cash`.
+10. **Kalkulator** (`adminCalculatorTab`) — moduł obliczeń z układem 5 tabel dla trybu `tournament` oraz układem tabel `Tabela7–Tabela10` dla trybu `cash`.
 
 Dodatkowo globalny przycisk odświeżania panelu: `adminPanelRefresh`.
 
@@ -159,42 +159,41 @@ result = championshipCount * weight1
 - Widoczność kolumn dla użytkownika per rok jest zapisywana w `admin_games_stats/<rok>.visibleColumns`.
 
 ### 4.9 Kalkulator (Tournament / Cash)
-Kalkulator przechowuje osobny stan dla dwóch trybów (`calculators/tournament`, `calculators/cash`).
-W układzie UI lewa kolumna kalkulatora to osobny panel `Rodzaj gry` (`.admin-calculator-sidebar`) z nagłówkiem i przyciskami przełączania trybu.
-Tryb `cash` renderuje obecnie wyłącznie placeholder (`.admin-calculator-cash-empty`) i czyści wszystkie kontenery tabel (`#adminCalculatorTable1..5`), dzięki czemu sekcja jest gotowa pod nową logikę bez mieszania z dotychczasowymi tabelami.
-Model obejmuje:
-- `table1Row` (buy-in, rebuy),
-- `table2Rows` (gracze, eliminacje, lista rebuy per gracz),
-- `table3Row` (procent),
-- `table5SplitPercents` (podział puli),
-- `table5Mods` (ręczna korekta doliczana do sumy wiersza w Tabela5),
-- `eliminatedOrder` (kolejność odpadnięć).
+Kalkulator zapisuje dane w `calculators/tournament` oraz `calculators/cash`.
 
-W kalkulatorze:
-- liczby w polach kalkulatora są sanityzowane do cyfr, a `table5Mods` dopuszcza także znak minus na początku (wartości ujemne),
-- stan jest debouncowany i automatycznie zapisywany do Firestore,
-- przełączniki `Tournament` / `Cash` są osadzone w kontenerze `.admin-calculator-switch` wewnątrz panelu `.admin-calculator-sidebar`,
-- możliwa jest edycja rebuy przez dedykowany modal.
-- pełne renderowanie Tabela1..Tabela5 działa tylko w trybie `tournament`; przełączenie na `cash` pomija render tabel i kończy się na komunikacie informacyjnym.
-- modal rebuy startuje bez kolumn; kolumny powstają dopiero po kliknięciu `Dodaj Rebuy`,
-- nazwy kolumn rebuy są numerowane globalnie względem wszystkich graczy w kolejności wierszy Tabela2 (`Rebuy1..n`),
-- Tabela5 renderuje wartości rebuy kolumnowo: każda kolumna `RebuyN` wyświetla wartość wyłącznie w jednym wierszu (`LP`) wyliczanym przez cykle 4, 5, 6, 7... pozycji (np. `Rebuy1..4` -> wiersze 1..4, `Rebuy5..9` -> wiersze 1..5, `Rebuy10..15` -> wiersze 1..6),
-- każda wartość `RebuyN` prezentowana w Tabela5 jest najpierw redukowana o procent z `table3Row.percent` (`rebuyPoRake = rebuy - rebuy*percent/100`),
-- kolumna `Mod` w Tabela5 jest edytowalna, przechowywana w `table5Mods`, akceptuje liczby dodatnie i ujemne i jest dodawana do `Suma` według wzoru `Suma = Kwota + suma przypisanych rebuy(po rake) + Mod`,
-- Tabela5 nie zawiera kolumny `Ranking`; układ to `LP`, `Podział puli`, `Kwota`, `Rebuy1..n`, `Mod`, `Suma`,
-- usunięcie ostatniego rebuy u gracza powoduje renumerację kolejnych kolumn rebuy u następnych graczy.
-- Tabela4 uzupełnia kolumnę `Gracz` wyłącznie dla graczy z aktywnym checkboxem `Eliminated` w Tabela2; kolejność opiera się na `eliminatedOrder` i jest mapowana od końca tabeli (pierwszy wyeliminowany trafia na ostatnie `LP`, kolejni na miejsca wyżej),
-- odznaczenie `Eliminated` usuwa gracza z Tabela4 i powoduje automatyczne „zsunięcie” pozostałych wyeliminowanych na niższe miejsca, zgodnie z ich kolejnością eliminacji,
-- kolumna `Wygrana` w Tabela4 działa niezależnie od nazw graczy i zawsze kopiuje `Suma` z tego samego `LP` w Tabela5.
+#### Tournament
+- Logika Tournament (Tabela1–Tabela5) pozostała bez zmian.
+- Rebuy dla Tournament korzysta z `table2Rows[].rebuys`.
 
+#### Cash
+- Dodano osobny model danych `cash`:
+  - `table8Row.rake` — procent rake,
+  - `table9Rows[]` — wiersze graczy (`playerName`, `buyIn`, `payout`, `rebuys`).
+- Normalizacja i serializacja danych do Firestore są rozdzielone dla trybu `cash` i `tournament`.
+- Modal rebuy działa dla obu trybów; w trybie Cash operuje na `table9Rows[].rebuys`.
 
-### 4.11 Kolorowe notatki do gry (Gry użytkowników + Gry do potwierdzenia)
-- `summaryNotesModal` używa teraz edytora `contenteditable` (`#summaryNotesInput`) zamiast klasycznego `textarea`, dzięki czemu możliwe jest kolorowanie wybranych fragmentów tekstu.
-- Przyciski `summaryNotesColorGold|Green|Red|White` wywołują kolorowanie tylko zaznaczenia wewnątrz edytora notatek.
-- Kolory mapują się na zmienne motywu: `gold -> var(--gold)`, `green -> var(--neon)`, `red -> var(--ruby2)`, `white -> var(--ink)`.
-- Przed zapisem notatki HTML jest sanityzowany (`sanitizeRichTextWithAllowedColors`) — zostają wyłącznie bezpieczne elementy: tekst, `br`, `span` z dozwolonym kolorem.
-- Ta sama zawartość HTML jest renderowana w trybie tylko do odczytu w zakładce gracza **Gry do Potwierdzenia**, więc użytkownik widzi dokładnie te kolory, które zapisano podczas edycji.
-- Gdy modal działa w trybie tylko do odczytu (`canWrite=false`), ukrywane są elementy edycji: pasek kolorów oraz przyciski `Zapisz` i `Domyślne`; pozostaje sam podgląd treści.
+Dodane obliczenia Cash:
+- **Tabela7**:
+  - `buyInAfterRake = suma(Buy-In z Tabela9) * (Rake/100)`
+  - `rebuyAfterRake = suma(Rebuy z Tabela9) * (Rake/100)`
+  - `sum = buyInAfterRake + rebuyAfterRake`
+- **Tabela8**:
+  - `Rake` jako pole procentowe (format z `%` po blur),
+  - `Pot = sum - (sum * Rake/100)`.
+- **Tabela9**:
+  - unikalny wybór gracza per tabela,
+  - ręczna edycja `Buy-In` i `Wypłata`,
+  - `Rebuy` z modala,
+  - `+/- = Wypłata - (Buy-In + suma Rebuy)`.
+- **Tabela10**:
+  - dane wejściowe z Tabela9,
+  - `Lp` po sortowaniu,
+  - `% Puli = Wypłata / Suma(Tabela7) * 100`,
+  - sortowanie malejące po `+/-`, potem alfabetycznie po graczu.
+
+Obsługa fokusu:
+- Wszystkie nowe pola wejściowe i selecty w Cash mają komplet `data-*` (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`) dla poprawnego przywracania fokusu po re-renderze.
+
 
 ## 5. Obliczenia finansowe i statystyczne
 

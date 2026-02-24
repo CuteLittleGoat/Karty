@@ -49,15 +49,15 @@
 - Wewnątrz panelu są dwa przyciski trybu: `Tournament` i `Cash` (`.admin-calculator-switch-button`).
 
 ## Kalkulator — widok „Cash”
-- Po kliknięciu przycisku `Cash` sekcja po prawej jest celowo wyczyszczona (bez tabel 1–5).
-- Widoczny jest tylko blok informacyjny `.admin-calculator-cash-empty` z nagłówkiem i krótkim opisem.
-- Blok używa obramowania przerywanego (`1px dashed`) i ciemnego tła, aby odróżnić stan „w przygotowaniu” od aktywnego układu tabel turniejowych.
+- Po kliknięciu `Cash` po prawej stronie renderowane są tabele `Tabela7`, `Tabela8`, `Tabela9`, `Tabela10`.
+- Tabele używają tego samego stylu co Tournament: `.admin-data-table`, `.admin-input`, `.admin-table-scroll`, `.admin-table-actions`.
+- W `Tabela10` kolumna `% Puli` jest prezentowana jako procent z dwoma miejscami po przecinku.
 
 ## Kalkulator — modal „Rebuy gracza”
-- Modal otwierany z kolumny `Rebuy` w `Tabela2`.
+- Modal otwierany z kolumny `Rebuy` w `Tabela2` (Tournament) oraz `Tabela9` (Cash).
 - Widok startowy modala nie pokazuje żadnych kolumn rebuy.
 - Kolumny są dodawane dynamicznie przyciskiem `Dodaj Rebuy`.
-- Etykiety kolumn mają format `RebuyN` i używają globalnej numeracji wspólnej dla wszystkich graczy (niezależnie od tego, dla którego gracza modal jest otwarty).
+- Etykiety kolumn mają format `RebuyN` i używają globalnej numeracji wspólnej dla graczy tylko w obrębie aktualnego trybu (`Tournament` i `Cash` numerują niezależnie).
 - Po usunięciu ostatniej kolumny u danego gracza etykiety kolejnych kolumn u innych graczy są automatycznie renumerowane.
 
 ## Kalkulator — Tabela5

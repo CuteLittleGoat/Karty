@@ -3198,11 +3198,16 @@ const initAdminCalculator = () => {
     eliminatedOrder: []
   });
 
+  const createInitialCashState = () => ({
+    table8Row: { rake: "" },
+    table9Rows: [{ id: `table9-${Date.now()}-0`, playerName: "", buyIn: "0", payout: "0", rebuys: [] }]
+  });
+
   const state = {
     mode: "tournament",
     playerOptions: [],
     tournament: createInitialState(),
-    cash: createInitialState(),
+    cash: createInitialCashState(),
     rebuyModal: {
       mode: null,
       rowId: null
@@ -3235,7 +3240,40 @@ const initAdminCalculator = () => {
     return normalized ? `${normalized}%` : "";
   };
 
-  const normalizeCalculatorModeState = (rawState) => {
+  const normalizeCalculatorModeState = (mode, rawState) => {
+    if (mode === "cash") {
+      const baseCashState = createInitialCashState();
+      const source = rawState && typeof rawState === "object" ? rawState : {};
+      const table8Source = source.table8Row && typeof source.table8Row === "object" ? source.table8Row : {};
+
+      const table9Rows = Array.isArray(source.table9Rows)
+        ? source.table9Rows
+          .map((row, index) => {
+            const rowSource = row && typeof row === "object" ? row : {};
+            const normalizedRebuys = Array.isArray(rowSource.rebuys)
+              ? rowSource.rebuys.map((value) => sanitizeInteger(value))
+              : [];
+            return {
+              id: typeof rowSource.id === "string" && rowSource.id.trim()
+                ? rowSource.id.trim()
+                : `table9-${Date.now()}-${index}`,
+              playerName: typeof rowSource.playerName === "string" ? rowSource.playerName : "",
+              buyIn: sanitizeInteger(rowSource.buyIn),
+              payout: sanitizeInteger(rowSource.payout),
+              rebuys: normalizedRebuys
+            };
+          })
+          .filter((row) => row.id)
+        : [];
+
+      return {
+        table8Row: {
+          rake: sanitizeInteger(table8Source.rake)
+        },
+        table9Rows: table9Rows.length ? table9Rows : baseCashState.table9Rows
+      };
+    }
+
     const baseState = createInitialState();
     const source = rawState && typeof rawState === "object" ? rawState : {};
     const table1Source = source.table1Row && typeof source.table1Row === "object" ? source.table1Row : {};
@@ -3285,30 +3323,49 @@ const initAdminCalculator = () => {
     };
   };
 
-  const serializeCalculatorModeState = (modeState) => ({
-    table1Row: {
-      buyIn: sanitizeInteger(modeState.table1Row.buyIn),
-      rebuy: sanitizeInteger(modeState.table1Row.rebuy)
-    },
-    table2Rows: modeState.table2Rows.map((row, index) => ({
-      id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `table2-${Date.now()}-${index}`,
-      playerName: typeof row.playerName === "string" ? row.playerName : "",
-      eliminated: Boolean(row.eliminated),
-      rebuys: Array.isArray(row.rebuys) ? row.rebuys.map((value) => sanitizeInteger(value)) : []
-    })),
-    table3Row: {
-      percent: sanitizeInteger(modeState.table3Row.percent)
-    },
-    table5SplitPercents: Array.isArray(modeState.table5SplitPercents)
-      ? modeState.table5SplitPercents.map((value) => sanitizeInteger(value))
-      : [],
-    table5Mods: Array.isArray(modeState.table5Mods)
-      ? modeState.table5Mods.map((value) => sanitizeSignedInteger(value))
-      : [],
-    eliminatedOrder: Array.isArray(modeState.eliminatedOrder)
-      ? modeState.eliminatedOrder.filter((id) => typeof id === "string")
-      : []
-  });
+  const serializeCalculatorModeState = (mode, modeState) => {
+    if (mode === "cash") {
+      return {
+        table8Row: {
+          rake: sanitizeInteger(modeState.table8Row?.rake)
+        },
+        table9Rows: Array.isArray(modeState.table9Rows)
+          ? modeState.table9Rows.map((row, index) => ({
+            id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `table9-${Date.now()}-${index}`,
+            playerName: typeof row.playerName === "string" ? row.playerName : "",
+            buyIn: sanitizeInteger(row.buyIn),
+            payout: sanitizeInteger(row.payout),
+            rebuys: Array.isArray(row.rebuys) ? row.rebuys.map((value) => sanitizeInteger(value)) : []
+          }))
+          : []
+      };
+    }
+
+    return {
+      table1Row: {
+        buyIn: sanitizeInteger(modeState.table1Row.buyIn),
+        rebuy: sanitizeInteger(modeState.table1Row.rebuy)
+      },
+      table2Rows: modeState.table2Rows.map((row, index) => ({
+        id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `table2-${Date.now()}-${index}`,
+        playerName: typeof row.playerName === "string" ? row.playerName : "",
+        eliminated: Boolean(row.eliminated),
+        rebuys: Array.isArray(row.rebuys) ? row.rebuys.map((value) => sanitizeInteger(value)) : []
+      })),
+      table3Row: {
+        percent: sanitizeInteger(modeState.table3Row.percent)
+      },
+      table5SplitPercents: Array.isArray(modeState.table5SplitPercents)
+        ? modeState.table5SplitPercents.map((value) => sanitizeInteger(value))
+        : [],
+      table5Mods: Array.isArray(modeState.table5Mods)
+        ? modeState.table5Mods.map((value) => sanitizeSignedInteger(value))
+        : [],
+      eliminatedOrder: Array.isArray(modeState.eliminatedOrder)
+        ? modeState.eliminatedOrder.filter((id) => typeof id === "string")
+        : []
+    };
+  };
 
   const persistCalculatorModeState = (mode) => {
     if (!firebaseApp || (mode !== "tournament" && mode !== "cash")) {
@@ -3316,7 +3373,7 @@ const initAdminCalculator = () => {
     }
 
     const modeState = mode === "cash" ? state.cash : state.tournament;
-    const payload = serializeCalculatorModeState(modeState);
+    const payload = serializeCalculatorModeState(mode, modeState);
     return getCalculatorDocRef(mode).set({
       ...payload,
       updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
@@ -3366,19 +3423,23 @@ const initAdminCalculator = () => {
     return null;
   };
 
+  const getRebuyRowsForMode = (modeState, mode) => (mode === "cash" ? modeState.table9Rows : modeState.table2Rows);
+
   const getRebuyRow = () => {
     const modeState = getModalModeState();
     if (!modeState || !state.rebuyModal.rowId) {
       return null;
     }
-    return modeState.table2Rows.find((row) => row.id === state.rebuyModal.rowId) ?? null;
+    const rows = getRebuyRowsForMode(modeState, state.rebuyModal.mode);
+    return rows.find((row) => row.id === state.rebuyModal.rowId) ?? null;
   };
 
   const getRowRebuySum = (row) => row.rebuys.reduce((sum, value) => sum + parseInteger(value), 0);
   const getRowRebuyCount = (row) => row.rebuys.filter((value) => sanitizeInteger(value) !== "").length;
   const getRowRebuyGlobalOffset = (modeState, rowId) => {
+    const rows = getRebuyRowsForMode(modeState, state.rebuyModal.mode);
     let offset = 0;
-    for (const row of modeState.table2Rows) {
+    for (const row of rows) {
       if (row.id === rowId) {
         return offset;
       }
@@ -3522,6 +3583,55 @@ const initAdminCalculator = () => {
     });
   };
 
+
+  const getCashMetrics = () => {
+    const cashState = state.cash;
+    const totalBuyIn = cashState.table9Rows.reduce((sum, row) => sum + parseInteger(row.buyIn), 0);
+    const totalRebuy = cashState.table9Rows.reduce((sum, row) => sum + getRowRebuySum(row), 0);
+    const rakePercent = parseInteger(cashState.table8Row.rake);
+    const rakeDecimal = rakePercent / 100;
+    const totalRakeBuyIn = totalBuyIn * rakeDecimal;
+    const totalRakeRebuy = totalRebuy * rakeDecimal;
+    const totalRakeSum = totalRakeBuyIn + totalRakeRebuy;
+    const pot = totalRakeSum - (totalRakeSum * rakeDecimal);
+
+    return {
+      totalBuyIn,
+      totalRebuy,
+      rakePercent,
+      rakeDecimal,
+      totalRakeBuyIn,
+      totalRakeRebuy,
+      totalRakeSum,
+      pot
+    };
+  };
+
+  const getCashTable10Rows = () => {
+    const metrics = getCashMetrics();
+    const sumValue = metrics.totalRakeSum;
+    return state.cash.table9Rows
+      .map((row) => {
+        const payout = parseInteger(row.payout);
+        const rebuy = getRowRebuySum(row);
+        const buyIn = parseInteger(row.buyIn);
+        const plusMinus = payout - (buyIn + rebuy);
+        const poolPercent = sumValue > 0 ? (payout / sumValue) * 100 : 0;
+        return {
+          playerName: row.playerName,
+          payout,
+          plusMinus,
+          poolPercent
+        };
+      })
+      .sort((a, b) => {
+        if (b.plusMinus !== a.plusMinus) {
+          return b.plusMinus - a.plusMinus;
+        }
+        return String(a.playerName).localeCompare(String(b.playerName), "pl");
+      });
+  };
+
   const rebuyModal = document.createElement("div");
   rebuyModal.id = "adminCalculatorRebuyModal";
   rebuyModal.className = "modal-overlay";
@@ -3632,7 +3742,7 @@ const initAdminCalculator = () => {
   };
 
   const openRebuyModal = (rowId) => {
-    state.rebuyModal.mode = state.mode;
+    state.rebuyModal.mode = state.rebuyModal.mode ?? state.mode;
     state.rebuyModal.rowId = rowId;
     rebuyModal.classList.add("is-visible");
     rebuyModal.setAttribute("aria-hidden", "false");
@@ -4010,25 +4120,258 @@ const initAdminCalculator = () => {
     rootTable5.appendChild(scroll);
   };
 
-  const renderCashPlaceholder = () => {
-    [rootTable1, rootTable2, rootTable3, rootTable4, rootTable5].forEach((root) => {
-      root.innerHTML = "";
+  const renderCashTable7 = () => {
+    const metrics = getCashMetrics();
+    rootTable1.innerHTML = "";
+    rootTable1.appendChild(createHeader("Tabela7"));
+
+    const table = document.createElement("table");
+    table.className = "admin-data-table";
+    table.innerHTML = "<thead><tr><th>Buy-In</th><th>Rebuy</th><th>Suma</th></tr></thead>";
+    const tbody = document.createElement("tbody");
+    const tr = document.createElement("tr");
+    tr.append(
+      createReadonlyCell(formatNumber(metrics.totalRakeBuyIn)),
+      createReadonlyCell(formatNumber(metrics.totalRakeRebuy)),
+      createReadonlyCell(formatNumber(metrics.totalRakeSum))
+    );
+    tbody.appendChild(tr);
+    table.appendChild(tbody);
+
+    const scroll = createScroll();
+    scroll.appendChild(table);
+    rootTable1.appendChild(scroll);
+  };
+
+  const renderCashTable8 = () => {
+    const metrics = getCashMetrics();
+    rootTable2.innerHTML = "";
+    rootTable2.appendChild(createHeader("Tabela8"));
+
+    const table = document.createElement("table");
+    table.className = "admin-data-table";
+    table.innerHTML = "<thead><tr><th>Rake</th><th>Pot</th></tr></thead>";
+    const tbody = document.createElement("tbody");
+    const tr = document.createElement("tr");
+
+    const rakeCell = document.createElement("td");
+    const rakeInput = document.createElement("input");
+    rakeInput.type = "text";
+    rakeInput.className = "admin-input";
+    rakeInput.value = formatPercentDisplay(state.cash.table8Row.rake);
+    rakeInput.dataset.focusTarget = "admin-calculator";
+    rakeInput.dataset.section = "table8";
+    rakeInput.dataset.tableId = "cash";
+    rakeInput.dataset.rowId = "0";
+    rakeInput.dataset.columnKey = "rake";
+    rakeInput.addEventListener("focus", () => {
+      rakeInput.value = state.cash.table8Row.rake;
+    });
+    rakeInput.addEventListener("input", () => {
+      state.cash.table8Row.rake = sanitizeInteger(rakeInput.value);
+      rakeInput.value = state.cash.table8Row.rake;
+      render();
+      schedulePersistCalculatorModeState("cash");
+    });
+    rakeInput.addEventListener("blur", () => {
+      rakeInput.value = formatPercentDisplay(state.cash.table8Row.rake);
+    });
+    rakeCell.appendChild(rakeInput);
+
+    tr.append(rakeCell, createReadonlyCell(formatNumber(metrics.pot)));
+    tbody.appendChild(tr);
+    table.appendChild(tbody);
+
+    const scroll = createScroll();
+    scroll.appendChild(table);
+    rootTable2.appendChild(scroll);
+  };
+
+  const renderCashTable9 = () => {
+    rootTable3.innerHTML = "";
+    rootTable3.appendChild(createHeader("Tabela9"));
+
+    const table = document.createElement("table");
+    table.className = "admin-data-table";
+    table.innerHTML = "<thead><tr><th>Gracz</th><th>Buy-In</th><th>Rebuy</th><th>Wypłata</th><th>+/-</th><th></th></tr></thead>";
+    const tbody = document.createElement("tbody");
+
+    state.cash.table9Rows.forEach((row, index) => {
+      const tr = document.createElement("tr");
+      const rowSelectedPlayers = getSelectedPlayerNamesForRows(state.cash.table9Rows, row.id);
+
+      const playerCell = document.createElement("td");
+      const playerSelect = document.createElement("select");
+      playerSelect.className = "admin-input";
+      const defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent = "Wybierz gracza";
+      playerSelect.appendChild(defaultOption);
+      state.playerOptions.forEach((playerName) => {
+        const option = document.createElement("option");
+        option.value = playerName;
+        option.textContent = playerName;
+        option.disabled = rowSelectedPlayers.has(playerName) && playerName !== row.playerName;
+        playerSelect.appendChild(option);
+      });
+      playerSelect.value = row.playerName;
+      playerSelect.dataset.focusTarget = "admin-calculator";
+      playerSelect.dataset.section = "table9";
+      playerSelect.dataset.tableId = "cash";
+      playerSelect.dataset.rowId = row.id;
+      playerSelect.dataset.columnKey = "playerName";
+      playerSelect.addEventListener("change", () => {
+        row.playerName = playerSelect.value;
+        render();
+        schedulePersistCalculatorModeState("cash");
+      });
+      playerCell.appendChild(playerSelect);
+
+      const buyInCell = document.createElement("td");
+      const buyInInput = document.createElement("input");
+      buyInInput.type = "text";
+      buyInInput.className = "admin-input";
+      buyInInput.value = row.buyIn;
+      buyInInput.dataset.focusTarget = "admin-calculator";
+      buyInInput.dataset.section = "table9";
+      buyInInput.dataset.tableId = "cash";
+      buyInInput.dataset.rowId = row.id;
+      buyInInput.dataset.columnKey = "buyIn";
+      buyInInput.addEventListener("input", () => {
+        row.buyIn = sanitizeInteger(buyInInput.value);
+        buyInInput.value = row.buyIn;
+        render();
+        schedulePersistCalculatorModeState("cash");
+      });
+      buyInCell.appendChild(buyInInput);
+
+      const rebuyCell = document.createElement("td");
+      const rebuyButton = document.createElement("button");
+      rebuyButton.type = "button";
+      rebuyButton.className = "secondary";
+      rebuyButton.textContent = formatNumber(getRowRebuySum(row));
+      rebuyButton.addEventListener("click", () => {
+        state.rebuyModal.mode = "cash";
+        openRebuyModal(row.id);
+      });
+      rebuyCell.appendChild(rebuyButton);
+
+      const payoutCell = document.createElement("td");
+      const payoutInput = document.createElement("input");
+      payoutInput.type = "text";
+      payoutInput.className = "admin-input";
+      payoutInput.value = row.payout;
+      payoutInput.dataset.focusTarget = "admin-calculator";
+      payoutInput.dataset.section = "table9";
+      payoutInput.dataset.tableId = "cash";
+      payoutInput.dataset.rowId = row.id;
+      payoutInput.dataset.columnKey = "payout";
+      payoutInput.addEventListener("input", () => {
+        row.payout = sanitizeInteger(payoutInput.value);
+        payoutInput.value = row.payout;
+        render();
+        schedulePersistCalculatorModeState("cash");
+      });
+      payoutCell.appendChild(payoutInput);
+
+      const plusMinus = parseInteger(row.payout) - (parseInteger(row.buyIn) + getRowRebuySum(row));
+
+      const actionsCell = document.createElement("td");
+      const actionsWrap = document.createElement("div");
+      actionsWrap.className = "admin-table-actions";
+
+      if (index === state.cash.table9Rows.length - 1) {
+        const addButton = document.createElement("button");
+        addButton.type = "button";
+        addButton.className = "secondary";
+        addButton.textContent = "Dodaj";
+        addButton.addEventListener("click", () => {
+          state.cash.table9Rows.push({
+            id: `table9-${Date.now()}-${state.cash.table9Rows.length}`,
+            playerName: "",
+            buyIn: "0",
+            payout: "0",
+            rebuys: []
+          });
+          render();
+          schedulePersistCalculatorModeState("cash");
+        });
+        actionsWrap.appendChild(addButton);
+      }
+
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "danger admin-row-delete";
+      deleteButton.textContent = "Usuń";
+      deleteButton.disabled = state.cash.table9Rows.length === 1;
+      deleteButton.addEventListener("click", () => {
+        state.cash.table9Rows = state.cash.table9Rows.filter((entry) => entry.id !== row.id);
+        if (!state.cash.table9Rows.length) {
+          state.cash.table9Rows.push({ id: `table9-${Date.now()}-0`, playerName: "", buyIn: "0", payout: "0", rebuys: [] });
+        }
+        render();
+        schedulePersistCalculatorModeState("cash");
+      });
+      actionsWrap.appendChild(deleteButton);
+      actionsCell.appendChild(actionsWrap);
+
+      tr.append(
+        playerCell,
+        buyInCell,
+        rebuyCell,
+        payoutCell,
+        createReadonlyCell(formatNumber(plusMinus)),
+        actionsCell
+      );
+      tbody.appendChild(tr);
     });
 
-    const cashPlaceholder = document.createElement("div");
-    cashPlaceholder.className = "admin-calculator-cash-empty";
-    cashPlaceholder.innerHTML = `
-      <h4>Sekcja Cash</h4>
-      <p>Zawartość tej sekcji została wyczyszczona i jest gotowa pod nowy układ tabel.</p>
-    `;
-    rootTable1.appendChild(cashPlaceholder);
+    table.appendChild(tbody);
+    const scroll = createScroll();
+    scroll.appendChild(table);
+    rootTable3.appendChild(scroll);
+  };
+
+  const renderCashTable10 = () => {
+    rootTable4.innerHTML = "";
+    rootTable4.appendChild(createHeader("Tabela10"));
+
+    const table = document.createElement("table");
+    table.className = "admin-data-table";
+    table.innerHTML = "<thead><tr><th>Lp</th><th>Gracz</th><th>Wypłata</th><th>+/-</th><th>% Puli</th></tr></thead>";
+    const tbody = document.createElement("tbody");
+
+    getCashTable10Rows().forEach((row, index) => {
+      const tr = document.createElement("tr");
+      tr.append(
+        createReadonlyCell(String(index + 1)),
+        createReadonlyCell(row.playerName),
+        createReadonlyCell(formatNumber(row.payout)),
+        createReadonlyCell(formatNumber(row.plusMinus)),
+        createReadonlyCell(`${row.poolPercent.toFixed(2)}%`)
+      );
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    const scroll = createScroll();
+    scroll.appendChild(table);
+    rootTable4.appendChild(scroll);
+    rootTable5.innerHTML = "";
   };
 
   const render = () => {
     const focusState = getFocusedAdminInputState(calculatorContent);
     if (state.mode === "cash") {
-      renderCashPlaceholder();
+      renderCashTable7();
+      renderCashTable8();
+      renderCashTable9();
+      renderCashTable10();
       restoreFocusedAdminInputState(calculatorContent, focusState);
+
+      if (rebuyModal.classList.contains("is-visible")) {
+        renderRebuyModal();
+      }
       return;
     }
 
@@ -4070,7 +4413,7 @@ const initAdminCalculator = () => {
       if (!snapshot.exists) {
         return;
       }
-      state[mode] = normalizeCalculatorModeState(snapshot.data());
+      state[mode] = normalizeCalculatorModeState(mode, snapshot.data());
       render();
     }, () => {
       if (status) {
