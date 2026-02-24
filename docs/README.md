@@ -93,7 +93,7 @@
 1. Wejdź w zakładkę **Plan wieczoru**.
 2. Kliknij w pole **Treść planu wieczoru** i wpisz harmonogram (np. data, godzina, opis punktu programu).
 3. Aby pokolorować fragment, zaznacz myszką tylko ten fragment tekstu.
-4. Kliknij odpowiedni przycisk koloru: **Złoty**, **Zielony**, **Czerwony** albo **Biały**.
+4. Kliknij odpowiedni przycisk koloru: **Złoty** (złote tło), **Zielony** (zielone tło), **Czerwony** (czerwone tło) albo **Biały** (jasne tło).
 5. Powtarzaj zaznaczanie i kolorowanie dla kolejnych fragmentów.
 6. Po zakończeniu kliknij **Zapisz**.
 7. Po zapisie sprawdź w strefie gracza zakładkę **Plan wieczoru** — treść i kolory powinny być identyczne.
