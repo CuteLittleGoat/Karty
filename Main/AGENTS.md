@@ -15,3 +15,4 @@
 15. Folderu Analizy nie uwzględniaj w żadnych dokumentacjach i instrukcjach
 16. W plikach Main/docs/Documentation.md, Main/docs/README.md, Kolumny.md, DetaleLayoutu.md nie przechowuj archiwalnych informacji. Mają tam być tylko aktualne informacje a nie historia zmian.
 17. Jeżeli zmiana dotyczy edycji lub dodania nowgo pola to przeczytaj analizę Analizy/Wazne_Fokus i zadbaj, żeby nie wystąpił ten błąd
+18. Moduł "Main" ma też pełen dostęp do odczytu danych z folderów "Second", ale nie może ich modyfikować.
