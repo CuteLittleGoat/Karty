@@ -63,7 +63,7 @@ Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry
 
 ### 4.5 Przycisk „Instrukcja” w rogu aplikacji
 - W nagłówku (`.page-header`) działa kontener `.admin-toolbar` z przyciskiem `#secondInstructionButton`.
-- Przycisk ma klasę `.primary`, więc używa zielonego wariantu CTA.
+- Przycisk ma klasę `.secondary`, więc używa zielonego wariantu pomocniczego takiego samego jak w `Main/index.html`.
 - `Second/app.js` steruje widocznością przycisku: jest widoczny tylko w trybie administratora (`?admin=1`).
 
 ## 5. Style, fonty i zasady wizualne
