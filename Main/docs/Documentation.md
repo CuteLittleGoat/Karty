@@ -462,3 +462,13 @@ Ta dokumentacja opisuje **aktualny stan aplikacji** i nie zawiera historii zmian
 - W zakładce `Turniej` (admin i user) zastosowano układ bocznego panelu przycisków (`Instrukcja`, `Odśwież`) i centralny tekst `Strona w budowie`.
 - Tabele `Gracze` w `Second` używają klasy `players-table`, dzięki czemu minimalne szerokości kolumn odpowiadają konfiguracji z Main.
 - Wersja jest celowo offline: brak wywołań Firebase, brak zapisu/odczytu danych backendowych; przyciski pełnią rolę szkieletu UI.
+
+## Logowanie Firebase Auth (Main)
+- W nagłówku dodano wspólny pasek logowania `.auth-toolbar` z polami `#authEmailInput`, `#authPasswordInput` oraz przyciskami `#authLoginButton`, `#authLogoutButton`, `#authResetPasswordButton`.
+- Frontend używa Firebase Auth (compat) i funkcji:
+  - `signInWithEmailAndPassword(email, password)` dla przycisku **Zaloguj**,
+  - `signOut()` dla przycisku **Wyloguj**,
+  - `sendPasswordResetEmail(email)` dla przycisku **Reset hasła**.
+- Listener `onAuthStateChanged` odczytuje profil użytkownika z kolekcji `main_users/{uid}` i aktualizuje komunikat w `#authStatus`.
+- Po zalogowaniu aplikacja próbuje zapisać metadane sesji do `main_auth_sessions/{uid}` (`uid`, `email`, `module`, `profileCollection`, `profileExists`, `lastLoginAt`, `updatedAt`) przez `set(..., { merge: true })`.
+- Integracja jest przygotowana pod przyszłe Rules: odczyt profilu i zapis sesji są już podpięte do docelowych kolekcji, więc po zaostrzeniu reguł mechanizm będzie działał bez zmian w UI.

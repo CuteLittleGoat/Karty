@@ -122,6 +122,69 @@ h1 {
   gap: var(--gap-2);
 }
 
+.header-controls {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--gap-2);
+}
+
+.auth-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: var(--gap-2);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.28);
+  max-width: min(100%, 920px);
+}
+
+.auth-field {
+  display: grid;
+  gap: 4px;
+  min-width: 180px;
+}
+
+.auth-field span {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.auth-field input {
+  width: 100%;
+}
+
+.auth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-1);
+}
+
+#authStatus {
+  flex: 1 1 100%;
+  margin: 0;
+}
+
+@media (max-width: 860px) {
+  .header-controls {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .auth-toolbar {
+    justify-content: flex-start;
+  }
+
+  .auth-field {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
