@@ -99,9 +99,11 @@
 - W modalu rebuy każda kolumna (`Rebuy 1`, `Rebuy 2`, kolejne) ma stałe `8ch`.
 
 ## Moduł Second — aktualny layout
-- `Second/styles.css` jest identyczny z `Main/styles.css`, więc oba moduły używają tego samego systemu wizualnego 1:1.
-- Fonty w `Second` są takie same jak w `Main`: `Cinzel`, `Cormorant Garamond`, `Rajdhani`, `Inter`.
-- Przyciski (`.primary`, `.secondary`, `.danger`) mają identyczny wygląd, obramowania, cienie i stany interakcji jak w `Main`.
-- Zakładki (`.admin-panel-tab`) oraz aktywne stany (`.is-active`) mają identyczny styl i podświetlenia jak w `Main`.
-- Karty, tła, obramowania i gradienty modułu `Second` są takie same jak w module `Main`.
+- `Second/styles.css` pozostaje spójny wizualnie z `Main/styles.css` (te same fonty i system kolorów).
+- Panel administratora w `Second` zawiera zakładki: `Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Turniej`.
+- Zakładki `Aktualności`, `Czat`, `Regulamin`, `Gracze` używają tych samych nagłówków i opisów treści co w `Main/index.html`.
+- W zakładce `Aktualności` (admin) pole `Treść wiadomości` ma przycisk `Wyślij` w sekcji akcji.
+- Widok użytkownika w `Second` ma zakładki: `Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Turniej`, z opisami tekstowymi zgodnymi z `Main`.
+- Zakładka `Turniej` (admin i user) ma układ podobny do sekcji „Gry użytkowników”: lewy panel boczny i środkową sekcję treści z napisem `Strona w budowie`.
+- W lewym panelu `Turniej` są przyciski `Instrukcja` i `Odśwież` (szkielet UI, bez akcji backendowych).
 

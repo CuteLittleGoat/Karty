@@ -1,68 +1,80 @@
 # Second — Instrukcja użytkownika (UI)
 
-## 1. Start aplikacji
-1. Otwórz `Second/index.html`.
-2. Aby wejść jako administrator, dopisz w adresie `?admin=1`.
-3. Aby wejść jako użytkownik, otwórz stronę bez parametru.
+## 1. Uruchomienie i wybór trybu
+1. Otwórz `Second/index.html` w przeglądarce.
+2. Aby wejść do panelu administratora, dopisz w adresie `?admin=1`.
+3. Aby wejść do widoku użytkownika, otwórz stronę bez parametru `admin`.
 
-## 2. Widok administratora (`?admin=1`)
+## 2. Panel administratora (`?admin=1`)
 
-### 2.1 Górna część ekranu
-1. W lewym górnym rogu widzisz tytuł modułu.
-2. Pod nagłówkiem widzisz główną kartę panelu.
+### 2.1 Górny pasek
+1. W prawym górnym obszarze panelu kliknij `Odśwież` (przycisk jest szkieletem UI, bez akcji).
+2. Zakładki panelu znajdują się bezpośrednio pod nagłówkiem `Panel Administratora`.
 
-### 2.2 Zakładki panelu
-1. Kliknij zakładkę `Aktualności`, `Czat`, `Gracze` lub `Turniej`.
-2. Aktywna zakładka ma wyróżniony kolor i podświetlenie.
-3. Po kliknięciu treść niżej przełącza się tylko dla wybranej zakładki.
-
-### 2.3 Zakładka „Aktualności”
+### 2.2 Zakładka „Aktualności”
 1. Kliknij zakładkę `Aktualności`.
-2. Kliknij pole `Treść aktualności`.
-3. Wpisz komunikat dla użytkowników.
-4. Tekst od razu pojawia się w podglądzie użytkownika niżej.
+2. W sekcji `Wiadomość do graczy` kliknij pole `Treść wiadomości`.
+3. Wpisz komunikat dla graczy.
+4. Kliknij przycisk `Wyślij`.
+5. Obok przycisku widzisz status informujący, że to szkielet UI bez Firebase.
 
-### 2.4 Zakładka „Czat”
+### 2.3 Zakładka „Czat”
 1. Kliknij zakładkę `Czat`.
-2. Przeglądaj listę wiadomości.
-3. Aby usunąć wpis, kliknij `Usuń` przy wybranej wiadomości.
+2. W nagłówku sekcji przeczytasz opis: `Moderuj wiadomości i usuwaj wpisy starsze niż 30 dni.`
+3. Kliknij `Usuń starsze niż 30 dni` (przycisk bez podpiętej logiki backendowej).
+4. Niżej widzisz listę wiadomości (w tej wersji pokazany jest wpis przykładowy).
+
+### 2.4 Zakładka „Regulamin”
+1. Kliknij zakładkę `Regulamin`.
+2. Wpisz treść w polu `Treść regulaminu`.
+3. Kliknij `Zapisz`.
+4. Status pod przyciskiem informuje, że ekran jest szkieletem UI.
 
 ### 2.5 Zakładka „Gracze”
 1. Kliknij zakładkę `Gracze`.
-2. Wpisz nazwę w polu `Nazwa gracza`.
-3. Wpisz 4 cyfry w polu `PIN`.
-4. Zaznacz/odznacz `Dostęp do zakładki Czat`.
-5. Kliknij `Dodaj gracza`.
-6. Nowy gracz pojawi się od razu w tabeli.
-7. Aby usunąć gracza, kliknij `Usuń` w kolumnie `Akcje`.
+2. Zobaczysz identyczny układ kolumn jak w module Main: `Aplikacja`, `Nazwa`, `PIN`, `Uprawnienia`, kolumna akcji.
+3. Kliknij `Dodaj` (przycisk bez podpiętej logiki danych).
+4. Wiersz tabeli pokazuje stan pusty (`Brak graczy. Dodaj`).
 
 ### 2.6 Zakładka „Turniej”
 1. Kliknij zakładkę `Turniej`.
-2. W lewym panelu kliknij `Przycisk 1`, `Przycisk 2` lub `Przycisk 3`.
-3. W prawym panelu zobaczysz odpowiedni komunikat `W budowie: Strona1/2/3`.
+2. W lewym panelu `Panel` masz dwa przyciski: `Instrukcja` oraz `Odśwież`.
+3. Po prawej, w centralnej części, widzisz napis `Strona w budowie`.
+4. Przyciski mają wyłącznie funkcję UI (bez backendu i bez Firebase).
 
-### 2.7 Podgląd widoku użytkownika
-1. Pod głównym panelem admina znajduje się karta `Podgląd widoku użytkownika`.
-2. Sprawdzisz tam, jak użytkownik widzi zakładki `Aktualności`, `Czat`, `Turniej`.
+### 2.7 Podgląd użytkownika
+1. Pod panelem administratora znajduje się karta `Podgląd widoku użytkownika`.
+2. To dokładnie ten sam interfejs, który widzi zwykły użytkownik (bez `?admin=1`).
 
 ## 3. Widok użytkownika (bez `?admin=1`)
 
-### 3.1 Zakładka „Aktualności”
-1. Otwórz `Aktualności`.
-2. Przeczytaj treść w polu tylko do odczytu.
+### 3.1 Zakładki użytkownika
+1. U góry widzisz zakładki: `Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Turniej`.
+2. Kliknięcie zakładki przełącza aktywny panel.
 
-### 3.2 Zakładka „Czat”
-1. Otwórz zakładkę `Czat`.
-2. Wpisz PIN gracza i kliknij `Autoryzuj PIN`.
-3. Po poprawnej autoryzacji pojawi się pole `Wiadomość`.
-4. Wpisz wiadomość i kliknij `Wyślij`.
-5. Wpis pojawi się na liście czatu.
+### 3.2 „Aktualności”
+1. Wejdź w `Aktualności`.
+2. Przeczytaj pole `Najnowsze` (tylko do odczytu).
 
-### 3.3 Zakładka „Turniej”
-1. Otwórz zakładkę `Turniej`.
-2. Kliknij przycisk w lewym panelu.
-3. Zobacz treść odpowiadającą wybranemu przyciskowi.
+### 3.3 „Czat”
+1. Wejdź w `Czat`.
+2. W sekcji PIN wpisz kod w polu `PIN (5 cyfr)`.
+3. Kliknij `Otwórz`.
+4. Niżej wpisz treść w polu `Twoja wiadomość`.
+5. Kliknij `Wyślij`.
+6. W tej wersji działania są tylko szkieletem UI.
 
-## 4. Spójność wizualna
-- Moduł `Second` używa takiego samego fontu, kolorystyki, kart i stylu przycisków jak moduł `Main`.
-- Aktywne elementy (zakładki i przyciski) mają taki sam sposób podświetlania jak w `Main`.
+### 3.4 „Regulamin”
+1. Wejdź w `Regulamin`.
+2. Przeczytaj pole `Obowiązujące zasady` (tylko do odczytu).
+
+### 3.5 „Gracze”
+1. Wejdź w `Gracze`.
+2. Tabela ma ten sam układ kolumn, co w panelu administratora.
+3. Przy braku danych widoczny jest wiersz `Brak graczy.`
+
+### 3.6 „Turniej”
+1. Wejdź w `Turniej`.
+2. Po lewej stronie użyj przycisków `Instrukcja` i `Odśwież`.
+3. W środku widzisz tekst `Strona w budowie`.
+4. Przyciski nie są podłączone do logiki backendowej.

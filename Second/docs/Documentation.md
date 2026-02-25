@@ -1,64 +1,74 @@
 # Second — Dokumentacja techniczna
 
-## 1. Cel modułu
-`Second` to niezależny moduł z dwoma trybami renderowania:
+## 1. Zakres modułu
+Moduł `Second` renderuje szkielet UI bez połączenia z Firebase. Zawiera dwa tryby:
 - administrator (`?admin=1`),
-- użytkownik (bez parametru).
+- użytkownik (brak `?admin=1`).
 
-W tej wersji logika danych działa lokalnie w pamięci przeglądarki (bez zapisu trwałego).
+## 2. Pliki modułu
+- `Second/index.html` — definicja struktur UI dla obu trybów (`<template id="adminViewTemplate">`, `<template id="userViewTemplate">`).
+- `Second/app.js` — logika montowania widoku, przełączania zakładek oraz aktywnego stanu przycisków Turnieju.
+- `Second/styles.css` — warstwa wizualna zgodna z motywem modułu Main (te same fonty, tokeny i klasy komponentów).
+- `Second/Kolumny.md` — opis kolumn i minimalnych szerokości w układach tabelarycznych używanych w module Second.
 
-## 2. Struktura plików
-- `Second/index.html` — struktura UI, szablony administratora i użytkownika.
-- `Second/styles.css` — pełny zestaw styli skopiowany z `Main/styles.css` dla 1:1 spójności wizualnej.
-- `Second/app.js` — logika przełączania zakładek, formularzy i synchronizacji widoków.
+## 3. UI odwzorowane z Main
 
-## 3. Frontend — UI i style
+### 3.1 Zakładki administratora
+Panel administratora zawiera zakładki:
+- `Aktualności`,
+- `Czat`,
+- `Regulamin`,
+- `Gracze`,
+- `Turniej`.
 
-### 3.1 Fonty i typografia
-W `index.html` ładowane są fonty:
-- `Cinzel` (tytuły),
-- `Cormorant Garamond` (nagłówki sekcji),
-- `Rajdhani` (elementy panelowe),
-- `Inter` (treść i pola formularzy).
+Treści i opisy ekranowe zakładek `Aktualności`, `Czat`, `Regulamin` i `Gracze` są zgodne tekstowo z `Main/index.html`.
 
-Po zmianie `Second/styles.css` używa identycznych zmiennych typograficznych i ustawień renderingu jak `Main` (`font-family`, skale font-size, wygładzanie tekstu, kerning).
+### 3.2 Zakładki użytkownika
+Widok użytkownika zawiera zakładki:
+- `Aktualności`,
+- `Czat`,
+- `Regulamin`,
+- `Gracze`,
+- `Turniej`.
 
-### 3.2 Kolory, karty, przyciski
-`Second/styles.css` zawiera ten sam system tokenów co `Main`:
-- gradientowe tło aplikacji,
-- zielono-złote karty `.card`,
-- identyczne style przycisków `.primary`, `.secondary`, `.danger`,
-- takie same stany hover/focus/active,
-- te same style zakładek `.admin-panel-tab` i treści `.admin-panel-content`.
+W zakładce `Czat` zastosowano teksty PIN i formularza wiadomości zgodne z modułem Main (`Wpisz PIN z uprawnieniem Czat...`, `Twoja wiadomość`, `Wyślij`).
 
-Efekt: moduł `Second` ma ten sam wygląd fontów i przycisków co `Main`.
+### 3.3 Turniej
+Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry użytkowników`:
+- lewy panel boczny `Panel`,
+- środkowy obszar treści z komunikatem `Strona w budowie`,
+- przyciski boczne: `Instrukcja` i `Odśwież`.
 
-### 3.3 Responsywność
-Style mobilne i desktopowe działają wg tych samych reguł media query co w `Main/styles.css`, dzięki czemu zachowanie układu jest spójne między modułami.
+## 4. Logika JavaScript (`Second/app.js`)
 
-## 4. Logika aplikacji (`app.js`)
+### 4.1 Wybór trybu
+- `isAdminView` sprawdza parametr URL `admin`.
+- Gdy `admin=1`, montowany jest panel admina z podglądem użytkownika.
+- W przeciwnym razie montowany jest wyłącznie widok użytkownika.
 
-### 4.1 Stan
-Obiekt `state` przechowuje m.in.:
-- `news` — treść aktualności,
-- `players` — lista graczy z `name`, `pin`, `permissions.chat`,
-- `messages` — wiadomości czatu,
-- `activeTournamentPage` — aktywna podstrona turnieju.
+### 4.2 Przełączanie zakładek
+- `setupTabs(...)` obsługuje aktywację przycisków i paneli dla:
+  - zakładek admina (`.admin-panel-tab` / `.admin-panel-content`),
+  - zakładek użytkownika (`.tab-button` / `.tab-panel`).
+- Stan aktywny realizowany jest klasą `is-active`.
 
-### 4.2 Tryby renderowania
-- Parametr URL `admin=1` montuje widok administratora.
-- Brak parametru montuje widok użytkownika.
+### 4.3 Przyciski Turnieju
+- `setupTournamentButtons(container)` aktywuje wybrany przycisk `Instrukcja`/`Odśwież` przez przełączanie klasy `is-active`.
+- Przyciski nie uruchamiają operacji backendowych.
 
-### 4.3 Zakładki
-- Funkcje tabów ustawiają klasę `.is-active` dla przycisku i odpowiadającego panelu.
-- Dotyczy zarówno panelu administratora, jak i widoku użytkownika.
+### 4.4 Podgląd użytkownika w trybie admin
+- `createUserViewNode({ withWrapperCard: false })` usuwa opakowanie karty (`.card`) i renderuje użytkownika wewnątrz `#userPreviewMount`.
+- Dzięki temu admin widzi bieżący układ końcowego UI użytkownika.
 
-### 4.4 Funkcje biznesowe UI
-- **Aktualności**: wpis admina synchronizuje się z widokiem użytkownika.
-- **Gracze**: walidacja PIN (4 cyfry), dodawanie/usuwanie rekordów tabeli.
-- **Czat**: autoryzacja PIN i uprawnienia `chat`, dodawanie wpisów przez użytkownika, usuwanie wpisów przez admina.
-- **Turniej**: przyciski panelu bocznego przełączają aktywną treść.
+## 5. Style, fonty i zasady wizualne
+- Fonty ładowane w `index.html`: `Cinzel`, `Cormorant Garamond`, `Inter`, `Rajdhani`.
+- Komponenty używają klas zgodnych z Main (`.admin-panel-tabs`, `.admin-message`, `.admin-chat`, `.admin-players`, `.admin-games-layout`, `.chat-form`).
+- Tabele `Gracze` korzystają z `players-table`, która ma te same minimalne szerokości kolumn jak w Main dla kolumn `Nazwa` i `PIN`.
 
-## 5. Dane backendowe
-Aktualnie moduł nie wysyła i nie pobiera danych z backendu ani Firebase.
-Całość opiera się o lokalny stan JavaScript i renderowanie po stronie klienta.
+## 6. Dane backendowe
+W tym etapie moduł Second **nie wykonuje** operacji backendowych:
+- brak odczytu z Firebase,
+- brak zapisu do Firebase,
+- brak nasłuchu `onSnapshot`.
+
+Wszystkie przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Odśwież`) są elementami szkieletu UI.
