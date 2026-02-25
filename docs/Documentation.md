@@ -22,9 +22,9 @@ Całość działa po stronie przeglądarki i komunikuje się bezpośrednio z Fir
 
 ### 3.1 Panel administratora (zakładki)
 Panel admina zawiera zakładki:
-1. **Aktualności** (`adminNewsTab`) — edycja wiadomości globalnej (`adminMessageInput`, `adminMessageSend`).
+1. **Aktualności** (`adminNewsTab`) — edycja wiadomości globalnej (`adminMessageInput`, `adminMessageSend`); pole `adminMessageInput` ma wysokość 50 linii (`rows="50"`).
 2. **Czat** (`adminChatTab`) — moderacja czatu (`adminChatCleanup`, `adminChatList`).
-3. **Regulamin** (`adminRulesTab`) — edycja treści regulaminu (`adminRulesInput`, `adminRulesSave`).
+3. **Regulamin** (`adminRulesTab`) — edycja treści regulaminu (`adminRulesInput`, `adminRulesSave`); pole `adminRulesInput` ma wysokość 50 linii (`rows="50"`).
 4. **Gracze** (`adminPlayersTab`) — dodawanie/edycja/usuwanie graczy i PIN-ów (`adminPlayersBody`, `adminAddPlayer`).
 5. **Gry admina** (`adminGamesTab`) — CRUD gier, szczegóły gier, notatki, statystyki, ranking.
 6. **Statystyki** (`adminStatisticsTab`) — zestawienia roczne, wagi, eksport.
@@ -36,7 +36,7 @@ Panel admina zawiera zakładki:
 Dodatkowo globalny przycisk odświeżania panelu: `adminPanelRefresh`.
 
 ### 3.2 Strefa gracza
-Widok użytkownika ma 3 zakładki główne: `updatesTab` (Aktualności), `rulesTab` (Regulamin) i `playerZoneTab` (Strefa Gracza).
+Widok użytkownika ma 3 zakładki główne: `updatesTab` (Aktualności), `rulesTab` (Regulamin) i `playerZoneTab` (Strefa Gracza). W `updatesTab` pole `latestMessageOutput` ma wysokość 50 linii (`rows="50"`), a w `rulesTab` pole `rulesOutput` także ma 50 linii (`rows="50"`).
 
 W `playerZoneTab` działa jedna bramka PIN (`playerZonePinInput`, `playerZonePinSubmit`) i po poprawnej autoryzacji renderowany jest layout dwukolumnowy. W tej samej sesji przeglądarki użytkownik nie wpisuje już PIN-u ponownie dla sekcji:
 - lewy panel `Sekcja` (`playerZoneSectionsList`) z przyciskami:
@@ -451,6 +451,7 @@ Ta dokumentacja opisuje **aktualny stan aplikacji** i nie zawiera historii zmian
 - Tabele kalkulatora renderowane w JS dostały dedykowane klasy, aby przypisać szerokości zgodne z dokumentem:
   - Tournament: `.admin-calculator-table1` … `.admin-calculator-table5`,
   - Cash: `.admin-calculator-cash-table7` … `.admin-calculator-cash-table10`.
-- W `Tabela5` (Tournament) dynamiczne kolumny rebuy są oznaczane atrybutem `data-rebuy-column="true"` (nagłówki i komórki), co utrzymuje minimalnie `8ch` niezależnie od ich liczby.
+- W `Tabela5` dynamiczne kolumny rebuy są oznaczane atrybutem `data-rebuy-column="true"` (nagłówki i komórki), co utrzymuje minimalnie `8ch` niezależnie od ich liczby.
+- Kolumna `Mod` w `Tabela5` ma minimalną szerokość `8ch` (zwiększoną, aby mieścić do 8 znaków).
 - Modal rebuy zachowuje stałe `8ch` na kolumnę przez istniejące reguły `#adminCalculatorRebuyTable th/td`.
 

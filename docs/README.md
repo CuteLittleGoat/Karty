@@ -14,11 +14,11 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 2.1 Aktualności
 1. Kliknij zakładkę **Aktualności**.
-2. Odczytaj pole **Najnowsze** z ostatnią wiadomością od administratora.
+2. Odczytaj pole **Najnowsze** z ostatnią wiadomością od administratora (pole jest wysokie na 50 linii, więc mieści długie komunikaty bez przewijania całej strony).
 
 ### 2.2 Regulamin
 1. Kliknij zakładkę **Regulamin**.
-2. Odczytaj pole **Obowiązujące zasady**.
+2. Odczytaj pole **Obowiązujące zasady** (pole jest wysokie na 50 linii, co ułatwia czytanie długiego regulaminu).
 
 ### 2.3 Strefa Gracza
 1. Kliknij zakładkę **Strefa Gracza**.
@@ -67,7 +67,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 3.1 Aktualności
 1. Wejdź w zakładkę **Aktualności**.
-2. Wpisz treść.
+2. Wpisz treść w polu **Treść wiadomości** (pole ma wysokość 50 linii).
 3. Kliknij **Wyślij**.
 
 ### 3.2 Czat
@@ -76,7 +76,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 3.3 Regulamin
 1. Wejdź w **Regulamin**.
-2. Edytuj treść.
+2. Edytuj treść w polu **Treść regulaminu** (pole ma wysokość 50 linii).
 3. Kliknij **Zapisz**.
 
 ### 3.4 Gracze
