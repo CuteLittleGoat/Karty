@@ -1650,7 +1650,7 @@ body.modal-open {
 .admin-calculator-cash-table10 th:nth-child(5),
 .admin-calculator-cash-table10 td:nth-child(5),
 .admin-calculator-table5 th:nth-last-child(2),
-.admin-calculator-table5 td:nth-last-child(2) { min-width: 5ch; }
+.admin-calculator-table5 td:nth-last-child(2) { min-width: 8ch; }
 
 .admin-calculator-table2 th:nth-child(1),
 .admin-calculator-table2 td:nth-child(1),

@@ -49,6 +49,12 @@
 - Modale `Szczegóły gry` i `Szczegóły gry użytkownika` korzystają z klasy `.game-details-modal-card` (szerokość `min(1320px, 100%)`) dla lepszego wykorzystania szerokości ekranu PC.
 - Przyciski sekcji w „Strefa Gracza” (`.player-zone-button`) mają responsywny font (`clamp`) i zagęszczane odstępy liter, co zapobiega wychodzeniu długich etykiet poza przycisk.
 
+## Pola tekstowe „Aktualności” i „Regulamin"
+- Pole `Treść wiadomości` w panelu administratora (`#adminMessageInput`) ma wysokość 50 linii.
+- Pole `Najnowsze` w widoku użytkownika (`#latestMessageOutput`) ma wysokość 50 linii.
+- Pole `Treść regulaminu` w panelu administratora (`#adminRulesInput`) ma wysokość 50 linii.
+- Pole `Obowiązujące zasady` w widoku użytkownika (`#rulesOutput`) ma wysokość 50 linii.
+
 ## Kalkulator — panel „Rodzaj gry”
 - Po lewej stronie kalkulatora znajduje się osobny panel boczny z nagłówkiem `Rodzaj gry`.
 - Panel używa kontenera `.admin-calculator-sidebar` z takim samym stylem karty jak panele typu „Lata”.
@@ -69,7 +75,7 @@
 - Po usunięciu ostatniej kolumny u danego gracza etykiety kolejnych kolumn u innych graczy są automatycznie renumerowane.
 
 ## Kalkulator — Tabela5
-- Na końcu tabeli znajduje się kolumna `Mod` z edytowalnym polem `.admin-input` (przyjmuje cyfry oraz opcjonalny znak `-` na początku).
+- Na końcu tabeli znajduje się kolumna `Mod` z edytowalnym polem `.admin-input` (przyjmuje cyfry oraz opcjonalny znak `-` na początku) i minimalną szerokością `8ch`.
 - Kolumna `Ranking` nie jest renderowana w Tabela5.
 - Kolumna `Suma` uwzględnia ręczną korektę z `Mod`.
 - Kolumny `Rebuy1..RebuyN` pokazują kwotę tylko w pojedynczym przypisanym wierszu `LP` według sekwencji cyklicznej z rosnącym zakresem (4, 5, 6, 7...).

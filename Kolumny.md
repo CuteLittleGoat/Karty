@@ -289,8 +289,8 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 | wartość oczekiwana | 8 |  |  |  |
 | Kolumny kolejnych rebuy | automatyczna | brak stałego limitu | do lewej | Pojawiają się tylko, gdy są potrzebne. |
 | wartość oczekiwana | 8 |  |  |  |
-| Mod | automatyczna | brak stałego limitu | do lewej | Pole pomocnicze do obliczeń. |
-| wartość oczekiwana | 5 |  |  |  |
+| Mod | automatyczna | brak stałego limitu | do lewej | Pole pomocnicze do obliczeń; szerokość dobrana pod wpis do 8 znaków. |
+| wartość oczekiwana | 8 |  |  |  |
 | Suma | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu. |
 | wartość oczekiwana | 10 |  |  |  |
 
