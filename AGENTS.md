@@ -1,6 +1,6 @@
 Aplikacja składa się z dwóch modułów: "Main" i "Second".
-Oba moduły działają niezależnie od siebie, ale korzystają z niektorych plików wpólnych. Dzielone foldery to: Analizy, Pliki, config
-Oba moduły mają też wspólny plik DetaleLayout.md
+Oba moduły działają niezależnie od siebie, ale korzystają z niektorych plików wpólnych. Dzielone foldery to: Analizy, Pliki, config.
+Oba moduły mają też wspólny plik DetaleLayout.md.
 Moduł "Second" ma też pełen dostęp do odczytu danych z folderów "Main" i "docs", ale nie może ich modyfikować.
 
 1. Po każdej zmianie kodu zmodyfikuj pliki docs/Documentation.md oraz docs/README.md
