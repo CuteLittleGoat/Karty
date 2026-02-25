@@ -170,7 +170,6 @@ Kalkulator zapisuje dane w `calculators/tournament` oraz `calculators/cash`.
 #### Cash
 - Dodano osobny model danych `cash`:
   - `table8Row.rake` — procent wykorzystywany w obliczeniach (kolumna `%`),
-  - `table8Row.rakeValue` — ręcznie wpisywana kwota rake,
   - `table9Rows[]` — wiersze graczy (`playerName`, `buyIn`, `payout`, `rebuys`).
 - Normalizacja i serializacja danych do Firestore są rozdzielone dla trybu `cash` i `tournament`.
 - Modal rebuy działa dla obu trybów; w trybie Cash operuje na `table9Rows[].rebuys`.
@@ -183,8 +182,8 @@ Dodane obliczenia Cash:
   - `sum = buyInAfterPercent + rebuyAfterPercent`
 - **Tabela8**:
   - kolumna `%` to to samo pole danych `table8Row.rake` (format z `%` po blur),
-  - kolumna `Rake` to pole `table8Row.rakeValue` (wartość liczbowa),
-  - `Pot = Suma(Tabela7) - Rake`.
+  - kolumna `Rake` jest tylko do odczytu i wylicza: `(suma Buy-In z Tabela9 + suma Rebuy z Tabela9) * (1 - rake/100)`,
+  - kolumna `Pot` jest tylko do odczytu i prezentuje tę samą wartość co `Rake`.
 - **Tabela9**:
   - unikalny wybór gracza per tabela,
   - dropdown `Gracz` renderuje wyłącznie dostępne osoby (gracze zajęci w innych wierszach są ukrywani),

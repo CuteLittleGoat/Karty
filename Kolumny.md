@@ -184,9 +184,9 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 | --- | --- | --- | --- | --- |
 | % | automatyczna | brak stałego limitu | do lewej | Wpis liczbowy, znak `%` dodawany automatycznie po opuszczeniu pola. |
 | wartość oczekiwana | 5 |  |  |  |
-| Rake | automatyczna | brak stałego limitu | do lewej | Wpis liczbowy kwoty rake. |
+| Rake | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, wynik `(Suma Buy-In z Tabela9 + Suma Rebuy z Tabela9) * (1 - %/100)`. |
 | wartość oczekiwana | 8 |  |  |  |
-| Pot | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, wynik `Suma z Tabela7 - Rake z Tabela8`. |
+| Pot | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, ta sama wartość co kolumna `Rake` w Tabela8. |
 | wartość oczekiwana | 10 |  |  |  |
 
 ### 6.2 Tabela9 (Cash)
