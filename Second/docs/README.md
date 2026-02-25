@@ -8,8 +8,10 @@
 ## 2. Panel administratora (`?admin=1`)
 
 ### 2.1 Górny pasek
-1. W prawym górnym obszarze panelu kliknij `Odśwież` (przycisk jest szkieletem UI, bez akcji).
-2. Zakładki panelu znajdują się bezpośrednio pod nagłówkiem `Panel Administratora`.
+1. W prawym górnym rogu aplikacji (obok nagłówka) kliknij zielony przycisk `Instrukcja`.
+2. Przycisk jest wizualnie zgodny z układem rogu aplikacji i obecnie działa jako element szkieletu UI (bez otwierania dodatkowego okna).
+3. W nagłówku karty administratora kliknij `Odśwież` (przycisk jest szkieletem UI, bez akcji).
+4. Zakładki panelu znajdują się bezpośrednio pod nagłówkiem `Panel Administratora`.
 
 ### 2.2 Zakładka „Aktualności”
 1. Kliknij zakładkę `Aktualności`.
@@ -38,7 +40,7 @@
 
 ### 2.6 Zakładka „Turniej”
 1. Kliknij zakładkę `Turniej`.
-2. W lewym panelu `Panel` masz dwa przyciski: `Instrukcja` oraz `Odśwież`.
+2. W lewym panelu `Panel` masz dwa złote przyciski: `Strona1` oraz `Strona2`.
 3. Po prawej, w centralnej części, widzisz napis `Strona w budowie`.
 4. Przyciski mają wyłącznie funkcję UI (bez backendu i bez Firebase).
 
@@ -75,6 +77,6 @@
 
 ### 3.6 „Turniej”
 1. Wejdź w `Turniej`.
-2. Po lewej stronie użyj przycisków `Instrukcja` i `Odśwież`.
+2. Po lewej stronie użyj przycisków `Strona1` i `Strona2`.
 3. W środku widzisz tekst `Strona w budowie`.
 4. Przyciski nie są podłączone do logiki backendowej.
