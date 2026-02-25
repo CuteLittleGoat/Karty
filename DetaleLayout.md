@@ -107,5 +107,5 @@
 - W trybie admin dolny panel podglądu użytkownika jest pełnoszerokowy (klasy `user-preview-card next-game-card`) i nie zawiera osobnego nagłówka, aby zachować taki sam start sekcji jak w widoku użytkownika i module `Main`.
 - Zakładka `Turniej` (admin i user) ma układ podobny do sekcji „Gry użytkowników”: lewy panel boczny i środkową sekcję treści z napisem `Strona w budowie`.
 - W lewym panelu `Turniej` są złote przyciski `Strona1` i `Strona2` (szkielet UI, bez akcji backendowych).
-- W prawym górnym rogu nagłówka modułu `Second` dodano zielony przycisk `Instrukcja` (klasa `.primary`, kontener `.admin-toolbar`), widoczny w trybie administratora.
+- W prawym górnym rogu nagłówka modułu `Second` znajduje się zielony przycisk `Instrukcja` (klasa `.secondary`, kontener `.admin-toolbar`), widoczny w trybie administratora i spójny z `Main/index.html`.
 

@@ -8,7 +8,7 @@
 ## 2. Panel administratora (`?admin=1`)
 
 ### 2.1 Górny pasek
-1. W prawym górnym rogu aplikacji (obok nagłówka) kliknij zielony przycisk `Instrukcja`.
+1. W prawym górnym rogu aplikacji (obok nagłówka) kliknij zielony przycisk `Instrukcja` (ten sam styl co w module Main).
 2. Przycisk jest wizualnie zgodny z układem rogu aplikacji i obecnie działa jako element szkieletu UI (bez otwierania dodatkowego okna).
 3. W nagłówku karty administratora kliknij `Odśwież` (przycisk jest szkieletem UI, bez akcji).
 4. Zakładki panelu znajdują się bezpośrednio pod nagłówkiem `Panel Administratora`.
