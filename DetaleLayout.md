@@ -80,3 +80,12 @@
 - W trybie odczytu (np. „Gry do Potwierdzenia”) modal pokazuje zapisane kolory tekstu bez możliwości edycji i ukrywa kontrolki edycji (przyciski kolorów, `Zapisz`, `Domyślne`).
 
 - Lista `Gracz` w formularzach szczegółów gry i kalkulatora pokazuje wyłącznie dostępne osoby; po wybraniu gracza w jednym wierszu znika on z listy w pozostałych wierszach do czasu zwolnienia.
+
+## Szerokości kolumn (aktualny stan)
+- Wartości liczbowe z `Kolumny.md` są realizowane jako minimalne szerokości w znakach (`ch`).
+- `Gracze`: `Nazwa` = `30ch`, `PIN` = `5ch`.
+- Modale szczegółów gry (`Szczegóły gry` i `Szczegóły potwierdzeń`) mają minimalne szerokości kolumn zgodne z opisem: `LP 4ch`, `Gracz 25ch`, wartości liczbowe `8ch`, `Punkty 4ch`.
+- Rozbudowana tabela statystyk i ranking mają minimalne szerokości na każdej kolumnie zgodnie z `Kolumny.md`.
+- Tabele kalkulatora (Tournament i Cash) używają dedykowanych klas tabel i mają przypisane minimalne szerokości kolumn zgodnie z sekcją 6 w `Kolumny.md`.
+- W modalu rebuy każda kolumna (`Rebuy 1`, `Rebuy 2`, kolejne) ma stałe `8ch`.
+

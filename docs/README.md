@@ -163,3 +163,13 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 4. **% Puli** liczy: `Wypłata z Tabela9 / Suma z Tabela7`.
 
 12. Wszystkie zmiany zapisują się automatycznie po chwili — nie ma osobnego przycisku zapisu.
+
+## 9. Minimalne szerokości kolumn (UI)
+- Tam, gdzie w dokumentacji kolumn wpisana jest liczba, aplikacja trzyma minimalną szerokość kolumny w znakach (jednostka `ch`).
+- Przykłady widoczne od razu w UI:
+  - w **Gracze** kolumna **Nazwa** ma min. 30 znaków, a **PIN** min. 5 znaków,
+  - w **Szczegóły gry** kolumna **Gracz** ma min. 25 znaków,
+  - w tabelach kalkulatora (Cash/Tournament) kolumny liczbowe mają minimalne szerokości zgodne z `Kolumny.md`.
+- Jeżeli w `Kolumny.md` pole „wartość oczekiwana” jest puste, szerokość pozostaje automatyczna.
+- W modalu rebuy kolumny **Rebuy 1, Rebuy 2, ...** pozostają stałe: 8 znaków.
+

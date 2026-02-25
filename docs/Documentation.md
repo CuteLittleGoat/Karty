@@ -438,3 +438,16 @@ Aby odtworzyć aplikację 1:1, należy:
 5. Wykonać skrypt bootstrapujący Firestore, aby zapewnić wszystkie kolekcje/dokumenty.
 
 Ta dokumentacja opisuje **aktualny stan aplikacji** i nie zawiera historii zmian.
+
+### 5.4 Minimalne szerokości kolumn (implementacja)
+- Minimalne szerokości kolumn zostały spięte w CSS jednostką `ch` (ilość znaków), głównie przez selektory `nth-child` dla tabel statycznych i klas tabel renderowanych dynamicznie.
+- Statyczne tabele z przypisanymi szerokościami:
+  - `.players-table` (Nazwa: `30ch`, PIN: `5ch`),
+  - `.game-details-table` i `.confirmations-details-table` (LP/Gracz/Wpisowe/Rebuy/Wypłata/+/-/Punkty wg `Kolumny.md`),
+  - `.admin-games-players-stats-table` i `.admin-games-ranking-table`.
+- Tabele kalkulatora renderowane w JS dostały dedykowane klasy, aby przypisać szerokości zgodne z dokumentem:
+  - Tournament: `.admin-calculator-table1` … `.admin-calculator-table5`,
+  - Cash: `.admin-calculator-cash-table7` … `.admin-calculator-cash-table10`.
+- W `Tabela5` (Tournament) dynamiczne kolumny rebuy są oznaczane atrybutem `data-rebuy-column="true"` (nagłówki i komórki), co utrzymuje minimalnie `8ch` niezależnie od ich liczby.
+- Modal rebuy zachowuje stałe `8ch` na kolumnę przez istniejące reguły `#adminCalculatorRebuyTable th/td`.
+
