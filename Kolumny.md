@@ -31,7 +31,7 @@ Opisuje aktualny stan kolumn w aplikacji prostym językiem (bez nazw technicznyc
 | Nazwa | automatyczna | brak stałego limitu | do lewej | Pole tekstowe. |
 | wartość oczekiwana |  |  |  |  |
 | PIN | automatyczna | brak stałego limitu | do lewej | Przyjmuje wyłącznie cyfry, maksymalnie 5 cyfr. |
-| wartość oczekiwana |  |  |  |  |
+| wartość oczekiwana | 5 |  |  |  |
 | Uprawnienia | automatyczna | brak stałego limitu | do lewej | Lista uprawnień i przycisk edycji. |
 | wartość oczekiwana |  |  |  |  |
 | Akcje | automatyczna | brak stałego limitu | do lewej | Przyciski działań (np. usuwanie). |
