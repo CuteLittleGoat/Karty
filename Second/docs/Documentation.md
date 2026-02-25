@@ -58,7 +58,8 @@ Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry
 
 ### 4.4 Podgląd użytkownika w trybie admin
 - `createUserViewNode({ withWrapperCard: false })` usuwa opakowanie karty (`.card`) i renderuje użytkownika wewnątrz `#userPreviewMount`.
-- Dzięki temu admin widzi bieżący układ końcowego UI użytkownika.
+- Kontener podglądu w `Second/index.html` używa klas `card user-preview-card next-game-card`, więc zajmuje pełną szerokość siatki admina (`grid-column: 1 / -1`).
+- Usunięto dodatkowy nagłówek „Podgląd widoku użytkownika”, dzięki czemu dolny panel w adminie startuje od razu od zakładek użytkownika i wizualnie odpowiada układowi z `Main/index.html`.
 
 ### 4.5 Przycisk „Instrukcja” w rogu aplikacji
 - W nagłówku (`.page-header`) działa kontener `.admin-toolbar` z przyciskiem `#secondInstructionButton`.

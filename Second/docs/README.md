@@ -45,8 +45,9 @@
 4. Przyciski mają wyłącznie funkcję UI (bez backendu i bez Firebase).
 
 ### 2.7 Podgląd użytkownika
-1. Pod panelem administratora znajduje się karta `Podgląd widoku użytkownika`.
-2. To dokładnie ten sam interfejs, który widzi zwykły użytkownik (bez `?admin=1`).
+1. Na dole panelu administratora znajduje się pełnoszerokowy panel podglądu użytkownika (ten sam układ kart i zakładek jak w module Main).
+2. W podglądzie od razu widzisz pasek zakładek użytkownika (`Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Turniej`) oraz aktywną sekcję `Aktualności`.
+3. Układ podglądu jest identyczny z widokiem użytkownika bez parametru `?admin=1`, więc możesz testować wygląd bez przełączania strony.
 
 ## 3. Widok użytkownika (bez `?admin=1`)
 
