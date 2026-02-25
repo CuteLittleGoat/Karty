@@ -1,8 +1,3 @@
-Aplikacja składa się z dwóch modułów: "Main" i "Second".
-Oba moduły działają niezależnie od siebie, ale korzystają z niektorych plików wpólnych. Dzielone foldery to: Analizy, Pliki, config.
-Oba moduły mają też wspólny plik DetaleLayout.md.
-Moduł "Second" ma też pełen dostęp do odczytu danych z folderów "Main" i "docs", ale nie może ich modyfikować.
-
 1. Po każdej zmianie kodu zmodyfikuj pliki Second/docs/Documentation.md oraz Second/docs/README.md
 2. Plik README.md ma zawierać instrukcje obsługi dla użytkownika
 3. Instrukcja w README.md ma być bardzo dokładna - co i gdzie kliknąć dla uzyskania jakiegoś efektu (dodanie stołu, dodanie gracza, zmiana stawki itp).
@@ -20,3 +15,4 @@ Moduł "Second" ma też pełen dostęp do odczytu danych z folderów "Main" i "d
 15. Folderu Analizy nie uwzględniaj w żadnych dokumentacjach i instrukcjach
 16. W plikach Second/docs/Documentation.md, Second/docs/README.md, Kolumny.md, DetaleLayoutu.md nie przechowuj archiwalnych informacji. Mają tam być tylko aktualne informacje a nie historia zmian.
 17. Jeżeli zmiana dotyczy edycji lub dodania nowgo pola to przeczytaj analizę Analizy/Wazne_Fokus i zadbaj, żeby nie wystąpił ten błąd
+18. Moduł "Second" ma też pełen dostęp do odczytu danych z folderów "Main" i "docs", ale nie może ich modyfikować.
