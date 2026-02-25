@@ -1,114 +1,64 @@
 # Second — Dokumentacja techniczna
 
 ## 1. Cel modułu
-Moduł `Second` dostarcza niezależny szkielet UI z dwoma trybami:
-- tryb administratora (`?admin=1`),
-- tryb użytkownika (bez parametru).
+`Second` to niezależny moduł z dwoma trybami renderowania:
+- administrator (`?admin=1`),
+- użytkownik (bez parametru).
 
-Implementacja nie zapisuje danych do Firebase. Logika działa lokalnie (stan w pamięci JavaScript).
+W tej wersji logika danych działa lokalnie w pamięci przeglądarki (bez zapisu trwałego).
 
-## 2. Struktura plików modułu
-- `Second/index.html` — layout, szablony widoków admin/user.
-- `Second/styles.css` — motyw wizualny zgodny stylistycznie z `Main`.
-- `Second/app.js` — obsługa zakładek, formularzy, list i synchronizacji podglądu usera.
+## 2. Struktura plików
+- `Second/index.html` — struktura UI, szablony administratora i użytkownika.
+- `Second/styles.css` — pełny zestaw styli skopiowany z `Main/styles.css` dla 1:1 spójności wizualnej.
+- `Second/app.js` — logika przełączania zakładek, formularzy i synchronizacji widoków.
 
-## 3. Frontend — szczegóły implementacji
+## 3. Frontend — UI i style
 
-### 3.1 `index.html`
-- Dokument ładuje fonty: `Cinzel`, `Cormorant Garamond`, `Inter`, `Rajdhani`.
-- `#appRoot` jest punktem montażu aplikacji.
-- Użyto dwóch `<template>`:
-  - `#adminViewTemplate` — panel administratora + dolny podgląd użytkownika.
-  - `#userViewTemplate` — samodzielny widok użytkownika.
+### 3.1 Fonty i typografia
+W `index.html` ładowane są fonty:
+- `Cinzel` (tytuły),
+- `Cormorant Garamond` (nagłówki sekcji),
+- `Rajdhani` (elementy panelowe),
+- `Inter` (treść i pola formularzy).
 
-Zakładki:
-- Admin: `Aktualności`, `Czat`, `Gracze`, `Turniej`.
-- User: `Aktualności`, `Czat`, `Turniej`.
+Po zmianie `Second/styles.css` używa identycznych zmiennych typograficznych i ustawień renderingu jak `Main` (`font-family`, skale font-size, wygładzanie tekstu, kerning).
 
-Sekcje:
-- `Aktualności`: admin wpisuje tekst, user ma tylko odczyt.
-- `Czat`: admin usuwa wpisy, user loguje się PIN-em i dodaje wiadomość.
-- `Gracze` (tylko admin): formularz dodawania gracza (nazwa, PIN 4-cyfrowy, uprawnienie `Czat`) i tabela graczy.
-- `Turniej`: panel boczny z przyciskami 1/2/3 i treść „W budowie: StronaX”.
+### 3.2 Kolory, karty, przyciski
+`Second/styles.css` zawiera ten sam system tokenów co `Main`:
+- gradientowe tło aplikacji,
+- zielono-złote karty `.card`,
+- identyczne style przycisków `.primary`, `.secondary`, `.danger`,
+- takie same stany hover/focus/active,
+- te same style zakładek `.admin-panel-tab` i treści `.admin-panel-content`.
 
-### 3.2 `styles.css`
-Najważniejsze zasady:
-- Ciemny motyw tła i gradienty odpowiadające estetyce Main.
-- Karty `.card` z obramowaniem w odcieniu złota.
-- Spójne style przycisków (`.primary`, `.secondary`, `.danger`).
-- Zakładki oparte o `.admin-panel-tab` i `.is-active`.
-- Responsywność przez media query `@media (max-width: 900px)`.
-- Layout turniejowy: `.two-col-layout` z lewym panelem i prawą treścią.
+Efekt: moduł `Second` ma ten sam wygląd fontów i przycisków co `Main`.
 
-### 3.3 `app.js`
+### 3.3 Responsywność
+Style mobilne i desktopowe działają wg tych samych reguł media query co w `Main/styles.css`, dzięki czemu zachowanie układu jest spójne między modułami.
 
-#### Stan aplikacji
-Obiekt `state` trzyma:
-- `news` — aktualna treść aktualności,
-- `players[]` — lista graczy `{ id, name, pin, permissions.chat }`,
-- `messages[]` — wiadomości czatu `{ id, author, text }`,
-- `activeTournamentPage` — aktywna strona turniejowa (`1|2|3`).
+## 4. Logika aplikacji (`app.js`)
 
-#### Przełączanie trybów
-- `isAdminView` odczytuje `?admin=1` z URL.
-- Admin uruchamia `setupAdminView()`.
-- User uruchamia `setupUserOnlyView()`.
+### 4.1 Stan
+Obiekt `state` przechowuje m.in.:
+- `news` — treść aktualności,
+- `players` — lista graczy z `name`, `pin`, `permissions.chat`,
+- `messages` — wiadomości czatu,
+- `activeTournamentPage` — aktywna podstrona turnieju.
 
-#### Zakładki i panele
-- `setupTabs(container)` podpina kliknięcia zakładek.
-- Aktywacja odbywa się przez klasę `.is-active` na tabie i panelu.
+### 4.2 Tryby renderowania
+- Parametr URL `admin=1` montuje widok administratora.
+- Brak parametru montuje widok użytkownika.
 
-#### Aktualności
-- Admin wpisuje treść w `#adminNewsInput`.
-- `input` aktualizuje `state.news`.
-- `syncUserMirrors()` odświeża wszystkie pola user `#userNewsOutput`.
+### 4.3 Zakładki
+- Funkcje tabów ustawiają klasę `.is-active` dla przycisku i odpowiadającego panelu.
+- Dotyczy zarówno panelu administratora, jak i widoku użytkownika.
 
-#### Gracze
-- `playerForm` dodaje gracza po walidacji PIN (`^\d{4}$`).
-- `renderPlayersTable()` renderuje tabelę i obsługuje usuwanie przyciskiem `Usuń`.
-- Dodane pola formularza mają atrybuty `data-*` związane z fokusem, żeby zachować spójność z analizą `Analizy/Wazne_Fokus.md` przy przyszłej rozbudowie dynamicznej.
+### 4.4 Funkcje biznesowe UI
+- **Aktualności**: wpis admina synchronizuje się z widokiem użytkownika.
+- **Gracze**: walidacja PIN (4 cyfry), dodawanie/usuwanie rekordów tabeli.
+- **Czat**: autoryzacja PIN i uprawnienia `chat`, dodawanie wpisów przez użytkownika, usuwanie wpisów przez admina.
+- **Turniej**: przyciski panelu bocznego przełączają aktywną treść.
 
-#### Czat
-- `renderChatList(container, { adminMode })` renderuje listę wiadomości.
-- Admin (`adminMode: true`) ma przyciski `Usuń`.
-- User loguje się PIN-em przez `#userPinForm`; autoryzacja sprawdza zgodność PIN i `permissions.chat`.
-- Po autoryzacji user widzi `#userMessageForm` i może dodać wiadomość.
-- `syncUserMirrors()` synchronizuje widoki admin/user dla czatu i aktualności.
-
-#### Turniej
-- `bindTournamentButtons(container)` obsługuje przyciski boczne.
-- Aktualizowany tekst: `W budowie: Strona1/2/3`.
-
-#### Bezpieczeństwo renderowania
-- `escapeHtml()` sanitizuje tekst przed osadzeniem w `innerHTML`.
-
-## 4. Backend / Firebase — stan obecny i docelowy kierunek
-
-### 4.1 Stan obecny modułu `Second`
-- Brak integracji z Firebase (zero operacji odczytu/zapisu).
-- Brak importu Firebase SDK.
-
-### 4.2 Wymagania dla niezależności `Main` i `Second`
-Dla docelowej integracji oba moduły muszą mieć osobne namespace danych:
-- osobna kolekcja graczy dla `Second`,
-- osobna kolekcja wiadomości czatu dla `Second`,
-- osobne dokumenty aktualności/regulaminu (jeżeli będą wdrażane).
-
-### 4.3 Wnioski z analizy struktury obecnej (na bazie `Main`)
-`Main` używa globalnych nazw (np. `chat_messages`, `player_access`, `admin_messages`, `UserGames`).
-Przy współdzieleniu tych samych nazw oba moduły mieszałyby dane.
-
-Aby zachować pełną niezależność:
-- w `Second` trzeba użyć nowych kolekcji (np. prefiks `second_...`) albo wersji namespacowanych (`modules/second/...`).
-- reguły Firestore muszą rozróżniać uprawnienia per moduł.
-
-### 4.4 Login + hasło (w kontekście `Analizy/Projekt_Login.md`)
-Przy planowanym Auth najlepiej od początku przewidzieć model:
-- profil użytkownika powiązany z modułem (`module: "main" | "second"` albo osobna ścieżka modułowa),
-- odseparowane role/uprawnienia na poziomie modułu,
-- odseparowane rekordy czatu i graczy na poziomie modułu.
-
-## 5. Ograniczenia aktualnej wersji
-- Brak trwałości danych (refresh strony resetuje stan).
-- Brak autoryzacji serwerowej (PIN tylko w warstwie UI).
-- Brak walidacji backendowej i reguł bezpieczeństwa.
+## 5. Dane backendowe
+Aktualnie moduł nie wysyła i nie pobiera danych z backendu ani Firebase.
+Całość opiera się o lokalny stan JavaScript i renderowanie po stronie klienta.
