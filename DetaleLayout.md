@@ -105,5 +105,6 @@
 - W zakładce `Aktualności` (admin) pole `Treść wiadomości` ma przycisk `Wyślij` w sekcji akcji.
 - Widok użytkownika w `Second` ma zakładki: `Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Turniej`, z opisami tekstowymi zgodnymi z `Main`.
 - Zakładka `Turniej` (admin i user) ma układ podobny do sekcji „Gry użytkowników”: lewy panel boczny i środkową sekcję treści z napisem `Strona w budowie`.
-- W lewym panelu `Turniej` są przyciski `Instrukcja` i `Odśwież` (szkielet UI, bez akcji backendowych).
+- W lewym panelu `Turniej` są złote przyciski `Strona1` i `Strona2` (szkielet UI, bez akcji backendowych).
+- W prawym górnym rogu nagłówka modułu `Second` dodano zielony przycisk `Instrukcja` (klasa `.primary`, kontener `.admin-toolbar`), widoczny w trybie administratora.
 

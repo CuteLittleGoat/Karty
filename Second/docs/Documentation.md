@@ -37,7 +37,7 @@ W zakładce `Czat` zastosowano teksty PIN i formularza wiadomości zgodne z modu
 Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry użytkowników`:
 - lewy panel boczny `Panel`,
 - środkowy obszar treści z komunikatem `Strona w budowie`,
-- przyciski boczne: `Instrukcja` i `Odśwież`.
+- przyciski boczne: `Strona1` i `Strona2`.
 
 ## 4. Logika JavaScript (`Second/app.js`)
 
@@ -53,12 +53,17 @@ Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry
 - Stan aktywny realizowany jest klasą `is-active`.
 
 ### 4.3 Przyciski Turnieju
-- `setupTournamentButtons(container)` aktywuje wybrany przycisk `Instrukcja`/`Odśwież` przez przełączanie klasy `is-active`.
+- `setupTournamentButtons(container)` aktywuje wybrany przycisk `Strona1`/`Strona2` przez przełączanie klasy `is-active`.
 - Przyciski nie uruchamiają operacji backendowych.
 
 ### 4.4 Podgląd użytkownika w trybie admin
 - `createUserViewNode({ withWrapperCard: false })` usuwa opakowanie karty (`.card`) i renderuje użytkownika wewnątrz `#userPreviewMount`.
 - Dzięki temu admin widzi bieżący układ końcowego UI użytkownika.
+
+### 4.5 Przycisk „Instrukcja” w rogu aplikacji
+- W nagłówku (`.page-header`) działa kontener `.admin-toolbar` z przyciskiem `#secondInstructionButton`.
+- Przycisk ma klasę `.primary`, więc używa zielonego wariantu CTA.
+- `Second/app.js` steruje widocznością przycisku: jest widoczny tylko w trybie administratora (`?admin=1`).
 
 ## 5. Style, fonty i zasady wizualne
 - Fonty ładowane w `index.html`: `Cinzel`, `Cormorant Garamond`, `Inter`, `Rajdhani`.
@@ -71,4 +76,4 @@ W tym etapie moduł Second **nie wykonuje** operacji backendowych:
 - brak zapisu do Firebase,
 - brak nasłuchu `onSnapshot`.
 
-Wszystkie przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Odśwież`) są elementami szkieletu UI.
+Wszystkie przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Strona1`, `Strona2`, `Odśwież`) są elementami szkieletu UI.

@@ -1,6 +1,11 @@
 const appRoot = document.querySelector("#appRoot");
 
 const isAdminView = new URLSearchParams(window.location.search).get("admin") === "1";
+const instructionButton = document.querySelector("#secondInstructionButton");
+
+if (instructionButton) {
+  instructionButton.hidden = !isAdminView;
+}
 
 const setupTabs = ({ container, buttonSelector, panelSelector, activeClass = "is-active", getTarget, isPanelMatch }) => {
   const buttons = Array.from(container.querySelectorAll(buttonSelector));
