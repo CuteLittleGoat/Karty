@@ -175,3 +175,14 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 - Jeżeli w `Kolumny.md` pole „wartość oczekiwana” jest puste, szerokość pozostaje automatyczna.
 - W modalu rebuy kolumny **Rebuy 1, Rebuy 2, ...** pozostają stałe: 8 znaków.
 
+
+## 10. Moduł Second — szybka instrukcja UI
+1. Otwórz `Second/index.html`.
+2. Tryb administratora: dopisz `?admin=1`.
+3. Tryb użytkownika: bez parametru.
+4. W panelu admina dostępne są zakładki: `Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Turniej`.
+5. W `Aktualności` użyj pola `Treść wiadomości` i przycisku `Wyślij` (samo UI).
+6. W `Czat` i `Regulamin` widoczne są opisy i układ identyczne z Main (bez integracji Firebase).
+7. W `Gracze` tabela ma kolumny jak w Main: `Aplikacja`, `Nazwa`, `PIN`, `Uprawnienia`, kolumna akcji.
+8. W `Turniej` po lewej są przyciski `Instrukcja` i `Odśwież`, a na środku komunikat `Strona w budowie`.
+9. W trybie admin widoczny jest także podgląd końcowego widoku użytkownika.

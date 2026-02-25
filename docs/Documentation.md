@@ -455,3 +455,10 @@ Ta dokumentacja opisuje **aktualny stan aplikacji** i nie zawiera historii zmian
 - Kolumna `Mod` w `Tabela5` ma minimalną szerokość `8ch` (zwiększoną, aby mieścić do 8 znaków).
 - Modal rebuy zachowuje stałe `8ch` na kolumnę przez istniejące reguły `#adminCalculatorRebuyTable th/td`.
 
+
+## 10. Moduł Second — aktualny szkielet techniczny
+- `Second/index.html` zawiera strukturę odwzorowującą zakładki Main dla: `Aktualności`, `Czat`, `Regulamin`, `Gracze` oraz dodatkową sekcję `Turniej`.
+- `Second/app.js` odpowiada za montowanie trybu admin/user oraz przełączanie zakładek przez klasę `is-active`.
+- W zakładce `Turniej` (admin i user) zastosowano układ bocznego panelu przycisków (`Instrukcja`, `Odśwież`) i centralny tekst `Strona w budowie`.
+- Tabele `Gracze` w `Second` używają klasy `players-table`, dzięki czemu minimalne szerokości kolumn odpowiadają konfiguracji z Main.
+- Wersja jest celowo offline: brak wywołań Firebase, brak zapisu/odczytu danych backendowych; przyciski pełnią rolę szkieletu UI.
