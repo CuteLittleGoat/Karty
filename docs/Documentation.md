@@ -174,6 +174,7 @@ Kalkulator zapisuje dane w `calculators/tournament` oraz `calculators/cash`.
   - `table9Rows[]` — wiersze graczy (`playerName`, `buyIn`, `payout`, `rebuys`).
 - Normalizacja i serializacja danych do Firestore są rozdzielone dla trybu `cash` i `tournament`.
 - Modal rebuy działa dla obu trybów; w trybie Cash operuje na `table9Rows[].rebuys`.
+- Prezentacja wartości obliczalnych w Kalkulatorze przechodzi przez `formatNumber()`, które wykonuje `Math.round` i usuwa część dziesiętną w UI.
 
 Dodane obliczenia Cash:
 - **Tabela7**:
@@ -194,7 +195,7 @@ Dodane obliczenia Cash:
 - **Tabela10**:
   - dane wejściowe z Tabela9,
   - `Lp` po sortowaniu,
-  - `% Puli = Wypłata / Suma(Tabela7) * 100`,
+  - `% Puli = Wypłata / Suma(Tabela7) * 100` (prezentacja zaokrąglona do pełnej liczby),
   - sortowanie malejące po `+/-`, potem alfabetycznie po graczu.
 
 Obsługa fokusu:
@@ -207,6 +208,7 @@ Obsługa fokusu:
 - **Wpłata gracza**: `entryFee + rebuy`.
 - **Bilans gracza (+/-)**: `payout - (entryFee + rebuy)`.
 - **Pula gry**: suma wpłat wszystkich graczy z `rows`.
+- W modalu `Szczegóły gry` (Gry admina i Gry użytkowników) pasek meta budowany jest jako: `Nazwa | Rodzaj gry | Data | Pula | Ilość graczy` (gdzie `Ilość graczy = rows.length`).
 
 ### 5.2 Na poziomie agregatów
 - Zliczane są m.in.:
@@ -237,6 +239,8 @@ Zmienne CSS definiują m.in.:
 - obramowania i cienie (`--border`, `--shadow`, `--glow-*`).
 
 Styl wizualny to ciemny motyw „noir + gold + neon”, z kartami, delikatnym gradientem i obwódkami.
+- `.game-details-modal-card` zwiększa szerokość modali szczegółów gry do `min(1320px, 100%)`, dzięki czemu na pełnym ekranie PC modal wykorzystuje więcej przestrzeni poziomej.
+- `.player-zone-button` używa responsywnego `clamp()` dla `font-size` i `letter-spacing`, aby długie etykiety (np. „Gry do Potwierdzenia”) mieściły się w obrębie przycisku.
 
 ### 6.3 Layout i komponenty
 - kontener strony (`.page`) ma szerokość `min(1720px, 100%)`, dzięki czemu na desktopie aplikacja wykorzystuje prawie całe okno,

@@ -2427,7 +2427,7 @@ const initUserGamesManager = ({
 
     const rows = state.detailsByGame.get(gameId) ?? [];
     const gamePool = rows.reduce((sum, row) => sum + parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy), 0);
-    modalMeta.textContent = `${modalMeta.textContent} | Pula: ${gamePool}`;
+    modalMeta.textContent = `${modalMeta.textContent} | Pula: ${gamePool} | Ilość graczy: ${rows.length}`;
     rows.forEach((row, index) => { 
       const tr = document.createElement("tr");
       const writeEnabled = hasWriteAccessToGame(game);
@@ -3238,7 +3238,10 @@ const initAdminCalculator = () => {
     const normalized = sanitizeSignedInteger(value);
     return normalized && normalized !== "-" ? Number.parseInt(normalized, 10) : 0;
   };
-  const formatNumber = (value) => String(Number.isFinite(value) ? value : 0);
+  const formatNumber = (value) => {
+    const normalized = Number.isFinite(value) ? value : 0;
+    return String(Math.round(normalized));
+  };
   const formatPercentDisplay = (value) => {
     const normalized = sanitizeInteger(value);
     return normalized ? `${normalized}%` : "";
@@ -4388,7 +4391,7 @@ const initAdminCalculator = () => {
         createReadonlyCell(row.playerName),
         createReadonlyCell(formatNumber(row.payout)),
         createReadonlyCell(formatNumber(row.plusMinus)),
-        createReadonlyCell(`${row.poolPercent.toFixed(2)}%`)
+        createReadonlyCell(`${Math.round(row.poolPercent)}%`)
       );
       tbody.appendChild(tr);
     });
@@ -6429,7 +6432,7 @@ const initAdminGames = () => {
 
     const rows = state.detailsByGame.get(gameId) ?? [];
     const gamePool = rows.reduce((sum, row) => sum + parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy), 0);
-    modalMeta.textContent = `${modalMeta.textContent} | Pula: ${gamePool}`;
+    modalMeta.textContent = `${modalMeta.textContent} | Pula: ${gamePool} | Ilość graczy: ${rows.length}`;
     rows.forEach((row, index) => { 
       const tr = document.createElement("tr");
 

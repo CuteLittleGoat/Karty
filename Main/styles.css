@@ -1184,6 +1184,12 @@ button.danger {
   width: 100%;
 }
 
+.player-zone-button {
+  font-size: clamp(9px, 0.95vw, 12px);
+  letter-spacing: clamp(0.08em, 0.18vw, 0.18em);
+  white-space: nowrap;
+}
+
 .player-zone-panel {
   display: none;
   gap: var(--gap-3);
@@ -1418,6 +1424,10 @@ button.danger {
 
 .modal-card-sm {
   width: min(520px, 100%);
+}
+
+.game-details-modal-card {
+  width: min(1320px, 100%);
 }
 
 .modal-card::before {

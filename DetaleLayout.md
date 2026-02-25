@@ -25,7 +25,7 @@
   - `#userGameDetailsModal`
   - `#playerUserGameDetailsModal`
   - `#confirmationsDetailsModal` (tylko odczyt)
-- Każdy modal ma pasek meta ze stanem gry: Nazwa, Rodzaj gry, Data, Pula.
+- Każdy modal szczegółów gry w sekcjach „Gry admina” i „Gry użytkowników” ma pasek meta: Nazwa, Rodzaj gry, Data, Pula, Ilość graczy.
 - Tabele szczegółów posiadają kolumnę `LP` jako pierwszą kolumnę.
 
 ## Gry do potwierdzenia (strefa gracza)
@@ -46,6 +46,9 @@
 - Sekcje `Najbliższa Gra`, `Czat`, `Gry do Potwierdzenia`, `Gry Użytkowników`, `Statystyki` są renderowane jako `.player-zone-panel` i przełączane klasą `.is-active`.
 
 
+- Modale `Szczegóły gry` i `Szczegóły gry użytkownika` korzystają z klasy `.game-details-modal-card` (szerokość `min(1320px, 100%)`) dla lepszego wykorzystania szerokości ekranu PC.
+- Przyciski sekcji w „Strefa Gracza” (`.player-zone-button`) mają responsywny font (`clamp`) i zagęszczane odstępy liter, co zapobiega wychodzeniu długich etykiet poza przycisk.
+
 ## Kalkulator — panel „Rodzaj gry”
 - Po lewej stronie kalkulatora znajduje się osobny panel boczny z nagłówkiem `Rodzaj gry`.
 - Panel używa kontenera `.admin-calculator-sidebar` z takim samym stylem karty jak panele typu „Lata”.
@@ -56,7 +59,7 @@
 - Tabele używają tego samego stylu co Tournament: `.admin-data-table`, `.admin-input`, `.admin-table-scroll`, `.admin-table-actions`.
 - W `Tabela8` pierwszy nagłówek to `%` (pole procentowe), a drugi to `Rake` (pole liczbowe kwoty).
 - W nagłówku kolumny `Buy-In` w `Tabela9` znajduje się przycisk `Buy-In` w stylu `.secondary` do zbiorczego ustawiania wartości dla wszystkich wierszy.
-- W `Tabela10` kolumna `% Puli` jest prezentowana jako procent z dwoma miejscami po przecinku.
+- W `Tabela10` kolumna `% Puli` jest prezentowana jako procent zaokrąglony do pełnej liczby (bez miejsc po przecinku).
 
 ## Kalkulator — modal „Rebuy gracza”
 - Modal otwierany z kolumny `Rebuy` w `Tabela2` (Tournament) oraz `Tabela9` (Cash).
