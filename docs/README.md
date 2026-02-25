@@ -138,8 +138,9 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 #### Cash — Tabela8
 1. W kolumnie **%** wpisz liczbę (np. `10`).
 2. Po wyjściu z pola aplikacja pokaże wartość jako procent (`10%`).
-3. W kolumnie **Rake** wpisz wartość liczbową (kwotę rake).
-4. Kolumna **Pot** wylicza wartość: `Suma z Tabela7 - Rake z Tabela8`.
+3. Kolumna **Rake** wylicza się automatycznie: `(Suma Buy-In z Tabela9 + Suma Rebuy z Tabela9) * (1 - % z Tabela8 / 100)`.
+4. Przykład: Buy-In = `80`, Rebuy = `20`, `%` = `10` → **Rake** pokaże `90`.
+5. Kolumna **Pot** jest polem tylko do odczytu i pokazuje tę samą wartość co wyliczone **Rake**.
 
 #### Cash — Tabela9
 1. W kolumnie **Gracz** wybierz gracza z listy.

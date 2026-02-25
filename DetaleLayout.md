@@ -57,7 +57,7 @@
 ## Kalkulator — widok „Cash”
 - Po kliknięciu `Cash` po prawej stronie renderowane są tabele `Tabela7`, `Tabela8`, `Tabela9`, `Tabela10`.
 - Tabele używają tego samego stylu co Tournament: `.admin-data-table`, `.admin-input`, `.admin-table-scroll`, `.admin-table-actions`.
-- W `Tabela8` pierwszy nagłówek to `%` (pole procentowe), a drugi to `Rake` (pole liczbowe kwoty).
+- W `Tabela8` pierwszy nagłówek to `%` (pole procentowe), a drugi to `Rake` (pole tylko do odczytu wyliczane automatycznie z danych Tabela9 i wartości `%`).
 - W nagłówku kolumny `Buy-In` w `Tabela9` znajduje się przycisk `Buy-In` w stylu `.secondary` do zbiorczego ustawiania wartości dla wszystkich wierszy.
 - W `Tabela10` kolumna `% Puli` jest prezentowana jako procent zaokrąglony do pełnej liczby (bez miejsc po przecinku).
 

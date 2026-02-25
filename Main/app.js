@@ -3203,7 +3203,7 @@ const initAdminCalculator = () => {
   });
 
   const createInitialCashState = () => ({
-    table8Row: { rake: "", rakeValue: "0" },
+    table8Row: { rake: "" },
     table9Rows: [{ id: `table9-${Date.now()}-0`, playerName: "", buyIn: "0", payout: "0", rebuys: [] }]
   });
 
@@ -3275,8 +3275,7 @@ const initAdminCalculator = () => {
 
       return {
         table8Row: {
-          rake: sanitizeInteger(table8Source.rake),
-          rakeValue: sanitizeInteger(table8Source.rakeValue)
+          rake: sanitizeInteger(table8Source.rake)
         },
         table9Rows: table9Rows.length ? table9Rows : baseCashState.table9Rows
       };
@@ -3335,8 +3334,7 @@ const initAdminCalculator = () => {
     if (mode === "cash") {
       return {
         table8Row: {
-          rake: sanitizeInteger(modeState.table8Row?.rake),
-          rakeValue: sanitizeInteger(modeState.table8Row?.rakeValue)
+          rake: sanitizeInteger(modeState.table8Row?.rake)
         },
         table9Rows: Array.isArray(modeState.table9Rows)
           ? modeState.table9Rows.map((row, index) => ({
@@ -3602,8 +3600,8 @@ const initAdminCalculator = () => {
     const buyInAfterPercent = totalBuyIn * (1 - rakeDecimal);
     const rebuyAfterPercent = totalRebuy * (1 - rakeDecimal);
     const totalAfterPercent = buyInAfterPercent + rebuyAfterPercent;
-    const rakeValue = parseInteger(cashState.table8Row.rakeValue);
-    const pot = totalAfterPercent - rakeValue;
+    const rakeValue = totalAfterPercent;
+    const pot = totalAfterPercent;
 
     return {
       totalBuyIn,
@@ -4190,23 +4188,7 @@ const initAdminCalculator = () => {
     });
     rakeCell.appendChild(rakeInput);
 
-    const rakeValueCell = document.createElement("td");
-    const rakeValueInput = document.createElement("input");
-    rakeValueInput.type = "text";
-    rakeValueInput.className = "admin-input";
-    rakeValueInput.value = state.cash.table8Row.rakeValue;
-    rakeValueInput.dataset.focusTarget = "admin-calculator";
-    rakeValueInput.dataset.section = "table8";
-    rakeValueInput.dataset.tableId = "cash";
-    rakeValueInput.dataset.rowId = "0";
-    rakeValueInput.dataset.columnKey = "rakeValue";
-    rakeValueInput.addEventListener("input", () => {
-      state.cash.table8Row.rakeValue = sanitizeInteger(rakeValueInput.value);
-      rakeValueInput.value = state.cash.table8Row.rakeValue;
-      render();
-      schedulePersistCalculatorModeState("cash");
-    });
-    rakeValueCell.appendChild(rakeValueInput);
+    const rakeValueCell = createReadonlyCell(formatNumber(metrics.rakeValue));
 
     tr.append(rakeCell, rakeValueCell, createReadonlyCell(formatNumber(metrics.pot)));
     tbody.appendChild(tr);
