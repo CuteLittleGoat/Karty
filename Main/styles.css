@@ -961,7 +961,7 @@ select:disabled,
 }
 
 .pin-control .admin-input {
-  min-width: 108px;
+  min-width: 5ch;
 }
 
 .admin-pin-random {
@@ -1483,6 +1483,182 @@ button.danger {
 body.modal-open {
   overflow: hidden;
 }
+
+
+.players-table th:nth-child(2),
+.players-table td:nth-child(2) {
+  min-width: 30ch;
+}
+
+.players-table th:nth-child(3),
+.players-table td:nth-child(3) {
+  min-width: 5ch;
+}
+
+.game-details-table th:nth-child(1),
+.game-details-table td:nth-child(1),
+.confirmations-details-table th:nth-child(1),
+.confirmations-details-table td:nth-child(1) {
+  min-width: 4ch;
+}
+
+.game-details-table th:nth-child(2),
+.game-details-table td:nth-child(2),
+.confirmations-details-table th:nth-child(2),
+.confirmations-details-table td:nth-child(2) {
+  min-width: 25ch;
+}
+
+.game-details-table th:nth-child(3),
+.game-details-table td:nth-child(3),
+.game-details-table th:nth-child(4),
+.game-details-table td:nth-child(4),
+.game-details-table th:nth-child(5),
+.game-details-table td:nth-child(5),
+.game-details-table th:nth-child(6),
+.game-details-table td:nth-child(6),
+.confirmations-details-table th:nth-child(3),
+.confirmations-details-table td:nth-child(3),
+.confirmations-details-table th:nth-child(4),
+.confirmations-details-table td:nth-child(4),
+.confirmations-details-table th:nth-child(5),
+.confirmations-details-table td:nth-child(5),
+.confirmations-details-table th:nth-child(6),
+.confirmations-details-table td:nth-child(6) {
+  min-width: 8ch;
+}
+
+.game-details-table th:nth-child(7),
+.game-details-table td:nth-child(7),
+.confirmations-details-table th:nth-child(7),
+.confirmations-details-table td:nth-child(7) {
+  min-width: 4ch;
+}
+
+.admin-games-players-stats-table th:nth-child(1),
+.admin-games-players-stats-table td:nth-child(1) { min-width: 25ch; }
+.admin-games-players-stats-table th:nth-child(2),
+.admin-games-players-stats-table td:nth-child(2) { min-width: 3ch; }
+.admin-games-players-stats-table th:nth-child(3),
+.admin-games-players-stats-table td:nth-child(3),
+.admin-games-players-stats-table th:nth-child(4),
+.admin-games-players-stats-table td:nth-child(4),
+.admin-games-players-stats-table th:nth-child(5),
+.admin-games-players-stats-table td:nth-child(5),
+.admin-games-players-stats-table th:nth-child(7),
+.admin-games-players-stats-table td:nth-child(7),
+.admin-games-players-stats-table th:nth-child(8),
+.admin-games-players-stats-table td:nth-child(8),
+.admin-games-players-stats-table th:nth-child(10),
+.admin-games-players-stats-table td:nth-child(10),
+.admin-games-players-stats-table th:nth-child(12),
+.admin-games-players-stats-table td:nth-child(12),
+.admin-games-players-stats-table th:nth-child(14),
+.admin-games-players-stats-table td:nth-child(14) { min-width: 4ch; }
+.admin-games-players-stats-table th:nth-child(6),
+.admin-games-players-stats-table td:nth-child(6),
+.admin-games-players-stats-table th:nth-child(16),
+.admin-games-players-stats-table td:nth-child(16),
+.admin-games-players-stats-table th:nth-child(17),
+.admin-games-players-stats-table td:nth-child(17) { min-width: 5ch; }
+.admin-games-players-stats-table th:nth-child(9),
+.admin-games-players-stats-table td:nth-child(9),
+.admin-games-players-stats-table th:nth-child(11),
+.admin-games-players-stats-table td:nth-child(11),
+.admin-games-players-stats-table th:nth-child(13),
+.admin-games-players-stats-table td:nth-child(13),
+.admin-games-players-stats-table th:nth-child(15),
+.admin-games-players-stats-table td:nth-child(15),
+.admin-games-players-stats-table th:nth-child(18),
+.admin-games-players-stats-table td:nth-child(18) { min-width: 8ch; }
+
+.admin-games-ranking-table th:nth-child(1),
+.admin-games-ranking-table td:nth-child(1) { min-width: 3ch; }
+.admin-games-ranking-table th:nth-child(2),
+.admin-games-ranking-table td:nth-child(2) { min-width: 25ch; }
+.admin-games-ranking-table th:nth-child(3),
+.admin-games-ranking-table td:nth-child(3) { min-width: 8ch; }
+
+.admin-calculator-table1 th:nth-child(1),
+.admin-calculator-table1 td:nth-child(1),
+.admin-calculator-table3 th:nth-child(5),
+.admin-calculator-table3 td:nth-child(5),
+.admin-calculator-cash-table7 th:nth-child(3),
+.admin-calculator-cash-table7 td:nth-child(3),
+.admin-calculator-cash-table8 th:nth-child(3),
+.admin-calculator-cash-table8 td:nth-child(3),
+.admin-calculator-table4 th:nth-child(3),
+.admin-calculator-table4 td:nth-child(3),
+.admin-calculator-table5 th:last-child,
+.admin-calculator-table5 td:last-child { min-width: 10ch; }
+
+.admin-calculator-table1 th:nth-child(2),
+.admin-calculator-table1 td:nth-child(2),
+.admin-calculator-table1 th:nth-child(3),
+.admin-calculator-table1 td:nth-child(3),
+.admin-calculator-table2 th:nth-child(3),
+.admin-calculator-table2 td:nth-child(3),
+.admin-calculator-table2 th:nth-child(4),
+.admin-calculator-table2 td:nth-child(4),
+.admin-calculator-table3 th:nth-child(2),
+.admin-calculator-table3 td:nth-child(2),
+.admin-calculator-table3 th:nth-child(3),
+.admin-calculator-table3 td:nth-child(3),
+.admin-calculator-table3 th:nth-child(4),
+.admin-calculator-table3 td:nth-child(4),
+.admin-calculator-cash-table7 th:nth-child(1),
+.admin-calculator-cash-table7 td:nth-child(1),
+.admin-calculator-cash-table7 th:nth-child(2),
+.admin-calculator-cash-table7 td:nth-child(2),
+.admin-calculator-cash-table8 th:nth-child(2),
+.admin-calculator-cash-table8 td:nth-child(2),
+.admin-calculator-cash-table9 th:nth-child(2),
+.admin-calculator-cash-table9 td:nth-child(2),
+.admin-calculator-cash-table9 th:nth-child(3),
+.admin-calculator-cash-table9 td:nth-child(3),
+.admin-calculator-cash-table9 th:nth-child(4),
+.admin-calculator-cash-table9 td:nth-child(4),
+.admin-calculator-cash-table9 th:nth-child(5),
+.admin-calculator-cash-table9 td:nth-child(5),
+.admin-calculator-cash-table10 th:nth-child(3),
+.admin-calculator-cash-table10 td:nth-child(3),
+.admin-calculator-cash-table10 th:nth-child(4),
+.admin-calculator-cash-table10 td:nth-child(4),
+.admin-calculator-table5 th:nth-child(2),
+.admin-calculator-table5 td:nth-child(2),
+.admin-calculator-table5 th:nth-child(3),
+.admin-calculator-table5 td:nth-child(3),
+.admin-calculator-table5 th[data-rebuy-column],
+.admin-calculator-table5 td[data-rebuy-column] { min-width: 8ch; }
+
+.admin-calculator-table1 th:nth-child(4),
+.admin-calculator-table1 td:nth-child(4),
+.admin-calculator-table3 th:nth-child(1),
+.admin-calculator-table3 td:nth-child(1),
+.admin-calculator-cash-table8 th:nth-child(1),
+.admin-calculator-cash-table8 td:nth-child(1),
+.admin-calculator-cash-table10 th:nth-child(5),
+.admin-calculator-cash-table10 td:nth-child(5),
+.admin-calculator-table5 th:nth-last-child(2),
+.admin-calculator-table5 td:nth-last-child(2) { min-width: 5ch; }
+
+.admin-calculator-table2 th:nth-child(1),
+.admin-calculator-table2 td:nth-child(1),
+.admin-calculator-table4 th:nth-child(1),
+.admin-calculator-table4 td:nth-child(1),
+.admin-calculator-cash-table10 th:nth-child(1),
+.admin-calculator-cash-table10 td:nth-child(1),
+.admin-calculator-table5 th:nth-child(1),
+.admin-calculator-table5 td:nth-child(1) { min-width: 4ch; }
+
+.admin-calculator-table2 th:nth-child(2),
+.admin-calculator-table2 td:nth-child(2),
+.admin-calculator-table4 th:nth-child(2),
+.admin-calculator-table4 td:nth-child(2),
+.admin-calculator-cash-table9 th:nth-child(1),
+.admin-calculator-cash-table9 td:nth-child(1),
+.admin-calculator-cash-table10 th:nth-child(2),
+.admin-calculator-cash-table10 td:nth-child(2) { min-width: 25ch; }
 
 @media (max-width: 720px) {
   .page {

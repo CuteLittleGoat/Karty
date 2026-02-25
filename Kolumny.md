@@ -3,6 +3,8 @@
 Ten dokument jest przygotowany tak, aby można go wydrukować i łatwo podmieniać wartości.
 Opisuje aktualny stan kolumn w aplikacji prostym językiem (bez nazw technicznych z kodu).
 
+Wartości liczbowe wpisane w polach „wartość oczekiwana” oznaczają liczbę znaków szerokości kolumny.
+
 ---
 
 ## Zasady ogólne dla większości tabel

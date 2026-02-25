@@ -3777,7 +3777,7 @@ const initAdminCalculator = () => {
     rootTable1.appendChild(createHeader("Tabela1"));
 
     const table = document.createElement("table");
-    table.className = "admin-data-table";
+    table.className = "admin-data-table admin-calculator-table1";
     table.innerHTML = `<thead><tr><th>Suma</th><th>Buy-In</th><th>Rebuy</th><th>Liczba Rebuy</th></tr></thead>`;
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
@@ -3844,7 +3844,7 @@ const initAdminCalculator = () => {
     rootTable2.appendChild(createHeader("Tabela2"));
 
     const table = document.createElement("table");
-    table.className = "admin-data-table";
+    table.className = "admin-data-table admin-calculator-table2";
     table.innerHTML = `<thead><tr><th>LP</th><th>Gracz</th><th>Buy-In</th><th>Rebuy</th><th>Eliminated</th><th></th></tr></thead>`;
     const tbody = document.createElement("tbody");
 
@@ -3961,7 +3961,7 @@ const initAdminCalculator = () => {
     rootTable3.appendChild(createHeader("Tabela3"));
 
     const table = document.createElement("table");
-    table.className = "admin-data-table";
+    table.className = "admin-data-table admin-calculator-table3";
     table.innerHTML = `<thead><tr><th>%</th><th>Rake</th><th>Wpisowe</th><th>Rebuy</th><th>Pot</th></tr></thead>`;
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
@@ -4012,7 +4012,7 @@ const initAdminCalculator = () => {
     const modeState = getModeState();
     const table4Rows = getTable4Rows();
     const table = document.createElement("table");
-    table.className = "admin-data-table";
+    table.className = "admin-data-table admin-calculator-table4";
     table.innerHTML = `<thead><tr><th>LP</th><th>Gracz</th><th>Wygrana</th></tr></thead>`;
     const tbody = document.createElement("tbody");
 
@@ -4048,10 +4048,10 @@ const initAdminCalculator = () => {
     rootTable5.appendChild(createHeader("Tabela5"));
 
     const table = document.createElement("table");
-    table.className = "admin-data-table";
+    table.className = "admin-data-table admin-calculator-table5";
     let headerHtml = "<thead><tr><th>LP</th><th>Podział puli</th><th>Kwota</th>";
     for (let i = 1; i <= rebuyColumnsCount; i += 1) {
-      headerHtml += `<th>Rebuy${i}</th>`;
+      headerHtml += `<th data-rebuy-column="true">Rebuy${i}</th>`;
     }
     headerHtml += "<th>Mod</th><th>Suma</th></tr></thead>";
     table.innerHTML = headerHtml;
@@ -4093,9 +4093,11 @@ const initAdminCalculator = () => {
       );
 
       for (let index = 0; index < rebuyColumnsCount; index += 1) {
-        tr.appendChild(createReadonlyCell(
+        const rebuyValueCell = createReadonlyCell(
           row.rebuyValues[index] == null ? "" : formatNumber(row.rebuyValues[index])
-        ));
+        );
+        rebuyValueCell.dataset.rebuyColumn = "true";
+        tr.appendChild(rebuyValueCell);
       }
 
       const modCell = document.createElement("td");
@@ -4133,7 +4135,7 @@ const initAdminCalculator = () => {
     rootTable1.appendChild(createHeader("Tabela7"));
 
     const table = document.createElement("table");
-    table.className = "admin-data-table";
+    table.className = "admin-data-table admin-calculator-cash-table7";
     table.innerHTML = "<thead><tr><th>Buy-In</th><th>Rebuy</th><th>Suma</th></tr></thead>";
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
@@ -4156,7 +4158,7 @@ const initAdminCalculator = () => {
     rootTable2.appendChild(createHeader("Tabela8"));
 
     const table = document.createElement("table");
-    table.className = "admin-data-table";
+    table.className = "admin-data-table admin-calculator-cash-table8";
     table.innerHTML = "<thead><tr><th>%</th><th>Rake</th><th>Pot</th></tr></thead>";
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
@@ -4217,7 +4219,7 @@ const initAdminCalculator = () => {
     rootTable3.appendChild(createHeader("Tabela9"));
 
     const table = document.createElement("table");
-    table.className = "admin-data-table";
+    table.className = "admin-data-table admin-calculator-cash-table9";
     table.innerHTML = "<thead><tr><th>Gracz</th><th><button type=\"button\" class=\"secondary\" data-cash-buyin-bulk>Buy-In</button></th><th>Rebuy</th><th>Wypłata</th><th>+/-</th><th></th></tr></thead>";
     const tbody = document.createElement("tbody");
 
@@ -4375,7 +4377,7 @@ const initAdminCalculator = () => {
     rootTable4.appendChild(createHeader("Tabela10"));
 
     const table = document.createElement("table");
-    table.className = "admin-data-table";
+    table.className = "admin-data-table admin-calculator-cash-table10";
     table.innerHTML = "<thead><tr><th>Lp</th><th>Gracz</th><th>Wypłata</th><th>+/-</th><th>% Puli</th></tr></thead>";
     const tbody = document.createElement("tbody");
 
