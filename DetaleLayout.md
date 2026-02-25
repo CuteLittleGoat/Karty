@@ -98,12 +98,10 @@
 - Tabele kalkulatora (Tournament i Cash) używają dedykowanych klas tabel i mają przypisane minimalne szerokości kolumn zgodnie z sekcją 6 w `Kolumny.md`.
 - W modalu rebuy każda kolumna (`Rebuy 1`, `Rebuy 2`, kolejne) ma stałe `8ch`.
 
-
 ## Moduł Second — aktualny layout
-- Nowa aplikacja `Second/index.html` korzysta z tego samego zestawu fontów: `Cinzel`, `Cormorant Garamond`, `Inter`, `Rajdhani`.
-- Utrzymany jest ten sam kierunek wizualny co w `Main`: ciemne tło, zielono-złote gradienty kart, złote akcenty aktywnych zakładek.
-- Widok administratora ma kartę główną z zakładkami: `Aktualności`, `Czat`, `Gracze`, `Turniej`.
-- W trybie `?admin=1` pod panelem admina wyświetlany jest osobny blok `Podgląd widoku użytkownika`.
-- Widok użytkownika ma zakładki: `Aktualności`, `Czat`, `Turniej` (bez zakładki `Gracze`).
-- Zakładka `Turniej` wykorzystuje układ dwukolumnowy: lewy panel boczny z przyciskami i prawa część z treścią „W budowie: StronaX”.
-- Tabela w zakładce `Gracze` ma styl zgodny z głównymi tabelami aplikacji (ciemny, kontur, poziomy scroll na mniejszych szerokościach).
+- `Second/styles.css` jest identyczny z `Main/styles.css`, więc oba moduły używają tego samego systemu wizualnego 1:1.
+- Fonty w `Second` są takie same jak w `Main`: `Cinzel`, `Cormorant Garamond`, `Rajdhani`, `Inter`.
+- Przyciski (`.primary`, `.secondary`, `.danger`) mają identyczny wygląd, obramowania, cienie i stany interakcji jak w `Main`.
+- Zakładki (`.admin-panel-tab`) oraz aktywne stany (`.is-active`) mają identyczny styl i podświetlenia jak w `Main`.
+- Karty, tła, obramowania i gradienty modułu `Second` są takie same jak w module `Main`.
+
