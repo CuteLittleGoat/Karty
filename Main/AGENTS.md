@@ -1,9 +1,4 @@
-Aplikacja składa się z dwóch modułów: "Main" i "Second".
-Oba moduły działają niezależnie od siebie, ale korzystają z niektorych plików wpólnych. Dzielone foldery to: Analizy, Pliki, config.
-Oba moduły mają też wspólny plik DetaleLayout.md.
-Moduł "Second" ma też pełen dostęp do odczytu danych z folderów "Main" i "docs", ale nie może ich modyfikować.
-
-1. Po każdej zmianie kodu zmodyfikuj pliki docs/Documentation.md oraz docs/README.md
+1. Po każdej zmianie kodu zmodyfikuj pliki Main/docs/Documentation.md oraz Main/docs/README.md
 2. Plik README.md ma zawierać instrukcje obsługi dla użytkownika
 3. Instrukcja w README.md ma być bardzo dokładna - co i gdzie kliknąć dla uzyskania jakiegoś efektu (dodanie stołu, dodanie gracza, zmiana stawki itp).
 4. Instrukcja w REAMDE.md ma na celu opisanie wszystkich funkcji UI dla użytkownika, który pierwszy raz ma kontakt z aplikacją
@@ -18,5 +13,5 @@ Moduł "Second" ma też pełen dostęp do odczytu danych z folderów "Main" i "d
 13. Jeżeli polecenie użytkownika nie dotyczy zmiany kodu a tylko analizy to wnioski zapisz w folderze Analizy w nowoutworzonym pliku o odekwatnej nazwie do przeprowadzanej analizy
 14. Jeżeli zapisujesz plik z wynikami analizy to w pliku uwzględnij prompt użytkownika, żeby zachować kontekst zapisanych odpowiedzi
 15. Folderu Analizy nie uwzględniaj w żadnych dokumentacjach i instrukcjach
-16. W plikach docs/Documentation.md, docs/README.md, Kolumny.md, DetaleLayoutu.md nie przechowuj archiwalnych informacji. Mają tam być tylko aktualne informacje a nie historia zmian.
+16. W plikach Main/docs/Documentation.md, Main/docs/README.md, Kolumny.md, DetaleLayoutu.md nie przechowuj archiwalnych informacji. Mają tam być tylko aktualne informacje a nie historia zmian.
 17. Jeżeli zmiana dotyczy edycji lub dodania nowgo pola to przeczytaj analizę Analizy/Wazne_Fokus i zadbaj, żeby nie wystąpił ten błąd
