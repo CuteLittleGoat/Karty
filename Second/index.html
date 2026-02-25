@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Karty Second - Panel i Widok Użytkownika</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="page-header">
+        <div class="header-intro">
+          <p class="eyebrow">Karty — Moduł Second</p>
+          <h1>Panel turniejowy</h1>
+          <p class="subtitle">Szkielet aplikacji z oddzielnym widokiem administratora i użytkownika.</p>
+        </div>
+      </header>
+
+      <main id="appRoot" class="grid"></main>
+    </div>
+
+    <template id="adminViewTemplate">
+      <section class="card admin-panel-card">
+        <div class="card-header admin-panel-header">
+          <h2>Panel Administratora</h2>
+          <span class="status-badge">Tryb admin</span>
+        </div>
+
+        <div class="admin-panel-tabs" role="tablist" aria-label="Zakładki panelu administratora">
+          <button class="admin-panel-tab is-active" type="button" data-target="news">Aktualności</button>
+          <button class="admin-panel-tab" type="button" data-target="chat">Czat</button>
+          <button class="admin-panel-tab" type="button" data-target="players">Gracze</button>
+          <button class="admin-panel-tab" type="button" data-target="tournament">Turniej</button>
+        </div>
+
+        <div class="admin-panel-content is-active" data-panel="news">
+          <div class="card-header">
+            <h3>Aktualności</h3>
+            <p>Wpisz treść dla użytkowników (bez zapisu do Firebase — tylko szkielet).</p>
+          </div>
+          <label for="adminNewsInput">Treść aktualności</label>
+          <textarea
+            id="adminNewsInput"
+            class="admin-input admin-textarea"
+            rows="10"
+            placeholder="Np. Turniej startuje o 19:00"
+            data-focus-target="1"
+            data-section="admin-news"
+            data-column-key="news"
+          ></textarea>
+          <span id="adminNewsStatus" class="status-text">Zmiany widoczne od razu w podglądzie użytkownika poniżej.</span>
+        </div>
+
+        <div class="admin-panel-content" data-panel="chat">
+          <div class="card-header">
+            <h3>Czat — moderacja</h3>
+            <p>Usuń wiadomości i kontroluj widok czatu użytkownika.</p>
+          </div>
+          <div id="adminChatList" class="stack-list" aria-live="polite"></div>
+          <p class="status-text">To tylko szkielet UI bez zapisu danych do Firebase.</p>
+        </div>
+
+        <div class="admin-panel-content" data-panel="players">
+          <div class="card-header">
+            <h3>Gracze</h3>
+            <p>Dodawanie gracza, PIN i uprawnienia do zakładki Czat.</p>
+          </div>
+
+          <form id="playerForm" class="form-grid" autocomplete="off">
+            <label>
+              Nazwa gracza
+              <input
+                id="playerNameInput"
+                class="admin-input"
+                type="text"
+                placeholder="Np. Gracz 1"
+                required
+                data-focus-target="1"
+                data-section="admin-players"
+                data-column-key="player-name"
+              />
+            </label>
+            <label>
+              PIN
+              <input
+                id="playerPinInput"
+                class="admin-input"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]{4}"
+                minlength="4"
+                maxlength="4"
+                placeholder="4 cyfry"
+                required
+                data-focus-target="1"
+                data-section="admin-players"
+                data-column-key="player-pin"
+              />
+            </label>
+            <label class="checkbox-row">
+              <input id="playerChatPermissionInput" type="checkbox" checked />
+              <span>Dostęp do zakładki Czat</span>
+            </label>
+            <button class="primary" type="submit">Dodaj gracza</button>
+          </form>
+
+          <div class="admin-table-scroll">
+            <table class="admin-data-table">
+              <thead>
+                <tr>
+                  <th>Gracz</th>
+                  <th>PIN</th>
+                  <th>Uprawnienie</th>
+                  <th>Akcje</th>
+                </tr>
+              </thead>
+              <tbody id="playersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="admin-panel-content" data-panel="tournament">
+          <div class="two-col-layout">
+            <aside class="sidebar-card">
+              <div class="card-header sidebar-header">
+                <h3>Panel</h3>
+              </div>
+              <div class="sidebar-buttons">
+                <button class="admin-games-year-button is-active" type="button" data-tournament-target="1">Przycisk 1</button>
+                <button class="admin-games-year-button" type="button" data-tournament-target="2">Przycisk 2</button>
+                <button class="admin-games-year-button" type="button" data-tournament-target="3">Przycisk 3</button>
+              </div>
+            </aside>
+
+            <section class="content-card">
+              <p id="tournamentText" class="builder-info">W budowie: Strona1</p>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="card user-preview-card">
+        <div class="card-header">
+          <h2>Podgląd widoku użytkownika</h2>
+          <p>To jest ten sam układ, który użytkownik widzi bez parametru <code>?admin=1</code>.</p>
+        </div>
+        <div id="userPreviewMount"></div>
+      </section>
+    </template>
+
+    <template id="userViewTemplate">
+      <section class="card user-card">
+        <div class="card-header">
+          <h2>Widok użytkownika</h2>
+        </div>
+
+        <div class="admin-panel-tabs" role="tablist" aria-label="Zakładki widoku użytkownika">
+          <button class="admin-panel-tab is-active" type="button" data-target="news">Aktualności</button>
+          <button class="admin-panel-tab" type="button" data-target="chat">Czat</button>
+          <button class="admin-panel-tab" type="button" data-target="tournament">Turniej</button>
+        </div>
+
+        <div class="admin-panel-content is-active" data-panel="news">
+          <label for="userNewsOutput">Aktualności</label>
+          <textarea id="userNewsOutput" class="admin-input admin-textarea" rows="10" readonly></textarea>
+        </div>
+
+        <div class="admin-panel-content" data-panel="chat">
+          <div class="card-header">
+            <h3>Czat</h3>
+            <p>Wymagane uwierzytelnienie PIN (skeleton bez Firebase).</p>
+          </div>
+
+          <form id="userPinForm" class="form-grid compact-form" autocomplete="off">
+            <label>
+              PIN gracza
+              <input id="userPinInput" class="admin-input" type="password" inputmode="numeric" minlength="4" maxlength="4" required />
+            </label>
+            <button class="secondary" type="submit">Autoryzuj PIN</button>
+            <span id="userPinStatus" class="status-text"></span>
+          </form>
+
+          <form id="userMessageForm" class="form-grid compact-form is-hidden" autocomplete="off">
+            <label>
+              Wiadomość
+              <input id="userMessageInput" class="admin-input" type="text" placeholder="Napisz wiadomość..." />
+            </label>
+            <button class="primary" type="submit">Wyślij</button>
+          </form>
+
+          <div id="userChatList" class="stack-list" aria-live="polite"></div>
+        </div>
+
+        <div class="admin-panel-content" data-panel="tournament">
+          <div class="two-col-layout">
+            <aside class="sidebar-card">
+              <div class="card-header sidebar-header">
+                <h3>Panel</h3>
+              </div>
+              <div class="sidebar-buttons">
+                <button class="admin-games-year-button is-active" type="button" data-tournament-target="1">Przycisk 1</button>
+                <button class="admin-games-year-button" type="button" data-tournament-target="2">Przycisk 2</button>
+                <button class="admin-games-year-button" type="button" data-tournament-target="3">Przycisk 3</button>
+              </div>
+            </aside>
+
+            <section class="content-card">
+              <p class="builder-info" data-user-tournament-text>W budowie: Strona1</p>
+            </section>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
