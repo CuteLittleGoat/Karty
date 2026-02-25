@@ -39,7 +39,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 3. Wpisz wiadomość i kliknij **Wyślij**.
 
 ### 2.6 Sekcja: Gry do Potwierdzenia
-1. Kliknij po lewej **Gry do Potwierdzenia**.
+1. Kliknij po lewej **Gry do Potwierdzenia** (jeżeli nazwa przycisku jest dłuższa, aplikacja automatycznie zmniejszy rozmiar fontu, aby tekst pozostał w obrębie przycisku).
 2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
 3. Po przechodzeniu między sekcjami panelu bocznego aplikacja nie prosi ponownie o PIN w tej sekcji — ponowna autoryzacja będzie dopiero po nowej sesji przeglądarki.
 4. Dla gry użyj: **Potwierdź**, **Anuluj**, **Szczegóły**, **Notatki do gry**.
@@ -92,12 +92,12 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 3. Kliknij **Dodaj**, aby dodać grę.
 4. Edytuj pola w tabeli: Rodzaj Gry, Data, Nazwa, CzyZamknięta.
 5. Kliknij **Szczegóły** przy nazwie gry.
-6. W oknie szczegółów:
+6. W oknie szczegółów (na PC okno jest szersze i lepiej wykorzystuje ekran):
    - dodawaj/usuwaj graczy,
    - edytuj dane finansowe i punkty,
    - korzystaj z kolumny **LP**,
    - po rozwinięciu listy **Gracz** widzisz tylko dostępnych graczy (osoby już wybrane w innych wierszach są ukryte).
-7. W pasku metadanych szczegółów widzisz: Nazwa, Rodzaj gry, Data, **Pula**.
+7. W pasku metadanych szczegółów widzisz: Nazwa, Rodzaj gry, Data, **Pula**, **Ilość graczy**.
 8. W sekcji podsumowania gry możesz otworzyć **Notatki po grze**.
 9. W sekcji statystyk kolejność kolumn to: Ilość Spotkań, **Waga2**, **% udział**, Punkty.
 
@@ -113,7 +113,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 2. Administrator widzi wszystkie gry użytkowników (bez ograniczenia do jednego właściciela).
 3. Wybierz rok.
 4. Dodawaj gry i edytuj je jak w wersji gracza.
-5. W **Szczegółach** działa kolumna **LP** i podgląd **Pula**.
+5. W **Szczegółach** działa kolumna **LP**, pasek meta pokazuje **Pula** i **Ilość graczy**, a samo okno jest poszerzone na PC.
 
 ### 3.8 Gry do potwierdzenia (panel admina)
 1. Wejdź w **Gry do potwierdzenia**.
@@ -160,9 +160,10 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 1. Tabela10 jest automatyczna i sortowana malejąco po kolumnie **+/-**.
 2. **Lp** to numer po sortowaniu.
 3. **Gracz**, **Wypłata**, **+/-** są pobierane z Tabela9.
-4. **% Puli** liczy: `Wypłata z Tabela9 / Suma z Tabela7`.
+4. **% Puli** liczy: `Wypłata z Tabela9 / Suma z Tabela7` i jest zaokrąglana do pełnej liczby.
 
 12. Wszystkie zmiany zapisują się automatycznie po chwili — nie ma osobnego przycisku zapisu.
+13. Wszystkie pola wyliczane w Kalkulatorze są prezentowane jako pełne liczby (bez miejsc po przecinku).
 
 ## 9. Minimalne szerokości kolumn (UI)
 - Tam, gdzie w dokumentacji kolumn wpisana jest liczba, aplikacja trzyma minimalną szerokość kolumny w znakach (jednostka `ch`).
