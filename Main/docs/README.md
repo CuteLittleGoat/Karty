@@ -186,3 +186,11 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 7. W `Gracze` tabela ma kolumny jak w Main: `Aplikacja`, `Nazwa`, `PIN`, `Uprawnienia`, kolumna akcji.
 8. W `Turniej` po lewej są przyciski `Instrukcja` i `Odśwież`, a na środku komunikat `Strona w budowie`.
 9. W trybie admin widoczny jest także podgląd końcowego widoku użytkownika.
+
+## 4. Logowanie (nowe przyciski w nagłówku)
+1. W prawym górnym rogu nagłówka wpisz adres w polu **E-mail**.
+2. Wpisz hasło w polu **Hasło**.
+3. Kliknij **Zaloguj**.
+4. Pod przyciskami odczytaj status logowania (np. czy konto ma pełny dostęp do modułu).
+5. Aby zakończyć sesję kliknij **Wyloguj**.
+6. Aby zresetować hasło wpisz e-mail i kliknij **Reset hasła** (aplikacja wyśle mail resetujący).
