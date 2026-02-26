@@ -88,7 +88,7 @@
 1. W prawym górnym rogu nagłówka wpisz adres w polu **E-mail**.
 2. Wpisz hasło w polu **Hasło**.
 3. Kliknij **Zaloguj**.
-4. Pod przyciskami odczytaj status logowania — przy błędzie zobaczysz, czy mail nie istnieje, hasło jest błędne albo czy wystąpił problem połączenia z Firebase (z kodem błędu).
+4. Pod przyciskami odczytaj status logowania (`authLoginStatus`) — po kliknięciu **Zaloguj** zobaczysz od razu komunikat „Logowanie...”, a przy błędzie pełną diagnozę (kod + opis + podpowiedź).
 5. Aby zakończyć sesję kliknij **Wyloguj**.
 6. Po odświeżeniu strony aplikacja wymaga ponownego logowania (sesja logowania nie jest trwała).
 7. Aby zresetować hasło wpisz e-mail i kliknij **Reset hasła** (aplikacja wyśle mail resetujący).
@@ -107,7 +107,8 @@
 2. Rejestracja wymaga poprawnego e-maila oraz hasła (min. 6 znaków, cyfra, znak specjalny).
 3. Po rejestracji konto ma status **Oczekiwanie na zatwierdzenie** i nie dostaje dostępu do widoku aplikacji przed akceptacją.
 4. Na ekranie startowym kliknij **Reset hasła**, wpisz e-mail i kliknij **Wyślij mail**.
-5. Po zalogowaniu w nagłówku wyświetlany jest login i przycisk **Wyloguj**.
+5. Ten sam komunikat statusu jest jednocześnie widoczny w nagłówku (`authStatus`) i pod przyciskami logowania, więc informacja o błędzie jest czytelna niezależnie od przewinięcia.
+6. Po zalogowaniu w nagłówku wyświetlany jest login i przycisk **Wyloguj**.
 
 ## 5. Pasek sesji po zalogowaniu
 1. Po poprawnym logowaniu w nagłówku zawsze zobaczysz informację **Zalogowany: ...** i przycisk **Wyloguj**.

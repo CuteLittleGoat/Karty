@@ -75,11 +75,11 @@ Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry
 W module Second aktywna jest warstwa logowania Firebase Auth (logowanie, rejestracja, reset hasła, odczyt profilu `second_users/{uid}`). Pozostałe sekcje panelu (np. część przycisków admina) nadal działają jako szkielet UI.
 
 ## Logowanie Firebase Auth (Second)
-- Ekran startowy to `#loginScreen` z kartą `.login-card` i przyciskami `#authLoginButton`, `#authRegisterButton`.
+- Ekran startowy to `#loginScreen` z kartą `.login-card`, przyciskami `#authLoginButton`, `#authRegisterButton` oraz lokalnym polem statusu `#authLoginStatus`.
 - W nagłówku po zalogowaniu działa pasek `.auth-session-toolbar` z akcjami `#authLogoutButton` i `#authResetPasswordButton`.
 - Frontend używa Firebase Auth (compat) i funkcji:
   - `setPersistence(firebase.auth.Auth.Persistence.NONE)` aby po odświeżeniu strony wymusić ponowne logowanie (brak trwałej sesji),
-  - `signInWithEmailAndPassword(email, password)` dla przycisku **Zaloguj**,
+  - `signInWithEmailAndPassword(email, password)` dla przycisku **Zaloguj** (z natychmiastowym statusem „Logowanie...”),
   - `signOut()` dla przycisku **Wyloguj**,
   - `sendPasswordResetEmail(email)` dla przycisku **Reset hasła**.
 - Listener `onAuthStateChanged` odczytuje profil użytkownika z kolekcji `second_users/{uid}` i aktualizuje komunikat w `#authStatus`.

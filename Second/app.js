@@ -48,6 +48,7 @@ const initAuthControls = () => {
   const sendResetButton = document.querySelector("#authSendResetButton");
   const backToLoginButton = document.querySelector("#authBackToLoginButton");
   const status = document.querySelector("#authStatus");
+  const loginStatus = document.querySelector("#authLoginStatus");
   const currentUser = document.querySelector("#authCurrentUser");
 
   if (!emailInput || !passwordInput || !loginButton || !registerButton || !logoutButton || !resetButton || !status || !currentUser) {
@@ -66,7 +67,12 @@ const initAuthControls = () => {
 
   const auth = firebaseApp.auth();
   const db = firebaseApp.firestore();
-  const setStatus = (message) => { status.textContent = message; };
+  const setStatus = (message) => {
+    status.textContent = message;
+    if (loginStatus) {
+      loginStatus.textContent = message;
+    }
+  };
 
   const formatFirebaseErrorDetails = (error) => {
     if (!error) return "kod: unknown; opis: nieznany błąd";
@@ -150,6 +156,7 @@ const initAuthControls = () => {
     const password = passwordInput.value;
     if (!email || !password) return setStatus("Podaj e-mail i hasło.");
     if (!isValidEmail(email)) return setStatus("Podaj poprawny adres e-mail.");
+    setStatus("Logowanie...");
     try {
       await auth.signInWithEmailAndPassword(email, password);
       passwordInput.value = "";
