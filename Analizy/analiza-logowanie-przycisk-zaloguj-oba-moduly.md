@@ -7,6 +7,10 @@ Wpisuje maila oresznikak47@gmail.com (mail przypisany do admina) oraz hasło. Po
 ## Prompt użytkownika (aktualizacja)
 "Przeczytaj analizę analiza-logowanie-przycisk-zaloguj-oba-moduly.md i zmodyfikuj plik o nowe dane. Załączam screeny z Firebase. Załączam też aktualne Rules (...)"
 
+## Prompt użytkownika (bieżący)
+"Zaktualizuj plik analiza-logowanie-przycisk-zaloguj-oba-moduly.md
+Zapisz mi nowe Rules w wariancie Jeśli permissions ma pozostać mapą (jak obecnie):"
+
 ## Nowe dane wejściowe z Firebase (ze screenów + rules)
 1. **Authentication / Users**
    - Istnieje 1 użytkownik: `oresznikak47@gmail.com`.
@@ -58,6 +62,83 @@ Wybierz jedną ścieżkę i stosuj ją konsekwentnie w obu modułach:
    - zmień rules w `main_users` i `second_users` z:
    - `request.resource.data.permissions is list`
    - na walidację mapy (np. `request.resource.data.permissions is map`) albo usuń ten warunek, jeśli nie jest krytyczny.
+
+#### Proponowane Firestore Rules (wariant: `permissions` jako mapa)
+Poniżej gotowy wariant reguł, który zachowuje bezpieczeństwo i jest zgodny z obecnym formatem `permissions` jako obiektu/mapy:
+
+```js
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function hasMainAdminRole() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/main_users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/main_users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function hasSecondAdminRole() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/second_users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/second_users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function validBaseUserCreateData(data, uid) {
+      return data.uid == uid
+        && data.email is string
+        && data.role is string
+        && data.isActive is bool
+        && (!('isApproved' in data) || data.isApproved is bool)
+        && (!('moduleAccess' in data) || data.moduleAccess is map)
+        && (!('permissions' in data) || data.permissions is map);
+    }
+
+    function validOwnerUpdate(allowedChangedKeys) {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(allowedChangedKeys);
+    }
+
+    match /main_users/{uid} {
+      allow read: if isOwner(uid) || hasMainAdminRole();
+
+      allow create: if isOwner(uid)
+        && validBaseUserCreateData(request.resource.data, uid);
+
+      allow update: if (isOwner(uid)
+          && validOwnerUpdate(['displayName', 'photoURL', 'lastLoginAt']))
+        || hasMainAdminRole();
+
+      allow delete: if hasMainAdminRole();
+    }
+
+    match /second_users/{uid} {
+      allow read: if isOwner(uid) || hasSecondAdminRole();
+
+      allow create: if isOwner(uid)
+        && validBaseUserCreateData(request.resource.data, uid);
+
+      allow update: if (isOwner(uid)
+          && validOwnerUpdate(['displayName', 'photoURL', 'lastLoginAt']))
+        || hasSecondAdminRole();
+
+      allow delete: if hasSecondAdminRole();
+    }
+  }
+}
+```
+
+Uwagi do wdrożenia:
+- W `create` kluczowa zmiana to przejście z `permissions is list` na `permissions is map`.
+- Dopuszczenie `permissions` jako pola opcjonalnego (`!('permissions' in data) || ...`) pozwala przejść migrację stopniowo.
+- Jeśli aplikacja wymaga `permissions` zawsze, zmień warunek na twarde `data.permissions is map`.
+- Po wdrożeniu rules wykonaj test tworzenia/odczytu dokumentu zarówno w `main_users`, jak i `second_users` dla tego samego UID.
 
 2. **Jeśli `permissions` ma być listą:**
    - zmień zapis dokumentów użytkowników, by `permissions` było tablicą, nie obiektem.
