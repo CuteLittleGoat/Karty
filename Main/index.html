@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Karty - Organizator Turnieju</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="page-header">
+        <div class="header-intro admin-only">
+          <p class="eyebrow">TO NIE JEST nielegalny poker</p>
+          <h1>TO NIE JEST nielegalne kasyno</h1>
+        </div>
+        <div class="header-controls">
+          <div class="auth-toolbar" aria-label="Logowanie">
+            <label class="auth-field" for="authEmailInput">
+              <span>E-mail</span>
+              <input id="authEmailInput" type="email" autocomplete="username" placeholder="np. gracz@karty.pl" />
+            </label>
+            <label class="auth-field" for="authPasswordInput">
+              <span>Hasło</span>
+              <input id="authPasswordInput" type="password" autocomplete="current-password" placeholder="Hasło" />
+            </label>
+            <div class="auth-actions">
+              <button id="authLoginButton" class="primary" type="button">Zaloguj</button>
+              <button id="authLogoutButton" class="secondary" type="button">Wyloguj</button>
+              <button id="authResetPasswordButton" class="secondary" type="button">Reset hasła</button>
+            </div>
+            <p id="authStatus" class="status-text" aria-live="polite">Nie zalogowano.</p>
+          </div>
+          <div class="admin-toolbar admin-only">
+            <button id="adminInstructionButton" class="secondary" type="button">Instrukcja</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="grid">
+        <section class="card admin-only admin-panel-card">
+          <div class="card-header admin-panel-header">
+            <h2>Panel Administratora</h2>
+            <div class="admin-panel-refresh-controls">
+              <button id="adminPanelRefresh" class="secondary" type="button">Odśwież</button>
+              <span id="adminPanelRefreshStatus" class="status-text" aria-live="polite"></span>
+            </div>
+          </div>
+          <div class="admin-panel-tabs" role="tablist" aria-label="Zakładki panelu administratora">
+            <button class="admin-panel-tab is-active" type="button" data-target="adminNewsTab">Aktualności</button>
+            <button class="admin-panel-tab" type="button" data-target="adminChatTab">Czat</button>
+            <button class="admin-panel-tab" type="button" data-target="adminRulesTab">Regulamin</button>
+            <button class="admin-panel-tab" type="button" data-target="adminPlayersTab">Gracze</button>
+            <button class="admin-panel-tab" type="button" data-target="adminGamesTab">Gry admina</button>
+            <button class="admin-panel-tab" type="button" data-target="adminStatisticsTab">Statystyki</button>
+            <button class="admin-panel-tab" type="button" data-target="adminUserGamesTab">Gry użytkowników</button>
+            <button class="admin-panel-tab" type="button" data-target="adminNextGameTab">Najbliższa gra</button>
+            <button class="admin-panel-tab" type="button" data-target="adminConfirmationsTab">Gry do potwierdzenia</button>
+            <button class="admin-panel-tab" type="button" data-target="adminCalculatorTab">Kalkulator</button>
+          </div>
+          <div id="adminNewsTab" class="admin-panel-content is-active" role="tabpanel">
+          <div class="admin-message">
+            <div>
+              <h3>Wiadomość do graczy</h3>
+              <p>Informacja jaka będzie w polu &gt;Najnowsze&lt;</p>
+            </div>
+            <div class="admin-message-form">
+              <label for="adminMessageInput">Treść wiadomości</label>
+              <textarea
+                id="adminMessageInput"
+                rows="50"
+                placeholder="Np. Runda startuje za 10 minut — przejdźcie do stołów."
+              ></textarea>
+              <div class="admin-message-actions">
+                <button id="adminMessageSend" class="primary" type="button">Wyślij</button>
+                <span id="adminMessageStatus" class="status-text" aria-live="polite"></span>
+              </div>
+            </div>
+          </div>
+          </div>
+          <div id="adminChatTab" class="admin-panel-content" role="tabpanel">
+            <section class="admin-chat">
+              <div class="card-header">
+                <h3>Czat</h3>
+                <p>Moderuj wiadomości i usuwaj wpisy starsze niż 30 dni.</p>
+              </div>
+              <div class="admin-chat-actions">
+                <button id="adminChatCleanup" class="danger" type="button">Usuń starsze niż 30 dni</button>
+                <span id="adminChatStatus" class="status-text" aria-live="polite"></span>
+              </div>
+              <div id="adminChatList" class="admin-chat-list"></div>
+            </section>
+          </div>
+          <div id="adminRulesTab" class="admin-panel-content" role="tabpanel">
+            <div class="admin-rules">
+              <div class="card-header">
+                <h3>Regulamin</h3>
+                <p>Wpisz zasady obowiązujące przy stole. Treść jest widoczna dla wszystkich użytkowników.</p>
+              </div>
+              <label for="adminRulesInput">Treść regulaminu</label>
+              <textarea
+                id="adminRulesInput"
+                rows="50"
+                placeholder="Np. 1. Wpisowe jest bezzwrotne..."
+              ></textarea>
+              <div class="admin-rules-actions">
+                <button id="adminRulesSave" class="primary" type="button">Zapisz</button>
+                <span id="adminRulesStatus" class="status-text" aria-live="polite"></span>
+              </div>
+            </div>
+          </div>
+          <div id="adminPlayersTab" class="admin-panel-content" role="tabpanel">
+            <div class="admin-players">
+              <div class="card-header">
+                <h3>Gracze</h3>
+                <p>Zarządzaj PIN-ami graczy i uprawnieniami do zakładek aplikacji.</p>
+              </div>
+              <span id="adminPlayersStatus" class="status-text" aria-live="polite"></span>
+              <p id="adminPlayersSummary" class="status-text">Liczba dodanych graczy: 0</p>
+              <div class="admin-table-scroll">
+                <table class="admin-data-table players-table">
+                  <thead>
+                    <tr>
+                      <th>Aplikacja</th>
+                      <th>Nazwa</th>
+                      <th>PIN</th>
+                      <th>Uprawnienia</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminPlayersBody"></tbody>
+                </table>
+              </div>
+              <div class="admin-table-actions">
+                <button id="adminAddPlayer" class="secondary" type="button">Dodaj</button>
+              </div>
+            </div>
+          </div>
+          <div id="adminGamesTab" class="admin-panel-content" role="tabpanel">
+            <div class="admin-games-layout">
+              <aside class="admin-games-sidebar">
+                <div class="card-header admin-games-sidebar-header">
+                  <h3>Lata</h3>
+                </div>
+                <div id="adminGamesYearsList" class="admin-games-years-list"></div>
+              </aside>
+              <section class="admin-games-content">
+                <span id="adminGamesStatus" class="status-text" aria-live="polite"></span>
+                <div class="admin-games-section">
+                  <div class="card-header admin-tables-header">
+                    <h3>Tabele Gier</h3>
+                    <button id="adminGamesAddGame" class="primary" type="button">Dodaj</button>
+                  </div>
+                  <div class="admin-table-scroll">
+                    <table class="admin-data-table">
+                      <thead>
+                        <tr>
+                          <th>Rodzaj Gry</th>
+                          <th>Data</th>
+                          <th>Nazwa</th>
+                          <th>CzyZamknięta</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminGamesTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+                <div id="adminGamesSummaries" class="admin-games-summaries"></div>
+                <div class="admin-games-section">
+                  <h3>Statystyki</h3>
+                  <div class="admin-table-scroll">
+                    <table class="admin-data-table">
+                      <thead>
+                        <tr>
+                          <th>Opis</th>
+                          <th>Wartość</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminGamesStatsBody"></tbody>
+                    </table>
+                  </div>
+                  <div class="admin-table-scroll">
+                    <table class="admin-data-table admin-games-players-stats-table">
+                      <thead>
+                        <tr>
+                          <th>Gracz</th>
+                          <th>Mistrzostwo</th>
+                          <th><button type="button" class="admin-weight-bulk-button" data-weight-key="weight1">Waga1</button></th>
+                          <th>Ilość Spotkań</th>
+                          <th><button type="button" class="admin-weight-bulk-button" data-weight-key="weight2">Waga2</button></th>
+                          <th>% udział</th>
+                          <th>Punkty</th>
+                          <th><button type="button" class="admin-weight-bulk-button" data-weight-key="weight3">Waga3</button></th>
+                          <th>(+/-)</th>
+                          <th><button type="button" class="admin-weight-bulk-button" data-weight-key="weight4">Waga4</button></th>
+                          <th>Wypłata</th>
+                          <th><button type="button" class="admin-weight-bulk-button" data-weight-key="weight5">Waga5</button></th>
+                          <th>Wpłaty</th>
+                          <th><button type="button" class="admin-weight-bulk-button" data-weight-key="weight6">Waga6</button></th>
+                          <th>Suma z rozegranych gier</th>
+                          <th>% Rozegranych gier</th>
+                          <th>% Wszystkich gier</th>
+                          <th>Wyniki</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminGamesPlayersStatsBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+              <aside class="admin-games-sidebar admin-games-ranking-sidebar">
+                <div class="card-header admin-games-sidebar-header">
+                  <h3>Ranking</h3>
+                </div>
+                <div class="admin-table-scroll">
+                  <table class="admin-data-table admin-games-ranking-table">
+                    <thead>
+                      <tr>
+                        <th>Miejsce</th>
+                        <th>Gracz</th>
+                        <th>Wynik</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminGamesRankingBody"></tbody>
+                  </table>
+                </div>
+              </aside>
+            </div>
+          </div>
+          <div id="adminUserGamesTab" class="admin-panel-content" role="tabpanel">
+            <div class="admin-games-layout">
+              <aside class="admin-games-sidebar">
+                <div class="card-header admin-games-sidebar-header">
+                  <h3>Lata</h3>
+                </div>
+                <div id="adminUserGamesYearsList" class="admin-games-years-list"></div>
+              </aside>
+              <section class="admin-games-content">
+                <span id="adminUserGamesStatus" class="status-text" aria-live="polite"></span>
+                <div class="admin-games-section">
+                  <div class="card-header admin-tables-header">
+                    <h3>Gry użytkowników</h3>
+                    <button id="adminUserGamesAddGame" class="primary" type="button">Dodaj</button>
+                  </div>
+                  <div class="admin-table-scroll">
+                    <table class="admin-data-table">
+                      <thead>
+                        <tr>
+                          <th>Rodzaj Gry</th>
+                          <th>Data</th>
+                          <th>Nazwa</th>
+                          <th>CzyZamknięta</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminUserGamesTableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+                <div id="adminUserGamesSummaries" class="admin-games-summaries"></div>
+              </section>
+            </div>
+          </div>
+          <div id="adminNextGameTab" class="admin-panel-content" role="tabpanel">
+            <section class="admin-games-content">
+              <div class="admin-games-section">
+                <div class="card-header admin-tables-header">
+                  <h3>Najbliższa gra</h3>
+                </div>
+                <div class="admin-table-scroll">
+                  <table class="admin-data-table">
+                    <thead>
+                      <tr>
+                        <th>Rodzaj gry</th>
+                        <th>Data</th>
+                        <th>Nazwa</th>
+                        <th>CzyWszyscyPotwierdzili</th>
+                        <th>Akcje</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminNextGameTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </div>
+          <div id="adminStatisticsTab" class="admin-panel-content" role="tabpanel">
+            <div class="admin-games-layout">
+              <aside class="admin-games-sidebar">
+                <div class="card-header admin-games-sidebar-header">
+                  <h3>Lata</h3>
+                </div>
+                <div id="adminStatisticsYearsList" class="admin-games-years-list"></div>
+              </aside>
+              <section class="admin-games-content">
+                <span id="adminStatisticsStatus" class="status-text" aria-live="polite"></span>
+                <div class="admin-games-section">
+                  <div class="card-header admin-tables-header">
+                    <h3>Statystyki</h3>
+                    <button id="adminStatisticsExport" class="secondary" type="button">Eksportuj</button>
+                  </div>
+                  <div class="admin-table-scroll">
+                    <table class="admin-data-table">
+                      <thead>
+                        <tr>
+                          <th>Opis</th>
+                          <th>Wartość</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminStatisticsStatsBody"></tbody>
+                    </table>
+                  </div>
+                  <div class="admin-table-scroll">
+                    <table class="admin-data-table admin-games-players-stats-table">
+                      <thead>
+                        <tr>
+                          <th>Gracz</th>
+                          <th>Mistrzostwo</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight1">Waga1</button></th>
+                          <th>Ilość Spotkań</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight2">Waga2</button></th>
+                          <th>% udział</th>
+                          <th>Punkty</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight3">Waga3</button></th>
+                          <th>(+/-)</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight4">Waga4</button></th>
+                          <th>Wypłata</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight5">Waga5</button></th>
+                          <th>Wpłaty</th>
+                          <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight6">Waga6</button></th>
+                          <th>Suma z rozegranych gier</th>
+                          <th>% Rozegranych gier</th>
+                          <th>% Wszystkich gier</th>
+                          <th>Wynik</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminStatisticsPlayersStatsBody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+              <aside class="admin-games-sidebar admin-games-ranking-sidebar">
+                <div class="card-header admin-games-sidebar-header">
+                  <h3>Ranking</h3>
+                </div>
+                <div class="admin-table-scroll">
+                  <table class="admin-data-table admin-games-ranking-table">
+                    <thead>
+                      <tr>
+                        <th>Miejsce</th>
+                        <th>Gracz</th>
+                        <th>Wynik</th>
+                      </tr>
+                    </thead>
+                    <tbody id="adminStatisticsRankingBody"></tbody>
+                  </table>
+                </div>
+              </aside>
+            </div>
+          </div>
+          <div id="adminConfirmationsTab" class="admin-panel-content" role="tabpanel">
+            <section class="admin-confirmations">
+              <div class="card-header">
+                <h3>Gry do potwierdzenia</h3>
+                <p>Lista aktywnych gier z potwierdzeniami obecności graczy.</p>
+              </div>
+              <span id="adminConfirmationsStatus" class="status-text" aria-live="polite"></span>
+              <div id="adminConfirmationsList" class="admin-confirmations-list"></div>
+            </section>
+          </div>
+          <div id="adminCalculatorTab" class="admin-panel-content" role="tabpanel">
+            <section class="admin-calculator">
+              <div class="card-header">
+                <h3>Kalkulator</h3>
+                <p>Kalkulator z dynamicznymi tabelami Buy-In, Rebuy, podziału puli i eliminacji.</p>
+              </div>
+              <span id="adminCalculatorStatus" class="status-text" aria-live="polite"></span>
+              <div class="admin-calculator-layout">
+                <aside class="admin-calculator-sidebar" aria-label="Rodzaj gry">
+                  <div class="card-header admin-calculator-sidebar-header">
+                    <h3>Rodzaj gry</h3>
+                  </div>
+                  <div class="admin-calculator-switch" aria-label="Tryb kalkulatora">
+                    <button type="button" class="admin-calculator-switch-button is-active" data-calculator-mode="tournament">Tournament</button>
+                    <button type="button" class="admin-calculator-switch-button" data-calculator-mode="cash">Cash</button>
+                  </div>
+                </aside>
+                <div class="admin-calculator-content">
+                  <div id="adminCalculatorTable1" class="admin-calculator-table-wrap"></div>
+                  <div id="adminCalculatorTable2" class="admin-calculator-table-wrap"></div>
+                  <div id="adminCalculatorTable3" class="admin-calculator-table-wrap"></div>
+                  <div id="adminCalculatorTable4" class="admin-calculator-table-wrap"></div>
+                  <div id="adminCalculatorTable5" class="admin-calculator-table-wrap"></div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="card next-game-card">
+          <div class="user-panel">
+            <div class="user-tabs" role="tablist" aria-label="Zakładki użytkownika">
+              <button class="tab-button is-active" type="button" data-target="updatesTab">
+                Aktualności
+              </button>
+              <button class="tab-button" type="button" data-target="rulesTab">
+                Regulamin
+              </button>
+              <button class="tab-button" type="button" data-target="playerZoneTab">
+                Strefa Gracza
+              </button>
+            </div>
+          </div>
+          <div class="user-tab-content">
+            <div id="updatesTab" class="tab-panel" role="tabpanel">
+              <div class="card-header">
+                <h2>Aktualności</h2>
+              </div>
+              <div class="latest-message">
+                <label for="latestMessageOutput">Najnowsze</label>
+                <textarea
+                  id="latestMessageOutput"
+                  rows="50"
+                  readonly
+                  placeholder="Brak wiadomości od administratora."
+                ></textarea>
+                <p id="latestMessageStatus" class="status-text" aria-live="polite"></p>
+              </div>
+            </div>
+            <div id="rulesTab" class="tab-panel" role="tabpanel">
+              <div class="card-header">
+                <h2>Regulamin</h2>
+              </div>
+              <div class="latest-message latest-rules">
+                <label for="rulesOutput">Obowiązujące zasady</label>
+                <textarea
+                  id="rulesOutput"
+                  rows="50"
+                  readonly
+                  placeholder="Administrator jeszcze nie dodał regulaminu."
+                ></textarea>
+                <p id="rulesStatus" class="status-text" aria-live="polite"></p>
+              </div>
+            </div>
+            <div id="playerZoneTab" class="tab-panel" role="tabpanel">
+              <div id="playerZonePinGate" class="pin-gate" aria-live="polite">
+                <div class="pin-card">
+                  <p class="pin-title">Wpisz PIN z uprawnieniem Strefa Gracza, aby wejść do tej sekcji.</p>
+                  <div class="pin-inputs">
+                    <input
+                      id="playerZonePinInput"
+                      type="tel"
+                      inputmode="numeric"
+                      pattern="[0-9]{5}"
+                      autocomplete="one-time-code"
+                      maxlength="5"
+                      minlength="5"
+                      placeholder="PIN (5 cyfr)"
+                    />
+                    <button id="playerZonePinSubmit" class="primary" type="button">Otwórz</button>
+                  </div>
+                  <p id="playerZonePinStatus" class="status-text"></p>
+                </div>
+              </div>
+              <div id="playerZoneContent" class="user-games-content">
+                <div class="admin-games-layout player-zone-layout">
+                  <aside class="admin-games-sidebar">
+                    <div class="card-header admin-games-sidebar-header">
+                      <h3>Sekcja</h3>
+                    </div>
+                    <div id="playerZoneSectionsList" class="admin-games-years-list player-zone-sections-list">
+                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="nextGameTab">Najbliższa Gra</button>
+                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="chatTab">Czat</button>
+                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="confirmationsTab">Gry do Potwierdzenia</button>
+                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="userGamesTab">Gry Użytkowników</button>
+                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="statsTab">Statystyki</button>
+                    </div>
+                    <p id="playerZoneSectionsStatus" class="status-text" aria-live="polite"></p>
+                  </aside>
+                  <section class="admin-games-content player-zone-sections-content">
+                    <div id="nextGameTab" class="player-zone-panel" role="tabpanel">
+                      <div id="nextGamePinGate" class="pin-gate" aria-live="polite">
+                        <div class="pin-card">
+                          <p class="pin-title">Wpisz PIN, aby zobaczyć szczegóły najbliższej gry.</p>
+                          <div class="pin-inputs">
+                            <input id="nextGamePinInput" type="tel" inputmode="numeric" pattern="[0-9]{5}" autocomplete="one-time-code" maxlength="5" minlength="5" placeholder="PIN (5 cyfr)" />
+                            <button id="nextGamePinSubmit" class="primary" type="button">Otwórz</button>
+                          </div>
+                          <p id="nextGamePinStatus" class="status-text"></p>
+                        </div>
+                      </div>
+                      <div id="nextGameContent" class="next-game-content">
+                        <div class="admin-table-scroll">
+                          <table class="admin-data-table">
+                            <thead><tr><th>Rodzaj gry</th><th>Data</th><th>Nazwa</th><th>CzyWszyscyPotwierdzili</th></tr></thead>
+                            <tbody id="nextGameTableBody"></tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+            <div id="chatTab" class="player-zone-panel" role="tabpanel">
+              <div id="chatPinGate" class="pin-gate" aria-live="polite">
+                <div class="pin-card">
+                  <p class="pin-title">Wpisz PIN z uprawnieniem Czat, aby dołączyć do rozmowy.</p>
+                  <div class="pin-inputs">
+                    <input
+                      id="chatPinInput"
+                      type="tel"
+                      inputmode="numeric"
+                      pattern="[0-9]{5}"
+                      autocomplete="one-time-code"
+                      maxlength="5"
+                      minlength="5"
+                      placeholder="PIN (5 cyfr)"
+                    />
+                    <button id="chatPinSubmit" class="primary" type="button">Otwórz</button>
+                  </div>
+                  <p id="chatPinStatus" class="status-text"></p>
+                </div>
+              </div>
+              <div id="chatContent" class="chat-content">
+                <div id="chatMessages" class="chat-messages"></div>
+                <div class="chat-form">
+                  <label for="chatMessageInput">Twoja wiadomość</label>
+                  <textarea
+                    id="chatMessageInput"
+                    rows="3"
+                    maxlength="600"
+                    placeholder="Napisz wiadomość do graczy..."
+                  ></textarea>
+                  <div class="chat-form-actions">
+                    <button id="chatMessageSend" class="primary" type="button">Wyślij</button>
+                    <span id="chatMessageStatus" class="status-text" aria-live="polite"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="confirmationsTab" class="player-zone-panel" role="tabpanel">
+              <div id="confirmationsPinGate" class="pin-gate" aria-live="polite">
+                <div class="pin-card">
+                  <p class="pin-title">Wpisz PIN, aby przejść do listy gier do potwierdzenia.</p>
+                  <div class="pin-inputs">
+                    <input
+                      id="confirmationsPinInput"
+                      type="tel"
+                      inputmode="numeric"
+                      pattern="[0-9]{5}"
+                      autocomplete="one-time-code"
+                      maxlength="5"
+                      minlength="5"
+                      placeholder="PIN (5 cyfr)"
+                    />
+                    <button id="confirmationsPinSubmit" class="primary" type="button">Otwórz</button>
+                  </div>
+                  <p id="confirmationsPinStatus" class="status-text"></p>
+                </div>
+              </div>
+              <div id="confirmationsContent" class="confirmations-content">
+                <div class="confirmations-toolbar">
+                  <button id="confirmationsRefresh" class="secondary" type="button">Odśwież</button>
+                  <span id="confirmationsStatus" class="status-text" aria-live="polite"></span>
+                </div>
+                <div class="admin-table-scroll">
+                  <table class="admin-data-table confirmations-table">
+                    <thead>
+                      <tr>
+                        <th>Rodzaj Gry</th>
+                        <th>Data</th>
+                        <th>Nazwa</th>
+                        <th>Potwierdzenie</th>
+                      </tr>
+                    </thead>
+                    <tbody id="confirmationsBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div id="userGamesTab" class="player-zone-panel" role="tabpanel">
+              <div id="userGamesPinGate" class="pin-gate" aria-live="polite">
+                <div class="pin-card">
+                  <p class="pin-title">Wpisz PIN z uprawnieniem Gry użytkowników, aby wejść do tej sekcji.</p>
+                  <div class="pin-inputs">
+                    <input
+                      id="userGamesPinInput"
+                      type="tel"
+                      inputmode="numeric"
+                      pattern="[0-9]{5}"
+                      autocomplete="one-time-code"
+                      maxlength="5"
+                      minlength="5"
+                      placeholder="PIN (5 cyfr)"
+                    />
+                    <button id="userGamesPinSubmit" class="primary" type="button">Otwórz</button>
+                  </div>
+                  <p id="userGamesPinStatus" class="status-text"></p>
+                </div>
+              </div>
+              <div id="userGamesContent" class="user-games-content">
+                <div class="admin-games-layout">
+                  <aside class="admin-games-sidebar">
+                    <div class="card-header admin-games-sidebar-header">
+                      <h3>Lata</h3>
+                    </div>
+                    <div id="userGamesYearsList" class="admin-games-years-list"></div>
+                  </aside>
+                  <section class="admin-games-content">
+                    <span id="userGamesStatus" class="status-text" aria-live="polite"></span>
+                    <div class="admin-games-section">
+                      <div class="card-header admin-tables-header">
+                        <h3>Gry użytkowników</h3>
+                        <button id="userGamesAddGame" class="primary" type="button">Dodaj</button>
+                      </div>
+                      <div class="admin-table-scroll">
+                        <table class="admin-data-table">
+                          <thead>
+                            <tr>
+                              <th>Rodzaj Gry</th>
+                              <th>Data</th>
+                              <th>Nazwa</th>
+                              <th>CzyZamknięta</th>
+                              <th></th>
+                            </tr>
+                          </thead>
+                          <tbody id="userGamesTableBody"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div id="userGamesSummaries" class="admin-games-summaries"></div>
+                  </section>
+                </div>
+              </div>
+            </div>
+            <div id="statsTab" class="player-zone-panel" role="tabpanel">
+              <div id="statisticsPinGate" class="pin-gate" aria-live="polite">
+                <div class="pin-card">
+                  <p class="pin-title">Wpisz PIN z uprawnieniem Statystyki, aby wejść do tej sekcji.</p>
+                  <div class="pin-inputs">
+                    <input
+                      id="statisticsPinInput"
+                      type="tel"
+                      inputmode="numeric"
+                      pattern="[0-9]{5}"
+                      autocomplete="one-time-code"
+                      maxlength="5"
+                      minlength="5"
+                      placeholder="PIN (5 cyfr)"
+                    />
+                    <button id="statisticsPinSubmit" class="primary" type="button">Otwórz</button>
+                  </div>
+                  <p id="statisticsPinStatus" class="status-text"></p>
+                </div>
+              </div>
+              <div id="statisticsContent" class="user-games-content">
+                <div class="admin-games-layout">
+                  <aside class="admin-games-sidebar">
+                    <div class="card-header admin-games-sidebar-header">
+                      <h3>Lata</h3>
+                    </div>
+                    <div id="statisticsYearsList" class="admin-games-years-list"></div>
+                  </aside>
+                  <section class="admin-games-content">
+                    <span id="statisticsStatus" class="status-text" aria-live="polite"></span>
+                    <div class="admin-games-section">
+                      <div class="card-header admin-tables-header">
+                        <h3>Statystyki</h3>
+                        <button id="statisticsExport" class="secondary" type="button">Eksportuj</button>
+                      </div>
+                      <div class="admin-table-scroll">
+                        <table class="admin-data-table">
+                          <thead>
+                            <tr>
+                              <th>Opis</th>
+                              <th>Wartość</th>
+                            </tr>
+                          </thead>
+                          <tbody id="statisticsStatsBody"></tbody>
+                        </table>
+                      </div>
+                      <div class="admin-table-scroll">
+                        <table class="admin-data-table admin-games-players-stats-table">
+                          <thead>
+                            <tr>
+                              <th>Gracz</th>
+                              <th>Mistrzostwo</th>
+                              <th>Waga1</th>
+                              <th>Ilość Spotkań</th>
+                              <th>Waga2</th>
+                              <th>% udział</th>
+                              <th>Punkty</th>
+                              <th>Waga3</th>
+                              <th>(+/-)</th>
+                              <th>Waga4</th>
+                              <th>Wypłata</th>
+                              <th>Waga5</th>
+                              <th>Wpłaty</th>
+                              <th>Waga6</th>
+                              <th>Suma z rozegranych gier</th>
+                              <th>% Rozegranych gier</th>
+                              <th>% Wszystkich gier</th>
+                              <th>Wynik</th>
+                            </tr>
+                          </thead>
+                          <tbody id="statisticsPlayersStatsBody"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </section>
+                  <aside class="admin-games-sidebar admin-games-ranking-sidebar">
+                    <div class="card-header admin-games-sidebar-header">
+                      <h3>Ranking</h3>
+                    </div>
+                    <div class="admin-table-scroll">
+                      <table class="admin-data-table admin-games-ranking-table">
+                        <thead>
+                          <tr>
+                            <th>Miejsce</th>
+                            <th>Gracz</th>
+                            <th>Wynik</th>
+                          </tr>
+                        </thead>
+                        <tbody id="statisticsRankingBody"></tbody>
+                      </table>
+                    </div>
+                  </aside>
+                </div>
+              </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+
+    <div id="summaryNotesModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="summaryNotesTitle">
+        <div class="modal-header">
+          <h3 id="summaryNotesTitle">Notatki</h3>
+          <button id="summaryNotesClose" class="icon-button" type="button" aria-label="Zamknij okno">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="admin-plan-color-actions summary-notes-color-actions" role="toolbar" aria-label="Kolory tekstu notatek do gry">
+            <button id="summaryNotesColorGold" class="secondary" type="button" data-notes-color="gold">Złoty</button>
+            <button id="summaryNotesColorGreen" class="secondary" type="button" data-notes-color="green">Zielony</button>
+            <button id="summaryNotesColorRed" class="secondary" type="button" data-notes-color="red">Czerwony</button>
+            <button id="summaryNotesColorWhite" class="secondary" type="button" data-notes-color="white">Biały</button>
+          </div>
+          <div
+            id="summaryNotesInput"
+            class="admin-textarea summary-notes-editor"
+            contenteditable="true"
+            role="textbox"
+            aria-multiline="true"
+            data-placeholder="Wpisz notatki do podsumowania gry..."
+          ></div>
+          <p id="summaryNotesStatus" class="status-text" aria-live="polite"></p>
+        </div>
+        <div class="modal-footer">
+          <button id="summaryNotesSave" class="primary" type="button">Zapisz</button>
+          <button id="summaryNotesClear" class="danger" type="button">Domyślne</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="instructionModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="instructionTitle">
+        <div class="modal-header">
+          <h3 id="instructionTitle">Instrukcja obsługi</h3>
+          <button id="instructionClose" class="icon-button" type="button" aria-label="Zamknij okno">
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <p id="instructionStatus" class="status-text">Instrukcja ładuje się automatycznie po otwarciu okna.</p>
+          <div id="instructionContent" class="modal-content" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="playerPermissionsModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="playerPermissionsTitle">
+        <div class="modal-header">
+          <h3 id="playerPermissionsTitle">Uprawnienia gracza</h3>
+          <button id="playerPermissionsClose" class="icon-button" type="button" aria-label="Zamknij okno">
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="status-text">Aktualności i Regulamin są zawsze dostępne dla każdego gracza.</p>
+          <div id="playerPermissionsList" class="permissions-list"></div>
+          <p id="playerPermissionsStatus" class="status-text" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="playerStatsYearsModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="playerStatsYearsTitle">
+        <div class="modal-header">
+          <h3 id="playerStatsYearsTitle">Lata statystyk</h3>
+          <button id="playerStatsYearsClose" class="icon-button" type="button" aria-label="Zamknij okno">
+            ×
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="status-text">Zaznacz lata, które gracz może zobaczyć w zakładce „Statystyki”.</p>
+          <div id="playerStatsYearsList" class="permissions-list"></div>
+          <p id="playerStatsYearsStatus" class="status-text" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+
+
+
+    <div id="userGameDetailsModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card game-details-modal-card" role="dialog" aria-modal="true" aria-labelledby="userGameDetailsTitle">
+        <div class="modal-header">
+          <h3 id="userGameDetailsTitle">Szczegóły gry użytkownika</h3>
+          <button id="userGameDetailsClose" class="icon-button" type="button" aria-label="Zamknij okno">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="userGameDetailsMeta" class="status-text"></p>
+          <div class="admin-table-scroll">
+            <table class="admin-data-table game-details-table">
+              <thead>
+                <tr>
+                  <th>LP</th>
+                  <th>Gracz</th>
+                  <th><button type="button" class="admin-weight-bulk-button game-entry-fee-bulk-button" data-target-modal="userGameDetailsModal">Wpisowe</button></th>
+                  <th>Rebuy/Add-on</th>
+                  <th>Wypłata</th>
+                  <th>+/-</th>
+                  <th>Punkty</th>
+                  <th>Mistrzostwo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="userGameDetailsBody"></tbody>
+            </table>
+          </div>
+          <div class="admin-table-actions">
+            <button id="userGameDetailsAddRow" class="secondary" type="button">Dodaj</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="playerUserGameDetailsModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card game-details-modal-card" role="dialog" aria-modal="true" aria-labelledby="playerUserGameDetailsTitle">
+        <div class="modal-header">
+          <h3 id="playerUserGameDetailsTitle">Szczegóły gry użytkownika</h3>
+          <button id="playerUserGameDetailsClose" class="icon-button" type="button" aria-label="Zamknij okno">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="playerUserGameDetailsMeta" class="status-text"></p>
+          <div class="admin-table-scroll">
+            <table class="admin-data-table game-details-table">
+              <thead>
+                <tr>
+                  <th>LP</th>
+                  <th>Gracz</th>
+                  <th><button type="button" class="admin-weight-bulk-button game-entry-fee-bulk-button" data-target-modal="playerUserGameDetailsModal">Wpisowe</button></th>
+                  <th>Rebuy/Add-on</th>
+                  <th>Wypłata</th>
+                  <th>+/-</th>
+                  <th>Punkty</th>
+                  <th>Mistrzostwo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="playerUserGameDetailsBody"></tbody>
+            </table>
+          </div>
+          <div class="admin-table-actions">
+            <button id="playerUserGameDetailsAddRow" class="secondary" type="button">Dodaj</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="gameDetailsModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card game-details-modal-card" role="dialog" aria-modal="true" aria-labelledby="gameDetailsTitle">
+        <div class="modal-header">
+          <h3 id="gameDetailsTitle">Szczegóły gry</h3>
+          <button id="gameDetailsClose" class="icon-button" type="button" aria-label="Zamknij okno">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="gameDetailsMeta" class="status-text"></p>
+          <div class="admin-table-scroll">
+            <table class="admin-data-table game-details-table">
+              <thead>
+                <tr>
+                  <th>LP</th>
+                  <th>Gracz</th>
+                  <th><button type="button" class="admin-weight-bulk-button game-entry-fee-bulk-button" data-target-modal="gameDetailsModal">Wpisowe</button></th>
+                  <th>Rebuy/Add-on</th>
+                  <th>Wypłata</th>
+                  <th>+/-</th>
+                  <th>Punkty</th>
+                  <th>Mistrzostwo</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="gameDetailsBody"></tbody>
+            </table>
+          </div>
+          <div class="admin-table-actions">
+            <button id="gameDetailsAddRow" class="secondary" type="button">Dodaj</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="confirmationsDetailsModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card game-details-modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmationsDetailsTitle">
+        <div class="modal-header">
+          <h3 id="confirmationsDetailsTitle">Szczegóły gry</h3>
+          <button id="confirmationsDetailsClose" class="icon-button" type="button" aria-label="Zamknij okno">×</button>
+        </div>
+        <div class="modal-body">
+          <p id="confirmationsDetailsMeta" class="status-text"></p>
+          <div class="admin-table-scroll">
+            <table class="admin-data-table confirmations-details-table">
+              <thead>
+                <tr>
+                  <th>LP</th>
+                  <th>Gracz</th>
+                  <th>Wpisowe</th>
+                  <th>Rebuy/Add-on</th>
+                  <th>Wypłata</th>
+                  <th>+/-</th>
+                  <th>Punkty</th>
+                  <th>Mistrzostwo</th>
+                </tr>
+              </thead>
+              <tbody id="confirmationsDetailsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../config/firebase-config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
