@@ -89,7 +89,7 @@ W aplikacji występują m.in. poniższe modale:
 - Zmiana sekcji w obrębie Strefy Gracza nie resetuje już autoryzacji; ponowna weryfikacja jest wymagana dopiero po utracie sesji (`sessionStorage`).
 
 ### 4.3 Zarządzanie graczami
-- Gracze są trzymani w dokumencie `app_settings/player_access` jako tablica `players`.
+- Gracze są trzymani w dokumencie `main_app_settings/player_access` jako tablica `players`.
 - Każdy gracz ma:
   - `id`, `name`, `pin`,
   - `appEnabled` (aktywny/nieaktywny),
@@ -103,7 +103,7 @@ W aplikacji występują m.in. poniższe modale:
   - zapisać zmiany do Firestore.
 
 ### 4.4 Gry (admin i user)
-Moduł gier działa w dwóch kolekcjach (`Tables`, `UserGames`) z tym samym mechanizmem:
+Moduł gier działa w dwóch kolekcjach (`main_tables`, `main_user_games`) z tym samym mechanizmem:
 - lista gier filtrowana rokiem,
 - edycja pól gry in-place (typ, data, nazwa, status zamknięcia),
 - modal szczegółów gry z tabelą graczy,
@@ -118,12 +118,14 @@ Obsługiwane akcje:
 - aktualizacja danych gracza (gracz, wpisowe, rebuy, wypłata, punkty, mistrzostwo),
 - notatki przed grą i po grze.
 
-Dodatkowa logika własności dla `UserGames` (strefa gracza):
+Dodatkowa logika własności dla `main_user_games` (strefa gracza):
 - po weryfikacji PIN `getUserGamesVerifiedPlayer()` wyznacza aktywnego właściciela,
 - lista gier gracza jest filtrowana po `createdByPlayerId === verifiedPlayer.id`,
 - lata i podsumowania są liczone wyłącznie z gier widocznych dla właściciela,
 - edycja gry/szczegółów/notatek jest dozwolona tylko, gdy `canWrite() && createdByPlayerId === verifiedPlayer.id`,
 - panel administratora `adminUserGamesTab` pozostaje bez ograniczenia właścicielskiego (pełny wgląd i edycja wszystkich wpisów).
+- Dokumenty techniczne/szablony (np. w `main_user_games`) są filtrowane po flagach (`isTemplate`, `technicalDocument`, `hiddenFromUi`), polach typu/kind/source zawierających `template`/`technical`/`system` oraz po identyfikatorach (`template*`, `_template*`, `_system*`), dlatego nie są pokazywane w widoku użytkownika.
+- Usuwanie rekordów z UI ma zabezpieczenie: aplikacja blokuje skasowanie ostatniego dokumentu z kolekcji gier i z podkolekcji `rows`, wyświetlając komunikat statusu zamiast wykonywania `delete`.
 
 ### 4.5 Potwierdzenia obecności
 - Widoki potwierdzeń łączą dane z gier admina i gier użytkowników.
@@ -131,7 +133,7 @@ Dodatkowa logika własności dla `UserGames` (strefa gracza):
 - Aplikacja synchronizuje stan „czy wszyscy potwierdzili” na podstawie listy graczy z `rows` i wpisów `confirmations`.
 
 ### 4.6 Czat
-- Kolekcja: `chat_messages`.
+- Kolekcja: `main_chat_messages`.
 - Każda wiadomość zawiera autora, treść, timestamp i datę wygaśnięcia (`expireAt`).
 - Retencja: 30 dni (`CHAT_RETENTION_DAYS = 30`).
 - Admin:
@@ -139,8 +141,8 @@ Dodatkowa logika własności dla `UserGames` (strefa gracza):
   - uruchamia cleanup wiadomości starszych niż 30 dni.
 
 ### 4.7 Aktualności i regulamin
-- Aktualności: dokument `admin_messages/admin_messages`.
-- Regulamin: dokument `app_settings/rules`.
+- Aktualności: dokument `main_admin_messages/admin_messages`.
+- Regulamin: dokument `main_app_settings/rules`.
 - Oba moduły mają live update przez `onSnapshot`.
 
 ### 4.8 Statystyki i ranking
@@ -158,10 +160,10 @@ result = championshipCount * weight1
 ```
 
 - Ranking sortowany malejąco po `resultValue`, przy remisie alfabetycznie po `playerName`.
-- Widoczność kolumn dla użytkownika per rok jest zapisywana w `admin_games_stats/<rok>.visibleColumns`.
+- Widoczność kolumn dla użytkownika per rok jest zapisywana w `main_admin_games_stats/<rok>.visibleColumns`.
 
 ### 4.9 Kalkulator (Tournament / Cash)
-Kalkulator zapisuje dane w `calculators/tournament` oraz `calculators/cash`.
+Kalkulator zapisuje dane w `main_calculators/tournament` oraz `main_calculators/cash`.
 
 #### Tournament
 - Logika Tournament (Tabela1–Tabela5) pozostała bez zmian.
@@ -260,7 +262,7 @@ Aplikacja odczytuje konfigurację z `window.firebaseConfig`:
 
 ## 7.2 Kolekcje i dokumenty
 
-### A) `app_settings`
+### A) `main_app_settings`
 1. `player_access`
 - `players: Array<Player>`
 - `updatedAt`
@@ -282,19 +284,19 @@ Aplikacja odczytuje konfigurację z `window.firebaseConfig`:
 3. (opcjonalnie) `next_game`
 - ustawienia związane z bramką PIN najbliższej gry.
 
-### B) `admin_messages`
+### B) `main_admin_messages`
 - dokument `admin_messages`:
   - `message: string`
   - `createdAt`
   - `source`
 
-### C) `chat_messages`
+### C) `main_chat_messages`
 - wiele dokumentów wiadomości:
   - `text`, `authorName`, `authorId`,
   - `createdAt`, `expireAt`,
   - `source`.
 
-### D) `Tables` (gry admina)
+### D) `main_tables` (gry admina)
 - dokument gry:
   - `gameType`, `gameDate`, `name`,
   - `isClosed`,
@@ -305,19 +307,19 @@ Aplikacja odczytuje konfigurację z `window.firebaseConfig`:
 - subkolekcja `confirmations`:
   - `playerId`, `playerName`, `confirmed`, `updatedBy`, `updatedAt`.
 
-### E) `UserGames` (gry użytkowników)
-Jak `Tables`, plus:
+### E) `main_user_games` (gry użytkowników)
+Jak `main_tables`, plus:
 - `createdByPlayerId`,
 - `createdByPlayerName`.
 
 Pola `createdByPlayerId` / `createdByPlayerName` są używane przez logikę UI do separacji danych między graczami (PIN -> właściciel gry), bez zmiany struktury dokumentów Firestore.
 
-### F) `admin_games_stats`
+### F) `main_admin_games_stats`
 - dokumenty roczne (ID = rok, np. `2026`):
   - `rows` — ręczne dane wag i korekt graczy,
   - `visibleColumns` — lista kolumn widocznych w widoku gracza.
 
-### G) `calculators`
+### G) `main_calculators`
 - `tournament` i `cash`:
   - `table1Row`, `table2Rows`, `table3Row`, `table5SplitPercents`, `eliminatedOrder`, `updatedAt`.
 
@@ -344,12 +346,12 @@ const db = admin.firestore();
 const timestamp = admin.firestore.FieldValue.serverTimestamp;
 
 async function ensureBaseDocuments() {
-  await db.collection("app_settings").doc("player_access").set({
+  await db.collection("main_app_settings").doc("player_access").set({
     players: [],
     updatedAt: timestamp()
   }, { merge: true });
 
-  await db.collection("app_settings").doc("rules").set({
+  await db.collection("main_app_settings").doc("rules").set({
     text: "",
     source: "bootstrap-script",
     createdAt: timestamp(),
@@ -363,13 +365,13 @@ async function ensureBaseDocuments() {
   }, { merge: true });
 
   const year = String(new Date().getFullYear());
-  await db.collection("admin_games_stats").doc(year).set({
+  await db.collection("main_admin_games_stats").doc(year).set({
     rows: [],
     visibleColumns: []
   }, { merge: true });
 
   for (const mode of ["tournament", "cash"]) {
-    await db.collection("calculators").doc(mode).set({
+    await db.collection("main_calculators").doc(mode).set({
       table1Row: { buyIn: "", rebuy: "" },
       table2Rows: [{ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [] }],
       table3Row: { percent: "" },
@@ -389,7 +391,7 @@ async function ensureGameWithSubcollections(collectionName, gameNamePrefix) {
     preGameNotes: "",
     postGameNotes: "",
     createdAt: timestamp(),
-    ...(collectionName === "UserGames"
+    ...(collectionName === "main_user_games"
       ? { createdByPlayerId: "system", createdByPlayerName: "System" }
       : {})
   });
@@ -415,8 +417,8 @@ async function ensureGameWithSubcollections(collectionName, gameNamePrefix) {
 
 async function main() {
   await ensureBaseDocuments();
-  await ensureGameWithSubcollections("Tables", "Gra admina");
-  await ensureGameWithSubcollections("UserGames", "Gra użytkownika");
+  await ensureGameWithSubcollections("main_tables", "Gra admina");
+  await ensureGameWithSubcollections("main_user_games", "Gra użytkownika");
   console.log("Firestore structure rebuilt successfully.");
 }
 
@@ -462,13 +464,3 @@ Ta dokumentacja opisuje **aktualny stan aplikacji** i nie zawiera historii zmian
 - W zakładce `Turniej` (admin i user) zastosowano układ bocznego panelu przycisków (`Instrukcja`, `Odśwież`) i centralny tekst `Strona w budowie`.
 - Tabele `Gracze` w `Second` używają klasy `players-table`, dzięki czemu minimalne szerokości kolumn odpowiadają konfiguracji z Main.
 - Wersja jest celowo offline: brak wywołań Firebase, brak zapisu/odczytu danych backendowych; przyciski pełnią rolę szkieletu UI.
-
-## Logowanie Firebase Auth (Main)
-- W nagłówku dodano wspólny pasek logowania `.auth-toolbar` z polami `#authEmailInput`, `#authPasswordInput` oraz przyciskami `#authLoginButton`, `#authLogoutButton`, `#authResetPasswordButton`.
-- Frontend używa Firebase Auth (compat) i funkcji:
-  - `signInWithEmailAndPassword(email, password)` dla przycisku **Zaloguj**,
-  - `signOut()` dla przycisku **Wyloguj**,
-  - `sendPasswordResetEmail(email)` dla przycisku **Reset hasła**.
-- Listener `onAuthStateChanged` odczytuje profil użytkownika z kolekcji `main_users/{uid}` i aktualizuje komunikat w `#authStatus`.
-- Po zalogowaniu aplikacja próbuje zapisać metadane sesji do `main_auth_sessions/{uid}` (`uid`, `email`, `module`, `profileCollection`, `profileExists`, `lastLoginAt`, `updatedAt`) przez `set(..., { merge: true })`.
-- Integracja jest przygotowana pod przyszłe Rules: odczyt profilu i zapis sesji są już podpięte do docelowych kolekcji, więc po zaostrzeniu reguł mechanizm będzie działał bez zmian w UI.

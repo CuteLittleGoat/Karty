@@ -10,14 +10,11 @@ const STATISTICS_PIN_STORAGE_KEY = "statisticsPinVerified";
 const STATISTICS_PLAYER_ID_STORAGE_KEY = "statisticsPlayerId";
 const PLAYER_ZONE_PIN_STORAGE_KEY = "playerZonePinVerified";
 const PLAYER_ZONE_PLAYER_ID_STORAGE_KEY = "playerZonePlayerId";
-const PLAYER_ACCESS_COLLECTION = "app_settings";
+const PLAYER_ACCESS_COLLECTION = "main_app_settings";
 const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
-const ADMIN_MESSAGES_COLLECTION = "admin_messages";
+const ADMIN_MESSAGES_COLLECTION = "main_admin_messages";
 const ADMIN_MESSAGES_DOCUMENT = "admin_messages";
-const AUTH_USERS_COLLECTION = "main_users";
-const AUTH_SESSIONS_COLLECTION = "main_auth_sessions";
-const AUTH_MODULE_KEY = "main";
 const RULES_DEFAULT_TEXT = "";
 const DEFAULT_GAME_NOTES_TEMPLATE = "Rodzaj gry:\nPrzewidywani gracze:\nStack:\nWpisowe:\nRebuy:\nAdd-on:\nBlindy:\nOrganizacja:\nPodział puli:";
 
@@ -93,12 +90,12 @@ const PLAYER_ZONE_SECTION_PERMISSION_MAP = {
   statsTab: "statsTab"
 };
 
-const CHAT_COLLECTION = "chat_messages";
+const CHAT_COLLECTION = "main_chat_messages";
 const CHAT_RETENTION_DAYS = 30;
 
-const TABLES_COLLECTION = "Tables";
-const GAMES_COLLECTION = "Tables";
-const USER_GAMES_COLLECTION = "UserGames";
+const TABLES_COLLECTION = "main_tables";
+const GAMES_COLLECTION = "main_tables";
+const USER_GAMES_COLLECTION = "main_user_games";
 const GAME_DETAILS_COLLECTION = "rows";
 const TABLES_COLLECTION_CONFIG_KEY = "tablesCollection";
 const GAMES_COLLECTION_CONFIG_KEY = "gamesCollection";
@@ -106,7 +103,7 @@ const GAME_DETAILS_COLLECTION_CONFIG_KEY = "gameDetailsCollection";
 const USER_GAMES_COLLECTION_CONFIG_KEY = "userGamesCollection";
 const TABLE_ROWS_COLLECTION = "rows";
 const GAME_CONFIRMATIONS_COLLECTION = "confirmations";
-const ADMIN_GAMES_STATS_COLLECTION = "admin_games_stats";
+const ADMIN_GAMES_STATS_COLLECTION = "main_admin_games_stats";
 const DEFAULT_TABLE_META = {
   gameType: "rodzaj gry",
   gameDate: "data"
@@ -693,121 +690,6 @@ const getFirebaseApp = () => {
   return window.firebase;
 };
 
-const initAuthControls = () => {
-  const emailInput = document.querySelector("#authEmailInput");
-  const passwordInput = document.querySelector("#authPasswordInput");
-  const loginButton = document.querySelector("#authLoginButton");
-  const logoutButton = document.querySelector("#authLogoutButton");
-  const resetButton = document.querySelector("#authResetPasswordButton");
-  const status = document.querySelector("#authStatus");
-
-  if (!emailInput || !passwordInput || !loginButton || !logoutButton || !resetButton || !status) {
-    return;
-  }
-
-  const firebaseApp = getFirebaseApp();
-  if (!firebaseApp || !firebaseApp.auth) {
-    status.textContent = "Logowanie niedostępne: brak konfiguracji Firebase Auth.";
-    loginButton.disabled = true;
-    logoutButton.disabled = true;
-    resetButton.disabled = true;
-    return;
-  }
-
-  const auth = firebaseApp.auth();
-  const db = firebaseApp.firestore();
-
-  const setStatus = (message) => {
-    status.textContent = message;
-  };
-
-  const persistSessionMetadata = async (user, profile) => {
-    if (!user || !db) {
-      return;
-    }
-
-    try {
-      await db.collection(AUTH_SESSIONS_COLLECTION).doc(user.uid).set(
-        {
-          uid: user.uid,
-          email: user.email ?? "",
-          module: AUTH_MODULE_KEY,
-          profileCollection: AUTH_USERS_COLLECTION,
-          profileExists: Boolean(profile),
-          lastLoginAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
-          updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
-        },
-        { merge: true }
-      );
-    } catch (error) {
-      setStatus("Zalogowano, ale zapis sesji do Firestore jest obecnie zablokowany przez Rules.");
-    }
-  };
-
-  auth.onAuthStateChanged(async (user) => {
-    if (!user) {
-      logoutButton.disabled = true;
-      setStatus("Nie zalogowano.");
-      return;
-    }
-
-    logoutButton.disabled = false;
-
-    try {
-      const profileSnapshot = await db.collection(AUTH_USERS_COLLECTION).doc(user.uid).get();
-      const profile = profileSnapshot.exists ? profileSnapshot.data() : null;
-      const profileLabel = profile ? "Profil modułu Main znaleziony." : "Brak profilu modułu Main (main_users/{uid}).";
-      setStatus(`Zalogowano: ${user.email || user.uid}. ${profileLabel}`);
-      await persistSessionMetadata(user, profile);
-    } catch (error) {
-      setStatus(`Zalogowano: ${user.email || user.uid}. Nie udało się odczytać kolekcji ${AUTH_USERS_COLLECTION}.`);
-    }
-  });
-
-  loginButton.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
-    const password = passwordInput.value;
-
-    if (!email || !password) {
-      setStatus("Podaj e-mail i hasło.");
-      return;
-    }
-
-    setStatus("Logowanie...");
-
-    try {
-      await auth.signInWithEmailAndPassword(email, password);
-      passwordInput.value = "";
-    } catch (error) {
-      setStatus(`Nie udało się zalogować: ${error?.message || "nieznany błąd"}`);
-    }
-  });
-
-  logoutButton.addEventListener("click", async () => {
-    try {
-      await auth.signOut();
-      setStatus("Wylogowano.");
-    } catch (error) {
-      setStatus(`Nie udało się wylogować: ${error?.message || "nieznany błąd"}`);
-    }
-  });
-
-  resetButton.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
-    if (!email) {
-      setStatus("Podaj e-mail, aby wysłać reset hasła.");
-      return;
-    }
-
-    try {
-      await auth.sendPasswordResetEmail(email);
-      setStatus(`Wysłano link resetu hasła na adres: ${email}.`);
-    } catch (error) {
-      setStatus(`Nie udało się wysłać resetu hasła: ${error?.message || "nieznany błąd"}`);
-    }
-  });
-};
-
 const parseDefaultTableNumber = (name) => {
   if (!name || typeof name !== "string") {
     return null;
@@ -913,6 +795,39 @@ const deleteGameCompletely = async ({ db, collectionName, gameId }) => {
   await gameRef.delete();
 };
 
+const isTechnicalTemplateDocument = (doc) => {
+  const data = doc && typeof doc === "object" ? doc : {};
+  const id = typeof data.id === "string" ? data.id.toLowerCase() : "";
+  const markerFields = [data.type, data.kind, data.source, data.documentType, data.templateType]
+    .filter((value) => typeof value === "string")
+    .map((value) => value.toLowerCase());
+
+  if (Boolean(data.isTemplate) || Boolean(data.technicalDocument) || Boolean(data.hiddenFromUi)) {
+    return true;
+  }
+
+  if (id.startsWith("template") || id.startsWith("_template") || id.startsWith("_system")) {
+    return true;
+  }
+
+  return markerFields.some((value) => value.includes("template") || value.includes("technical") || value.includes("system"));
+};
+
+const filterTechnicalTemplateDocuments = (items) => {
+  return items.filter((item) => !isTechnicalTemplateDocument(item));
+};
+
+const ensureCollectionHasMoreThanOneDocument = async ({ collectionRef, statusNode, blockedMessage }) => {
+  const snapshot = await collectionRef.limit(2).get();
+  if (snapshot.size <= 1) {
+    if (statusNode) {
+      statusNode.textContent = blockedMessage;
+    }
+    return false;
+  }
+  return true;
+};
+
 const normalizeNumber = (value) => {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : 0;
@@ -971,6 +886,7 @@ const getActiveGamesForConfirmations = async (db, gamesCollectionName, source = 
   const toSortedActiveGames = (snapshot) => {
     return snapshot.docs
       .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((game) => !isTechnicalTemplateDocument(game))
       .filter((game) => !Boolean(game.isClosed))
       .sort(compareByGameDateAsc);
   };
@@ -2515,6 +2431,14 @@ const initUserGamesManager = ({
       deleteButton.disabled = !writeEnabled;
       deleteButton.addEventListener("click", async () => {
         if (!hasWriteAccessToGame(game)) return;
+        const canDelete = await ensureCollectionHasMoreThanOneDocument({
+          collectionRef: db.collection(gamesCollectionName),
+          statusNode: status,
+          blockedMessage: "Nie można usunąć ostatniej gry z tej kolekcji."
+        });
+        if (!canDelete) {
+          return;
+        }
         const gameRef = db.collection(gamesCollectionName).doc(game.id);
         const detailsSnapshot = await gameRef.collection(gameDetailsCollectionName).get();
         const confirmationsSnapshot = await gameRef.collection(GAME_CONFIRMATIONS_COLLECTION).get();
@@ -2647,7 +2571,17 @@ const initUserGamesManager = ({
       deleteButton.disabled = !writeEnabled;
       deleteButton.addEventListener("click", () => {
         if (!hasWriteAccessToGame(game)) return;
-        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).delete();
+        void (async () => {
+          const canDelete = await ensureCollectionHasMoreThanOneDocument({
+            collectionRef: db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName),
+            statusNode: status,
+            blockedMessage: "Nie można usunąć ostatniego rekordu graczy w tej grze."
+          });
+          if (!canDelete) {
+            return;
+          }
+          await db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).delete();
+        })();
       });
       deleteCell.appendChild(deleteButton);
 
@@ -2680,7 +2614,7 @@ const initUserGamesManager = ({
   });
 
   db.collection(gamesCollectionName).orderBy("createdAt", "asc").onSnapshot((snapshot) => {
-    state.games = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    state.games = filterTechnicalTemplateDocuments(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     state.games.forEach((game) => {
       void clearLegacyNotesField({ firebaseApp, db, collectionName: gamesCollectionName, game });
     });
@@ -3309,7 +3243,7 @@ const initAdminCalculator = () => {
   }
 
   const firebaseApp = getFirebaseApp();
-  const CALCULATOR_COLLECTION = "calculators";
+  const CALCULATOR_COLLECTION = "main_calculators";
 
   const createInitialState = () => ({
     table1Row: { id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" },
@@ -5697,7 +5631,7 @@ const initStatisticsView = ({
   });
 
   db.collection(gamesCollectionName).orderBy("createdAt", "asc").onSnapshot((snapshot) => {
-    state.games = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    state.games = filterTechnicalTemplateDocuments(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     state.games.forEach((game) => {
       void clearLegacyNotesField({ firebaseApp, db, collectionName: gamesCollectionName, game });
     });
@@ -6259,6 +6193,14 @@ const initAdminGames = () => {
       deleteButton.className = "danger";
       deleteButton.textContent = "Usuń";
       deleteButton.addEventListener("click", async () => {
+        const canDelete = await ensureCollectionHasMoreThanOneDocument({
+          collectionRef: db.collection(gamesCollectionName),
+          statusNode: status,
+          blockedMessage: "Nie można usunąć ostatniej gry z tej kolekcji."
+        });
+        if (!canDelete) {
+          return;
+        }
         const gameRef = db.collection(gamesCollectionName).doc(game.id);
         const detailsSnapshot = await gameRef.collection(gameDetailsCollectionName).get();
         const confirmationsSnapshot = await gameRef.collection(GAME_CONFIRMATIONS_COLLECTION).get();
@@ -6625,7 +6567,17 @@ const initAdminGames = () => {
       deleteButton.className = "danger admin-row-delete";
       deleteButton.textContent = "Usuń";
       deleteButton.addEventListener("click", () => {
-        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).delete();
+        void (async () => {
+          const canDelete = await ensureCollectionHasMoreThanOneDocument({
+            collectionRef: db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName),
+            statusNode: status,
+            blockedMessage: "Nie można usunąć ostatniego rekordu graczy w tej grze."
+          });
+          if (!canDelete) {
+            return;
+          }
+          await db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).delete();
+        })();
       });
       deleteCell.appendChild(deleteButton);
 
@@ -6719,7 +6671,7 @@ const initAdminGames = () => {
   db.collection(gamesCollectionName)
     .orderBy("createdAt", "asc")
     .onSnapshot((snapshot) => {
-      state.games = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      state.games = filterTechnicalTemplateDocuments(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
       state.games.forEach((game) => {
         void clearLegacyNotesField({ firebaseApp, db, collectionName: gamesCollectionName, game });
       });
@@ -7097,7 +7049,6 @@ const bootstrap = async () => {
   initLatestMessage();
   initRulesDisplay();
   initInstructionModal();
-  initAuthControls();
 };
 
 void bootstrap();

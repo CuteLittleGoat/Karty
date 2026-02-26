@@ -112,8 +112,6 @@
 
 ## Pasek logowania w nagłówku (Main + Second)
 - W prawym górnym obszarze nagłówka działa kontener `.header-controls` ustawiony pionowo (`flex-direction: column`) z wyrównaniem do prawej (`align-items: flex-end`).
-- Główny blok logowania to `.auth-toolbar`: półprzezroczyste ciemne tło, obramowanie `1px` w kolorze `var(--border2)`, promień `var(--radius-md)`, padding `12px`.
-- Pole `E-mail` i `Hasło` korzystają z układu `.auth-field` (etykieta nad inputem, minimalna szerokość 180px).
-- Trzy przyciski (`Zaloguj`, `Wyloguj`, `Reset hasła`) są w grupie `.auth-actions` i używają istniejących styli przycisków `primary`/`secondary`.
-- Pod przyciskami wyświetlany jest status `#authStatus` na pełnej szerokości paska (`flex: 1 1 100%`).
-- Dla szerokości mobilnych (`max-width: 860px`) kontener rozciąga się na 100%, a pola logowania przechodzą na pełną szerokość, aby zachować czytelność i wygodę klikania.
+- Panel logowania (E-mail/Hasło + przyciski) został usunięty z nagłówków modułów Main i Second.
+- W nagłówkach pozostają wyłącznie kontrolki administracyjne (`Instrukcja`) w kontenerze `.header-controls`.
+- Dla szerokości mobilnych (`max-width: 860px`) kontener `.header-controls` rozciąga się na 100% i utrzymuje wyrównanie kontrolek administracyjnych.
