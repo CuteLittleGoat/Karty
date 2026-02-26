@@ -62,6 +62,118 @@ const isAdminPasswordValid = async (candidatePassword, storedHash) => {
   return sha256Hex === storedHash.toLowerCase();
 };
 
+const requestAdminPassword = () => new Promise((resolve) => {
+  const overlay = document.createElement("div");
+  overlay.style.position = "fixed";
+  overlay.style.inset = "0";
+  overlay.style.background = "rgba(4, 9, 22, 0.82)";
+  overlay.style.display = "flex";
+  overlay.style.alignItems = "center";
+  overlay.style.justifyContent = "center";
+  overlay.style.padding = "20px";
+  overlay.style.zIndex = "9999";
+
+  const dialog = document.createElement("div");
+  dialog.style.width = "min(460px, 100%)";
+  dialog.style.background = "#1f2430";
+  dialog.style.border = "1px solid rgba(255, 255, 255, 0.16)";
+  dialog.style.borderRadius = "16px";
+  dialog.style.padding = "20px";
+  dialog.style.boxSizing = "border-box";
+
+  const title = document.createElement("h2");
+  title.textContent = "Tryb administratora";
+  title.style.margin = "0 0 12px";
+  title.style.color = "#ffffff";
+  title.style.fontSize = "1.2rem";
+
+  const description = document.createElement("p");
+  description.textContent = "Podaj hasło administratora, aby otworzyć panel.";
+  description.style.margin = "0 0 14px";
+  description.style.color = "rgba(255, 255, 255, 0.84)";
+
+  const input = document.createElement("input");
+  input.type = "password";
+  input.placeholder = "Hasło administratora";
+  input.autocomplete = "current-password";
+  input.dataset.focusTarget = "true";
+  input.dataset.section = "admin-auth";
+  input.dataset.columnKey = "password";
+  input.style.width = "100%";
+  input.style.padding = "11px 12px";
+  input.style.borderRadius = "10px";
+  input.style.border = "1px solid rgba(255, 255, 255, 0.22)";
+  input.style.background = "rgba(8, 12, 22, 0.88)";
+  input.style.color = "#ffffff";
+  input.style.fontSize = "1rem";
+  input.style.boxSizing = "border-box";
+
+  const errorText = document.createElement("p");
+  errorText.textContent = "";
+  errorText.style.margin = "10px 0 0";
+  errorText.style.minHeight = "1.2em";
+  errorText.style.color = "#ff8585";
+
+  const actions = document.createElement("div");
+  actions.style.display = "flex";
+  actions.style.justifyContent = "flex-end";
+  actions.style.gap = "10px";
+  actions.style.marginTop = "18px";
+
+  const cancelButton = document.createElement("button");
+  cancelButton.type = "button";
+  cancelButton.textContent = "Anuluj";
+  cancelButton.style.padding = "9px 14px";
+
+  const submitButton = document.createElement("button");
+  submitButton.type = "button";
+  submitButton.textContent = "Zaloguj";
+  submitButton.style.padding = "9px 14px";
+
+  const cleanup = (value) => {
+    document.removeEventListener("keydown", onEscape);
+    overlay.remove();
+    resolve(value);
+  };
+
+  const onEscape = (event) => {
+    if (event.key === "Escape") {
+      cleanup(null);
+    }
+  };
+
+  cancelButton.addEventListener("click", () => cleanup(null));
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) {
+      cleanup(null);
+    }
+  });
+
+  submitButton.addEventListener("click", () => {
+    const value = input.value.trim();
+    if (!value) {
+      errorText.textContent = "Pole hasła nie może być puste.";
+      input.focus();
+      return;
+    }
+    cleanup(value);
+  });
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      submitButton.click();
+    }
+  });
+
+  actions.append(cancelButton, submitButton);
+  dialog.append(title, description, input, errorText, actions);
+  overlay.appendChild(dialog);
+  document.body.appendChild(overlay);
+  document.addEventListener("keydown", onEscape);
+  input.focus();
+});
+
 const resolveAdminMode = async () => {
   if (!shouldRequestAdminAccess()) {
     return false;
@@ -71,12 +183,22 @@ const resolveAdminMode = async () => {
   try {
     storedHash = await getAdminPasswordHash();
   } catch (error) {
-    window.alert("Nie udało się odczytać hasła administratora. Otwieram widok użytkownika.");
-    return false;
+    const fallbackCredential = typeof window.firebaseConfig?.adminPasswordHash === "string"
+      ? window.firebaseConfig.adminPasswordHash.trim()
+      : "";
+    const fallbackPassword = typeof window.firebaseConfig?.adminPassword === "string"
+      ? window.firebaseConfig.adminPassword.trim()
+      : "";
+
+    storedHash = fallbackCredential || fallbackPassword;
+    if (!storedHash) {
+      window.alert("Nie udało się odczytać hasła administratora. Otwieram widok użytkownika.");
+      return false;
+    }
   }
 
   while (true) {
-    const candidatePassword = window.prompt("Podaj hasło administratora");
+    const candidatePassword = await requestAdminPassword();
     if (candidatePassword === null) {
       return false;
     }
