@@ -10,6 +10,22 @@
 > Są tam dokumenty "seed-player" i "seed-admin". Napisz mi jak odtworzyć "main_user" zgodnie z tym co było przed przypadkowym skasowaniem.
 > Przeczytaj też inne analizy i dokumentację.”
 
+## Prompt użytkownika (uzupełnienie 2)
+> „Uzupełnij analizę Analizy/Odtworzenie_main_users_firestore.md Dopisz mi podpunkt opisujący krok po kroku jakie field tworzyć w dokumencie seed-admin i seed-player.
+>
+> Przykład:
+> createdAt = timestamp
+> 	data
+> 	godzina
+> role = string
+> 	admin
+> userGamesScope = string; read_all
+> permissions = map
+> 	adminGamesTab = boolean
+> 	chatTab = boolean
+>
+> Ma to być drzewko w takiej kolejności jak mam uzupełniać pola od góry do dołu dla obu rodzajów dokumentów w kolekcji.”
+
 ---
 
 ## 1) Najważniejsza korekta względem poprzedniej wersji analizy
@@ -136,6 +152,97 @@ Klucze boolean:
 ```
 
 > Jeśli chcesz zachować absolutnie identyczny pattern jak na screenach `second_users`, trzymaj nazwy i typy pól dokładnie jak wyżej, zmieniając wyłącznie prefiks modułu (`main` zamiast `second`) w `moduleAccess` i semantykę displayName/email.
+
+## 4.3 Drzewko kolejności uzupełniania pól (od góry do dołu)
+
+Poniżej masz dokładnie tę samą kolejność, w jakiej warto klikać i uzupełniać pola w Firebase Console.
+
+### `main_users/seed-admin`
+
+```text
+createdAt = timestamp
+  data
+  godzina
+createdBy = null
+displayName = string
+  MAIN Admin
+email = string
+  main.admin@example.com
+isActive = boolean
+  true
+lastLoginAt = null
+moduleAccess = map
+  main = boolean
+    true
+permissions = map
+  adminGamesTab = boolean
+    true
+  chatTab = boolean
+    true
+  newsTab = boolean
+    true
+  playersTab = boolean
+    true
+  statsTab = boolean
+    true
+  tablesTab = boolean
+    true
+  tournamentTab = boolean
+    true
+  userGamesTab = boolean
+    true
+role = string
+  admin
+updatedAt = timestamp
+  data
+  godzina
+userGamesScope = string
+  read_all
+```
+
+### `main_users/seed-player`
+
+```text
+createdAt = timestamp
+  data
+  godzina
+createdBy = string
+  seed-admin
+displayName = string
+  MAIN Player
+email = string
+  main.player@example.com
+isActive = boolean
+  true
+lastLoginAt = null
+moduleAccess = map
+  main = boolean
+    true
+permissions = map
+  adminGamesTab = boolean
+    false
+  chatTab = boolean
+    true
+  newsTab = boolean
+    true
+  playersTab = boolean
+    false
+  statsTab = boolean
+    true
+  tablesTab = boolean
+    false
+  tournamentTab = boolean
+    true
+  userGamesTab = boolean
+    true
+role = string
+  player
+updatedAt = timestamp
+  data
+  godzina
+userGamesScope = string
+  own_only
+```
 
 ---
 
