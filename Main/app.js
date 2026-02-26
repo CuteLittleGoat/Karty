@@ -13,7 +13,10 @@ const PLAYER_ZONE_PLAYER_ID_STORAGE_KEY = "playerZonePlayerId";
 const PLAYER_ACCESS_COLLECTION = "main_app_settings";
 const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
+const PLAYER_ACCESS_COLLECTION_CONFIG_KEY = "playerAccessCollection";
+const RULES_COLLECTION_CONFIG_KEY = "rulesCollection";
 const ADMIN_MESSAGES_COLLECTION = "main_admin_messages";
+const ADMIN_MESSAGES_COLLECTION_CONFIG_KEY = "adminMessagesCollection";
 const ADMIN_MESSAGES_DOCUMENT = "admin_messages";
 const RULES_DEFAULT_TEXT = "";
 const DEFAULT_GAME_NOTES_TEMPLATE = "Rodzaj gry:\nPrzewidywani gracze:\nStack:\nWpisowe:\nRebuy:\nAdd-on:\nBlindy:\nOrganizacja:\nPodział puli:";
@@ -91,6 +94,7 @@ const PLAYER_ZONE_SECTION_PERMISSION_MAP = {
 };
 
 const CHAT_COLLECTION = "main_chat_messages";
+const CHAT_COLLECTION_CONFIG_KEY = "chatCollection";
 const CHAT_RETENTION_DAYS = 30;
 
 const TABLES_COLLECTION = "main_tables";
@@ -104,6 +108,7 @@ const USER_GAMES_COLLECTION_CONFIG_KEY = "userGamesCollection";
 const TABLE_ROWS_COLLECTION = "rows";
 const GAME_CONFIRMATIONS_COLLECTION = "confirmations";
 const ADMIN_GAMES_STATS_COLLECTION = "main_admin_games_stats";
+const ADMIN_GAMES_STATS_COLLECTION_CONFIG_KEY = "adminGamesStatsCollection";
 const DEFAULT_TABLE_META = {
   gameType: "rodzaj gry",
   gameDate: "data"
@@ -879,6 +884,39 @@ const getUserGamesCollectionName = () => {
   return configured || USER_GAMES_COLLECTION;
 };
 
+const getCollectionNameFromConfig = (configKey, fallbackName) => {
+  const configured =
+    window.firebaseConfig && typeof window.firebaseConfig[configKey] === "string"
+      ? window.firebaseConfig[configKey].trim()
+      : "";
+  return configured || fallbackName;
+};
+
+const getPlayerAccessCollectionName = () => getCollectionNameFromConfig(
+  PLAYER_ACCESS_COLLECTION_CONFIG_KEY,
+  PLAYER_ACCESS_COLLECTION
+);
+
+const getRulesCollectionName = () => getCollectionNameFromConfig(
+  RULES_COLLECTION_CONFIG_KEY,
+  getPlayerAccessCollectionName()
+);
+
+const getAdminMessagesCollectionName = () => getCollectionNameFromConfig(
+  ADMIN_MESSAGES_COLLECTION_CONFIG_KEY,
+  ADMIN_MESSAGES_COLLECTION
+);
+
+const getChatCollectionName = () => getCollectionNameFromConfig(
+  CHAT_COLLECTION_CONFIG_KEY,
+  CHAT_COLLECTION
+);
+
+const getAdminGamesStatsCollectionName = () => getCollectionNameFromConfig(
+  ADMIN_GAMES_STATS_COLLECTION_CONFIG_KEY,
+  ADMIN_GAMES_STATS_COLLECTION
+);
+
 const getActiveGamesForConfirmations = async (db, gamesCollectionName, source = "default") => {
   const queryOptions = source === "default" ? undefined : { source };
   const collectionRef = db.collection(gamesCollectionName);
@@ -1481,7 +1519,7 @@ const initChatTab = () => {
 
   const startSubscription = () => {
     stopSubscription();
-    chatState.unsubscribe = db.collection(CHAT_COLLECTION)
+    chatState.unsubscribe = db.collection(getChatCollectionName())
       .orderBy("createdAt", "asc")
       .limit(200)
       .onSnapshot(
@@ -1548,7 +1586,7 @@ const initChatTab = () => {
     messageStatus.textContent = "Wysyłanie...";
 
     try {
-      await db.collection(CHAT_COLLECTION).add({
+      await db.collection(getChatCollectionName()).add({
         text,
         authorName: player.name || "Gracz",
         authorId: player.id,
@@ -2605,7 +2643,7 @@ const initUserGamesManager = ({
     renderSummaries();
   };
 
-  db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
+  db.collection(getPlayerAccessCollectionName()).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
     const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
     state.playerOptions = players.map((player) => (typeof player.name === "string" ? player.name.trim() : "")).filter(Boolean);
     if (state.activeGameIdInModal) {
@@ -3244,6 +3282,7 @@ const initAdminCalculator = () => {
 
   const firebaseApp = getFirebaseApp();
   const CALCULATOR_COLLECTION = "main_calculators";
+  const CALCULATOR_COLLECTION_CONFIG_KEY = "calculatorCollection";
 
   const createInitialState = () => ({
     table1Row: { id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" },
@@ -3271,7 +3310,7 @@ const initAdminCalculator = () => {
   };
 
   const getModeState = () => (state.mode === "cash" ? state.cash : state.tournament);
-  const getCalculatorDocRef = (mode) => firebaseApp.firestore().collection(CALCULATOR_COLLECTION).doc(mode);
+  const getCalculatorDocRef = (mode) => firebaseApp.firestore().collection(getCollectionNameFromConfig(CALCULATOR_COLLECTION_CONFIG_KEY, CALCULATOR_COLLECTION)).doc(mode);
   const sanitizeInteger = (value) => String(value ?? "").replace(/[^0-9]/g, "");
   const sanitizeSignedInteger = (value) => {
     const normalized = String(value ?? "").replace(/\s+/g, "");
@@ -4499,7 +4538,7 @@ const initAdminCalculator = () => {
     });
   });
 
-  firebaseApp.firestore().collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
+  firebaseApp.firestore().collection(getPlayerAccessCollectionName()).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
     const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
     state.playerOptions = players
       .map((player) => (typeof player?.name === "string" ? player.name.trim() : ""))
@@ -4606,7 +4645,7 @@ const initAdminPlayers = () => {
   };
 
   const refreshPlayersData = async () => {
-    const snapshot = await db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).get({
+    const snapshot = await db.collection(getPlayerAccessCollectionName()).doc(PLAYER_ACCESS_DOCUMENT).get({
       source: "server"
     });
     const data = snapshot.data();
@@ -4626,7 +4665,7 @@ const initAdminPlayers = () => {
 
   const savePlayers = async () => {
     try {
-      await db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).set({
+      await db.collection(getPlayerAccessCollectionName()).doc(PLAYER_ACCESS_DOCUMENT).set({
         players: adminPlayersState.players,
         updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
       });
@@ -4989,7 +5028,7 @@ const initAdminPlayers = () => {
     }
   });
 
-  db.collection(PLAYER_ACCESS_COLLECTION)
+  db.collection(getPlayerAccessCollectionName())
     .doc(PLAYER_ACCESS_DOCUMENT)
     .onSnapshot(
       (snapshot) => {
@@ -5050,7 +5089,7 @@ const initAdminMessaging = () => {
   const db = firebaseApp.firestore();
 
   const refreshNewsData = async () => {
-    await db.collection(ADMIN_MESSAGES_COLLECTION).doc(ADMIN_MESSAGES_DOCUMENT).get({ source: "server" });
+    await db.collection(getAdminMessagesCollectionName()).doc(ADMIN_MESSAGES_DOCUMENT).get({ source: "server" });
   };
 
   registerAdminRefreshHandler("adminNewsTab", refreshNewsData);
@@ -5067,7 +5106,7 @@ const initAdminMessaging = () => {
     status.textContent = "Wysyłanie wiadomości...";
 
     try {
-      await db.collection(ADMIN_MESSAGES_COLLECTION).doc(ADMIN_MESSAGES_DOCUMENT).set({
+      await db.collection(getAdminMessagesCollectionName()).doc(ADMIN_MESSAGES_DOCUMENT).set({
         message,
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
         source: "web-admin"
@@ -5134,7 +5173,7 @@ const initAdminChat = () => {
         deleteButton.disabled = true;
         status.textContent = "Usuwanie wiadomości...";
         try {
-          await db.collection(CHAT_COLLECTION).doc(doc.id).delete();
+          await db.collection(getChatCollectionName()).doc(doc.id).delete();
           status.textContent = "Wiadomość usunięta.";
         } catch (error) {
           deleteButton.disabled = false;
@@ -5151,7 +5190,7 @@ const initAdminChat = () => {
   };
 
   const refreshChatData = async () => {
-    await db.collection(CHAT_COLLECTION).orderBy("createdAt", "asc").limit(200).get({ source: "server" });
+    await db.collection(getChatCollectionName()).orderBy("createdAt", "asc").limit(200).get({ source: "server" });
   };
 
   registerAdminRefreshHandler("adminChatTab", refreshChatData);
@@ -5160,7 +5199,7 @@ const initAdminChat = () => {
     chatState.adminUnsubscribe();
   }
 
-  chatState.adminUnsubscribe = db.collection(CHAT_COLLECTION)
+  chatState.adminUnsubscribe = db.collection(getChatCollectionName())
     .orderBy("createdAt", "asc")
     .limit(200)
     .onSnapshot(
@@ -5180,7 +5219,7 @@ const initAdminChat = () => {
     try {
       const now = firebaseApp.firestore.Timestamp.now();
       while (true) {
-        const expiredSnapshot = await db.collection(CHAT_COLLECTION)
+        const expiredSnapshot = await db.collection(getChatCollectionName())
           .where("expireAt", "<=", now)
           .limit(200)
           .get();
@@ -5283,7 +5322,7 @@ const initStatisticsView = ({
       }))
       .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"));
 
-    return db.collection(ADMIN_GAMES_STATS_COLLECTION).doc(yearKey).set({
+    return db.collection(getAdminGamesStatsCollectionName()).doc(yearKey).set({
       rows: serializedRows,
       visibleColumns: getVisibleColumnsForYear(year)
     }, { merge: true });
@@ -5584,7 +5623,7 @@ const initStatisticsView = ({
     renderStats();
   };
 
-  db.collection(ADMIN_GAMES_STATS_COLLECTION).onSnapshot((snapshot) => {
+  db.collection(getAdminGamesStatsCollectionName()).onSnapshot((snapshot) => {
     state.manualStatsByYear.clear();
     state.visibleColumnsByYear.clear();
     const missingVisibilityConfigYears = [];
@@ -5617,7 +5656,7 @@ const initStatisticsView = ({
     });
 
     if (missingVisibilityConfigYears.length) {
-      Promise.allSettled(missingVisibilityConfigYears.map((yearKey) => db.collection(ADMIN_GAMES_STATS_COLLECTION).doc(yearKey).set({
+      Promise.allSettled(missingVisibilityConfigYears.map((yearKey) => db.collection(getAdminGamesStatsCollectionName()).doc(yearKey).set({
         visibleColumns: DEFAULT_VISIBLE_STATS_COLUMNS
       }, { merge: true }))).then((results) => {
         const hasRejected = results.some((result) => result.status === "rejected");
@@ -5987,7 +6026,7 @@ const initAdminGames = () => {
     if (!year) {
       return Promise.resolve();
     }
-    return db.collection(ADMIN_GAMES_STATS_COLLECTION).doc(String(year)).set({ rows: serializeManualStats(year) }, { merge: true });
+    return db.collection(getAdminGamesStatsCollectionName()).doc(String(year)).set({ rows: serializeManualStats(year) }, { merge: true });
   };
 
   const getPlayersStatistics = () => {
@@ -6617,7 +6656,7 @@ const initAdminGames = () => {
     renderStatsTable();
   };
 
-  db.collection(ADMIN_GAMES_STATS_COLLECTION).onSnapshot((snapshot) => {
+  db.collection(getAdminGamesStatsCollectionName()).onSnapshot((snapshot) => {
     state.manualStatsByYear.clear();
     snapshot.forEach((doc) => {
       const yearKey = String(doc.id);
@@ -6658,7 +6697,7 @@ const initAdminGames = () => {
     });
   });
 
-  db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
+  db.collection(getPlayerAccessCollectionName()).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
     const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
     state.playerOptions = players
       .map((player) => (typeof player.name === "string" ? player.name.trim() : ""))
@@ -6824,7 +6863,7 @@ const initLatestMessage = () => {
 
   const db = firebaseApp.firestore();
 
-  db.collection(ADMIN_MESSAGES_COLLECTION)
+  db.collection(getAdminMessagesCollectionName())
     .doc(ADMIN_MESSAGES_DOCUMENT)
     .onSnapshot(
       (snapshot) => {
@@ -6866,7 +6905,7 @@ const initAdminRules = () => {
   }
 
   const db = firebaseApp.firestore();
-  const rulesDocRef = db.collection(PLAYER_ACCESS_COLLECTION).doc(RULES_DOCUMENT);
+  const rulesDocRef = db.collection(getRulesCollectionName()).doc(RULES_DOCUMENT);
   let isSaving = false;
 
   registerAdminRefreshHandler("adminRulesTab", async () => {
@@ -6928,7 +6967,7 @@ const initRulesDisplay = () => {
   }
 
   firebaseApp.firestore()
-    .collection(PLAYER_ACCESS_COLLECTION)
+    .collection(getRulesCollectionName())
     .doc(RULES_DOCUMENT)
     .onSnapshot(
       (snapshot) => {

@@ -258,7 +258,8 @@ Styl wizualny to ciemny motyw „noir + gold + neon”, z kartami, delikatnym gr
 ## 7.1 Konfiguracja projektu
 Aplikacja odczytuje konfigurację z `window.firebaseConfig`:
 - `apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId`, `appId`,
-- nadpisywalne nazwy kolekcji: `tablesCollection`, `gamesCollection`, `gameDetailsCollection`, `userGamesCollection`.
+- nadpisywalne nazwy kolekcji Main: `tablesCollection`, `gamesCollection`, `gameDetailsCollection`, `userGamesCollection`, `playerAccessCollection`, `rulesCollection`, `adminMessagesCollection`, `chatCollection`, `adminGamesStatsCollection`, `calculatorCollection`,
+- przygotowane klucze kolekcji dla modułu Second: `secondTablesCollection`, `secondGamesCollection`, `secondGameDetailsCollection`, `secondUserGamesCollection`, `secondPlayerAccessCollection`, `secondRulesCollection`, `secondAdminMessagesCollection`, `secondChatCollection`, `secondAdminGamesStatsCollection`, `secondCalculatorCollection`.
 
 ## 7.2 Kolekcje i dokumenty
 
