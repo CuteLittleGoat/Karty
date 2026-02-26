@@ -22,7 +22,7 @@ Całość działa po stronie przeglądarki i komunikuje się bezpośrednio z Fir
 
 ### 3.1 Panel administratora (zakładki)
 Panel admina zawiera zakładki:
-1. **Aktualności** (`adminNewsTab`) — edycja wiadomości globalnej (`adminMessageInput`, `adminMessageSend`); pole `adminMessageInput` ma wysokość 50 linii (`rows="50"`).
+1. **Aktualności** (`adminNewsTab`) — edycja wiadomości globalnej (`adminMessageInput`, `adminMessageSend`); pole `adminMessageInput` ma wysokość 25 linii (`rows="25"`).
 2. **Czat** (`adminChatTab`) — moderacja czatu (`adminChatCleanup`, `adminChatList`).
 3. **Regulamin** (`adminRulesTab`) — edycja treści regulaminu (`adminRulesInput`, `adminRulesSave`); pole `adminRulesInput` ma wysokość 50 linii (`rows="50"`).
 4. **Gracze** (`adminPlayersTab`) — dodawanie/edycja/usuwanie graczy i PIN-ów (`adminPlayersBody`, `adminAddPlayer`).
@@ -36,7 +36,7 @@ Panel admina zawiera zakładki:
 Dodatkowo globalny przycisk odświeżania panelu: `adminPanelRefresh`.
 
 ### 3.2 Strefa gracza
-Widok użytkownika ma 3 zakładki główne: `updatesTab` (Aktualności), `rulesTab` (Regulamin) i `playerZoneTab` (Strefa Gracza). W `updatesTab` pole `latestMessageOutput` ma wysokość 50 linii (`rows="50"`), a w `rulesTab` pole `rulesOutput` także ma 50 linii (`rows="50"`).
+Widok użytkownika ma 3 zakładki główne: `updatesTab` (Aktualności), `rulesTab` (Regulamin) i `playerZoneTab` (Strefa Gracza). W `updatesTab` pole `latestMessageOutput` ma wysokość 25 linii (`rows="25"`), a w `rulesTab` pole `rulesOutput` ma 50 linii (`rows="50"`).
 
 W `playerZoneTab` działa jedna bramka PIN (`playerZonePinInput`, `playerZonePinSubmit`) i po poprawnej autoryzacji renderowany jest layout dwukolumnowy. W tej samej sesji przeglądarki użytkownik nie wpisuje już PIN-u ponownie dla sekcji:
 - lewy panel `Sekcja` (`playerZoneSectionsList`) z przyciskami:
@@ -246,7 +246,7 @@ Styl wizualny to ciemny motyw „noir + gold + neon”, z kartami, delikatnym gr
 - wewnętrzny odstęp kontenera pozostaje `24px` na boki (`padding: 40px 24px 80px`),
 - siatka główna (`.grid`) oparta o `auto-fit` + `minmax`,
 - wspólna klasa karty (`.card`),
-- w layoutach wielokolumnowych (np. `.admin-games-layout`) szerokości paneli bocznych są stałe (`220px` i `260px`), a rozszerza się kolumna centralna (`minmax(0, 1fr)`),
+- w układzie `#adminGamesTab .admin-games-layout` szerokości paneli bocznych są stałe: panel `Lata` ma `190px`, panel `Ranking` ma `300px`, a kolumna centralna pozostaje elastyczna (`minmax(0, 1fr)`),
 - spójny styl tabel (`.admin-data-table`),
 - dedykowane klasy dla modali (`.modal-overlay`, `.modal-card`),
 - klasy statusów i akcji (`.status-text`, `.primary`, `.secondary`, `.danger`).

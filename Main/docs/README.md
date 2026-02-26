@@ -3,7 +3,7 @@
 ## 1. Start aplikacji
 1. Otwórz stronę aplikacji.
 2. W wersji **PC** główna zawartość aplikacji rozciąga się prawie na całą szerokość okna (zostają tylko niewielkie marginesy po bokach).
-3. W panelach z układem 3-kolumnowym (np. **Lata / treść / Ranking**) szerokość paneli bocznych zostaje stała, a rozszerza się głównie kolumna środkowa z tabelami.
+3. W panelu **Gry admina** (układ **Lata / treść / Ranking**) panel **Lata** jest węższy, panel **Ranking** szerszy, a środkowa kolumna z tabelami dalej rozszerza się elastycznie.
 4. Na górze widzisz **Panel Administratora** (zakładki admina).
 5. Niżej widzisz od razu pasek zakładek użytkownika (bez osobnego nagłówka nad zakładkami).
 6. Kliknięcie nazwy zakładki przełącza zawartość widoku.
@@ -14,7 +14,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 2.1 Aktualności
 1. Kliknij zakładkę **Aktualności**.
-2. Odczytaj pole **Najnowsze** z ostatnią wiadomością od administratora (pole jest wysokie na 50 linii, więc mieści długie komunikaty bez przewijania całej strony).
+2. Odczytaj pole **Najnowsze** z ostatnią wiadomością od administratora (pole ma wysokość 25 linii, dzięki czemu sekcja jest bardziej kompaktowa).
 
 ### 2.2 Regulamin
 1. Kliknij zakładkę **Regulamin**.
@@ -67,7 +67,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 3.1 Aktualności
 1. Wejdź w zakładkę **Aktualności**.
-2. Wpisz treść w polu **Treść wiadomości** (pole ma wysokość 50 linii).
+2. Wpisz treść w polu **Treść wiadomości** (pole ma wysokość 25 linii).
 3. Kliknij **Wyślij**.
 
 ### 3.2 Czat
@@ -88,7 +88,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 3.5 Gry admina
 1. Wejdź w **Gry admina**.
-2. Wybierz rok po lewej stronie.
+2. Wybierz rok po lewej stronie (panel **Lata** został lekko zwężony, aby zrobić więcej miejsca dla panelu **Ranking**).
 3. Kliknij **Dodaj**, aby dodać grę.
 4. Edytuj pola w tabeli: Rodzaj Gry, Data, Nazwa, CzyZamknięta.
 5. Kliknij **Szczegóły** przy nazwie gry.
@@ -100,6 +100,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 7. W pasku metadanych szczegółów widzisz: Nazwa, Rodzaj gry, Data, **Pula**, **Ilość graczy**.
 8. W sekcji podsumowania gry możesz otworzyć **Notatki po grze**.
 9. W sekcji statystyk kolejność kolumn to: Ilość Spotkań, **Waga2**, **% udział**, Punkty.
+10. Panel **Ranking** po prawej jest szerszy, dzięki czemu tabela wymaga mniej przewijania poziomego.
 
 ### 3.6 Statystyki (panel admina)
 1. Wejdź w **Statystyki**.

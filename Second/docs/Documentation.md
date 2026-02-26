@@ -22,6 +22,8 @@ Panel administratora zawiera zakładki:
 - `Turniej`.
 
 Treści i opisy ekranowe zakładek `Aktualności`, `Czat`, `Regulamin` i `Gracze` są zgodne tekstowo z `Main/index.html`.
+- W zakładce `Aktualności` pole `Treść wiadomości` (`#adminMessageInput`) ma wysokość 25 linii (`rows="25"`).
+- W widoku użytkownika pole `Najnowsze` (`#latestMessageOutput`) ma wysokość 25 linii (`rows="25"`).
 
 ### 3.2 Zakładki użytkownika
 Widok użytkownika zawiera zakładki:
