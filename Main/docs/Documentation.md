@@ -472,3 +472,10 @@ Ta dokumentacja opisuje **aktualny stan aplikacji** i nie zawiera historii zmian
 - Listener `onAuthStateChanged` odczytuje profil użytkownika z kolekcji `main_users/{uid}` i aktualizuje komunikat w `#authStatus`.
 - Po zalogowaniu aplikacja próbuje zapisać metadane sesji do `main_auth_sessions/{uid}` (`uid`, `email`, `module`, `profileCollection`, `profileExists`, `lastLoginAt`, `updatedAt`) przez `set(..., { merge: true })`.
 - Integracja jest przygotowana pod przyszłe Rules: odczyt profilu i zapis sesji są już podpięte do docelowych kolekcji, więc po zaostrzeniu reguł mechanizm będzie działał bez zmian w UI.
+
+## Aktualny model auth i kolekcji (Main)
+- Rejestracja działa z poziomu UI (`#authRegisterButton`) przez `createUserWithEmailAndPassword`.
+- Po rejestracji tworzony jest profil `main_users/{uid}` z polami: `uid`, `email`, `name`, `isActive`, `permissions`, `statsYearsAccess`, znaczniki czasu i `source: self-register`.
+- Logowanie i reset hasła są obsługiwane przez Firebase Auth.
+- Metadata sesji zapisywana jest do `main_auth_sessions/{uid}`.
+- Legacy kolekcje w module Main zostały przepięte na: `main_app_settings`, `main_admin_messages`, `main_chat_messages`, `main_tables`, `main_user_games`, `main_admin_games_stats`, `main_calculators`.

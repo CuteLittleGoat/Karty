@@ -89,3 +89,11 @@
 4. Pod przyciskami odczytaj status logowania (np. czy konto ma pełny dostęp do modułu).
 5. Aby zakończyć sesję kliknij **Wyloguj**.
 6. Aby zresetować hasło wpisz e-mail i kliknij **Reset hasła** (aplikacja wyśle mail resetujący).
+
+## Logowanie i rejestracja (Email/Hasło)
+1. W nagłówku wpisz e-mail i hasło.
+2. Kliknij **Utwórz konto**, aby samodzielnie założyć konto.
+3. Konto startuje bez aktywacji (`isActive: false`) i wymaga nadania uprawnień przez administratora.
+4. Kliknij **Zaloguj**, aby rozpocząć sesję.
+5. Kliknij **Wyloguj**, aby zakończyć sesję.
+6. Kliknij **Reset hasła**, aby wysłać reset e-mailem.

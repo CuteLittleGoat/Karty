@@ -22,11 +22,12 @@ const initAuthControls = () => {
   const emailInput = document.querySelector("#authEmailInput");
   const passwordInput = document.querySelector("#authPasswordInput");
   const loginButton = document.querySelector("#authLoginButton");
+  const registerButton = document.querySelector("#authRegisterButton");
   const logoutButton = document.querySelector("#authLogoutButton");
   const resetButton = document.querySelector("#authResetPasswordButton");
   const status = document.querySelector("#authStatus");
 
-  if (!emailInput || !passwordInput || !loginButton || !logoutButton || !resetButton || !status) {
+  if (!emailInput || !passwordInput || !loginButton || !registerButton || !logoutButton || !resetButton || !status) {
     return;
   }
 
@@ -34,6 +35,7 @@ const initAuthControls = () => {
   if (!firebaseApp || !firebaseApp.auth) {
     status.textContent = "Logowanie niedostępne: brak konfiguracji Firebase Auth.";
     loginButton.disabled = true;
+    registerButton.disabled = true;
     logoutButton.disabled = true;
     resetButton.disabled = true;
     return;
@@ -105,6 +107,38 @@ const initAuthControls = () => {
       passwordInput.value = "";
     } catch (error) {
       setStatus(`Nie udało się zalogować: ${error?.message || "nieznany błąd"}`);
+    }
+  });
+
+
+  registerButton.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+      setStatus("Podaj e-mail i hasło, aby utworzyć konto.");
+      return;
+    }
+
+    setStatus("Tworzenie konta...");
+
+    try {
+      const result = await auth.createUserWithEmailAndPassword(email, password);
+      await db.collection(AUTH_USERS_COLLECTION).doc(result.user.uid).set({
+        uid: result.user.uid,
+        email,
+        name: email.split("@")[0],
+        isActive: false,
+        permissions: [],
+        statsYearsAccess: [],
+        createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+        source: "self-register"
+      }, { merge: true });
+      setStatus("Konto utworzone. Administrator musi aktywować uprawnienia w zakładce Gracze.");
+      passwordInput.value = "";
+    } catch (error) {
+      setStatus(`Nie udało się utworzyć konta: ${error?.message || "nieznany błąd"}`);
     }
   });
 

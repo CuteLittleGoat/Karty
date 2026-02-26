@@ -88,3 +88,9 @@ Wszystkie przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Strona1`, `Str
 - Listener `onAuthStateChanged` odczytuje profil użytkownika z kolekcji `second_users/{uid}` i aktualizuje komunikat w `#authStatus`.
 - Po zalogowaniu aplikacja próbuje zapisać metadane sesji do `second_auth_sessions/{uid}` (`uid`, `email`, `module`, `profileCollection`, `profileExists`, `lastLoginAt`, `updatedAt`) przez `set(..., { merge: true })`.
 - Integracja jest przygotowana pod przyszłe Rules: odczyt profilu i zapis sesji są już podpięte do docelowych kolekcji, więc po zaostrzeniu reguł mechanizm będzie działał bez zmian w UI.
+
+## Aktualny model auth (Second)
+- Dodano rejestrację przez UI (`#authRegisterButton`) z `createUserWithEmailAndPassword`.
+- Po rejestracji tworzony jest profil `second_users/{uid}` z domyślnym brakiem uprawnień i `isActive: false`.
+- Logowanie, wylogowanie i reset hasła korzystają z Firebase Auth.
+- Metadata logowania zapisywana jest do `second_auth_sessions/{uid}`.

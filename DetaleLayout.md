@@ -117,3 +117,5 @@
 - Trzy przyciski (`Zaloguj`, `Wyloguj`, `Reset hasła`) są w grupie `.auth-actions` i używają istniejących styli przycisków `primary`/`secondary`.
 - Pod przyciskami wyświetlany jest status `#authStatus` na pełnej szerokości paska (`flex: 1 1 100%`).
 - Dla szerokości mobilnych (`max-width: 860px`) kontener rozciąga się na 100%, a pola logowania przechodzą na pełną szerokość, aby zachować czytelność i wygodę klikania.
+
+- Pasek logowania w nagłówku zawiera 4 przyciski akcji: **Zaloguj**, **Utwórz konto**, **Wyloguj**, **Reset hasła** (układ i styl zgodny z klasami `primary`/`secondary`).

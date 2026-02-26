@@ -10,10 +10,10 @@ const STATISTICS_PIN_STORAGE_KEY = "statisticsPinVerified";
 const STATISTICS_PLAYER_ID_STORAGE_KEY = "statisticsPlayerId";
 const PLAYER_ZONE_PIN_STORAGE_KEY = "playerZonePinVerified";
 const PLAYER_ZONE_PLAYER_ID_STORAGE_KEY = "playerZonePlayerId";
-const PLAYER_ACCESS_COLLECTION = "app_settings";
+const PLAYER_ACCESS_COLLECTION = "main_app_settings";
 const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
-const ADMIN_MESSAGES_COLLECTION = "admin_messages";
+const ADMIN_MESSAGES_COLLECTION = "main_admin_messages";
 const ADMIN_MESSAGES_DOCUMENT = "admin_messages";
 const AUTH_USERS_COLLECTION = "main_users";
 const AUTH_SESSIONS_COLLECTION = "main_auth_sessions";
@@ -93,12 +93,12 @@ const PLAYER_ZONE_SECTION_PERMISSION_MAP = {
   statsTab: "statsTab"
 };
 
-const CHAT_COLLECTION = "chat_messages";
+const CHAT_COLLECTION = "main_chat_messages";
 const CHAT_RETENTION_DAYS = 30;
 
-const TABLES_COLLECTION = "Tables";
-const GAMES_COLLECTION = "Tables";
-const USER_GAMES_COLLECTION = "UserGames";
+const TABLES_COLLECTION = "main_tables";
+const GAMES_COLLECTION = "main_tables";
+const USER_GAMES_COLLECTION = "main_user_games";
 const GAME_DETAILS_COLLECTION = "rows";
 const TABLES_COLLECTION_CONFIG_KEY = "tablesCollection";
 const GAMES_COLLECTION_CONFIG_KEY = "gamesCollection";
@@ -106,7 +106,8 @@ const GAME_DETAILS_COLLECTION_CONFIG_KEY = "gameDetailsCollection";
 const USER_GAMES_COLLECTION_CONFIG_KEY = "userGamesCollection";
 const TABLE_ROWS_COLLECTION = "rows";
 const GAME_CONFIRMATIONS_COLLECTION = "confirmations";
-const ADMIN_GAMES_STATS_COLLECTION = "admin_games_stats";
+const ADMIN_GAMES_STATS_COLLECTION = "main_admin_games_stats";
+const CALCULATOR_COLLECTION = "main_calculators";
 const DEFAULT_TABLE_META = {
   gameType: "rodzaj gry",
   gameDate: "data"
@@ -252,6 +253,11 @@ const chatState = {
   unsubscribe: null,
   adminUnsubscribe: null
 };
+const authContextState = {
+  user: null,
+  profile: null
+};
+
 const nextGamesState = {
   adminGames: [],
   userGames: [],
@@ -697,11 +703,12 @@ const initAuthControls = () => {
   const emailInput = document.querySelector("#authEmailInput");
   const passwordInput = document.querySelector("#authPasswordInput");
   const loginButton = document.querySelector("#authLoginButton");
+  const registerButton = document.querySelector("#authRegisterButton");
   const logoutButton = document.querySelector("#authLogoutButton");
   const resetButton = document.querySelector("#authResetPasswordButton");
   const status = document.querySelector("#authStatus");
 
-  if (!emailInput || !passwordInput || !loginButton || !logoutButton || !resetButton || !status) {
+  if (!emailInput || !passwordInput || !loginButton || !registerButton || !logoutButton || !resetButton || !status) {
     return;
   }
 
@@ -709,6 +716,7 @@ const initAuthControls = () => {
   if (!firebaseApp || !firebaseApp.auth) {
     status.textContent = "Logowanie niedostępne: brak konfiguracji Firebase Auth.";
     loginButton.disabled = true;
+    registerButton.disabled = true;
     logoutButton.disabled = true;
     resetButton.disabled = true;
     return;
@@ -745,7 +753,9 @@ const initAuthControls = () => {
   };
 
   auth.onAuthStateChanged(async (user) => {
+    authContextState.user = user || null;
     if (!user) {
+      authContextState.profile = null;
       logoutButton.disabled = true;
       setStatus("Nie zalogowano.");
       return;
@@ -756,10 +766,12 @@ const initAuthControls = () => {
     try {
       const profileSnapshot = await db.collection(AUTH_USERS_COLLECTION).doc(user.uid).get();
       const profile = profileSnapshot.exists ? profileSnapshot.data() : null;
+      authContextState.profile = profile;
       const profileLabel = profile ? "Profil modułu Main znaleziony." : "Brak profilu modułu Main (main_users/{uid}).";
       setStatus(`Zalogowano: ${user.email || user.uid}. ${profileLabel}`);
       await persistSessionMetadata(user, profile);
     } catch (error) {
+      authContextState.profile = null;
       setStatus(`Zalogowano: ${user.email || user.uid}. Nie udało się odczytać kolekcji ${AUTH_USERS_COLLECTION}.`);
     }
   });
@@ -780,6 +792,38 @@ const initAuthControls = () => {
       passwordInput.value = "";
     } catch (error) {
       setStatus(`Nie udało się zalogować: ${error?.message || "nieznany błąd"}`);
+    }
+  });
+
+
+  registerButton.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+      setStatus("Podaj e-mail i hasło, aby utworzyć konto.");
+      return;
+    }
+
+    setStatus("Tworzenie konta...");
+
+    try {
+      const result = await auth.createUserWithEmailAndPassword(email, password);
+      await db.collection(AUTH_USERS_COLLECTION).doc(result.user.uid).set({
+        uid: result.user.uid,
+        email,
+        name: email.split("@")[0],
+        isActive: false,
+        permissions: [],
+        statsYearsAccess: [],
+        createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+        source: "self-register"
+      }, { merge: true });
+      setStatus("Konto utworzone. Administrator musi aktywować uprawnienia w zakładce Gracze.");
+      passwordInput.value = "";
+    } catch (error) {
+      setStatus(`Nie udało się utworzyć konta: ${error?.message || "nieznany błąd"}`);
     }
   });
 
@@ -1032,6 +1076,40 @@ const sanitizePin = (value) => value.replace(/\D/g, "").slice(0, PIN_LENGTH);
 const isPinValid = (value) => /^\d{5}$/.test(value);
 const generateRandomPin = () => `${Math.floor(Math.random() * 10 ** PIN_LENGTH)}`.padStart(PIN_LENGTH, "0");
 
+const buildAuthPlayerFromProfile = () => {
+  if (!authContextState.user || !authContextState.profile) {
+    return null;
+  }
+
+  const profile = authContextState.profile;
+  const normalizedPermissions = Array.isArray(profile.permissions)
+    ? profile.permissions.filter((permission) => AVAILABLE_PLAYER_TABS.some((tab) => tab.key === permission))
+    : [];
+
+  return {
+    id: authContextState.user.uid,
+    name: profile.name || authContextState.user.email || "Użytkownik",
+    email: authContextState.user.email || "",
+    uid: authContextState.user.uid,
+    pin: "",
+    appEnabled: profile.isActive !== false,
+    permissions: normalizedPermissions,
+    statsYearsAccess: normalizeStatsYearsAccess(profile.statsYearsAccess)
+  };
+};
+
+const getEffectiveVerifiedPlayer = (playerIdStorageKey) => {
+  const playerId = sessionStorage.getItem(playerIdStorageKey);
+  if (playerId) {
+    const storedPlayer = adminPlayersState.players.find((player) => player.id === playerId);
+    if (storedPlayer) {
+      return storedPlayer;
+    }
+  }
+
+  return buildAuthPlayerFromProfile();
+};
+
 const getPinGateState = () => sessionStorage.getItem(PIN_STORAGE_KEY) === "1";
 
 const setPinGateState = (isVerified) => {
@@ -1052,13 +1130,7 @@ const setChatVerifiedPlayerId = (playerId) => {
   sessionStorage.removeItem(CHAT_PLAYER_ID_STORAGE_KEY);
 };
 
-const getChatVerifiedPlayer = () => {
-  const playerId = sessionStorage.getItem(CHAT_PLAYER_ID_STORAGE_KEY);
-  if (!playerId) {
-    return null;
-  }
-  return adminPlayersState.players.find((player) => player.id === playerId) ?? null;
-};
+const getChatVerifiedPlayer = () => getEffectiveVerifiedPlayer(CHAT_PLAYER_ID_STORAGE_KEY);
 
 const getConfirmationsPinGateState = () => sessionStorage.getItem(CONFIRMATIONS_PIN_STORAGE_KEY) === "1";
 
@@ -1074,13 +1146,7 @@ const setConfirmationsVerifiedPlayerId = (playerId) => {
   sessionStorage.removeItem(CONFIRMATIONS_PLAYER_ID_STORAGE_KEY);
 };
 
-const getConfirmationsVerifiedPlayer = () => {
-  const playerId = sessionStorage.getItem(CONFIRMATIONS_PLAYER_ID_STORAGE_KEY);
-  if (!playerId) {
-    return null;
-  }
-  return adminPlayersState.players.find((player) => player.id === playerId) ?? null;
-};
+const getConfirmationsVerifiedPlayer = () => getEffectiveVerifiedPlayer(CONFIRMATIONS_PLAYER_ID_STORAGE_KEY);
 
 const getUserGamesPinGateState = () => sessionStorage.getItem(USER_GAMES_PIN_STORAGE_KEY) === "1";
 
@@ -1096,13 +1162,7 @@ const setUserGamesVerifiedPlayerId = (playerId) => {
   sessionStorage.removeItem(USER_GAMES_PLAYER_ID_STORAGE_KEY);
 };
 
-const getUserGamesVerifiedPlayer = () => {
-  const playerId = sessionStorage.getItem(USER_GAMES_PLAYER_ID_STORAGE_KEY);
-  if (!playerId) {
-    return null;
-  }
-  return adminPlayersState.players.find((player) => player.id === playerId) ?? null;
-};
+const getUserGamesVerifiedPlayer = () => getEffectiveVerifiedPlayer(USER_GAMES_PLAYER_ID_STORAGE_KEY);
 
 const getStatisticsPinGateState = () => sessionStorage.getItem(STATISTICS_PIN_STORAGE_KEY) === "1";
 
@@ -1118,13 +1178,7 @@ const setStatisticsVerifiedPlayerId = (playerId) => {
   sessionStorage.removeItem(STATISTICS_PLAYER_ID_STORAGE_KEY);
 };
 
-const getStatisticsVerifiedPlayer = () => {
-  const playerId = sessionStorage.getItem(STATISTICS_PLAYER_ID_STORAGE_KEY);
-  if (!playerId) {
-    return null;
-  }
-  return adminPlayersState.players.find((player) => player.id === playerId) ?? null;
-};
+const getStatisticsVerifiedPlayer = () => getEffectiveVerifiedPlayer(STATISTICS_PLAYER_ID_STORAGE_KEY);
 
 const getPlayerZonePinGateState = () => sessionStorage.getItem(PLAYER_ZONE_PIN_STORAGE_KEY) === "1";
 
@@ -1140,13 +1194,7 @@ const setPlayerZoneVerifiedPlayerId = (playerId) => {
   sessionStorage.removeItem(PLAYER_ZONE_PLAYER_ID_STORAGE_KEY);
 };
 
-const getPlayerZoneVerifiedPlayer = () => {
-  const playerId = sessionStorage.getItem(PLAYER_ZONE_PLAYER_ID_STORAGE_KEY);
-  if (!playerId) {
-    return null;
-  }
-  return adminPlayersState.players.find((player) => player.id === playerId) ?? null;
-};
+const getPlayerZoneVerifiedPlayer = () => getEffectiveVerifiedPlayer(PLAYER_ZONE_PLAYER_ID_STORAGE_KEY);
 
 const addDays = (dateValue, days) => {
   const baseDate = new Date(dateValue);
@@ -3309,8 +3357,6 @@ const initAdminCalculator = () => {
   }
 
   const firebaseApp = getFirebaseApp();
-  const CALCULATOR_COLLECTION = "calculators";
-
   const createInitialState = () => ({
     table1Row: { id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" },
     table2Rows: [{ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [] }],
