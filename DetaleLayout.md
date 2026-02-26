@@ -110,12 +110,9 @@
 - W prawym górnym rogu nagłówka modułu `Second` znajduje się zielony przycisk `Instrukcja` (klasa `.secondary`, kontener `.admin-toolbar`), widoczny w trybie administratora i spójny z `Main/index.html`.
 
 
-## Pasek logowania w nagłówku (Main + Second)
-- W prawym górnym obszarze nagłówka działa kontener `.header-controls` ustawiony pionowo (`flex-direction: column`) z wyrównaniem do prawej (`align-items: flex-end`).
-- Główny blok logowania to `.auth-toolbar`: półprzezroczyste ciemne tło, obramowanie `1px` w kolorze `var(--border2)`, promień `var(--radius-md)`, padding `12px`.
-- Pole `E-mail` i `Hasło` korzystają z układu `.auth-field` (etykieta nad inputem, minimalna szerokość 180px).
-- Trzy przyciski (`Zaloguj`, `Wyloguj`, `Reset hasła`) są w grupie `.auth-actions` i używają istniejących styli przycisków `primary`/`secondary`.
-- Pod przyciskami wyświetlany jest status `#authStatus` na pełnej szerokości paska (`flex: 1 1 100%`).
-- Dla szerokości mobilnych (`max-width: 860px`) kontener rozciąga się na 100%, a pola logowania przechodzą na pełną szerokość, aby zachować czytelność i wygodę klikania.
-
-- Pasek logowania w nagłówku zawiera 4 przyciski akcji: **Zaloguj**, **Utwórz konto**, **Wyloguj**, **Reset hasła** (układ i styl zgodny z klasami `primary`/`secondary`).
+## Logowanie i sesja (Main + Second)
+- Pierwszym widokiem jest centralny ekran `#loginScreen` z kartą `.login-card` (ten sam układ i treść w obu modułach).
+- Karta logowania zawiera pola `E-mail` i `Hasło` (`.auth-field`) oraz przyciski `Zaloguj` (`.primary`) i `Utwórz konto` (`.secondary`).
+- Po zalogowaniu `#loginScreen` jest ukrywany, a renderowany jest główny widok modułu (`#appShell` w Main, `#appRoot` w Second).
+- W nagłówku po zalogowaniu działa pasek sesji `.auth-session-toolbar` z tekstem statusu `#authStatus` oraz przyciskami `Wyloguj` i `Reset hasła`.
+- Elementy nagłówka związane z sesją są ukryte, gdy użytkownik nie jest zalogowany (`body` bez klasy `is-authenticated`).

@@ -1,11 +1,12 @@
 # Second — Instrukcja użytkownika (UI)
 
-## 1. Uruchomienie i wybór trybu
+## 1. Uruchomienie i logowanie
 1. Otwórz `Second/index.html` w przeglądarce.
-2. Aby wejść do panelu administratora, dopisz w adresie `?admin=1`.
-3. Aby wejść do widoku użytkownika, otwórz stronę bez parametru `admin`.
+2. Pierwszym ekranem jest okno logowania (identyczne jak w module Main).
+3. Zaloguj się kontem z rolą `admin` albo `user`.
+4. Widok jest wybierany automatycznie na podstawie roli, bez parametru URL.
 
-## 2. Panel administratora (`?admin=1`)
+## 2. Panel administratora (rola `admin`)
 
 ### 2.1 Górny pasek
 1. W prawym górnym rogu aplikacji (obok nagłówka) kliknij zielony przycisk `Instrukcja` (ten sam styl co w module Main).
@@ -47,9 +48,9 @@
 ### 2.7 Podgląd użytkownika
 1. Na dole panelu administratora znajduje się pełnoszerokowy panel podglądu użytkownika (ten sam układ kart i zakładek jak w module Main).
 2. W podglądzie od razu widzisz pasek zakładek użytkownika (`Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Turniej`) oraz aktywną sekcję `Aktualności`.
-3. Układ podglądu jest identyczny z widokiem użytkownika bez parametru `?admin=1`, więc możesz testować wygląd bez przełączania strony.
+3. Układ podglądu jest identyczny z pełnym widokiem użytkownika, więc możesz testować wygląd bez przełączania strony.
 
-## 3. Widok użytkownika (bez `?admin=1`)
+## 3. Widok użytkownika (rola `user`)
 
 ### 3.1 Zakładki użytkownika
 1. U góry widzisz zakładki: `Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Turniej`.
@@ -82,7 +83,7 @@
 3. W środku widzisz tekst `Strona w budowie`.
 4. Przyciski nie są podłączone do logiki backendowej.
 
-## 4. Logowanie (nowe przyciski w nagłówku)
+## 4. Logowanie (ekran startowy)
 1. W prawym górnym rogu nagłówka wpisz adres w polu **E-mail**.
 2. Wpisz hasło w polu **Hasło**.
 3. Kliknij **Zaloguj**.

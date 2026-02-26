@@ -21,28 +21,39 @@
           <p class="subtitle">Szkielet UI odwzorowujący kluczowe zakładki modułu Main.</p>
         </div>
         <div class="header-controls">
-          <div class="auth-toolbar" aria-label="Logowanie">
-            <label class="auth-field" for="authEmailInput">
-              <span>E-mail</span>
-              <input id="authEmailInput" type="email" autocomplete="username" placeholder="np. gracz@karty.pl" />
-            </label>
-            <label class="auth-field" for="authPasswordInput">
-              <span>Hasło</span>
-              <input id="authPasswordInput" type="password" autocomplete="current-password" placeholder="Hasło" />
-            </label>
-            <div class="auth-actions">
-              <button id="authLoginButton" class="primary" type="button">Zaloguj</button>
-              <button id="authRegisterButton" class="secondary" type="button">Utwórz konto</button>
+          <div class="auth-session-toolbar" aria-label="Sesja użytkownika">
+            <p id="authStatus" class="status-text" aria-live="polite">Nie zalogowano.</p>
+            <div class="auth-session-actions">
               <button id="authLogoutButton" class="secondary" type="button">Wyloguj</button>
               <button id="authResetPasswordButton" class="secondary" type="button">Reset hasła</button>
             </div>
-            <p id="authStatus" class="status-text" aria-live="polite">Nie zalogowano.</p>
           </div>
           <div class="admin-toolbar">
             <button id="secondInstructionButton" class="secondary" type="button">Instrukcja</button>
           </div>
         </div>
       </header>
+
+      <section id="loginScreen" class="login-screen" aria-label="Logowanie">
+        <div class="card login-card">
+          <div class="card-header">
+            <h2>Logowanie</h2>
+            <p>Zaloguj się, aby przejść do widoku dopasowanego do Twojej roli.</p>
+          </div>
+          <label class="auth-field" for="authEmailInput">
+            <span>E-mail</span>
+            <input id="authEmailInput" type="email" autocomplete="username" placeholder="np. gracz@karty.pl" />
+          </label>
+          <label class="auth-field" for="authPasswordInput">
+            <span>Hasło</span>
+            <input id="authPasswordInput" type="password" autocomplete="current-password" placeholder="Hasło" />
+          </label>
+          <div class="auth-actions">
+            <button id="authLoginButton" class="primary" type="button">Zaloguj</button>
+            <button id="authRegisterButton" class="secondary" type="button">Utwórz konto</button>
+          </div>
+        </div>
+      </section>
 
       <main id="appRoot" class="grid"></main>
     </div>

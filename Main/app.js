@@ -259,6 +259,15 @@ const authContextState = {
   profile: null
 };
 
+const applyAuthUiState = () => {
+  const isAuthenticated = Boolean(authContextState.user);
+  const role = typeof authContextState.profile?.role === "string" ? authContextState.profile.role : "user";
+  const isAdmin = role === "admin";
+
+  document.body.classList.toggle("is-authenticated", isAuthenticated);
+  document.body.classList.toggle("is-admin", isAuthenticated && isAdmin);
+};
+
 const nextGamesState = {
   adminGames: [],
   userGames: [],
@@ -679,11 +688,6 @@ const registerAdminRefreshHandler = (tabId, handler) => {
   adminRefreshHandlers.set(tabId, handler);
 };
 
-const getAdminMode = () => {
-  const params = new URLSearchParams(window.location.search);
-  return params.get("admin") === "1";
-};
-
 const getFirebaseApp = () => {
   if (!window.firebase || !window.firebase.initializeApp) {
     return null;
@@ -758,6 +762,7 @@ const initAuthControls = () => {
     if (!user) {
       authContextState.profile = null;
       logoutButton.disabled = true;
+      applyAuthUiState();
       setStatus("Nie zalogowano.");
       return;
     }
@@ -769,10 +774,12 @@ const initAuthControls = () => {
       const profile = profileSnapshot.exists ? profileSnapshot.data() : null;
       authContextState.profile = profile;
       const profileLabel = profile ? "Profil modułu Main znaleziony." : "Brak profilu modułu Main (main_users/{uid}).";
+      applyAuthUiState();
       setStatus(`Zalogowano: ${user.email || user.uid}. ${profileLabel}`);
       await persistSessionMetadata(user, profile);
     } catch (error) {
       authContextState.profile = null;
+      applyAuthUiState();
       setStatus(`Zalogowano: ${user.email || user.uid}. Nie udało się odczytać kolekcji ${AUTH_USERS_COLLECTION}.`);
     }
   });
@@ -817,6 +824,7 @@ const initAuthControls = () => {
         isActive: false,
         permissions: [],
         statsYearsAccess: [],
+        role: "user",
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
         updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
         source: "self-register"
@@ -7146,8 +7154,7 @@ const initInstructionModal = () => {
 };
 
 const bootstrap = async () => {
-  const isAdmin = getAdminMode();
-  document.body.classList.toggle("is-admin", isAdmin);
+  applyAuthUiState();
   initAdminPanelTabs();
   initAdminPanelRefresh();
   initUserTabs();

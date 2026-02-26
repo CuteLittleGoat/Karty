@@ -2,6 +2,11 @@ const AUTH_USERS_COLLECTION = "second_users";
 const AUTH_SESSIONS_COLLECTION = "second_auth_sessions";
 const AUTH_MODULE_KEY = "second";
 
+const authContextState = {
+  user: null,
+  profile: null
+};
+
 const getFirebaseApp = () => {
   if (!window.firebase || !window.firebase.initializeApp) {
     return null;
@@ -16,6 +21,11 @@ const getFirebaseApp = () => {
   }
 
   return window.firebase;
+};
+
+const applyAuthUiState = () => {
+  const isAuthenticated = Boolean(authContextState.user);
+  document.body.classList.toggle("is-authenticated", isAuthenticated);
 };
 
 const initAuthControls = () => {
@@ -72,8 +82,13 @@ const initAuthControls = () => {
   };
 
   auth.onAuthStateChanged(async (user) => {
+    authContextState.user = user || null;
+
     if (!user) {
+      authContextState.profile = null;
       logoutButton.disabled = true;
+      applyAuthUiState();
+      renderRoleView();
       setStatus("Nie zalogowano.");
       return;
     }
@@ -83,10 +98,16 @@ const initAuthControls = () => {
     try {
       const profileSnapshot = await db.collection(AUTH_USERS_COLLECTION).doc(user.uid).get();
       const profile = profileSnapshot.exists ? profileSnapshot.data() : null;
+      authContextState.profile = profile;
       const profileLabel = profile ? "Profil modułu Second znaleziony." : "Brak profilu modułu Second (second_users/{uid}).";
+      applyAuthUiState();
+      renderRoleView();
       setStatus(`Zalogowano: ${user.email || user.uid}. ${profileLabel}`);
       await persistSessionMetadata(user, profile);
     } catch (error) {
+      authContextState.profile = null;
+      applyAuthUiState();
+      renderRoleView();
       setStatus(`Zalogowano: ${user.email || user.uid}. Nie udało się odczytać kolekcji ${AUTH_USERS_COLLECTION}.`);
     }
   });
@@ -131,6 +152,7 @@ const initAuthControls = () => {
         isActive: false,
         permissions: [],
         statsYearsAccess: [],
+        role: "user",
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
         updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
         source: "self-register"
@@ -169,13 +191,7 @@ const initAuthControls = () => {
 
 const appRoot = document.querySelector("#appRoot");
 
-const isAdminView = new URLSearchParams(window.location.search).get("admin") === "1";
 const instructionButton = document.querySelector("#secondInstructionButton");
-
-if (instructionButton) {
-  instructionButton.hidden = !isAdminView;
-}
-
 const setupTabs = ({ container, buttonSelector, panelSelector, activeClass = "is-active", getTarget, isPanelMatch }) => {
   const buttons = Array.from(container.querySelectorAll(buttonSelector));
   const panels = Array.from(container.querySelectorAll(panelSelector));
@@ -260,10 +276,31 @@ const setupUserOnlyView = () => {
   appRoot.appendChild(userView);
 };
 
-initAuthControls();
+const renderRoleView = () => {
+  appRoot.innerHTML = "";
 
-if (isAdminView) {
-  setupAdminView();
-} else {
-  setupUserOnlyView();
-}
+  if (!authContextState.user) {
+    if (instructionButton) {
+      instructionButton.hidden = true;
+    }
+    return;
+  }
+
+  const role = typeof authContextState.profile?.role === "string" ? authContextState.profile.role : "user";
+  const isAdmin = role === "admin";
+  document.body.classList.toggle("is-admin", isAdmin);
+
+  if (instructionButton) {
+    instructionButton.hidden = !isAdmin;
+  }
+
+  if (isAdmin) {
+    setupAdminView();
+  } else {
+    setupUserOnlyView();
+  }
+};
+
+applyAuthUiState();
+renderRoleView();
+initAuthControls();
