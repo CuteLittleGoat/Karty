@@ -108,3 +108,8 @@
 3. Po rejestracji konto ma status **Oczekiwanie na zatwierdzenie** i nie dostaje dostępu do widoku aplikacji przed akceptacją.
 4. Na ekranie startowym kliknij **Reset hasła**, wpisz e-mail i kliknij **Wyślij mail**.
 5. Po zalogowaniu w nagłówku wyświetlany jest login i przycisk **Wyloguj**.
+
+## 5. Pasek sesji po zalogowaniu
+1. Po poprawnym logowaniu w nagłówku zawsze zobaczysz informację **Zalogowany: ...** i przycisk **Wyloguj**.
+2. Pasek sesji pozostaje widoczny także wtedy, gdy profil użytkownika chwilowo nie został jeszcze odczytany z Firestore.
+

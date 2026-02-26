@@ -30,7 +30,7 @@ const isValidPassword = (value) => /^(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/.test(valu
 const applyAuthUiState = () => {
   const hasUser = Boolean(authContextState.user);
   const isApproved = authContextState.profile ? authContextState.profile.isApproved !== false : false;
-  const isAuthenticated = hasUser && isApproved;
+  const isAuthenticated = hasUser;
   document.body.classList.toggle("is-authenticated", isAuthenticated);
   document.body.classList.toggle("is-awaiting-approval", hasUser && !isApproved);
 };
