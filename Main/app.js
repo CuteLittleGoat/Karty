@@ -931,7 +931,7 @@ const initAuthControls = () => {
         name: email.split("@")[0],
         isActive: false,
         isApproved: false,
-        permissions: [],
+        permissions: createEmptyPermissionsMap(),
         statsYearsAccess: [],
         role: "user",
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
@@ -1241,15 +1241,33 @@ const normalizeEmail = (value) => (typeof value === "string" ? value.trim().toLo
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail(value));
 const isValidPassword = (value) => /^(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/.test(value);
 
+const createEmptyPermissionsMap = () => ({});
+
+const normalizePermissionsMap = (permissions) => {
+  const allowedKeys = new Set(AVAILABLE_PLAYER_TABS.map((tab) => tab.key));
+  if (!permissions || typeof permissions !== "object" || Array.isArray(permissions)) {
+    return createEmptyPermissionsMap();
+  }
+
+  return Object.entries(permissions).reduce((result, [key, value]) => {
+    if (allowedKeys.has(key) && value === true) {
+      result[key] = true;
+    }
+    return result;
+  }, createEmptyPermissionsMap());
+};
+
+const getEnabledPermissionKeys = (permissions) => Object.keys(normalizePermissionsMap(permissions));
+
+const hasPermission = (permissions, tabKey) => normalizePermissionsMap(permissions)[tabKey] === true;
+
 const buildAuthPlayerFromProfile = () => {
   if (!authContextState.user || !authContextState.profile) {
     return null;
   }
 
   const profile = authContextState.profile;
-  const normalizedPermissions = Array.isArray(profile.permissions)
-    ? profile.permissions.filter((permission) => AVAILABLE_PLAYER_TABS.some((tab) => tab.key === permission))
-    : [];
+  const normalizedPermissions = normalizePermissionsMap(profile.permissions);
 
   return {
     id: authContextState.user.uid,
@@ -1400,10 +1418,10 @@ const formatChatTimestamp = (value) => {
 };
 
 const isPlayerAllowedForTab = (player, tabKey) => {
-  if (!player || !Array.isArray(player.permissions)) {
+  if (!player) {
     return false;
   }
-  return player.permissions.includes(tabKey);
+  return hasPermission(player.permissions, tabKey);
 };
 
 const updatePinVisibility = () => {
@@ -3467,11 +3485,7 @@ const normalizePlayerRecord = (player, index) => ({
   name: typeof player.name === "string" ? player.name : "",
   pin: sanitizePin(typeof player.pin === "string" ? player.pin : ""),
   appEnabled: Boolean(player.appEnabled),
-  permissions: Array.isArray(player.permissions)
-    ? player.permissions.filter((permission) =>
-        AVAILABLE_PLAYER_TABS.some((availableTab) => availableTab.key === permission)
-      )
-    : [],
+  permissions: normalizePermissionsMap(player.permissions),
   statsYearsAccess: normalizeStatsYearsAccess(player.statsYearsAccess),
   isApproved: player.isApproved !== false
 });
@@ -3486,7 +3500,7 @@ const normalizeAuthUserRecord = (doc) => {
     name: typeof data.name === "string" ? data.name : "",
     pin: typeof data.pin === "string" ? data.pin : "",
     appEnabled: data.isActive !== false,
-    permissions: Array.isArray(data.permissions) ? data.permissions : [],
+    permissions: normalizePermissionsMap(data.permissions),
     statsYearsAccess: Array.isArray(data.statsYearsAccess) ? data.statsYearsAccess : [],
     isApproved: data.isApproved !== false
   });
@@ -3500,7 +3514,7 @@ const isTechnicalEmptyPlayerRecord = (player) => {
   const hasName = typeof player.name === "string" && player.name.trim().length > 0;
   const hasEmail = typeof player.email === "string" && player.email.trim().length > 0;
   const hasPin = typeof player.pin === "string" && player.pin.trim().length > 0;
-  const hasPermissions = Array.isArray(player.permissions) && player.permissions.length > 0;
+  const hasPermissions = getEnabledPermissionKeys(player.permissions).length > 0;
   const hasExplicitRole = typeof player.role === "string" && player.role !== "user";
   const hasRestrictedAccess = player.appEnabled === false || player.isApproved === false;
 
@@ -5121,21 +5135,23 @@ const initAdminPlayers = () => {
 
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
-      checkbox.checked = player.permissions.includes(tab.key);
+      checkbox.checked = hasPermission(player.permissions, tab.key);
       checkbox.addEventListener("change", () => {
         const targetPlayer = getEditingPlayer();
         if (!targetPlayer) {
           return;
         }
+        const normalizedPermissions = normalizePermissionsMap(targetPlayer.permissions);
         if (checkbox.checked) {
-          targetPlayer.permissions = Array.from(new Set([...targetPlayer.permissions, tab.key]));
+          normalizedPermissions[tab.key] = true;
         } else {
-          targetPlayer.permissions = targetPlayer.permissions.filter((permission) => permission !== tab.key);
+          delete normalizedPermissions[tab.key];
           if (tab.key === "statsTab") {
             targetPlayer.statsYearsAccess = [];
             closeYearsModal();
           }
         }
+        targetPlayer.permissions = normalizedPermissions;
         renderPlayers();
         renderPermissions();
         void savePlayers();
@@ -5268,8 +5284,9 @@ const initAdminPlayers = () => {
       const permissionsCell = document.createElement("td");
       const tags = document.createElement("div");
       tags.className = "permissions-tags";
-      if (player.permissions.length) {
-        player.permissions.forEach((permission) => {
+      const playerPermissions = getEnabledPermissionKeys(player.permissions);
+      if (playerPermissions.length) {
+        playerPermissions.forEach((permission) => {
           const tab = AVAILABLE_PLAYER_TABS.find((entry) => entry.key === permission);
           const badge = document.createElement("span");
           badge.className = "permission-badge";

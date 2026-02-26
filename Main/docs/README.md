@@ -84,7 +84,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 1. Wejdź w **Gracze**.
 2. Lista ładuje konta utworzone przez użytkowników przez przycisk **Utwórz konto** w oknie logowania (email + hasło).
 3. W kolumnie **Aplikacja** zaznacz aktywację konta, aby użytkownik mógł korzystać z modułu.
-4. W kolumnie **Uprawnienia** kliknij **Edytuj** i zaznacz dostęp do sekcji Strefy Gracza.
+4. W kolumnie **Uprawnienia** kliknij **Edytuj** i zaznacz checkboxy przy konkretnych zakładkach — każdy checkbox włącza/wyłącza dokładnie jedną sekcję Strefy Gracza.
 5. Dla **Statystyk** użyj przycisku **Lata**, aby wskazać lata widoczne dla gracza.
 6. Przycisk **Usuń** usuwa profil użytkownika z `main_users` i uruchamia próbę usunięcia konta Authentication przez Cloud Function `deleteMainUserAccount` (jeśli jest wdrożona). Konto admina `AV9s1NNHl3Rq4pT4HnfQ7y9ELxa2` jest chronione i nie może być skasowane z UI. UI nie pozwala też usunąć ostatniego dokumentu z `main_users`.
 7. Puste techniczne rekordy (bez nazwy/e-maila/PIN-u/uprawnień) są automatycznie ukrywane na liście — nie wpływają na normalną obsługę graczy.

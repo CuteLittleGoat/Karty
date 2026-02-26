@@ -29,7 +29,7 @@ service cloud.firestore {
         && data.isActive is bool
         && (!('isApproved' in data) || data.isApproved is bool)
         && (!('moduleAccess' in data) || data.moduleAccess is map)
-        && (!('permissions' in data) || data.permissions is map || data.permissions is list)
+        && (!('permissions' in data) || data.permissions is map)
         && (!('statsYearsAccess' in data) || data.statsYearsAccess is list);
     }
 

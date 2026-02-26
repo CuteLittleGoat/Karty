@@ -94,7 +94,7 @@ W aplikacji występują m.in. poniższe modale:
 - Każdy gracz ma:
   - `id`, `name`, `pin`,
   - `appEnabled` (aktywny/nieaktywny),
-  - `permissions` (dostęp do zakładek),
+  - `permissions` (mapa uprawnień do zakładek; np. `chatTab: true`),
   - `statsYearsAccess` (lata statystyk).
 - Moduł admina pozwala:
   - przeglądać konta utworzone przez samych użytkowników (self-register),
@@ -266,7 +266,7 @@ Aplikacja odczytuje konfigurację z `window.firebaseConfig`:
 
 ### A) `main_users`
 - dokument: `{uid}`
-- pola: `uid`, `email`, `name`, `role`, `isActive`, `permissions[]`, `statsYearsAccess[]`, `pin`, `source`, `createdAt`, `updatedAt`.
+- pola: `uid`, `email`, `name`, `role`, `isActive`, `permissions{}`, `statsYearsAccess[]`, `pin`, `source`, `createdAt`, `updatedAt`.
 
 ### B) `main_app_settings`
 1. `rules`
@@ -421,7 +421,7 @@ service cloud.firestore {
 
 ## 11. Aktualny model auth i kolekcji (Main)
 - Rejestracja działa z poziomu UI (`#authRegisterButton`) przez `createUserWithEmailAndPassword`.
-- Po rejestracji tworzony jest profil `main_users/{uid}` z polami: `uid`, `email`, `name`, `role`, `isActive`, `permissions`, `statsYearsAccess`, znaczniki czasu i `source: self-register`.
+- Po rejestracji tworzony jest profil `main_users/{uid}` z polami: `uid`, `email`, `name`, `role`, `isActive`, `permissions` (mapa), `statsYearsAccess`, znaczniki czasu i `source: self-register`.
 - Domyślna rola nowego konta to `user`.
 - Logowanie i reset hasła są obsługiwane przez Firebase Auth.
 - Metadata sesji zapisywana jest do `main_auth_sessions/{uid}`.
