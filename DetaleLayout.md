@@ -128,3 +128,7 @@
 - W układzie 3-kolumnowym `#adminGamesTab .admin-games-layout` lewy panel `Lata` ma szerokość `200px`.
 - Kolumna centralna pozostaje elastyczna (`minmax(0, 1fr)`).
 - Prawy panel `Ranking` ma szerokość `300px`, aby ograniczyć konieczność przewijania tabeli rankingu.
+
+## Logowanie – status błędów
+- W karcie logowania (sekcja centralna) wyświetlany jest dodatkowy wiersz statusu (`authLoginStatus`) w stylu `status-text`.
+- Komunikat ma charakter informacyjny i pokazuje na bieżąco wynik akcji logowania/rejestracji/resetu bez konieczności przejścia do nagłówka.

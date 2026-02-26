@@ -221,3 +221,11 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 2. Gracze oczekujący na zatwierdzenie są wyszarzeni i mają tylko akcje **Zatwierdź** oraz **Usuń**.
 3. Po kliknięciu **Zatwierdź** odblokowuje się edycja nazwy, PIN-u i uprawnień.
 4. E-mail jest tylko do odczytu (bez edycji).
+
+## 11. Aktualizacja UI (Firebase, logowanie i PIN)
+1. W oknie logowania widzisz teraz dodatkowy komunikat statusu (`authLoginStatus`) – pokazuje błędy logowania (np. złe hasło, brak użytkownika).
+2. Po zalogowaniu pasek nagłówka pokazuje nazwę/e-mail zalogowanego konta oraz przycisk **Wyloguj**.
+3. Funkcjonalność PIN w widoku użytkownika jest odpięta – sekcje gracza otwierają się bez ręcznego wpisywania PIN.
+4. W `Gracze` rekordy bez nazwy są ukrywane z tabeli (np. techniczne konta seed).
+5. W kolumnie `Uprawnienia` etykiety są pokazywane w stałej kolejności, więc po `Odśwież` kolejność już się nie miesza.
+6. W listach gier ukrywane są rekordy oznaczone jako seed (`source` zawiera `seed` albo dokument ma `isSeed/seed=true`).

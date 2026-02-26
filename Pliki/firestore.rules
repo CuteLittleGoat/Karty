@@ -13,13 +13,19 @@ service cloud.firestore {
     function hasMainAdminRole() {
       return isSignedIn()
         && exists(/databases/$(database)/documents/main_users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/main_users/$(request.auth.uid)).data.role == 'admin';
+        && (
+          get(/databases/$(database)/documents/main_users/$(request.auth.uid)).data.role == 'admin'
+          || get(/databases/$(database)/documents/main_users/$(request.auth.uid)).data.isAdmin == true
+        );
     }
 
     function hasSecondAdminRole() {
       return isSignedIn()
         && exists(/databases/$(database)/documents/second_users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/second_users/$(request.auth.uid)).data.role == 'admin';
+        && (
+          get(/databases/$(database)/documents/second_users/$(request.auth.uid)).data.role == 'admin'
+          || get(/databases/$(database)/documents/second_users/$(request.auth.uid)).data.isAdmin == true
+        );
     }
 
     function validBaseUserCreateData(data, uid) {
@@ -29,7 +35,7 @@ service cloud.firestore {
         && data.isActive is bool
         && (!('isApproved' in data) || data.isApproved is bool)
         && (!('moduleAccess' in data) || data.moduleAccess is map)
-        && (!('permissions' in data) || data.permissions is map)
+        && (!('permissions' in data) || data.permissions is map || data.permissions is list)
         && (!('statsYearsAccess' in data) || data.statsYearsAccess is list);
     }
 
