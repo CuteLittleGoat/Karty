@@ -1,200 +1,194 @@
 # Odtworzenie kolekcji Firebase `main_users` (moduł Main)
 
-## Prompt użytkownika
+## Prompt użytkownika (oryginalny)
 > „Przypadkiem skasowałem z Firebase kolekcję main_users.
 > Napisz mi plik w Analizy bardzo dokładnie jakie tam mają być kolekcje, dokumenty, field, mapy itd, żebym ręcznie wpisał jeszcze raz.”
 
+## Prompt użytkownika (uzupełnienie)
+> „Uzupełnij analizę Analizy/Odtworzenie_main_users_firestore.md
+> Załączam screeny kolekcji second_users - była ona bliżniaczo podobna do skasowanej "main_users".
+> Są tam dokumenty "seed-player" i "seed-admin". Napisz mi jak odtworzyć "main_user" zgodnie z tym co było przed przypadkowym skasowaniem.
+> Przeczytaj też inne analizy i dokumentację.”
+
 ---
 
-## 1) Co dokładnie trzeba odtworzyć
+## 1) Najważniejsza korekta względem poprzedniej wersji analizy
 
-W module **Main** każdy użytkownik ma 1 dokument w kolekcji:
+Po porównaniu screenów `second_users` + wcześniej zapisanej struktury w repo (`Analizy/firestore-structure.txt`) należy przyjąć, że **historycznie `main_users` miało strukturę bliźniaczą do `second_users`**, czyli:
+
+- `permissions` było **mapą (object/map)**, a nie tablicą stringów,
+- był osobny obiekt `moduleAccess`,
+- były pola `displayName`, `createdBy`, `userGamesScope`, `lastLoginAt`,
+- seedowe dokumenty miały ID:
+  - `seed-admin`
+  - `seed-player`
+
+Czyli do ręcznego odtworzenia po skasowaniu przyjmujemy **model „bliźniaczy do second_users”**.
+
+---
+
+## 2) Co odtworzyć 1:1
 
 - **Kolekcja:** `main_users`
-- **Dokument:** `{uid}` (ID dokumentu musi być równe UID użytkownika z Firebase Authentication)
+- **Dokumenty (minimum startowe):**
+  - `main_users/seed-admin`
+  - `main_users/seed-player`
 
-Czyli struktura:
-
-- `main_users/{uid}`
-
-Nie ma tu zagnieżdżonych subkolekcji wymaganych do działania logiki użytkowników.
+Dodatkowo (po odtworzeniu seedów) tworzysz dokumenty dla realnych kont, najlepiej z ID równym `uid` z Firebase Auth.
 
 ---
 
-## 2) Wymagane pola w dokumencie `main_users/{uid}`
+## 3) Struktura dokumentu `main_users/{uid}` (wersja zgodna z historycznym seedem)
 
-Poniżej masz komplet pól używanych przez aplikację Main (z typami):
+Pola top-level:
 
-1. `uid` — **string**  
-   - musi zawierać to samo co ID dokumentu i UID z Firebase Auth.
+1. `createdAt` — **timestamp**
+2. `createdBy` — **string | null**
+3. `displayName` — **string**
+4. `email` — **string**
+5. `isActive` — **boolean**
+6. `lastLoginAt` — **timestamp | null**
+7. `moduleAccess` — **map**
+8. `permissions` — **map**
+9. `role` — **string** (`"admin"` albo `"player"`)
+10. `updatedAt` — **timestamp**
+11. `userGamesScope` — **string** (`"read_all"` albo `"own_only"`)
 
-2. `email` — **string**  
-   - email konta użytkownika.
+### 3.1 `moduleAccess` (map)
+Dla Main ustaw:
 
-3. `name` — **string**  
-   - nazwa wyświetlana użytkownika (np. `jan.kowalski`).
+- `main: true`
 
-4. `role` — **string**  
-   - dozwolone wartości wykorzystywane w aplikacji: najczęściej `"user"` albo `"admin"`.
+(analogicznie w `second_users` było `second: true`).
 
-5. `isActive` — **boolean**  
-   - `true` = konto aktywne w module Main.
-   - `false` = brak dostępu do części funkcji po zalogowaniu.
+### 3.2 `permissions` (map)
+Klucze boolean:
 
-6. `isApproved` — **boolean**  
-   - `true` = konto zatwierdzone przez admina.
-   - `false` = konto czeka na zatwierdzenie.
-
-7. `permissions` — **array<string>**  
-   - lista zakładek dostępnych przez strefę gracza.
-   - możliwe wartości elementów:
-     - `"playerZoneTab"`
-     - `"nextGameTab"`
-     - `"chatTab"`
-     - `"confirmationsTab"`
-     - `"userGamesTab"`
-     - `"statsTab"`
-
-8. `statsYearsAccess` — **array<number>**  
-   - lista lat, które użytkownik może oglądać w statystykach (np. `[2026, 2025]`).
-   - jeśli brak dostępu do statystyk, może być pusta tablica `[]`.
-
-9. `pin` — **string**  
-   - 5-cyfrowy PIN użytkownika (np. `"12345"`).
-   - jeśli nie ustawiony, zapisz pusty string `""`.
-
-10. `source` — **string**  
-    - źródło utworzenia rekordu (np. `"self-register"`, `"seed-admin"`, `"seed-user"`, `"manual-recovery"`).
-
-11. `createdAt` — **timestamp** (Firestore Timestamp)  
-    - data utworzenia profilu.
-
-12. `updatedAt` — **timestamp** (Firestore Timestamp)  
-    - data ostatniej edycji profilu.
-
-> **Ważne:** w `main_users` nie ma wymaganych map (obiektów zagnieżdżonych) do poprawnego działania — model opiera się na prostych polach + tablicach.
+- `adminGamesTab`
+- `chatTab`
+- `newsTab`
+- `playersTab`
+- `statsTab`
+- `tablesTab`
+- `tournamentTab`
+- `userGamesTab`
 
 ---
 
-## 3) Minimalny „bezpieczny” szablon dokumentu
+## 4) Dokładne wartości seedów do odtworzenia
 
-Wklej taki kształt (podmień wartości):
+## 4.1 `main_users/seed-admin`
 
 ```json
 {
-  "uid": "<UID_Z_FIREBASE_AUTH>",
-  "email": "<email_uzytkownika>",
-  "name": "<nazwa_wyswietlana>",
-  "role": "user",
-  "isActive": false,
-  "isApproved": false,
-  "permissions": [],
-  "statsYearsAccess": [],
-  "pin": "",
-  "source": "manual-recovery",
-  "createdAt": "<Firestore Timestamp>",
-  "updatedAt": "<Firestore Timestamp>"
-}
-```
-
----
-
-## 4) Przykład rekordu zwykłego użytkownika
-
-```json
-{
-  "uid": "abcDEF123uid",
-  "email": "gracz1@example.com",
-  "name": "gracz1",
-  "role": "user",
+  "createdAt": "<timestamp>",
+  "createdBy": null,
+  "displayName": "MAIN Admin",
+  "email": "main.admin@example.com",
   "isActive": true,
-  "isApproved": true,
-  "permissions": ["playerZoneTab", "nextGameTab", "chatTab"],
-  "statsYearsAccess": [],
-  "pin": "48302",
-  "source": "manual-recovery",
-  "createdAt": "2026-02-26T10:00:00Z",
-  "updatedAt": "2026-02-26T10:00:00Z"
-}
-```
-
----
-
-## 5) Przykład rekordu admina
-
-```json
-{
-  "uid": "adminUID999",
-  "email": "admin@example.com",
-  "name": "admin",
+  "lastLoginAt": null,
+  "moduleAccess": {
+    "main": true
+  },
+  "permissions": {
+    "adminGamesTab": true,
+    "chatTab": true,
+    "newsTab": true,
+    "playersTab": true,
+    "statsTab": true,
+    "tablesTab": true,
+    "tournamentTab": true,
+    "userGamesTab": true
+  },
   "role": "admin",
-  "isActive": true,
-  "isApproved": true,
-  "permissions": [
-    "playerZoneTab",
-    "nextGameTab",
-    "chatTab",
-    "confirmationsTab",
-    "userGamesTab",
-    "statsTab"
-  ],
-  "statsYearsAccess": [2026, 2025],
-  "pin": "13579",
-  "source": "manual-recovery",
-  "createdAt": "2026-02-26T10:00:00Z",
-  "updatedAt": "2026-02-26T10:00:00Z"
+  "updatedAt": "<timestamp>",
+  "userGamesScope": "read_all"
 }
 ```
 
----
+## 4.2 `main_users/seed-player`
 
-## 6) Jak odtworzyć ręcznie w Firebase Console (krok po kroku)
+```json
+{
+  "createdAt": "<timestamp>",
+  "createdBy": "seed-admin",
+  "displayName": "MAIN Player",
+  "email": "main.player@example.com",
+  "isActive": true,
+  "lastLoginAt": null,
+  "moduleAccess": {
+    "main": true
+  },
+  "permissions": {
+    "adminGamesTab": false,
+    "chatTab": true,
+    "newsTab": true,
+    "playersTab": false,
+    "statsTab": true,
+    "tablesTab": false,
+    "tournamentTab": true,
+    "userGamesTab": true
+  },
+  "role": "player",
+  "updatedAt": "<timestamp>",
+  "userGamesScope": "own_only"
+}
+```
 
-1. Wejdź w **Firestore Database**.
-2. Kliknij **Start collection**.
-3. Podaj Collection ID: `main_users`.
-4. Jako pierwszy dokument ustaw Document ID równy UID użytkownika z **Authentication**.
-5. Dodaj wszystkie pola z sekcji „Wymagane pola”.
-6. Powtórz dla każdego konta, które ma mieć dostęp do modułu Main.
-7. Dla kont adminów ustaw:
-   - `role = "admin"`
-   - `isApproved = true`
-   - `isActive = true`
-8. Upewnij się, że:
-   - `permissions` to tablica stringów,
-   - `statsYearsAccess` to tablica liczb,
-   - `pin` ma dokładnie 5 cyfr albo pusty string.
-9. Po ręcznym odtworzeniu odśwież aplikację Main i sprawdź logowanie.
-
----
-
-## 7) Kontrola poprawności po odtworzeniu
-
-Dla każdego dokumentu `main_users/{uid}` sprawdź:
-
-- `documentId == uid` ✅
-- `uid` w polu == `uid` konta w Firebase Auth ✅
-- `email` zgodny z kontem Auth ✅
-- `role` ustawione (`user`/`admin`) ✅
-- `isApproved` i `isActive` mają wartości bool ✅
-- `permissions` jest tablicą stringów z dozwolonej listy ✅
-- `statsYearsAccess` jest tablicą liczb (lat) ✅
-- `pin` to pusty string albo 5 cyfr ✅
-- `createdAt` i `updatedAt` istnieją ✅
+> Jeśli chcesz zachować absolutnie identyczny pattern jak na screenach `second_users`, trzymaj nazwy i typy pól dokładnie jak wyżej, zmieniając wyłącznie prefiks modułu (`main` zamiast `second`) w `moduleAccess` i semantykę displayName/email.
 
 ---
 
-## 8) Najczęstsze błędy przy ręcznym odtwarzaniu
+## 5) Jak odtworzyć w Firebase Console (krok po kroku)
 
-1. **Zły Document ID** (niezgodny z UID z Auth) → użytkownik nie jest poprawnie kojarzony z profilem.
-2. **Brak `isApproved`** → konto może zachowywać się jak oczekujące na akceptację.
-3. **Brak `permissions`** albo zły typ (np. string zamiast tablicy) → brak dostępu do zakładek.
-4. **`statsYearsAccess` jako stringi** zamiast liczb → problemy z filtrem lat w statystykach.
-5. **`pin` jako liczba** zamiast stringa → problemy z walidacją PIN i wiodącymi zerami.
+1. Wejdź do Firestore Database.
+2. Utwórz kolekcję `main_users`.
+3. Dodaj dokument `seed-admin`.
+4. Wprowadź wszystkie pola z sekcji **4.1** z poprawnymi typami:
+   - `createdAt`, `updatedAt` jako **timestamp**,
+   - `createdBy` i `lastLoginAt` jako **null**,
+   - `moduleAccess` i `permissions` jako **map**,
+   - pozostałe jako string/boolean.
+5. Dodaj dokument `seed-player` wg sekcji **4.2**.
+6. Dla realnych użytkowników (UID z Auth) twórz kolejne dokumenty `main_users/{uid}` kopiując szablon `seed-player` lub `seed-admin` i podmieniając:
+   - `displayName`,
+   - `email`,
+   - `createdBy` (np. UID admina lub `seed-admin`),
+   - zakres uprawnień i `userGamesScope`.
 
 ---
 
-## 9) Dodatkowa uwaga techniczna
+## 6) Checklista poprawności po odtworzeniu
 
-Aplikacja zapisuje też metadane sesji do oddzielnej kolekcji `main_auth_sessions/{uid}` po zalogowaniu. Ta kolekcja nie zastępuje `main_users` i nie odtworzy brakujących profili użytkowników.
+Dla każdego dokumentu `main_users/{docId}`:
 
+- `permissions` jest **mapą**, nie tablicą.
+- Każdy klucz `permissions.*` ma typ **boolean**.
+- `moduleAccess.main == true`.
+- `role` jest spójne z uprawnieniami (`admin` ma wszystkie `true`).
+- `userGamesScope`:
+  - `read_all` dla admina,
+  - `own_only` dla gracza.
+- `createdAt` i `updatedAt` są timestampami.
+- `lastLoginAt` może pozostać `null` do czasu pierwszego logowania.
+
+---
+
+## 7) Najczęstsze błędy (ważne)
+
+1. Zapisanie `permissions` jako listy zamiast mapy.
+2. Literówka w kluczach (`userGameTab` zamiast `userGamesTab`, itp.).
+3. Ustawienie `moduleAccess.second` zamiast `moduleAccess.main`.
+4. Ustawienie `role: "user"` mimo modelu mapowego opartego o role `admin`/`player`.
+5. Zły typ `createdAt`/`updatedAt` (string zamiast timestamp).
+
+---
+
+## 8) Uwagi o spójności z dokumentacją i analizami
+
+- W repo są też miejsca opisujące starszy/alternatywny model oparty o tablicę `permissions[]`.
+- Do odtworzenia „jak było przed skasowaniem” przyjmujemy model bliźniaczy do `second_users` (mapowy), bo:
+  - potwierdzają to Twoje screeny,
+  - potwierdza to zapis struktury w `Analizy/firestore-structure.txt` (sekcje `main_users` i `second_users`).
+
+Jeśli po odtworzeniu UI Main będzie nadal oczekiwał tablicy (a nie mapy), trzeba zrobić migrację/adapter w kodzie Main. To jest osobny krok implementacyjny i można go opisać w kolejnej analizie.
