@@ -81,12 +81,7 @@ W tym etapie moduł Second **nie wykonuje** operacji backendowych:
 
 Wszystkie przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Strona1`, `Strona2`, `Odśwież`) są elementami szkieletu UI.
 
-## Logowanie Firebase Auth (Second)
-- W nagłówku dodano wspólny pasek logowania `.auth-toolbar` z polami `#authEmailInput`, `#authPasswordInput` oraz przyciskami `#authLoginButton`, `#authLogoutButton`, `#authResetPasswordButton`.
-- Frontend używa Firebase Auth (compat) i funkcji:
-  - `signInWithEmailAndPassword(email, password)` dla przycisku **Zaloguj**,
-  - `signOut()` dla przycisku **Wyloguj**,
-  - `sendPasswordResetEmail(email)` dla przycisku **Reset hasła**.
-- Listener `onAuthStateChanged` odczytuje profil użytkownika z kolekcji `second_users/{uid}` i aktualizuje komunikat w `#authStatus`.
-- Po zalogowaniu aplikacja próbuje zapisać metadane sesji do `second_auth_sessions/{uid}` (`uid`, `email`, `module`, `profileCollection`, `profileExists`, `lastLoginAt`, `updatedAt`) przez `set(..., { merge: true })`.
-- Integracja jest przygotowana pod przyszłe Rules: odczyt profilu i zapis sesji są już podpięte do docelowych kolekcji, więc po zaostrzeniu reguł mechanizm będzie działał bez zmian w UI.
+## Nagłówek (Second)
+- W nagłówku pozostawiono kontener `.header-controls` z paskiem `.admin-toolbar` i przyciskiem `#secondInstructionButton`.
+- Panel logowania e-mail/hasło został usunięty z `Second/index.html`, a moduł nie ładuje już biblioteki `firebase-auth-compat.js`.
+- `Second/app.js` nie zawiera już logiki `initAuthControls`, więc moduł działa bez integracji z Firebase Auth.

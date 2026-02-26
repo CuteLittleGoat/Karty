@@ -188,10 +188,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 8. W `Turniej` po lewej są przyciski `Instrukcja` i `Odśwież`, a na środku komunikat `Strona w budowie`.
 9. W trybie admin widoczny jest także podgląd końcowego widoku użytkownika.
 
-## 4. Logowanie (nowe przyciski w nagłówku)
-1. W prawym górnym rogu nagłówka wpisz adres w polu **E-mail**.
-2. Wpisz hasło w polu **Hasło**.
-3. Kliknij **Zaloguj**.
-4. Pod przyciskami odczytaj status logowania (np. czy konto ma pełny dostęp do modułu).
-5. Aby zakończyć sesję kliknij **Wyloguj**.
-6. Aby zresetować hasło wpisz e-mail i kliknij **Reset hasła** (aplikacja wyśle mail resetujący).
+## 4. Nagłówek i przycisk „Instrukcja”
+1. W prawym górnym rogu nagłówka (tylko w trybie administratora) znajdziesz przycisk **Instrukcja**.
+2. Kliknij **Instrukcja**, aby otworzyć modal z opisem działania panelu.
+3. Kliknij przycisk zamknięcia (`×`) albo naciśnij `Esc`, aby zamknąć okno.
