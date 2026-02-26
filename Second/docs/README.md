@@ -82,10 +82,7 @@
 3. W środku widzisz tekst `Strona w budowie`.
 4. Przyciski nie są podłączone do logiki backendowej.
 
-## 4. Logowanie (nowe przyciski w nagłówku)
-1. W prawym górnym rogu nagłówka wpisz adres w polu **E-mail**.
-2. Wpisz hasło w polu **Hasło**.
-3. Kliknij **Zaloguj**.
-4. Pod przyciskami odczytaj status logowania (np. czy konto ma pełny dostęp do modułu).
-5. Aby zakończyć sesję kliknij **Wyloguj**.
-6. Aby zresetować hasło wpisz e-mail i kliknij **Reset hasła** (aplikacja wyśle mail resetujący).
+## 4. Nagłówek i przycisk „Instrukcja”
+1. W prawym górnym rogu nagłówka dostępny jest przycisk **Instrukcja**.
+2. Przycisk jest widoczny w trybie administratora (`?admin=1`).
+3. Kliknij **Instrukcja**, aby wyświetlić okno z opisem obsługi modułu.

@@ -21,22 +21,6 @@
           <p class="subtitle">Szkielet UI odwzorowujący kluczowe zakładki modułu Main.</p>
         </div>
         <div class="header-controls">
-          <div class="auth-toolbar" aria-label="Logowanie">
-            <label class="auth-field" for="authEmailInput">
-              <span>E-mail</span>
-              <input id="authEmailInput" type="email" autocomplete="username" placeholder="np. gracz@karty.pl" />
-            </label>
-            <label class="auth-field" for="authPasswordInput">
-              <span>Hasło</span>
-              <input id="authPasswordInput" type="password" autocomplete="current-password" placeholder="Hasło" />
-            </label>
-            <div class="auth-actions">
-              <button id="authLoginButton" class="primary" type="button">Zaloguj</button>
-              <button id="authLogoutButton" class="secondary" type="button">Wyloguj</button>
-              <button id="authResetPasswordButton" class="secondary" type="button">Reset hasła</button>
-            </div>
-            <p id="authStatus" class="status-text" aria-live="polite">Nie zalogowano.</p>
-          </div>
           <div class="admin-toolbar">
             <button id="secondInstructionButton" class="secondary" type="button">Instrukcja</button>
           </div>
@@ -293,7 +277,6 @@
     <script src="../config/firebase-config.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="app.js" type="module"></script>
   </body>
 </html>
