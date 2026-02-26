@@ -90,3 +90,8 @@
 1. W prawym górnym rogu nagłówka dostępny jest przycisk **Instrukcja**.
 2. Przycisk jest widoczny po poprawnym zalogowaniu do trybu administratora.
 3. Kliknij **Instrukcja**, aby wyświetlić okno z opisem obsługi modułu.
+
+### 2.8 Ochrona przed usunięciem ostatniego dokumentu
+1. W ekranach admina używających operacji usuwania Firestore aplikacja pilnuje, aby nie usunąć ostatniego dokumentu kolekcji.
+2. Jeśli operacja mogłaby wyzerować kolekcję, UI blokuje usunięcie i pokazuje komunikat ostrzegawczy.
+3. Dzięki temu moduł jest przygotowany pod przyszłe podpięcie wszystkich okien do Firebase.
