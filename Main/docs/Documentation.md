@@ -336,36 +336,71 @@ node scripts/firebase/rebuild-main-firebase.js
 
 Skrypt odtwarza podstawowe dokumenty (`main_app_settings/rules`, `main_admin_messages/admin_messages`, `main_calculators/{tournament,cash}`) i wypisuje wzór profilu do `main_users/{uid}`.
 
-## 9. Rules Firestore (Main + self-register + aktywacja przez admina)
+## 9. Rules Firestore (Main + Second, wariant: `permissions` jako mapa)
 
 ```rules
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() { return request.auth != null; }
-    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
     function hasMainAdminRole() {
-      return signedIn()
+      return isSignedIn()
         && exists(/databases/$(database)/documents/main_users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/main_users/$(request.auth.uid)).data.role == "admin";
+        && get(/databases/$(database)/documents/main_users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function hasSecondAdminRole() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/second_users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/second_users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function validBaseUserCreateData(data, uid) {
+      return data.uid == uid
+        && data.email is string
+        && data.role is string
+        && data.isActive is bool
+        && (!('isApproved' in data) || data.isApproved is bool)
+        && (!('moduleAccess' in data) || data.moduleAccess is map)
+        && (!('permissions' in data) || data.permissions is map);
+    }
+
+    function validOwnerUpdate(allowedChangedKeys) {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(allowedChangedKeys);
     }
 
     match /main_users/{uid} {
-      allow create: if isOwner(uid)
-        && request.resource.data.uid == request.auth.uid
-        && request.resource.data.isActive == false
-        && request.resource.data.permissions is list;
-
       allow read: if isOwner(uid) || hasMainAdminRole();
 
-      allow update: if hasMainAdminRole()
-        || (isOwner(uid)
-          && request.resource.data.permissions == resource.data.permissions
-          && request.resource.data.isActive == resource.data.isActive
-          && request.resource.data.role == resource.data.role);
+      allow create: if isOwner(uid)
+        && validBaseUserCreateData(request.resource.data, uid);
 
-      allow delete: if hasMainAdminRole()
-        && uid != "AV9s1NNHl3Rq4pT4HnfQ7y9ELxa2";
+      allow update: if (isOwner(uid)
+          && validOwnerUpdate(['displayName', 'photoURL', 'lastLoginAt']))
+        || hasMainAdminRole();
+
+      allow delete: if hasMainAdminRole();
+    }
+
+    match /second_users/{uid} {
+      allow read: if isOwner(uid) || hasSecondAdminRole();
+
+      allow create: if isOwner(uid)
+        && validBaseUserCreateData(request.resource.data, uid);
+
+      allow update: if (isOwner(uid)
+          && validOwnerUpdate(['displayName', 'photoURL', 'lastLoginAt']))
+        || hasSecondAdminRole();
+
+      allow delete: if hasSecondAdminRole();
     }
   }
 }
@@ -393,11 +428,13 @@ service cloud.firestore {
 - Legacy kolekcje w module Main zostały przepięte na: `main_app_settings`, `main_admin_messages`, `main_chat_messages`, `main_tables`, `main_user_games`, `main_admin_games_stats`, `main_calculators`.
 
 
-## Auth – walidacje i zatwierdzanie kont
+## Auth – walidacje, zatwierdzanie kont i diagnostyka błędów
 - Dodano walidację e-maila regexem oraz walidację hasła (min. 6 znaków, min. 1 cyfra, min. 1 znak specjalny) przed logowaniem/rejestracją.
 - Rejestracja zapisuje profil z `isApproved: false` i `isActive: false`; użytkownik po utworzeniu konta trafia do stanu „Oczekiwanie na zatwierdzenie”.
 - UI sesji pokazuje aktywny login (`#authCurrentUser`) oraz przycisk wylogowania.
 - Dodano widok resetu hasła na ekranie logowania (`#authResetView`) i wysyłkę przez `sendPasswordResetEmail`.
+- Komunikaty błędów logowania/rejestracji/odczytu profilu pokazują teraz twardą diagnostykę (`kod` + `opis` błędu Firebase) oraz wskazówki dla błędów `permission-denied`, `auth/wrong-password`, `auth/user-not-found`, `auth/invalid-credential`, `auth/too-many-requests`.
+- Dodatkowo błędy są logowane do `console.error` z kontekstem kolekcji i UID, co ułatwia szybkie odróżnienie problemu Auth od Firestore Rules.
 
 ## Admin / Gracze
 - Tabela graczy rozszerzona o kolumnę e-mail i status zatwierdzenia.

@@ -87,7 +87,7 @@
 1. W prawym górnym rogu nagłówka wpisz adres w polu **E-mail**.
 2. Wpisz hasło w polu **Hasło**.
 3. Kliknij **Zaloguj**.
-4. Pod przyciskami odczytaj status logowania (np. czy konto ma pełny dostęp do modułu).
+4. Pod przyciskami odczytaj status logowania — w przypadku błędu pojawi się też kod błędu (np. `auth/...`), żeby szybciej poprawić dane.
 5. Aby zakończyć sesję kliknij **Wyloguj**.
 6. Po odświeżeniu strony aplikacja wymaga ponownego logowania (sesja logowania nie jest trwała).
 7. Aby zresetować hasło wpisz e-mail i kliknij **Reset hasła** (aplikacja wyśle mail resetujący).

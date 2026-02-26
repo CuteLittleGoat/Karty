@@ -72,12 +72,7 @@ Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry
 - Tabele `Gracze` korzystają z `players-table`, która ma te same minimalne szerokości kolumn jak w Main dla kolumn `Nazwa` i `PIN`.
 
 ## 6. Dane backendowe
-W tym etapie moduł Second **nie wykonuje** operacji backendowych:
-- brak odczytu z Firebase,
-- brak zapisu do Firebase,
-- brak nasłuchu `onSnapshot`.
-
-Wszystkie przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Strona1`, `Strona2`, `Odśwież`) są elementami szkieletu UI.
+W module Second aktywna jest warstwa logowania Firebase Auth (logowanie, rejestracja, reset hasła, odczyt profilu `second_users/{uid}`). Pozostałe sekcje panelu (np. część przycisków admina) nadal działają jako szkielet UI.
 
 ## Logowanie Firebase Auth (Second)
 - Ekran startowy to `#loginScreen` z kartą `.login-card` i przyciskami `#authLoginButton`, `#authRegisterButton`.
@@ -99,8 +94,13 @@ Wszystkie przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Strona1`, `Str
 - Metadata logowania zapisywana jest do `second_auth_sessions/{uid}`.
 
 
+## Rules Firestore (Main + Second, wariant: `permissions` jako mapa)
+Reguły dla kolekcji `main_users` i `second_users` powinny używać walidacji `permissions is map` (zamiast `permissions is list`) oraz wspólnych funkcji `validBaseUserCreateData` i `validOwnerUpdate` zgodnie z aktualnym wariantem wdrożeniowym opisanym w module Main.
+
 ## Auth flow
 - Dodano walidację e-maila i hasła dla logowania/rejestracji.
 - Rejestracja zapisuje użytkownika z `isApproved: false` oraz `isActive: false`; do czasu akceptacji aplikacja pokazuje stan oczekiwania.
 - Pasek sesji pokazuje login (`#authCurrentUser`).
 - Dodano osobny widok resetu hasła na ekranie logowania oraz wysyłkę resetu przez Firebase Auth.
+- Komunikaty błędów logowania/rejestracji/odczytu profilu pokazują twardą diagnostykę (`kod` + `opis` błędu Firebase) i wskazówki dla najczęstszych błędów logowania oraz `permission-denied`.
+- Błędy są logowane do `console.error` z kontekstem (`[Second][Auth][...]`) dla szybkiego debugowania.
