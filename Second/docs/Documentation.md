@@ -104,3 +104,9 @@ Reguły dla kolekcji `main_users` i `second_users` używają walidacji `permissi
 - Dodano osobny widok resetu hasła na ekranie logowania oraz wysyłkę resetu przez Firebase Auth.
 - Komunikaty błędów logowania/rejestracji/odczytu profilu pokazują twardą diagnostykę (`kod` + `opis` błędu Firebase) i czytelny powód błędu: brak konta dla e-maila, błędne hasło, błędne dane logowania, problem połączenia z Firebase oraz wskazówki dla `permission-denied` i limitu prób logowania.
 - Błędy są logowane do `console.error` z kontekstem (`[Second][Auth][...]`) dla szybkiego debugowania.
+
+## Aktualizacja: widoczność sesji auth
+- `applyAuthUiState()` ustawia `is-authenticated` na podstawie aktywnej sesji Firebase Auth (`hasUser`), bez uzależniania od pełnego odczytu profilu.
+- Dzięki temu elementy paska sesji (`#authCurrentUser`, `#authLogoutButton`) są stale dostępne po zalogowaniu i użytkownik zawsze może wykonać wylogowanie.
+- Logika `is-awaiting-approval` pozostaje bez zmian i nadal odpowiada za blokadę treści aplikacji dla kont niezatwierdzonych.
+

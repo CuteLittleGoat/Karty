@@ -454,3 +454,10 @@ service cloud.firestore {
 - `Pliki/firestore.rules`:
   - `hasMainAdminRole()` / `hasSecondAdminRole()` akceptują też legacy flagę `isAdmin == true`,
   - walidacja `permissions` przy create użytkownika dopuszcza `map` albo `list`.
+
+## Aktualizacja: auth UI i filtrowanie gier technicznych
+- `applyAuthUiState()` ustawia `is-authenticated` na podstawie samego faktu zalogowania (`hasUser`), dzięki czemu pasek sesji (`#authCurrentUser`, `#authLogoutButton`) pozostaje widoczny od razu po zalogowaniu.
+- Stan `is-awaiting-approval` nadal blokuje właściwy widok aplikacji dla kont oczekujących na akceptację, ale nie ukrywa informacji o aktywnej sesji.
+- `isSeedGameRecord(data)` rozszerzono o dodatkowe wzorce `source` (`firebase-console`, `firestore-console`, `bootstrap`, `template`, `sample`) i rekordy te są pomijane w listach **Najbliższa gra** i **Gry do potwierdzenia**.
+- Status odświeżania w `initAdminConfirmations()` budowany jest dynamicznie z nazw kolekcji (`gamesCollectionName`, `userGamesCollectionName`), więc UI pokazuje aktualne prefiksy, np. `main_*`.
+

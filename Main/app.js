@@ -264,7 +264,7 @@ const authContextState = {
 const applyAuthUiState = () => {
   const hasUser = Boolean(authContextState.user);
   const isApproved = authContextState.profile ? authContextState.profile.isApproved !== false : false;
-  const isAuthenticated = hasUser && isApproved;
+  const isAuthenticated = hasUser;
   const role = typeof authContextState.profile?.role === "string" ? authContextState.profile.role : "user";
   const isAdmin = role === "admin";
 
@@ -1424,7 +1424,13 @@ const isSeedGameRecord = (data) => {
     return true;
   }
   const source = typeof data.source === "string" ? data.source.toLowerCase() : "";
-  return source.includes("seed") || source.includes("default-seed");
+  return source.includes("seed")
+    || source.includes("default-seed")
+    || source.includes("firebase-console")
+    || source.includes("firestore-console")
+    || source.includes("bootstrap")
+    || source.includes("template")
+    || source.includes("sample");
 };
 
 const addDays = (dateValue, days) => {
@@ -3316,7 +3322,7 @@ const initAdminConfirmations = () => {
         list.appendChild(wrapper);
       }
 
-      status.textContent = `Załadowano ${games.length} aktywnych gier (Tables + UserGames).`;
+      status.textContent = `Załadowano ${games.length} aktywnych gier (${gamesCollectionName} + ${userGamesCollectionName}).`;
     } catch (error) {
       status.textContent = "Nie udało się pobrać listy potwierdzeń.";
     }

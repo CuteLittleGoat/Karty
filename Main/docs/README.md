@@ -229,3 +229,12 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 4. W `Gracze` rekordy bez nazwy są ukrywane z tabeli (np. techniczne konta seed).
 5. W kolumnie `Uprawnienia` etykiety są pokazywane w stałej kolejności, więc po `Odśwież` kolejność już się nie miesza.
 6. W listach gier ukrywane są rekordy oznaczone jako seed (`source` zawiera `seed` albo dokument ma `isSeed/seed=true`).
+
+## 6. Logowanie i pasek sesji (aktualne zachowanie)
+1. Po kliknięciu **Zaloguj** i poprawnym logowaniu pasek sesji w nagłówku zawsze pokazuje informację **Zalogowany: ...** oraz przycisk **Wyloguj**.
+2. Nawet jeśli profil użytkownika ma chwilowy problem z odczytem uprawnień, pasek sesji pozostaje widoczny, żeby można było od razu sprawdzić stan logowania i wykonać wylogowanie.
+
+## 7. Gry seed/testowe i listy potwierdzeń
+1. W sekcjach **Najbliższa gra** oraz **Gry do potwierdzenia** aplikacja automatycznie ukrywa rekordy techniczne/seedowe (np. tworzone przy bootstrapie danych).
+2. Komunikat po odświeżeniu w **Gry do potwierdzenia** pokazuje aktualne nazwy kolekcji z prefiksem modułu, np. `main_tables + main_user_games`.
+
