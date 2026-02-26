@@ -15,6 +15,9 @@ const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
 const ADMIN_MESSAGES_COLLECTION = "admin_messages";
 const ADMIN_MESSAGES_DOCUMENT = "admin_messages";
+const ADMIN_SECURITY_COLLECTION = "admin_security";
+const ADMIN_SECURITY_DOCUMENT = "credentials";
+const ADMIN_SECURITY_PASSWORD_FIELD = "passwordHash";
 const RULES_DEFAULT_TEXT = "";
 const DEFAULT_GAME_NOTES_TEMPLATE = "Rodzaj gry:\nPrzewidywani gracze:\nStack:\nWpisowe:\nRebuy:\nAdd-on:\nBlindy:\nOrganizacja:\nPodział puli:";
 
@@ -672,6 +675,77 @@ const registerAdminRefreshHandler = (tabId, handler) => {
 const getAdminMode = () => {
   const params = new URLSearchParams(window.location.search);
   return params.get("admin") === "1";
+};
+
+const getAdminPasswordHash = async () => {
+  const firebaseApp = getFirebaseApp();
+  if (!firebaseApp?.firestore) {
+    throw new Error("FIREBASE_UNAVAILABLE");
+  }
+
+  const db = firebaseApp.firestore();
+  const snapshot = await db
+    .collection(ADMIN_SECURITY_COLLECTION)
+    .doc(ADMIN_SECURITY_DOCUMENT)
+    .get();
+
+  const storedHash = snapshot.get(ADMIN_SECURITY_PASSWORD_FIELD);
+  if (typeof storedHash !== "string" || !storedHash.trim()) {
+    throw new Error("PASSWORD_NOT_CONFIGURED");
+  }
+
+  return storedHash.trim();
+};
+
+const getSha256Hex = async (value) => {
+  if (!window.crypto?.subtle || typeof window.TextEncoder !== "function") {
+    return "";
+  }
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(value);
+  const digest = await window.crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+};
+
+const isAdminPasswordValid = async (candidatePassword, storedHash) => {
+  if (candidatePassword === storedHash) {
+    return true;
+  }
+  const sha256Hex = await getSha256Hex(candidatePassword);
+  if (!sha256Hex) {
+    return false;
+  }
+  return sha256Hex === storedHash.toLowerCase();
+};
+
+const resolveAdminMode = async () => {
+  if (!getAdminMode()) {
+    return false;
+  }
+
+  let storedHash = "";
+  try {
+    storedHash = await getAdminPasswordHash();
+  } catch (error) {
+    window.alert("Nie udało się odczytać hasła administratora. Otwieram widok użytkownika.");
+    return false;
+  }
+
+  while (true) {
+    const candidatePassword = window.prompt("Podaj hasło administratora");
+    if (candidatePassword === null) {
+      return false;
+    }
+
+    const isValid = await isAdminPasswordValid(candidatePassword, storedHash);
+    if (isValid) {
+      return true;
+    }
+
+    window.alert("Błędne hasło administratora. Spróbuj ponownie.");
+  }
 };
 
 const getFirebaseApp = () => {
@@ -6955,7 +7029,7 @@ const initInstructionModal = () => {
 };
 
 const bootstrap = async () => {
-  const isAdmin = getAdminMode();
+  const isAdmin = await resolveAdminMode();
   document.body.classList.toggle("is-admin", isAdmin);
   initAdminPanelTabs();
   initAdminPanelRefresh();

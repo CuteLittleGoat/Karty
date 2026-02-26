@@ -8,6 +8,14 @@
 5. Niżej widzisz od razu pasek zakładek użytkownika (bez osobnego nagłówka nad zakładkami).
 6. Kliknięcie nazwy zakładki przełącza zawartość widoku.
 
+## 1A. Wejście do panelu administratora (`?admin=1`)
+1. Otwórz aplikację z parametrem `?admin=1` w adresie.
+2. Aplikacja wyświetli okienko z prośbą o hasło administratora.
+3. Wpisz hasło i potwierdź:
+   - poprawne hasło otwiera panel administratora,
+   - błędne hasło pokazuje komunikat błędu i ponownie wyświetla okienko,
+   - anulowanie okienka przełącza aplikację do widoku użytkownika.
+
 ## 2. Widok użytkownika
 
 W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Regulamin**, **Strefa Gracza**.

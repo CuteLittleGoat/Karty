@@ -2,10 +2,14 @@
 
 ## 1. Uruchomienie i wybór trybu
 1. Otwórz `Second/index.html` w przeglądarce.
-2. Aby wejść do panelu administratora, dopisz w adresie `?admin=1`.
+2. Aby poprosić o dostęp do panelu administratora, dopisz w adresie `?admin=1`.
 3. Aby wejść do widoku użytkownika, otwórz stronę bez parametru `admin`.
+4. Po wejściu z parametrem `?admin=1` pojawia się okno z prośbą o hasło administratora.
+5. Podanie poprawnego hasła otwiera panel administratora.
+6. Podanie błędnego hasła pokazuje błąd i ponownie pyta o hasło.
+7. Anulowanie okna hasła przenosi do widoku użytkownika.
 
-## 2. Panel administratora (`?admin=1`)
+## 2. Panel administratora (po poprawnym haśle dla `?admin=1`)
 
 ### 2.1 Górny pasek
 1. W prawym górnym rogu aplikacji (obok nagłówka) kliknij zielony przycisk `Instrukcja` (ten sam styl co w module Main).
@@ -84,5 +88,5 @@
 
 ## 4. Nagłówek i przycisk „Instrukcja”
 1. W prawym górnym rogu nagłówka dostępny jest przycisk **Instrukcja**.
-2. Przycisk jest widoczny w trybie administratora (`?admin=1`).
+2. Przycisk jest widoczny po poprawnym zalogowaniu do trybu administratora.
 3. Kliknij **Instrukcja**, aby wyświetlić okno z opisem obsługi modułu.

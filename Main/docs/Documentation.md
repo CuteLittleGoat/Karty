@@ -467,3 +467,13 @@ Ta dokumentacja opisuje **aktualny stan aplikacji** i nie zawiera historii zmian
 - W nagłówku pozostawiono wyłącznie kontener `.header-controls` z paskiem `.admin-toolbar` i przyciskiem `#adminInstructionButton`.
 - Panel logowania e-mail/hasło został usunięty z `Main/index.html`, a moduł nie ładuje już biblioteki `firebase-auth-compat.js`.
 - `Main/app.js` nie inicjalizuje już obsługi logowania (brak `initAuthControls`), dzięki czemu nagłówek nie zawiera żadnych zależności od Firebase Auth.
+
+## 11. Bramka hasła administratora (`?admin=1`)
+- `Main/app.js` używa `resolveAdminMode()` przed uruchomieniem modułów.
+- Dla `?admin=1` wykonywany jest odczyt Firestore: kolekcja `admin_security`, dokument `credentials`, pole `passwordHash`.
+- Aplikacja pokazuje `window.prompt("Podaj hasło administratora")`.
+- Walidacja akceptuje:
+  - dokładną zgodność wpisanego hasła z `passwordHash`,
+  - lub zgodność SHA-256 wpisanego hasła z wartością `passwordHash` (hex).
+- Błędne hasło powoduje `alert` i ponowne pytanie o hasło.
+- `Anuluj` w promptcie albo błąd odczytu hasła przełącza aplikację do widoku użytkownika (`document.body` bez klasy `is-admin`).
