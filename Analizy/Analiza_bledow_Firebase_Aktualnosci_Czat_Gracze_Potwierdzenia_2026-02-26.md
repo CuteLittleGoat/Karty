@@ -104,3 +104,30 @@
 - Dodano gotowy plik Rules do wdrożenia:
   - `Pliki/firestore.rules`
 - Reguły rozszerzają dostęp na kolekcje używane przez Main/Second i uwzględniają obecny format pól użytkownika.
+
+---
+
+## Aktualizacja analizy (2026-02-26) – weryfikacja map/list na podstawie screena Firebase
+
+## Prompt użytkownika
+> Przeczytaj i zaktualizuj plik Analiza_bledow_Firebase_Aktualnosci_Czat_Gracze_Potwierdzenia_2026-02-26.md
+>
+> Załączam screeny z Firebase. Sprawdź czy ustawienia mapa/lista są poprawne. W Database mam ustawione jako "map".
+
+## Wniosek ze screena
+1. Na załączonym screenie (kolekcja `second_users`, dokument `seed-admin`) pola zagnieżdżone są zapisane jako obiekty (`map`):
+   - `moduleAccess` → `second: true`,
+   - `permissions` → klucze typu `chatTab`, `newsTab`, `playersTab`, `tablesTab` itd.
+2. Dla takiego układu danych ustawienie typu **map** jest poprawne.
+3. Ten ekran nie pokazuje pól typu tablicowego (list) dla uprawnień gracza, więc dla tego konkretnego dokumentu nie ma błędu typu `map/list`.
+
+## Doprecyzowanie względem kodu aplikacji
+1. W kodzie Main/Second nadal występuje zapis i odczyt `permissions` jako lista (`[]`) dla części ścieżek użytkowników/graczy.
+2. Dlatego najbezpieczniej zostawić w Rules walidację kompatybilną z obiema strukturami (jak obecnie w `Pliki/firestore.rules`):
+   - `data.permissions is map || data.permissions is list`
+3. Jeśli celem jest pełna standaryzacja na **map**, trzeba wykonać migrację danych i dopiero potem zaostrzyć reguły.
+
+## Rekomendacja operacyjna
+1. Dla `second_users` (panel admina) obecna struktura `permissions` jako **map** jest prawidłowa.
+2. Nie zmieniaj teraz globalnie reguły na „tylko map”, dopóki wszystkie miejsca w kodzie i dane historyczne nie zostaną ujednolicone.
+3. Jeżeli chcesz, w kolejnym kroku mogę przygotować osobny plan migracji `permissions` z list do map (kolejność zmian: kod → migracja danych → zaostrzenie Rules).
