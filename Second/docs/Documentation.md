@@ -90,3 +90,10 @@ Pozostałe przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Strona1`, `St
 - W nagłówku pozostawiono kontener `.header-controls` z paskiem `.admin-toolbar` i przyciskiem `#secondInstructionButton`.
 - Panel logowania e-mail/hasło został usunięty z `Second/index.html`, a moduł nie ładuje już biblioteki `firebase-auth-compat.js`.
 - `Second/app.js` nie zawiera logowania Firebase Auth; bramka admina korzysta z odczytu Firestore i lokalnej walidacji hasła/SHA-256.
+
+## 7. Globalna ochrona kolekcji Firestore przed wyzerowaniem
+- W `Second/app.js` podczas `getFirebaseApp()` uruchamiane jest `installFirestoreDeleteProtection(firebaseApp)`.
+- Mechanizm patchuje `DocumentReference.delete()` oraz `WriteBatch.delete()/commit()`, aby przerwać operację usuwania, która skasowałaby ostatni dokument kolekcji.
+- Weryfikacja wykonywana jest przez `isRemovingLastDocument(...)` (odczyt `limit(n+1)` dla kolekcji i listy rekordów oznaczonych do usunięcia).
+- Przy próbie niedozwolonego usunięcia UI pokazuje `alert`, a kod rzuca błąd `LAST_DOCUMENT_DELETE_BLOCKED`.
+- To przygotowuje moduł Second na przyszłe podpięcie kolejnych ekranów do Firebase bez ryzyka usunięcia całej kolekcji przez UI.

@@ -479,3 +479,12 @@ Ta dokumentacja opisuje **aktualny stan aplikacji** i nie zawiera historii zmian
 - `Anuluj` w modalu logowania przełącza aplikację do widoku użytkownika (`document.body` bez klasy `is-admin`).
 - Gdy odczyt Firestore się nie powiedzie, aplikacja używa awaryjnie `window.firebaseConfig.adminPasswordHash` lub `window.firebaseConfig.adminPassword` (jeśli skonfigurowane).
 - Brak hasła zarówno w Firestore, jak i w konfiguracji wyświetla komunikat w modalu logowania i pozostawia możliwość ponowienia próby lub kliknięcia `Anuluj`.
+
+## 8. Globalne zabezpieczenie usuwania dokumentów Firestore
+- W `Main/app.js` dodano globalny mechanizm `installFirestoreDeleteProtection(firebaseApp)`, uruchamiany podczas `getFirebaseApp()`.
+- Mechanizm podmienia prototypy Firestore:
+  - `DocumentReference.delete()` — blokuje usunięcie, gdy dokument jest ostatnim wpisem kolekcji.
+  - `WriteBatch.delete()` + `WriteBatch.commit()` — analizuje wszystkie usunięcia w batchu i blokuje commit, jeśli batch wyzerowałby kolekcję.
+- Funkcja `isRemovingLastDocument(...)` sprawdza stan kolekcji przez `limit(n+1)`, gdzie `n` to liczba kandydatów do usunięcia.
+- Po wykryciu ryzyka UI pokazuje `alert` i rzuca błąd z kodem `LAST_DOCUMENT_DELETE_BLOCKED`.
+- Zabezpieczenie działa dla wszystkich kolekcji i podkolekcji obsługiwanych przez bieżący klient Firestore, więc obejmuje też nowe okna dodane w przyszłości (o ile używają standardowych operacji `delete` lub `batch.delete`).

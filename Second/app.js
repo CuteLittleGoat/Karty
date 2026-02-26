@@ -1,3 +1,125 @@
+const LAST_DOCUMENT_DELETE_ERROR_CODE = "LAST_DOCUMENT_DELETE_BLOCKED";
+
+const createLastDocumentDeleteError = () => {
+  const error = new Error("Nie można usunąć ostatniego dokumentu z kolekcji.");
+  error.code = LAST_DOCUMENT_DELETE_ERROR_CODE;
+  return error;
+};
+
+const notifyLastDocumentDeleteBlocked = () => {
+  window.alert("Nie można usunąć ostatniego dokumentu z kolekcji. Dodaj nowy rekord przed usunięciem obecnego.");
+};
+
+const isRemovingLastDocument = async ({ collectionRef, candidateDocRefs }) => {
+  if (!collectionRef || !Array.isArray(candidateDocRefs) || !candidateDocRefs.length) {
+    return false;
+  }
+
+  const uniqueRefs = [];
+  const uniqueKeys = new Set();
+  candidateDocRefs.forEach((docRef) => {
+    if (!docRef?.id) {
+      return;
+    }
+    const key = `${docRef.parent?.path ?? ""}/${docRef.id}`;
+    if (uniqueKeys.has(key)) {
+      return;
+    }
+    uniqueKeys.add(key);
+    uniqueRefs.push(docRef);
+  });
+
+  if (!uniqueRefs.length) {
+    return false;
+  }
+
+  const probeSnapshot = await collectionRef.limit(uniqueRefs.length + 1).get();
+  if (probeSnapshot.empty || probeSnapshot.size > uniqueRefs.length) {
+    return false;
+  }
+
+  const sampledIds = new Set(probeSnapshot.docs.map((doc) => doc.id));
+  const deletionsInSample = uniqueRefs.filter((docRef) => sampledIds.has(docRef.id));
+  return deletionsInSample.length === probeSnapshot.size;
+};
+
+const installFirestoreDeleteProtection = (firebaseApp) => {
+  if (!firebaseApp?.firestore || firebaseApp.__kartyDeleteProtectionInstalled) {
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+  const testDocRef = db.collection("__karty_delete_protection__").doc("__guard__");
+
+  const documentReferencePrototype = Object.getPrototypeOf(testDocRef);
+  if (documentReferencePrototype && typeof documentReferencePrototype.delete === "function" && !documentReferencePrototype.__kartyDeleteProtectionPatched) {
+    const originalDelete = documentReferencePrototype.delete;
+    documentReferencePrototype.delete = async function patchedDelete(...args) {
+      const shouldBlock = await isRemovingLastDocument({
+        collectionRef: this.parent,
+        candidateDocRefs: [this]
+      });
+
+      if (shouldBlock) {
+        notifyLastDocumentDeleteBlocked();
+        throw createLastDocumentDeleteError();
+      }
+
+      return originalDelete.apply(this, args);
+    };
+    documentReferencePrototype.__kartyDeleteProtectionPatched = true;
+  }
+
+  const writeBatchPrototype = Object.getPrototypeOf(db.batch());
+  if (writeBatchPrototype && typeof writeBatchPrototype.delete === "function" && typeof writeBatchPrototype.commit === "function" && !writeBatchPrototype.__kartyDeleteProtectionPatched) {
+    const originalBatchDelete = writeBatchPrototype.delete;
+    const originalBatchCommit = writeBatchPrototype.commit;
+
+    writeBatchPrototype.delete = function patchedBatchDelete(docRef, ...args) {
+      if (!this.__kartyPendingDeleteRefs) {
+        this.__kartyPendingDeleteRefs = [];
+      }
+      this.__kartyPendingDeleteRefs.push(docRef);
+      return originalBatchDelete.call(this, docRef, ...args);
+    };
+
+    writeBatchPrototype.commit = async function patchedBatchCommit(...args) {
+      const pendingDeleteRefs = Array.isArray(this.__kartyPendingDeleteRefs) ? this.__kartyPendingDeleteRefs : [];
+
+      if (pendingDeleteRefs.length) {
+        const refsByCollectionPath = new Map();
+        pendingDeleteRefs.forEach((docRef) => {
+          if (!docRef?.parent?.path) {
+            return;
+          }
+          if (!refsByCollectionPath.has(docRef.parent.path)) {
+            refsByCollectionPath.set(docRef.parent.path, {
+              collectionRef: docRef.parent,
+              docRefs: []
+            });
+          }
+          refsByCollectionPath.get(docRef.parent.path).docRefs.push(docRef);
+        });
+
+        for (const { collectionRef, docRefs } of refsByCollectionPath.values()) {
+          const shouldBlock = await isRemovingLastDocument({ collectionRef, candidateDocRefs: docRefs });
+          if (shouldBlock) {
+            notifyLastDocumentDeleteBlocked();
+            throw createLastDocumentDeleteError();
+          }
+        }
+      }
+
+      this.__kartyPendingDeleteRefs = [];
+      return originalBatchCommit.apply(this, args);
+    };
+
+    writeBatchPrototype.__kartyDeleteProtectionPatched = true;
+  }
+
+  firebaseApp.__kartyDeleteProtectionInstalled = true;
+};
+
 const getFirebaseApp = () => {
   if (!window.firebase || !window.firebase.initializeApp) {
     return null;
@@ -10,6 +132,8 @@ const getFirebaseApp = () => {
   if (!window.firebase.apps.length) {
     window.firebase.initializeApp(window.firebaseConfig);
   }
+
+  installFirestoreDeleteProtection(window.firebase);
 
   return window.firebase;
 };

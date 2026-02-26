@@ -200,3 +200,9 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 1. W prawym górnym rogu nagłówka (tylko w trybie administratora) znajdziesz przycisk **Instrukcja**.
 2. Kliknij **Instrukcja**, aby otworzyć modal z opisem działania panelu.
 3. Kliknij przycisk zamknięcia (`×`) albo naciśnij `Esc`, aby zamknąć okno.
+
+### 3.10 Ochrona przed usunięciem ostatniego dokumentu
+1. W dowolnym oknie administratora kliknij przycisk **Usuń** przy rekordzie.
+2. Jeżeli w danej kolekcji pozostał tylko jeden dokument, aplikacja zablokuje operację.
+3. Zobaczysz komunikat, że najpierw trzeba dodać nowy rekord.
+4. Dzięki temu z poziomu UI nie da się wyzerować kolekcji (dotyczy wszystkich ekranów korzystających z Firebase).
