@@ -95,7 +95,7 @@ W module Second aktywna jest warstwa logowania Firebase Auth (logowanie, rejestr
 
 
 ## Rules Firestore (Main + Second, wariant: `permissions` jako mapa)
-Reguły dla kolekcji `main_users` i `second_users` powinny używać walidacji `permissions is map` (zamiast `permissions is list`) oraz wspólnych funkcji `validBaseUserCreateData` i `validOwnerUpdate` zgodnie z aktualnym wariantem wdrożeniowym opisanym w module Main.
+Reguły dla kolekcji `main_users` i `second_users` używają walidacji `permissions is map`, a kod obu modułów zapisuje i odczytuje uprawnienia wyłącznie jako mapę klucz→bool.
 
 ## Auth flow
 - Dodano walidację e-maila i hasła dla logowania/rejestracji.

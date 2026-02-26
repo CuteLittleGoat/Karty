@@ -37,7 +37,8 @@
 1. Kliknij zakładkę `Gracze`.
 2. Zobaczysz identyczny układ kolumn jak w module Main: `Aplikacja`, `Nazwa`, `PIN`, `Uprawnienia`, kolumna akcji.
 3. Kliknij `Dodaj` (przycisk bez podpiętej logiki danych).
-4. Wiersz tabeli pokazuje stan pusty (`Brak graczy. Dodaj`).
+4. W sekcji **Gracze** uprawnienia nadajesz przez zaznaczanie konkretnych checkboxów dla zakładek.
+5. Wiersz tabeli pokazuje stan pusty (`Brak graczy. Dodaj`).
 
 ### 2.6 Zakładka „Turniej”
 1. Kliknij zakładkę `Turniej`.

@@ -17,7 +17,7 @@ const seedUserProfile = (uid, email, role = "user") => ({
   name: email.split("@")[0],
   role,
   isActive: role === "admin",
-  permissions: role === "admin" ? ["playerZoneTab", "nextGameTab", "chatTab", "confirmationsTab", "userGamesTab", "statsTab"] : [],
+  permissions: role === "admin" ? { playerZoneTab: true, nextGameTab: true, chatTab: true, confirmationsTab: true, userGamesTab: true, statsTab: true } : {},
   statsYearsAccess: [],
   source: role === "admin" ? "seed-admin" : "seed-user",
   createdAt: admin.firestore.FieldValue.serverTimestamp(),

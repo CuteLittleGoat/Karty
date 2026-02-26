@@ -180,7 +180,7 @@ const initAuthControls = () => {
         name: email.split("@")[0],
         isActive: false,
         isApproved: false,
-        permissions: [],
+        permissions: {},
         statsYearsAccess: [],
         role: "user",
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
