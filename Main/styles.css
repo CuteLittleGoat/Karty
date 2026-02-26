@@ -804,7 +804,7 @@ select:disabled,
 }
 
 #adminGamesTab .admin-games-layout {
-  grid-template-columns: 220px minmax(0, 1fr) 260px;
+  grid-template-columns: 200px minmax(0, 1fr) 300px;
 }
 
 .admin-games-sidebar,
