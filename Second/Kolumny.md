@@ -34,3 +34,8 @@ Sekcja „Turniej” w aktualnym szkielecie UI nie zawiera tabel kolumnowych —
 
 ## 3. Zakładki „Aktualności”, „Czat”, „Regulamin”
 W tych zakładkach nie występują tabele kolumnowe wymagające opisu szerokości kolumn.
+
+
+## Ekran logowania
+- Dodano osobny obszar resetu hasła z polem e-mail i przyciskiem „Wyślij mail” oraz powrotem do logowania.
+- W górnym pasku sesji dodano tekst z zalogowanym loginem.

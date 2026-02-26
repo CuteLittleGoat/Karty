@@ -385,3 +385,15 @@ service cloud.firestore {
 - Logowanie i reset hasła są obsługiwane przez Firebase Auth.
 - Metadata sesji zapisywana jest do `main_auth_sessions/{uid}`.
 - Legacy kolekcje w module Main zostały przepięte na: `main_app_settings`, `main_admin_messages`, `main_chat_messages`, `main_tables`, `main_user_games`, `main_admin_games_stats`, `main_calculators`.
+
+
+## Auth – walidacje i zatwierdzanie kont
+- Dodano walidację e-maila regexem oraz walidację hasła (min. 6 znaków, min. 1 cyfra, min. 1 znak specjalny) przed logowaniem/rejestracją.
+- Rejestracja zapisuje profil z `isApproved: false` i `isActive: false`; użytkownik po utworzeniu konta trafia do stanu „Oczekiwanie na zatwierdzenie”.
+- UI sesji pokazuje aktywny login (`#authCurrentUser`) oraz przycisk wylogowania.
+- Dodano widok resetu hasła na ekranie logowania (`#authResetView`) i wysyłkę przez `sendPasswordResetEmail`.
+
+## Admin / Gracze
+- Tabela graczy rozszerzona o kolumnę e-mail i status zatwierdzenia.
+- Wiersze niezatwierdzone mają klasę `is-pending-approval`, ograniczone akcje (zatwierdź/usuń) oraz zablokowaną edycję pozostałych pól.
+- Zapis profilu utrwala `isApproved`, e-mail pozostaje tylko do odczytu.

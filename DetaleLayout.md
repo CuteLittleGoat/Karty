@@ -116,3 +116,9 @@
 - Po zalogowaniu `#loginScreen` jest ukrywany, a renderowany jest główny widok modułu (`#appShell` w Main, `#appRoot` w Second).
 - W nagłówku po zalogowaniu działa pasek sesji `.auth-session-toolbar` z tekstem statusu `#authStatus` oraz przyciskami `Wyloguj` i `Reset hasła`.
 - Elementy nagłówka związane z sesją są ukryte, gdy użytkownik nie jest zalogowany (`body` bez klasy `is-authenticated`).
+
+
+## Logowanie / sesja
+- W pasku sesji dodano dodatkowy komunikat z aktualnym loginem (`Zalogowany: ...`).
+- Na karcie logowania dodano linkowy przycisk „Reset hasła”, który otwiera osobny blok formularza resetu.
+- Dodano wizualny stan oczekiwania na zatwierdzenie oraz wyszarzenie niezatwierdzonych wierszy graczy.

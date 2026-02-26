@@ -96,3 +96,10 @@ Wszystkie przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Strona1`, `Str
 - Logowanie, wylogowanie i reset hasła korzystają z Firebase Auth.
 - Rejestracja zapisuje profil z domyślną rolą `user`.
 - Metadata logowania zapisywana jest do `second_auth_sessions/{uid}`.
+
+
+## Auth flow
+- Dodano walidację e-maila i hasła dla logowania/rejestracji.
+- Rejestracja zapisuje użytkownika z `isApproved: false` oraz `isActive: false`; do czasu akceptacji aplikacja pokazuje stan oczekiwania.
+- Pasek sesji pokazuje login (`#authCurrentUser`).
+- Dodano osobny widok resetu hasła na ekranie logowania oraz wysyłkę resetu przez Firebase Auth.

@@ -260,11 +260,14 @@ const authContextState = {
 };
 
 const applyAuthUiState = () => {
-  const isAuthenticated = Boolean(authContextState.user);
+  const hasUser = Boolean(authContextState.user);
+  const isApproved = authContextState.profile ? authContextState.profile.isApproved !== false : false;
+  const isAuthenticated = hasUser && isApproved;
   const role = typeof authContextState.profile?.role === "string" ? authContextState.profile.role : "user";
   const isAdmin = role === "admin";
 
   document.body.classList.toggle("is-authenticated", isAuthenticated);
+  document.body.classList.toggle("is-awaiting-approval", hasUser && !isApproved);
   document.body.classList.toggle("is-admin", isAuthenticated && isAdmin);
 };
 
@@ -711,9 +714,15 @@ const initAuthControls = () => {
   const registerButton = document.querySelector("#authRegisterButton");
   const logoutButton = document.querySelector("#authLogoutButton");
   const resetButton = document.querySelector("#authResetPasswordButton");
+  const openResetViewButton = document.querySelector("#authOpenResetViewButton");
+  const resetView = document.querySelector("#authResetView");
+  const resetEmailInput = document.querySelector("#authResetEmailInput");
+  const sendResetButton = document.querySelector("#authSendResetButton");
+  const backToLoginButton = document.querySelector("#authBackToLoginButton");
   const status = document.querySelector("#authStatus");
+  const currentUser = document.querySelector("#authCurrentUser");
 
-  if (!emailInput || !passwordInput || !loginButton || !registerButton || !logoutButton || !resetButton || !status) {
+  if (!emailInput || !passwordInput || !loginButton || !registerButton || !logoutButton || !resetButton || !status || !currentUser) {
     return;
   }
 
@@ -732,6 +741,15 @@ const initAuthControls = () => {
 
   const setStatus = (message) => {
     status.textContent = message;
+  };
+
+  const setResetViewVisible = (visible) => {
+    if (!resetView || !openResetViewButton) {
+      return;
+    }
+    resetView.classList.toggle("is-visible", visible);
+    resetView.setAttribute("aria-hidden", visible ? "false" : "true");
+    openResetViewButton.style.display = visible ? "none" : "inline";
   };
 
   const persistSessionMetadata = async (user, profile) => {
@@ -762,20 +780,26 @@ const initAuthControls = () => {
     if (!user) {
       authContextState.profile = null;
       logoutButton.disabled = true;
+      currentUser.textContent = "Zalogowany: —";
       applyAuthUiState();
       setStatus("Nie zalogowano.");
       return;
     }
 
     logoutButton.disabled = false;
+    currentUser.textContent = `Zalogowany: ${user.email || user.uid}`;
 
     try {
       const profileSnapshot = await db.collection(AUTH_USERS_COLLECTION).doc(user.uid).get();
       const profile = profileSnapshot.exists ? profileSnapshot.data() : null;
       authContextState.profile = profile;
-      const profileLabel = profile ? "Profil modułu Main znaleziony." : "Brak profilu modułu Main (main_users/{uid}).";
       applyAuthUiState();
-      setStatus(`Zalogowano: ${user.email || user.uid}. ${profileLabel}`);
+      if (profile && profile.isApproved === false) {
+        setStatus("Oczekiwanie na zatwierdzenie");
+      } else {
+        const profileLabel = profile ? "Profil modułu Main znaleziony." : "Brak profilu modułu Main (main_users/{uid}).";
+        setStatus(`Zalogowano: ${user.email || user.uid}. ${profileLabel}`);
+      }
       await persistSessionMetadata(user, profile);
     } catch (error) {
       authContextState.profile = null;
@@ -785,11 +809,16 @@ const initAuthControls = () => {
   });
 
   loginButton.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
+    const email = normalizeEmail(emailInput.value);
     const password = passwordInput.value;
 
     if (!email || !password) {
       setStatus("Podaj e-mail i hasło.");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setStatus("Podaj poprawny adres e-mail.");
       return;
     }
 
@@ -803,9 +832,8 @@ const initAuthControls = () => {
     }
   });
 
-
   registerButton.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
+    const email = normalizeEmail(emailInput.value);
     const password = passwordInput.value;
 
     if (!email || !password) {
@@ -813,15 +841,32 @@ const initAuthControls = () => {
       return;
     }
 
+    if (!isValidEmail(email)) {
+      setStatus("Podaj poprawny adres e-mail.");
+      return;
+    }
+
+    if (!isValidPassword(password)) {
+      setStatus("Hasło musi mieć min. 6 znaków, 1 cyfrę i 1 znak specjalny.");
+      return;
+    }
+
     setStatus("Tworzenie konta...");
 
     try {
+      const existingSnapshot = await db.collection(AUTH_USERS_COLLECTION).where("email", "==", email).limit(1).get();
+      if (!existingSnapshot.empty) {
+        setStatus("Konto z tym adresem e-mail już istnieje.");
+        return;
+      }
+
       const result = await auth.createUserWithEmailAndPassword(email, password);
       await db.collection(AUTH_USERS_COLLECTION).doc(result.user.uid).set({
         uid: result.user.uid,
         email,
         name: email.split("@")[0],
         isActive: false,
+        isApproved: false,
         permissions: [],
         statsYearsAccess: [],
         role: "user",
@@ -829,8 +874,8 @@ const initAuthControls = () => {
         updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
         source: "self-register"
       }, { merge: true });
-      setStatus("Konto utworzone. Administrator musi aktywować uprawnienia w zakładce Gracze.");
       passwordInput.value = "";
+      setStatus("Oczekiwanie na zatwierdzenie");
     } catch (error) {
       setStatus(`Nie udało się utworzyć konta: ${error?.message || "nieznany błąd"}`);
     }
@@ -845,10 +890,14 @@ const initAuthControls = () => {
     }
   });
 
-  resetButton.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
+  const sendReset = async () => {
+    const email = normalizeEmail((resetEmailInput?.value || emailInput.value));
     if (!email) {
       setStatus("Podaj e-mail, aby wysłać reset hasła.");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setStatus("Podaj poprawny adres e-mail.");
       return;
     }
 
@@ -858,6 +907,13 @@ const initAuthControls = () => {
     } catch (error) {
       setStatus(`Nie udało się wysłać resetu hasła: ${error?.message || "nieznany błąd"}`);
     }
+  };
+
+  resetButton.addEventListener("click", () => setResetViewVisible(true));
+  openResetViewButton?.addEventListener("click", () => setResetViewVisible(true));
+  backToLoginButton?.addEventListener("click", () => setResetViewVisible(false));
+  sendResetButton?.addEventListener("click", () => {
+    void sendReset();
   });
 };
 
@@ -1084,6 +1140,9 @@ const scheduleDebouncedUpdate = (key, callback, delay = 400) => {
 const sanitizePin = (value) => value.replace(/\D/g, "").slice(0, PIN_LENGTH);
 const isPinValid = (value) => /^\d{5}$/.test(value);
 const generateRandomPin = () => `${Math.floor(Math.random() * 10 ** PIN_LENGTH)}`.padStart(PIN_LENGTH, "0");
+const normalizeEmail = (value) => (typeof value === "string" ? value.trim().toLowerCase() : "");
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail(value));
+const isValidPassword = (value) => /^(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/.test(value);
 
 const buildAuthPlayerFromProfile = () => {
   if (!authContextState.user || !authContextState.profile) {
@@ -1101,7 +1160,7 @@ const buildAuthPlayerFromProfile = () => {
     email: authContextState.user.email || "",
     uid: authContextState.user.uid,
     pin: "",
-    appEnabled: profile.isActive !== false,
+    appEnabled: profile.isApproved === false ? false : profile.isActive !== false,
     permissions: normalizedPermissions,
     statsYearsAccess: normalizeStatsYearsAccess(profile.statsYearsAccess)
   };
@@ -3302,7 +3361,8 @@ const normalizePlayerRecord = (player, index) => ({
         AVAILABLE_PLAYER_TABS.some((availableTab) => availableTab.key === permission)
       )
     : [],
-  statsYearsAccess: normalizeStatsYearsAccess(player.statsYearsAccess)
+  statsYearsAccess: normalizeStatsYearsAccess(player.statsYearsAccess),
+  isApproved: player.isApproved !== false
 });
 
 const normalizeAuthUserRecord = (doc) => {
@@ -3316,7 +3376,8 @@ const normalizeAuthUserRecord = (doc) => {
     pin: typeof data.pin === "string" ? data.pin : "",
     appEnabled: data.isActive !== false,
     permissions: Array.isArray(data.permissions) ? data.permissions : [],
-    statsYearsAccess: Array.isArray(data.statsYearsAccess) ? data.statsYearsAccess : []
+    statsYearsAccess: Array.isArray(data.statsYearsAccess) ? data.statsYearsAccess : [],
+    isApproved: data.isApproved !== false
   });
 };
 
@@ -4777,6 +4838,7 @@ const initAdminPlayers = () => {
           permissions: player.permissions,
           statsYearsAccess: player.statsYearsAccess,
           role: player.role || "user",
+          isApproved: player.isApproved !== false,
           updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
       });
@@ -4976,7 +5038,11 @@ const initAdminPlayers = () => {
     const focusState = getFocusedAdminInputState(body);
     body.innerHTML = "";
     adminPlayersState.players.forEach((player) => {
+      const isApproved = player.isApproved !== false;
       const row = document.createElement("tr");
+      if (!isApproved) {
+        row.classList.add("is-pending-approval");
+      }
 
       const appCell = document.createElement("td");
       appCell.className = "players-app-cell";
@@ -4984,6 +5050,7 @@ const initAdminPlayers = () => {
       appCheckbox.type = "checkbox";
       appCheckbox.className = "players-app-checkbox";
       appCheckbox.checked = Boolean(player.appEnabled);
+      appCheckbox.disabled = !isApproved;
       appCheckbox.setAttribute("aria-label", `Dostęp aplikacji dla gracza ${player.name || player.id}`);
       appCheckbox.addEventListener("change", () => {
         updatePlayerField(player.id, "appEnabled", appCheckbox.checked);
@@ -5003,7 +5070,11 @@ const initAdminPlayers = () => {
       nameInput.addEventListener("input", () => {
         updatePlayerField(player.id, "name", nameInput.value);
       });
+      nameInput.disabled = !isApproved;
       nameCell.appendChild(nameInput);
+
+      const emailCell = document.createElement("td");
+      emailCell.textContent = player.email || "-";
 
       const pinCell = document.createElement("td");
       const pinControl = document.createElement("div");
@@ -5048,6 +5119,8 @@ const initAdminPlayers = () => {
       const pinRandomButton = document.createElement("button");
       pinRandomButton.type = "button";
       pinRandomButton.className = "secondary admin-pin-random";
+      pinInput.disabled = !isApproved;
+      pinRandomButton.disabled = !isApproved;
       pinRandomButton.textContent = "Losuj";
       pinRandomButton.addEventListener("click", () => {
         const randomPin = generateUniquePlayerPin(player.id);
@@ -5086,13 +5159,28 @@ const initAdminPlayers = () => {
       editButton.type = "button";
       editButton.className = "secondary admin-permissions-edit";
       editButton.textContent = "Edytuj";
+      editButton.disabled = !isApproved;
       editButton.addEventListener("click", () => {
         openModal(player.id);
       });
       permissionsCell.appendChild(tags);
       permissionsCell.appendChild(editButton);
 
+      const statusCell = document.createElement("td");
+      statusCell.textContent = isApproved ? "Zatwierdzony" : "Oczekiwanie na zatwierdzenie";
+
       const actionsCell = document.createElement("td");
+      if (!isApproved) {
+        const approveButton = document.createElement("button");
+        approveButton.type = "button";
+        approveButton.className = "primary";
+        approveButton.textContent = "Zatwierdź";
+        approveButton.addEventListener("click", () => {
+          updatePlayerField(player.id, "isApproved", true);
+          updatePlayerField(player.id, "appEnabled", true);
+        });
+        actionsCell.appendChild(approveButton);
+      }
       const deleteButton = document.createElement("button");
       deleteButton.type = "button";
       deleteButton.className = "danger admin-row-delete";
@@ -5113,8 +5201,10 @@ const initAdminPlayers = () => {
 
       row.appendChild(appCell);
       row.appendChild(nameCell);
+      row.appendChild(emailCell);
       row.appendChild(pinCell);
       row.appendChild(permissionsCell);
+      row.appendChild(statusCell);
       row.appendChild(actionsCell);
       body.appendChild(row);
     });

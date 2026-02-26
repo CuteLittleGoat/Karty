@@ -313,3 +313,9 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 | wartość oczekiwana |  |  |  |  |
 | Spójność prezentacji liczb i tekstu | nie dotyczy | nie dotyczy | do lewej | Liczby są ułożone tak samo jak tekst dla jednolitego wyglądu. |
 | wartość oczekiwana |  |  |  |  |
+
+
+## Zakładka Gracze (Main)
+- **E-mail**: nowa kolumna tylko do odczytu, tekst wyrównany do lewej.
+- **Status**: kolumna tekstowa pokazująca „Oczekiwanie na zatwierdzenie” lub „Zatwierdzony”.
+- Dla niezatwierdzonych graczy cały wiersz jest wyszarzony, a dostępne akcje ograniczają się do zatwierdzenia/usunięcia (PC i mobile).

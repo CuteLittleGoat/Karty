@@ -98,3 +98,11 @@
 4. Kliknij **Zaloguj**, aby rozpocząć sesję.
 5. Kliknij **Wyloguj**, aby zakończyć sesję.
 6. Kliknij **Reset hasła**, aby wysłać reset e-mailem.
+
+
+## Logowanie i reset hasła
+1. Wpisz poprawny e-mail i hasło i kliknij **Zaloguj**.
+2. Rejestracja wymaga poprawnego e-maila oraz hasła (min. 6 znaków, cyfra, znak specjalny).
+3. Po rejestracji konto ma status **Oczekiwanie na zatwierdzenie** i nie dostaje dostępu do widoku aplikacji przed akceptacją.
+4. Na ekranie startowym kliknij **Reset hasła**, wpisz e-mail i kliknij **Wyślij mail**.
+5. Po zalogowaniu w nagłówku wyświetlany jest login i przycisk **Wyloguj**.

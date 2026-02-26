@@ -183,6 +183,41 @@ h1 {
   gap: var(--gap-1);
 }
 
+.link-button {
+  background: none;
+  border: 0;
+  color: var(--gold);
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+}
+
+.auth-reset-view {
+  display: none;
+  gap: var(--gap-2);
+}
+
+.auth-reset-view.is-visible {
+  display: grid;
+}
+
+.auth-pending {
+  display: none;
+  font-weight: 700;
+}
+
+.is-awaiting-approval #appRoot {
+  display: none;
+}
+
+.is-awaiting-approval #loginScreen {
+  display: block;
+}
+
+.is-awaiting-approval .auth-pending {
+  display: block;
+}
+
 #authStatus {
   flex: 1 1 100%;
   margin: 0;
