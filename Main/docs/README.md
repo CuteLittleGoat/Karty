@@ -1,208 +1,129 @@
-# Karty — instrukcja UI dla użytkownika
+# Main — instrukcja użytkownika (UI)
 
-## 1. Start aplikacji
-1. Otwórz stronę aplikacji.
-2. W wersji **PC** główna zawartość aplikacji rozciąga się prawie na całą szerokość okna (zostają tylko niewielkie marginesy po bokach).
-3. W panelu **Gry admina** (układ **Lata / treść / Ranking**) panel **Lata** jest węższy, panel **Ranking** szerszy, a środkowa kolumna z tabelami dalej rozszerza się elastycznie.
-4. Na górze widzisz **Panel Administratora** (zakładki admina).
-5. Niżej widzisz od razu pasek zakładek użytkownika (bez osobnego nagłówka nad zakładkami).
-6. Kliknięcie nazwy zakładki przełącza zawartość widoku.
-
-## 1A. Wejście do panelu administratora (`?admin=1`)
-1. Otwórz aplikację z parametrem `?admin=1` w adresie.
-2. Aplikacja wyświetli modal logowania administratora z polem hasła.
-3. Wpisz hasło i potwierdź:
-   - poprawne hasło otwiera panel administratora,
-   - błędne hasło pokazuje komunikat błędu w modalu i ponownie wyświetla formularz,
-   - anulowanie okienka przełącza aplikację do widoku użytkownika.
+## 1. Uruchomienie
+1. Otwórz `Main/index.html` w przeglądarce.
+2. Standardowo aplikacja startuje w widoku użytkownika.
+3. Aby wejść do panelu administratora, dodaj do adresu parametr `?admin=1`.
+4. W modalu logowania wpisz hasło administratora i kliknij **Zaloguj**.
 
 ## 2. Widok użytkownika
 
-W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Regulamin**, **Strefa Gracza**.
+### 2.1 Zakładki główne
+W widoku użytkownika dostępne są zakładki:
+- **Aktualności**
+- **Regulamin**
+- **Strefa Gracza**
 
-### 2.1 Aktualności
-1. Kliknij zakładkę **Aktualności**.
-2. Odczytaj pole **Najnowsze** z ostatnią wiadomością od administratora (pole ma wysokość 25 linii, dzięki czemu sekcja jest bardziej kompaktowa).
+### 2.2 Aktualności
+1. Wejdź w **Aktualności**.
+2. Odczytaj najnowszą wiadomość od administratora.
 
-### 2.2 Regulamin
-1. Kliknij zakładkę **Regulamin**.
-2. Odczytaj pole **Obowiązujące zasady** (pole jest wysokie na 50 linii, co ułatwia czytanie długiego regulaminu).
+### 2.3 Regulamin
+1. Wejdź w **Regulamin**.
+2. Odczytaj aktualne zasady.
 
-### 2.3 Strefa Gracza
-1. Kliknij zakładkę **Strefa Gracza**.
-2. Wpisz 5-cyfrowy PIN gracza, który ma nadane uprawnienie **Strefa Gracza** w panelu **Gracze**.
-3. Kliknij **Otwórz**.
-4. Po poprawnym PIN-ie aplikacja zapamięta sesję w tej karcie przeglądarki i od razu odblokuje wszystkie sekcje, do których masz uprawnienia.
-5. Po lewej stronie zobaczysz panel **Sekcja** z przyciskami funkcji.
-6. PIN podajesz ponownie dopiero po restarcie aplikacji/przeglądarki (nowa sesja).
+### 2.4 Strefa Gracza
+1. Wejdź w **Strefa Gracza**.
+2. Wpisz 5-cyfrowy PIN i kliknij **Otwórz**.
+3. Po poprawnej autoryzacji używaj sekcji dostępnych dla danego gracza:
+   - **Najbliższa gra**
+   - **Czat**
+   - **Gry do potwierdzenia**
+   - **Gry użytkowników**
+   - **Statystyki**
 
-### 2.4 Sekcja: Najbliższa Gra
-1. W **Strefie Gracza** kliknij po lewej **Najbliższa Gra**.
-2. Nie wpisujesz ponownie PIN-u — po wejściu do Strefy sekcja otwiera się od razu.
-3. Odczytaj tabelę: Rodzaj gry, Data, Nazwa, CzyWszyscyPotwierdzili.
+## 3. Co można zrobić w sekcjach Strefy Gracza
 
-### 2.5 Sekcja: Czat
-1. Kliknij po lewej **Czat**.
-2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
-3. Wpisz wiadomość i kliknij **Wyślij**.
-
-### 2.6 Sekcja: Gry do Potwierdzenia
-1. Kliknij po lewej **Gry do Potwierdzenia** (jeżeli nazwa przycisku jest dłuższa, aplikacja automatycznie zmniejszy rozmiar fontu, aby tekst pozostał w obrębie przycisku).
-2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
-3. Po przechodzeniu między sekcjami panelu bocznego aplikacja nie prosi ponownie o PIN w tej sekcji — ponowna autoryzacja będzie dopiero po nowej sesji przeglądarki.
-4. Dla gry użyj: **Potwierdź**, **Anuluj**, **Szczegóły**, **Notatki do gry**.
-5. Po kliknięciu **Notatki do gry** otworzy się okno z tytułem w formacie „Notatki do gry: Nazwa gry”.
-6. W tym oknie (tryb tylko do odczytu) tekst notatek jest wyświetlany dokładnie w kolorach zapisanych wcześniej przez osobę edytującą notatkę (złoty, zielony, czerwony, biały).
-7. W widoku tylko do odczytu nie ma przycisków edycyjnych: nie zobaczysz przycisków kolorów, **Zapisz** ani **Domyślne**.
-
-### 2.7 Sekcja: Gry Użytkowników
-1. Kliknij po lewej **Gry Użytkowników**.
-2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
-3. Wybierz rok po lewej i zarządzaj własnymi grami.
-4. Przy wybranej grze kliknij **Notatki do gry**.
-5. W otwartym oknie najpierw zaznacz fragment wpisanego tekstu w polu notatek.
-6. Kliknij przycisk koloru nad polem tekstowym: **Złoty**, **Zielony**, **Czerwony** albo **Biały**.
-7. Powtórz zaznaczanie i kolorowanie dla kolejnych fragmentów.
-8. Kliknij **Zapisz**, aby utrwalić tekst wraz z kolorami.
-9. Przycisk **Domyślne** przywraca domyślny szablon notatki do gry.
-
-### 2.8 Sekcja: Statystyki
-1. Kliknij po lewej **Statystyki**.
-2. Sekcja otworzy się bez dodatkowego PIN-u (jeżeli masz do niej uprawnienie).
-3. Wybierz rok po lewej i przeglądaj statystyki/ranking.
-
-## 3. Panel Administratora
-
-### 3.1 Aktualności
-1. Wejdź w zakładkę **Aktualności**.
-2. Wpisz treść w polu **Treść wiadomości** (pole ma wysokość 25 linii).
-3. Kliknij **Wyślij**.
+### 3.1 Najbliższa gra
+- Podgląd tabeli najbliższej gry.
 
 ### 3.2 Czat
-1. Wejdź w **Czat**.
-2. Użyj opcji usuwania wiadomości (pojedynczo lub starszych niż 30 dni).
+- Przegląd wiadomości.
+- Wysłanie nowej wiadomości przyciskiem **Wyślij**.
 
-### 3.3 Regulamin
-1. Wejdź w **Regulamin**.
-2. Edytuj treść w polu **Treść regulaminu** (pole ma wysokość 50 linii).
-3. Kliknij **Zapisz**.
+### 3.3 Gry do potwierdzenia
+- Potwierdzenie lub anulowanie udziału.
+- Otwieranie szczegółów gry.
+- Otwieranie notatek do gry (tylko odczyt).
 
-### 3.4 Gracze
-1. Wejdź w **Gracze**.
-2. Kliknij **Dodaj**, aby dodać nowy wpis gracza.
-3. Uzupełnij: Nazwa, PIN, dostęp do aplikacji.
-4. Kliknij **Edytuj** w kolumnie uprawnień i zaznacz dostęp do **Strefa Gracza** oraz do konkretnych sekcji w Strefie (Najbliższa gra, Czat, Gry do potwierdzenia, Gry użytkowników, Statystyki).
-5. Dla **Statystyk** użyj przycisku **Lata**, aby wskazać lata widoczne dla gracza.
+### 3.4 Gry użytkowników
+- Wybór roku w panelu bocznym.
+- Dodawanie gry (**Dodaj**).
+- Otwieranie szczegółów gry (**Szczegóły**).
+- Otwieranie notatek do gry z edycją i kolorowaniem tekstu.
 
-### 3.5 Gry admina
-1. Wejdź w **Gry admina**.
-2. Wybierz rok po lewej stronie (panel **Lata** został lekko zwężony, aby zrobić więcej miejsca dla panelu **Ranking**).
-3. Kliknij **Dodaj**, aby dodać grę.
-4. Edytuj pola w tabeli: Rodzaj Gry, Data, Nazwa, CzyZamknięta.
-5. Kliknij **Szczegóły** przy nazwie gry.
-6. W oknie szczegółów (na PC okno jest szersze i lepiej wykorzystuje ekran):
-   - dodawaj/usuwaj graczy,
-   - edytuj dane finansowe i punkty,
-   - korzystaj z kolumny **LP**,
-   - po rozwinięciu listy **Gracz** widzisz tylko dostępnych graczy (osoby już wybrane w innych wierszach są ukryte).
-7. W pasku metadanych szczegółów widzisz: Nazwa, Rodzaj gry, Data, **Pula**, **Ilość graczy**.
-8. W sekcji podsumowania gry możesz otworzyć **Notatki po grze**.
-9. W sekcji statystyk kolejność kolumn to: Ilość Spotkań, **Waga2**, **% udział**, Punkty.
-10. Panel **Ranking** po prawej jest szerszy, dzięki czemu tabela wymaga mniej przewijania poziomego.
+### 3.5 Statystyki
+- Wybór roku.
+- Podgląd tabel statystyk i rankingu.
+- Eksport przez przycisk **Eksportuj**.
 
-### 3.6 Statystyki (panel admina)
-1. Wejdź w **Statystyki**.
-2. Wybierz rok.
-3. Edytuj wagi przez pola Waga1–Waga6.
-4. Ustawiaj widoczność kolumn dla użytkownika przez checkboxy w nagłówkach.
-5. Użyj **Eksportuj**.
+## 4. Panel administratora
 
-### 3.7 Gry użytkowników (panel admina)
-1. Wejdź w **Gry użytkowników**.
-2. Administrator widzi wszystkie gry użytkowników (bez ograniczenia do jednego właściciela).
-3. Wybierz rok.
-4. Dodawaj gry i edytuj je jak w wersji gracza.
-5. W **Szczegółach** działa kolumna **LP**, pasek meta pokazuje **Pula** i **Ilość graczy**, a samo okno jest poszerzone na PC.
+### 4.1 Dostępne zakładki
+- **Aktualności**
+- **Czat**
+- **Regulamin**
+- **Gracze**
+- **Gry admina**
+- **Gry użytkowników**
+- **Najbliższa gra**
+- **Statystyki**
+- **Gry do potwierdzenia**
+- **Kalkulator**
 
-### 3.8 Gry do potwierdzenia (panel admina)
-1. Wejdź w **Gry do potwierdzenia**.
-2. Otwieraj każdą grę z listy.
-3. Zmieniaj status potwierdzeń graczy.
+### 4.2 Aktualności
+1. Wpisz treść wiadomości.
+2. Kliknij **Wyślij**.
 
+### 4.3 Czat
+- Podgląd rozmowy.
+- Usunięcie wiadomości starszych niż 30 dni przyciskiem **Usuń starsze niż 30 dni**.
 
+### 4.4 Regulamin
+1. Edytuj treść zasad.
+2. Kliknij **Zapisz**.
 
-### 3.9 Kalkulator
-1. Wejdź w zakładkę **Kalkulator**.
-2. W panelu **Rodzaj gry** kliknij **Tournament** albo **Cash**.
-3. Tryb **Tournament** działa jak wcześniej (Tabela1–Tabela5).
-4. Tryb **Cash** ma teraz 4 tabele: **Tabela7**, **Tabela8**, **Tabela9**, **Tabela10**.
+### 4.5 Gracze
+- Dodawanie gracza (**Dodaj**).
+- Edycja nazwy i PIN.
+- Zarządzanie uprawnieniami do sekcji Strefy Gracza.
+- Zarządzanie listą lat dla statystyk konkretnego gracza.
 
-#### Cash — Tabela7
-1. W Tabela7 nie wpisujesz ręcznie danych.
-2. Kolumna **Buy-In** pokazuje sumę Buy-In z Tabela9 pomniejszoną o procent z kolumny **%** (Tabela8).
-3. Kolumna **Rebuy** pokazuje sumę Rebuy z Tabela9 pomniejszoną o procent z kolumny **%** (Tabela8).
-4. Przykład: suma Buy-In = `100`, `%` = `10` → w Tabela7 zobaczysz `90`.
-5. Kolumna **Suma** pokazuje `Buy-In + Rebuy` z Tabela7.
+### 4.6 Gry admina
+- Wybór roku.
+- Dodawanie gry i edycja danych w tabeli.
+- Otwieranie **Szczegóły** gry i edycja wierszy graczy.
+- Podgląd sekcji **Statystyki** i **Ranking** dla wybranego roku.
 
-#### Cash — Tabela8
-1. W kolumnie **%** wpisz liczbę (np. `10`).
-2. Po wyjściu z pola aplikacja pokaże wartość jako procent (`10%`).
-3. Kolumna **Rake** wylicza się automatycznie: `(Suma Buy-In z Tabela9 + Suma Rebuy z Tabela9) * (1 - % z Tabela8 / 100)`.
-4. Przykład: Buy-In = `80`, Rebuy = `20`, `%` = `10` → **Rake** pokaże `90`.
-5. Kolumna **Pot** jest polem tylko do odczytu i pokazuje tę samą wartość co wyliczone **Rake**.
+### 4.7 Gry użytkowników
+- Wybór roku.
+- Dodawanie gry.
+- Otwieranie szczegółów i notatek.
 
-#### Cash — Tabela9
-1. W kolumnie **Gracz** wybierz gracza z listy.
-2. Ten sam gracz nie może wystąpić dwa razy w Tabela9.
-3. Lista **Gracz** pokazuje tylko dostępne osoby; gracz już użyty w innym wierszu znika z listy do czasu zwolnienia miejsca.
-4. W nagłówku kolumny **Buy-In** kliknij przycisk **Buy-In**, aby otworzyć okno wpisania jednej wartości dla wszystkich wierszy.
-5. Po zatwierdzeniu ta wartość zostanie wpisana do wszystkich pól **Buy-In**.
-6. Każdy wiersz nadal możesz później edytować ręcznie (domyślnie nowy wiersz ma `0`).
-7. W kolumnie **Rebuy** kliknij przycisk z kwotą, aby otworzyć modal rebuy dla tego gracza.
-8. W modalu kliknij **Dodaj Rebuy** / **Usuń Rebuy** i wpisuj kwoty; przycisk w tabeli pokazuje sumę pozycji.
-9. Numeracja rebuy dla Cash jest liczona niezależnie od trybu Tournament.
-10. W kolumnie **Wypłata** wpisz kwotę ręcznie (nowy wiersz startuje od `0`).
-11. Kolumna **+/-** liczy automatycznie: `Wypłata - (Buy-In + Rebuy)`.
-12. W ostatnim wierszu kliknij **Dodaj**, aby dopisać kolejny wiersz.
-13. W dowolnym wierszu kliknij **Usuń**, aby go usunąć.
+### 4.8 Najbliższa gra
+- Podgląd i edycja danych tabeli najbliższej gry.
 
-#### Cash — Tabela10
-1. Tabela10 jest automatyczna i sortowana malejąco po kolumnie **+/-**.
-2. **Lp** to numer po sortowaniu.
-3. **Gracz**, **Wypłata**, **+/-** są pobierane z Tabela9.
-4. **% Puli** liczy: `Wypłata z Tabela9 / Suma z Tabela7` i jest zaokrąglana do pełnej liczby.
+### 4.9 Statystyki
+- Wybór roku.
+- Podgląd statystyk i rankingu.
+- Eksport przez **Eksportuj**.
 
-12. Wszystkie zmiany zapisują się automatycznie po chwili — nie ma osobnego przycisku zapisu.
-13. Wszystkie pola wyliczane w Kalkulatorze są prezentowane jako pełne liczby (bez miejsc po przecinku).
+### 4.10 Gry do potwierdzenia
+- Podgląd statusów potwierdzeń.
+- Otwieranie szczegółów gry.
 
-## 9. Minimalne szerokości kolumn (UI)
-- Tam, gdzie w dokumentacji kolumn wpisana jest liczba, aplikacja trzyma minimalną szerokość kolumny w znakach (jednostka `ch`).
-- Przykłady widoczne od razu w UI:
-  - w **Gracze** kolumna **Nazwa** ma min. 30 znaków, a **PIN** min. 5 znaków,
-  - w **Szczegóły gry** kolumna **Gracz** ma min. 25 znaków,
-  - w tabelach kalkulatora (Cash/Tournament) kolumny liczbowe mają minimalne szerokości zgodne z `Kolumny.md`.
-- Jeżeli w `Kolumny.md` pole „wartość oczekiwana” jest puste, szerokość pozostaje automatyczna.
-- W modalu rebuy kolumny **Rebuy 1, Rebuy 2, ...** pozostają stałe: 8 znaków.
+### 4.11 Kalkulator
+- Przełączanie trybu: **Tournament** / **Cash**.
+- Praca na zestawach tabel kalkulatora.
+- Obsługa modala rebuy gracza.
 
-
-## 10. Moduł Second — szybka instrukcja UI
-1. Otwórz `Second/index.html`.
-2. Tryb administratora: dopisz `?admin=1`.
-3. Tryb użytkownika: bez parametru.
-4. W panelu admina dostępne są zakładki: `Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Turniej`.
-5. W `Aktualności` użyj pola `Treść wiadomości` i przycisku `Wyślij` (samo UI).
-6. W `Czat` i `Regulamin` widoczne są opisy i układ identyczne z Main (bez integracji Firebase).
-7. W `Gracze` tabela ma kolumny jak w Main: `Aplikacja`, `Nazwa`, `PIN`, `Uprawnienia`, kolumna akcji.
-8. W `Turniej` po lewej są przyciski `Instrukcja` i `Odśwież`, a na środku komunikat `Strona w budowie`.
-9. W trybie admin widoczny jest także podgląd końcowego widoku użytkownika.
-
-## 4. Nagłówek i przycisk „Instrukcja”
-1. W prawym górnym rogu nagłówka (tylko w trybie administratora) znajdziesz przycisk **Instrukcja**.
-2. Kliknij **Instrukcja**, aby otworzyć modal z opisem działania panelu.
-3. Kliknij przycisk zamknięcia (`×`) albo naciśnij `Esc`, aby zamknąć okno.
-
-### 3.10 Ochrona przed usunięciem ostatniego dokumentu
-1. W dowolnym oknie administratora kliknij przycisk **Usuń** przy rekordzie.
-2. Jeżeli w danej kolekcji pozostał tylko jeden dokument, aplikacja zablokuje operację.
-3. Zobaczysz komunikat, że najpierw trzeba dodać nowy rekord.
-4. Dzięki temu z poziomu UI nie da się wyzerować kolekcji (dotyczy wszystkich ekranów korzystających z Firebase).
+## 5. Okna modalne używane w module Main
+- Logowanie administratora.
+- Instrukcja.
+- Uprawnienia gracza.
+- Lata statystyk gracza.
+- Szczegóły gry admina.
+- Szczegóły gry użytkownika (admin i gracz).
+- Szczegóły potwierdzeń.
+- Notatki do gry.
+- Rebuy gracza (kalkulator).
