@@ -81,10 +81,11 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 3.4 Gracze
 1. Wejdź w **Gracze**.
-2. Kliknij **Dodaj**, aby dodać nowy wpis gracza.
-3. Uzupełnij: Nazwa, PIN, dostęp do aplikacji.
-4. Kliknij **Edytuj** w kolumnie uprawnień i zaznacz dostęp do **Strefa Gracza** oraz do konkretnych sekcji w Strefie (Najbliższa gra, Czat, Gry do potwierdzenia, Gry użytkowników, Statystyki).
+2. Lista ładuje konta utworzone przez użytkowników przez przycisk **Utwórz konto** w pasku logowania (email + hasło).
+3. W kolumnie **Aplikacja** zaznacz aktywację konta, aby użytkownik mógł korzystać z modułu.
+4. W kolumnie **Uprawnienia** kliknij **Edytuj** i zaznacz dostęp do sekcji Strefy Gracza.
 5. Dla **Statystyk** użyj przycisku **Lata**, aby wskazać lata widoczne dla gracza.
+6. Przycisk **Usuń** usuwa profil użytkownika z `main_users` i uruchamia próbę usunięcia konta Authentication przez Cloud Function `deleteMainUserAccount` (jeśli jest wdrożona).
 
 ### 3.5 Gry admina
 1. Wejdź w **Gry admina**.

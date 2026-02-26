@@ -18,6 +18,7 @@ const ADMIN_MESSAGES_DOCUMENT = "admin_messages";
 const AUTH_USERS_COLLECTION = "main_users";
 const AUTH_SESSIONS_COLLECTION = "main_auth_sessions";
 const AUTH_MODULE_KEY = "main";
+const AUTH_DELETE_USER_CALLABLE = "deleteMainUserAccount";
 const RULES_DEFAULT_TEXT = "";
 const DEFAULT_GAME_NOTES_TEMPLATE = "Rodzaj gry:\nPrzewidywani gracze:\nStack:\nWpisowe:\nRebuy:\nAdd-on:\nBlindy:\nOrganizacja:\nPodział puli:";
 
@@ -2719,9 +2720,12 @@ const initUserGamesManager = ({
     renderSummaries();
   };
 
-  db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
-    const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
-    state.playerOptions = players.map((player) => (typeof player.name === "string" ? player.name.trim() : "")).filter(Boolean);
+  db.collection(AUTH_USERS_COLLECTION).onSnapshot((snapshot) => {
+    state.playerOptions = snapshot.docs
+      .map((doc) => doc.data())
+      .filter((player) => player?.isActive !== false)
+      .map((player) => (typeof player.name === "string" ? player.name.trim() : ""))
+      .filter(Boolean);
     if (state.activeGameIdInModal) {
       renderModal(state.activeGameIdInModal);
     }
@@ -3279,6 +3283,9 @@ const normalizeStatsYearsAccess = (statsYearsAccess) => {
 
 const normalizePlayerRecord = (player, index) => ({
   id: typeof player.id === "string" && player.id.trim() ? player.id.trim() : `player-${index + 1}`,
+  uid: typeof player.uid === "string" && player.uid.trim() ? player.uid.trim() : "",
+  email: typeof player.email === "string" ? player.email : "",
+  role: typeof player.role === "string" ? player.role : "user",
   name: typeof player.name === "string" ? player.name : "",
   pin: sanitizePin(typeof player.pin === "string" ? player.pin : ""),
   appEnabled: Boolean(player.appEnabled),
@@ -3289,6 +3296,21 @@ const normalizePlayerRecord = (player, index) => ({
     : [],
   statsYearsAccess: normalizeStatsYearsAccess(player.statsYearsAccess)
 });
+
+const normalizeAuthUserRecord = (doc) => {
+  const data = doc.data() || {};
+  return normalizePlayerRecord({
+    id: doc.id,
+    uid: doc.id,
+    email: typeof data.email === "string" ? data.email : "",
+    role: typeof data.role === "string" ? data.role : "user",
+    name: typeof data.name === "string" ? data.name : "",
+    pin: typeof data.pin === "string" ? data.pin : "",
+    appEnabled: data.isActive !== false,
+    permissions: Array.isArray(data.permissions) ? data.permissions : [],
+    statsYearsAccess: Array.isArray(data.statsYearsAccess) ? data.statsYearsAccess : []
+  });
+};
 
 const getAllowedStatisticsYearsForPlayer = (player, availableYears) => {
   const sourceYears = normalizeYearList(availableYears);
@@ -4611,9 +4633,10 @@ const initAdminCalculator = () => {
     });
   });
 
-  firebaseApp.firestore().collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
-    const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
-    state.playerOptions = players
+  firebaseApp.firestore().collection(AUTH_USERS_COLLECTION).onSnapshot((snapshot) => {
+    state.playerOptions = snapshot.docs
+      .map((doc) => doc.data())
+      .filter((player) => player?.isActive !== false)
       .map((player) => (typeof player?.name === "string" ? player.name.trim() : ""))
       .filter(Boolean);
     if (status) {
@@ -4718,12 +4741,8 @@ const initAdminPlayers = () => {
   };
 
   const refreshPlayersData = async () => {
-    const snapshot = await db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).get({
-      source: "server"
-    });
-    const data = snapshot.data();
-    const rawPlayers = Array.isArray(data?.players) ? data.players : [];
-    adminPlayersState.players = rawPlayers.map(normalizePlayerRecord);
+    const snapshot = await db.collection(AUTH_USERS_COLLECTION).get({ source: "server" });
+    adminPlayersState.players = snapshot.docs.map((doc) => normalizeAuthUserRecord(doc));
     rebuildPinMap();
     renderPlayers();
     if (modal.classList.contains("is-visible")) {
@@ -4738,10 +4757,22 @@ const initAdminPlayers = () => {
 
   const savePlayers = async () => {
     try {
-      await db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).set({
-        players: adminPlayersState.players,
-        updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+      const batch = db.batch();
+      adminPlayersState.players.forEach((player) => {
+        const ref = db.collection(AUTH_USERS_COLLECTION).doc(player.id);
+        batch.set(ref, {
+          uid: player.uid || player.id,
+          email: player.email || "",
+          name: player.name || "",
+          pin: player.pin || "",
+          isActive: player.appEnabled,
+          permissions: player.permissions,
+          statsYearsAccess: player.statsYearsAccess,
+          role: player.role || "user",
+          updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
       });
+      await batch.commit();
       status.textContent = "Lista graczy zapisana.";
     } catch (error) {
       status.textContent = "Nie udało się zapisać listy graczy.";
@@ -5059,10 +5090,16 @@ const initAdminPlayers = () => {
       deleteButton.className = "danger admin-row-delete";
       deleteButton.textContent = "Usuń";
       deleteButton.addEventListener("click", async () => {
-        adminPlayersState.players = adminPlayersState.players.filter((entry) => entry.id !== player.id);
-        rebuildPinMap();
-        renderPlayers();
-        await savePlayers();
+        try {
+          await db.collection(AUTH_USERS_COLLECTION).doc(player.id).delete();
+          if (firebaseApp.functions) {
+            const deleteCallable = firebaseApp.functions().httpsCallable(AUTH_DELETE_USER_CALLABLE);
+            await deleteCallable({ uid: player.id });
+          }
+          status.textContent = "Usunięto gracza.";
+        } catch (error) {
+          status.textContent = "Usunięto profil z Firestore. Jeśli konto Authentication nadal istnieje, usuń je skryptem Node.js lub Cloud Function.";
+        }
       });
       actionsCell.appendChild(deleteButton);
 
@@ -5078,17 +5115,10 @@ const initAdminPlayers = () => {
     summary.textContent = `Liczba dodanych graczy: ${adminPlayersState.players.length}`;
   };
 
-  addButton.addEventListener("click", async () => {
-    adminPlayersState.players.push({
-      id: `player-${Date.now()}`,
-      name: "",
-      pin: "",
-      appEnabled: false,
-      permissions: [],
-      statsYearsAccess: []
-    });
-    renderPlayers();
-    await savePlayers();
+  addButton.disabled = true;
+  addButton.title = "Nowe konto tworzy użytkownik przez przycisk rejestracji w pasku logowania.";
+  addButton.addEventListener("click", () => {
+    status.textContent = "Nowe konto tworzy użytkownik przez formularz rejestracji (e-mail + hasło).";
   });
 
   if (closeButton) {
@@ -5101,22 +5131,18 @@ const initAdminPlayers = () => {
     }
   });
 
-  db.collection(PLAYER_ACCESS_COLLECTION)
-    .doc(PLAYER_ACCESS_DOCUMENT)
-    .onSnapshot(
-      (snapshot) => {
-        const data = snapshot.data();
-        const rawPlayers = Array.isArray(data?.players) ? data.players : [];
-        adminPlayersState.players = rawPlayers.map(normalizePlayerRecord);
-        rebuildPinMap();
-        renderPlayers();
-        synchronizeStatisticsAccessState();
-        window.dispatchEvent(new CustomEvent("statistics-access-updated"));
-      },
-      () => {
-        status.textContent = "Nie udało się pobrać listy graczy.";
-      }
-    );
+  db.collection(AUTH_USERS_COLLECTION).onSnapshot(
+    (snapshot) => {
+      adminPlayersState.players = snapshot.docs.map((doc) => normalizeAuthUserRecord(doc));
+      rebuildPinMap();
+      renderPlayers();
+      synchronizeStatisticsAccessState();
+      window.dispatchEvent(new CustomEvent("statistics-access-updated"));
+    },
+    () => {
+      status.textContent = "Nie udało się pobrać listy graczy.";
+    }
+  );
 
   const gamesCollectionName = getGamesCollectionName();
   db.collection(gamesCollectionName).orderBy("createdAt", "asc").onSnapshot((snapshot) => {
@@ -6752,9 +6778,10 @@ const initAdminGames = () => {
     });
   });
 
-  db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
-    const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
-    state.playerOptions = players
+  db.collection(AUTH_USERS_COLLECTION).onSnapshot((snapshot) => {
+    state.playerOptions = snapshot.docs
+      .map((doc) => doc.data())
+      .filter((player) => player?.isActive !== false)
       .map((player) => (typeof player.name === "string" ? player.name.trim() : ""))
       .filter((name) => Boolean(name));
     if (state.activeGameIdInModal) {
