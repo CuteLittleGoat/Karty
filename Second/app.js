@@ -68,6 +68,28 @@ const initAuthControls = () => {
   const db = firebaseApp.firestore();
   const setStatus = (message) => { status.textContent = message; };
 
+  const formatFirebaseErrorDetails = (error) => {
+    if (!error) return "kod: unknown; opis: nieznany błąd";
+    const code = typeof error.code === "string" && error.code ? error.code : "unknown";
+    const message = typeof error.message === "string" && error.message ? error.message : "Brak dodatkowego opisu";
+    return `kod: ${code}; opis: ${message}`;
+  };
+
+  const getFirebaseErrorHint = (error, contextLabel) => {
+    const code = error?.code;
+    if (code === "permission-denied") return `Wskazówka: sprawdź Firestore Rules i kolekcję ${contextLabel}.`;
+    if (code === "auth/wrong-password" || code === "auth/user-not-found" || code === "auth/invalid-credential") return "Wskazówka: sprawdź e-mail i hasło.";
+    if (code === "auth/too-many-requests") return "Wskazówka: zbyt wiele prób logowania — odczekaj chwilę i spróbuj ponownie.";
+    return "";
+  };
+
+  const setDiagnosticStatus = ({ prefix, error, contextLabel }) => {
+    const details = formatFirebaseErrorDetails(error);
+    const hint = getFirebaseErrorHint(error, contextLabel);
+    const suffix = hint ? ` ${hint}` : "";
+    setStatus(`${prefix} (${details}).${suffix}`);
+  };
+
   auth.setPersistence(firebaseApp.auth.Auth.Persistence.NONE).catch(() => {
     setStatus("Logowanie działa, ale przeglądarka nie pozwala wyłączyć trwałej sesji.");
   });
@@ -102,10 +124,20 @@ const initAuthControls = () => {
         setStatus(`Zalogowano: ${user.email || user.uid}.`);
       }
     } catch (error) {
+      console.error("[Second][Auth][profileRead]", {
+        code: error?.code,
+        message: error?.message,
+        uid: user?.uid,
+        collection: AUTH_USERS_COLLECTION
+      });
       authContextState.profile = null;
       applyAuthUiState();
       renderRoleView();
-      setStatus(`Zalogowano: ${user.email || user.uid}. Nie udało się odczytać kolekcji ${AUTH_USERS_COLLECTION}.`);
+      setDiagnosticStatus({
+        prefix: `Zalogowano: ${user.email || user.uid}. Nie udało się odczytać kolekcji ${AUTH_USERS_COLLECTION}`,
+        error,
+        contextLabel: AUTH_USERS_COLLECTION
+      });
     }
   });
 
@@ -118,7 +150,16 @@ const initAuthControls = () => {
       await auth.signInWithEmailAndPassword(email, password);
       passwordInput.value = "";
     } catch (error) {
-      setStatus(`Nie udało się zalogować: ${error?.message || "nieznany błąd"}`);
+      console.error("[Second][Auth][signIn]", {
+        code: error?.code,
+        message: error?.message,
+        email
+      });
+      setDiagnosticStatus({
+        prefix: "Nie udało się zalogować",
+        error,
+        contextLabel: AUTH_USERS_COLLECTION
+      });
     }
   });
 
@@ -149,13 +190,28 @@ const initAuthControls = () => {
       passwordInput.value = "";
       setStatus("Oczekiwanie na zatwierdzenie");
     } catch (error) {
-      setStatus(`Nie udało się utworzyć konta: ${error?.message || "nieznany błąd"}`);
+      console.error("[Second][Auth][register]", {
+        code: error?.code,
+        message: error?.message,
+        email
+      });
+      setDiagnosticStatus({
+        prefix: "Nie udało się utworzyć konta",
+        error,
+        contextLabel: AUTH_USERS_COLLECTION
+      });
     }
   });
 
   logoutButton.addEventListener("click", async () => {
     try { await auth.signOut(); setStatus("Wylogowano."); }
-    catch (error) { setStatus(`Nie udało się wylogować: ${error?.message || "nieznany błąd"}`); }
+    catch (error) {
+      setDiagnosticStatus({
+        prefix: "Nie udało się wylogować",
+        error,
+        contextLabel: AUTH_USERS_COLLECTION
+      });
+    }
   });
 
   const sendReset = async () => {
@@ -163,7 +219,13 @@ const initAuthControls = () => {
     if (!email) return setStatus("Podaj e-mail, aby wysłać reset hasła.");
     if (!isValidEmail(email)) return setStatus("Podaj poprawny adres e-mail.");
     try { await auth.sendPasswordResetEmail(email); setStatus(`Wysłano link resetu hasła na adres: ${email}.`); }
-    catch (error) { setStatus(`Nie udało się wysłać resetu hasła: ${error?.message || "nieznany błąd"}`); }
+    catch (error) {
+      setDiagnosticStatus({
+        prefix: "Nie udało się wysłać resetu hasła",
+        error,
+        contextLabel: AUTH_USERS_COLLECTION
+      });
+    }
   };
 
   resetButton.addEventListener("click", () => setResetViewVisible(true));
