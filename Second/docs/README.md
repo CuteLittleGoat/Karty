@@ -6,7 +6,7 @@
 3. Aby wejść do widoku użytkownika, otwórz stronę bez parametru `admin`.
 4. Po wejściu z parametrem `?admin=1` pojawia się modal logowania administratora z polem hasła.
 5. Podanie poprawnego hasła otwiera panel administratora.
-6. Podanie błędnego hasła pokazuje komunikat i ponownie otwiera modal hasła.
+6. Podanie błędnego hasła pokazuje komunikat wewnątrz modala i ponownie wyświetla formularz hasła.
 7. Kliknięcie `Anuluj` w modalu hasła przenosi do widoku użytkownika.
 
 ## 2. Panel administratora (po poprawnym haśle dla `?admin=1`)

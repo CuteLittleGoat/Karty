@@ -62,7 +62,7 @@ const isAdminPasswordValid = async (candidatePassword, storedHash) => {
   return sha256Hex === storedHash.toLowerCase();
 };
 
-const requestAdminPassword = () => new Promise((resolve) => {
+const requestAdminPassword = ({ errorMessage = "" } = {}) => new Promise((resolve) => {
   const overlay = document.createElement("div");
   overlay.style.position = "fixed";
   overlay.style.inset = "0";
@@ -109,7 +109,7 @@ const requestAdminPassword = () => new Promise((resolve) => {
   input.style.boxSizing = "border-box";
 
   const errorText = document.createElement("p");
-  errorText.textContent = "";
+  errorText.textContent = errorMessage;
   errorText.style.margin = "10px 0 0";
   errorText.style.minHeight = "1.2em";
   errorText.style.color = "#ff8585";
@@ -179,28 +179,39 @@ const resolveAdminMode = async () => {
     return false;
   }
 
-  let storedHash = "";
-  try {
-    storedHash = await getAdminPasswordHash();
-  } catch (error) {
+  const getFallbackCredential = () => {
     const fallbackCredential = typeof window.firebaseConfig?.adminPasswordHash === "string"
       ? window.firebaseConfig.adminPasswordHash.trim()
       : "";
     const fallbackPassword = typeof window.firebaseConfig?.adminPassword === "string"
       ? window.firebaseConfig.adminPassword.trim()
       : "";
+    return fallbackCredential || fallbackPassword;
+  };
 
-    storedHash = fallbackCredential || fallbackPassword;
-    if (!storedHash) {
-      window.alert("Nie udało się odczytać hasła administratora. Otwieram widok użytkownika.");
-      return false;
+  const loadStoredHash = async () => {
+    try {
+      return await getAdminPasswordHash();
+    } catch (error) {
+      return getFallbackCredential();
     }
-  }
+  };
+
+  let storedHash = await loadStoredHash();
+  let modalError = "";
 
   while (true) {
-    const candidatePassword = await requestAdminPassword();
+    const candidatePassword = await requestAdminPassword({ errorMessage: modalError });
     if (candidatePassword === null) {
       return false;
+    }
+
+    if (!storedHash) {
+      storedHash = await loadStoredHash();
+      if (!storedHash) {
+        modalError = "Nie udało się odczytać hasła administratora. Sprawdź konfigurację i spróbuj ponownie.";
+        continue;
+      }
     }
 
     const isValid = await isAdminPasswordValid(candidatePassword, storedHash);
@@ -208,7 +219,7 @@ const resolveAdminMode = async () => {
       return true;
     }
 
-    window.alert("Błędne hasło administratora. Spróbuj ponownie.");
+    modalError = "Błędne hasło administratora. Spróbuj ponownie.";
   }
 };
 

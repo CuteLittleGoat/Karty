@@ -475,7 +475,7 @@ Ta dokumentacja opisuje **aktualny stan aplikacji** i nie zawiera historii zmian
 - Walidacja akceptuje:
   - dokładną zgodność wpisanego hasła z `passwordHash`,
   - lub zgodność SHA-256 wpisanego hasła z wartością `passwordHash` (hex).
-- Błędne hasło powoduje `alert` i ponowne pytanie o hasło.
+- Błędne hasło wyświetla komunikat bezpośrednio w modalu i ponownie pokazuje formularz hasła (bez systemowego `alert`).
 - `Anuluj` w modalu logowania przełącza aplikację do widoku użytkownika (`document.body` bez klasy `is-admin`).
 - Gdy odczyt Firestore się nie powiedzie, aplikacja używa awaryjnie `window.firebaseConfig.adminPasswordHash` lub `window.firebaseConfig.adminPassword` (jeśli skonfigurowane).
-- Brak hasła zarówno w Firestore, jak i w konfiguracji kończy się komunikatem i uruchomieniem widoku użytkownika.
+- Brak hasła zarówno w Firestore, jak i w konfiguracji wyświetla komunikat w modalu logowania i pozostawia możliwość ponowienia próby lub kliknięcia `Anuluj`.

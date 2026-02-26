@@ -48,10 +48,10 @@ Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry
 - Gdy `admin=1`, `resolveAdminMode()` próbuje pobrać z Firestore dokument `admin_security/credentials` i pole `passwordHash`.
 - Użytkownik dostaje modal logowania z polem hasła (`input[type="password"]`) i przyciskami `Zaloguj` / `Anuluj`.
 - Poprawne hasło (lub SHA-256 hasła zgodne z `passwordHash`) otwiera panel admina.
-- Błędne hasło pokazuje `alert` i ponawia pytanie.
+- Błędne hasło pokazuje komunikat w modalu i ponawia formularz logowania (bez systemowego `alert`).
 - Anulowanie modala wymusza widok użytkownika.
 - Jeśli Firestore zwróci błąd odczytu hasła, moduł używa wartości awaryjnej `window.firebaseConfig.adminPasswordHash` lub `window.firebaseConfig.adminPassword`.
-- Brak hasła w obu źródłach wymusza widok użytkownika.
+- Brak hasła w obu źródłach pokazuje komunikat w modalu; użytkownik może ponowić próbę lub anulować przejście do widoku admina.
 
 ### 4.2 Przełączanie zakładek
 - `setupTabs(...)` obsługuje aktywację przycisków i paneli dla:
