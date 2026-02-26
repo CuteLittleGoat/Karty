@@ -15,7 +15,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 2.1 Aktualności
 1. Kliknij zakładkę **Aktualności**.
-2. Odczytaj pole **Najnowsze** z ostatnią wiadomością od administratora (pole jest wysokie na 50 linii, więc mieści długie komunikaty bez przewijania całej strony).
+2. Odczytaj pole **Najnowsze** z ostatnią wiadomością od administratora (pole ma wysokość 25 linii, więc szybciej pokazuje najważniejszą część komunikatu).
 
 ### 2.2 Regulamin
 1. Kliknij zakładkę **Regulamin**.
@@ -68,7 +68,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 3.1 Aktualności
 1. Wejdź w zakładkę **Aktualności**.
-2. Wpisz treść w polu **Treść wiadomości** (pole ma wysokość 50 linii).
+2. Wpisz treść w polu **Treść wiadomości** (pole ma wysokość 25 linii).
 3. Kliknij **Wyślij**.
 
 ### 3.2 Czat
@@ -90,18 +90,19 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 3.5 Gry admina
 1. Wejdź w **Gry admina**.
-2. Wybierz rok po lewej stronie.
-3. Kliknij **Dodaj**, aby dodać grę.
-4. Edytuj pola w tabeli: Rodzaj Gry, Data, Nazwa, CzyZamknięta.
-5. Kliknij **Szczegóły** przy nazwie gry.
-6. W oknie szczegółów (na PC okno jest szersze i lepiej wykorzystuje ekran):
+2. W tym widoku lewy panel **Lata** jest krótszy, a prawy panel **Ranking** szerszy, żeby ograniczyć przewijanie tabeli rankingu.
+3. Wybierz rok po lewej stronie.
+4. Kliknij **Dodaj**, aby dodać grę.
+5. Edytuj pola w tabeli: Rodzaj Gry, Data, Nazwa, CzyZamknięta.
+6. Kliknij **Szczegóły** przy nazwie gry.
+7. W oknie szczegółów (na PC okno jest szersze i lepiej wykorzystuje ekran):
    - dodawaj/usuwaj graczy,
    - edytuj dane finansowe i punkty,
    - korzystaj z kolumny **LP**,
    - po rozwinięciu listy **Gracz** widzisz tylko dostępnych graczy (osoby już wybrane w innych wierszach są ukryte).
-7. W pasku metadanych szczegółów widzisz: Nazwa, Rodzaj gry, Data, **Pula**, **Ilość graczy**.
-8. W sekcji podsumowania gry możesz otworzyć **Notatki po grze**.
-9. W sekcji statystyk kolejność kolumn to: Ilość Spotkań, **Waga2**, **% udział**, Punkty.
+8. W pasku metadanych szczegółów widzisz: Nazwa, Rodzaj gry, Data, **Pula**, **Ilość graczy**.
+9. W sekcji podsumowania gry możesz otworzyć **Notatki po grze**.
+10. W sekcji statystyk kolejność kolumn to: Ilość Spotkań, **Waga2**, **% udział**, Punkty.
 
 ### 3.6 Statystyki (panel admina)
 1. Wejdź w **Statystyki**.

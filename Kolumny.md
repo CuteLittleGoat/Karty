@@ -154,6 +154,11 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 
 ### 5.3 Ranking
 
+**Układ paneli wokół tabel rankingu (Gry admina):**
+- Panel **Lata** po lewej jest węższy niż wcześniej, żeby zostawić więcej miejsca na treść główną i ranking.
+- Panel **Ranking** po prawej jest szerszy, aby ograniczyć poziome i pionowe przewijanie listy wyników.
+
+
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
 | Miejsce | automatyczna | brak stałego limitu | do lewej | Pozycja w rankingu. |

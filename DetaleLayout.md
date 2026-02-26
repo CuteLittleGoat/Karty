@@ -50,8 +50,8 @@
 - Przyciski sekcji w „Strefa Gracza” (`.player-zone-button`) mają responsywny font (`clamp`) i zagęszczane odstępy liter, co zapobiega wychodzeniu długich etykiet poza przycisk.
 
 ## Pola tekstowe „Aktualności” i „Regulamin"
-- Pole `Treść wiadomości` w panelu administratora (`#adminMessageInput`) ma wysokość 50 linii.
-- Pole `Najnowsze` w widoku użytkownika (`#latestMessageOutput`) ma wysokość 50 linii.
+- Pole `Treść wiadomości` w panelu administratora (`#adminMessageInput`) ma wysokość 25 linii.
+- Pole `Najnowsze` w widoku użytkownika (`#latestMessageOutput`) ma wysokość 25 linii.
 - Pole `Treść regulaminu` w panelu administratora (`#adminRulesInput`) ma wysokość 50 linii.
 - Pole `Obowiązujące zasady` w widoku użytkownika (`#rulesOutput`) ma wysokość 50 linii.
 
@@ -122,3 +122,9 @@
 - W pasku sesji dodano dodatkowy komunikat z aktualnym loginem (`Zalogowany: ...`).
 - Na karcie logowania dodano linkowy przycisk „Reset hasła”, który otwiera osobny blok formularza resetu.
 - Dodano wizualny stan oczekiwania na zatwierdzenie oraz wyszarzenie niezatwierdzonych wierszy graczy.
+
+
+## Układ paneli „Gry admina”
+- W układzie 3-kolumnowym `#adminGamesTab .admin-games-layout` lewy panel `Lata` ma szerokość `200px`.
+- Kolumna centralna pozostaje elastyczna (`minmax(0, 1fr)`).
+- Prawy panel `Ranking` ma szerokość `300px`, aby ograniczyć konieczność przewijania tabeli rankingu.
