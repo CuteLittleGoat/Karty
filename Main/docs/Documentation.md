@@ -67,9 +67,9 @@ W aplikacji występują m.in. poniższe modale:
 - Przyciski `Dodaj` w zakładkach gier — tworzą nowe dokumenty gry z domyślnymi polami.
 - `Szczegóły` — otwiera modal z tabelą graczy (`rows`) i natychmiastową edycją danych.
 - We wszystkich selectach `Gracz` (szczegóły gier oraz kalkulator) lista pokazuje tylko dostępnych graczy; już wybrani w innych wierszach są filtrowani podczas renderu.
-- `Usuń` przy wierszu gracza — usuwa rekord z subkolekcji `rows`.
+- `Usuń` przy wierszu gracza — usuwa rekord z subkolekcji `rows`, ale UI blokuje usunięcie ostatniego dokumentu tej kolekcji.
 - `Eksportuj` (statystyki) — eksport widoków statystycznych do pliku.
-- `adminChatCleanup` — kasowanie wiadomości czatu starszych niż 30 dni.
+- `adminChatCleanup` — kasowanie wiadomości czatu starszych niż 30 dni, z zabezpieczeniem przed wyczyszczeniem całej kolekcji czatu.
 - Przyciski zbiorcze wag (`Waga1…Waga6`) — szybka aktualizacja wag/kolumn.
 
 ## 4. Logika aplikacji (`Main/app.js`) — szczegółowy opis
@@ -101,6 +101,9 @@ W aplikacji występują m.in. poniższe modale:
   - otworzyć modal uprawnień,
   - otworzyć modal lat statystyk,
   - zapisać zmiany do Firestore.
+- Zabezpieczenia usuwania kont:
+  - konto `AV9s1NNHl3Rq4pT4HnfQ7y9ELxa2` jest chronione przed skasowaniem w UI,
+  - UI blokuje usunięcie ostatniego dokumentu w `main_users`.
 
 ### 4.4 Gry (admin i user)
 Moduł gier działa w dwóch kolekcjach (`Tables`, `UserGames`) z tym samym mechanizmem:
@@ -113,8 +116,8 @@ Moduł gier działa w dwóch kolekcjach (`Tables`, `UserGames`) z tym samym mech
 
 Obsługiwane akcje:
 - dodanie gry,
-- usunięcie gry z pełnym cleanupem subkolekcji (`deleteGameCompletely`),
-- dodanie/usuwanie wiersza gracza,
+- usunięcie gry z pełnym cleanupem subkolekcji (`deleteGameCompletely`) tylko wtedy, gdy w kolekcji gier pozostanie co najmniej 1 dokument,
+- dodanie/usuwanie wiersza gracza (usunięcie ostatniego rekordu `rows` jest blokowane),
 - aktualizacja danych gracza (gracz, wpisowe, rebuy, wypłata, punkty, mistrzostwo),
 - notatki przed grą i po grze.
 
@@ -135,8 +138,8 @@ Dodatkowa logika własności dla `UserGames` (strefa gracza):
 - Każda wiadomość zawiera autora, treść, timestamp i datę wygaśnięcia (`expireAt`).
 - Retencja: 30 dni (`CHAT_RETENTION_DAYS = 30`).
 - Admin:
-  - usuwa pojedyncze wiadomości,
-  - uruchamia cleanup wiadomości starszych niż 30 dni.
+  - usuwa pojedyncze wiadomości (bez możliwości usunięcia ostatniej),
+  - uruchamia cleanup wiadomości starszych niż 30 dni (zostawia min. 1 dokument w kolekcji).
 
 ### 4.7 Aktualności i regulamin
 - Aktualności: dokument `admin_messages/admin_messages`.
@@ -360,7 +363,8 @@ service cloud.firestore {
           && request.resource.data.isActive == resource.data.isActive
           && request.resource.data.role == resource.data.role);
 
-      allow delete: if hasMainAdminRole();
+      allow delete: if hasMainAdminRole()
+        && uid != "AV9s1NNHl3Rq4pT4HnfQ7y9ELxa2";
     }
   }
 }
