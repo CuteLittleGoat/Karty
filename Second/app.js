@@ -23,9 +23,16 @@ const getFirebaseApp = () => {
   return window.firebase;
 };
 
+const normalizeEmail = (value) => (typeof value === "string" ? value.trim().toLowerCase() : "");
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail(value));
+const isValidPassword = (value) => /^(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/.test(value);
+
 const applyAuthUiState = () => {
-  const isAuthenticated = Boolean(authContextState.user);
+  const hasUser = Boolean(authContextState.user);
+  const isApproved = authContextState.profile ? authContextState.profile.isApproved !== false : false;
+  const isAuthenticated = hasUser && isApproved;
   document.body.classList.toggle("is-authenticated", isAuthenticated);
+  document.body.classList.toggle("is-awaiting-approval", hasUser && !isApproved);
 };
 
 const initAuthControls = () => {
@@ -35,9 +42,15 @@ const initAuthControls = () => {
   const registerButton = document.querySelector("#authRegisterButton");
   const logoutButton = document.querySelector("#authLogoutButton");
   const resetButton = document.querySelector("#authResetPasswordButton");
+  const openResetViewButton = document.querySelector("#authOpenResetViewButton");
+  const resetView = document.querySelector("#authResetView");
+  const resetEmailInput = document.querySelector("#authResetEmailInput");
+  const sendResetButton = document.querySelector("#authSendResetButton");
+  const backToLoginButton = document.querySelector("#authBackToLoginButton");
   const status = document.querySelector("#authStatus");
+  const currentUser = document.querySelector("#authCurrentUser");
 
-  if (!emailInput || !passwordInput || !loginButton || !registerButton || !logoutButton || !resetButton || !status) {
+  if (!emailInput || !passwordInput || !loginButton || !registerButton || !logoutButton || !resetButton || !status || !currentUser) {
     return;
   }
 
@@ -53,40 +66,19 @@ const initAuthControls = () => {
 
   const auth = firebaseApp.auth();
   const db = firebaseApp.firestore();
-
-  const setStatus = (message) => {
-    status.textContent = message;
-  };
-
-  const persistSessionMetadata = async (user, profile) => {
-    if (!user || !db) {
-      return;
-    }
-
-    try {
-      await db.collection(AUTH_SESSIONS_COLLECTION).doc(user.uid).set(
-        {
-          uid: user.uid,
-          email: user.email ?? "",
-          module: AUTH_MODULE_KEY,
-          profileCollection: AUTH_USERS_COLLECTION,
-          profileExists: Boolean(profile),
-          lastLoginAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
-          updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
-        },
-        { merge: true }
-      );
-    } catch (error) {
-      setStatus("Zalogowano, ale zapis sesji do Firestore jest obecnie zablokowany przez Rules.");
-    }
+  const setStatus = (message) => { status.textContent = message; };
+  const setResetViewVisible = (visible) => {
+    if (!resetView || !openResetViewButton) return;
+    resetView.classList.toggle("is-visible", visible);
+    openResetViewButton.style.display = visible ? "none" : "inline";
   };
 
   auth.onAuthStateChanged(async (user) => {
     authContextState.user = user || null;
-
     if (!user) {
       authContextState.profile = null;
       logoutButton.disabled = true;
+      currentUser.textContent = "Zalogowany: —";
       applyAuthUiState();
       renderRoleView();
       setStatus("Nie zalogowano.");
@@ -94,16 +86,17 @@ const initAuthControls = () => {
     }
 
     logoutButton.disabled = false;
-
+    currentUser.textContent = `Zalogowany: ${user.email || user.uid}`;
     try {
       const profileSnapshot = await db.collection(AUTH_USERS_COLLECTION).doc(user.uid).get();
-      const profile = profileSnapshot.exists ? profileSnapshot.data() : null;
-      authContextState.profile = profile;
-      const profileLabel = profile ? "Profil modułu Second znaleziony." : "Brak profilu modułu Second (second_users/{uid}).";
+      authContextState.profile = profileSnapshot.exists ? profileSnapshot.data() : null;
       applyAuthUiState();
       renderRoleView();
-      setStatus(`Zalogowano: ${user.email || user.uid}. ${profileLabel}`);
-      await persistSessionMetadata(user, profile);
+      if (authContextState.profile && authContextState.profile.isApproved === false) {
+        setStatus("Oczekiwanie na zatwierdzenie");
+      } else {
+        setStatus(`Zalogowano: ${user.email || user.uid}.`);
+      }
     } catch (error) {
       authContextState.profile = null;
       applyAuthUiState();
@@ -113,16 +106,10 @@ const initAuthControls = () => {
   });
 
   loginButton.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
+    const email = normalizeEmail(emailInput.value);
     const password = passwordInput.value;
-
-    if (!email || !password) {
-      setStatus("Podaj e-mail i hasło.");
-      return;
-    }
-
-    setStatus("Logowanie...");
-
+    if (!email || !password) return setStatus("Podaj e-mail i hasło.");
+    if (!isValidEmail(email)) return setStatus("Podaj poprawny adres e-mail.");
     try {
       await auth.signInWithEmailAndPassword(email, password);
       passwordInput.value = "";
@@ -131,25 +118,23 @@ const initAuthControls = () => {
     }
   });
 
-
   registerButton.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
+    const email = normalizeEmail(emailInput.value);
     const password = passwordInput.value;
-
-    if (!email || !password) {
-      setStatus("Podaj e-mail i hasło, aby utworzyć konto.");
-      return;
-    }
-
-    setStatus("Tworzenie konta...");
+    if (!email || !password) return setStatus("Podaj e-mail i hasło, aby utworzyć konto.");
+    if (!isValidEmail(email)) return setStatus("Podaj poprawny adres e-mail.");
+    if (!isValidPassword(password)) return setStatus("Hasło musi mieć min. 6 znaków, 1 cyfrę i 1 znak specjalny.");
 
     try {
+      const existingSnapshot = await db.collection(AUTH_USERS_COLLECTION).where("email", "==", email).limit(1).get();
+      if (!existingSnapshot.empty) return setStatus("Konto z tym adresem e-mail już istnieje.");
       const result = await auth.createUserWithEmailAndPassword(email, password);
       await db.collection(AUTH_USERS_COLLECTION).doc(result.user.uid).set({
         uid: result.user.uid,
         email,
         name: email.split("@")[0],
         isActive: false,
+        isApproved: false,
         permissions: [],
         statsYearsAccess: [],
         role: "user",
@@ -157,36 +142,30 @@ const initAuthControls = () => {
         updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
         source: "self-register"
       }, { merge: true });
-      setStatus("Konto utworzone. Administrator musi aktywować uprawnienia w zakładce Gracze.");
       passwordInput.value = "";
+      setStatus("Oczekiwanie na zatwierdzenie");
     } catch (error) {
       setStatus(`Nie udało się utworzyć konta: ${error?.message || "nieznany błąd"}`);
     }
   });
 
   logoutButton.addEventListener("click", async () => {
-    try {
-      await auth.signOut();
-      setStatus("Wylogowano.");
-    } catch (error) {
-      setStatus(`Nie udało się wylogować: ${error?.message || "nieznany błąd"}`);
-    }
+    try { await auth.signOut(); setStatus("Wylogowano."); }
+    catch (error) { setStatus(`Nie udało się wylogować: ${error?.message || "nieznany błąd"}`); }
   });
 
-  resetButton.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
-    if (!email) {
-      setStatus("Podaj e-mail, aby wysłać reset hasła.");
-      return;
-    }
+  const sendReset = async () => {
+    const email = normalizeEmail((resetEmailInput?.value || emailInput.value));
+    if (!email) return setStatus("Podaj e-mail, aby wysłać reset hasła.");
+    if (!isValidEmail(email)) return setStatus("Podaj poprawny adres e-mail.");
+    try { await auth.sendPasswordResetEmail(email); setStatus(`Wysłano link resetu hasła na adres: ${email}.`); }
+    catch (error) { setStatus(`Nie udało się wysłać resetu hasła: ${error?.message || "nieznany błąd"}`); }
+  };
 
-    try {
-      await auth.sendPasswordResetEmail(email);
-      setStatus(`Wysłano link resetu hasła na adres: ${email}.`);
-    } catch (error) {
-      setStatus(`Nie udało się wysłać resetu hasła: ${error?.message || "nieznany błąd"}`);
-    }
-  });
+  resetButton.addEventListener("click", () => setResetViewVisible(true));
+  openResetViewButton?.addEventListener("click", () => setResetViewVisible(true));
+  backToLoginButton?.addEventListener("click", () => setResetViewVisible(false));
+  sendResetButton?.addEventListener("click", () => { void sendReset(); });
 };
 
 const appRoot = document.querySelector("#appRoot");

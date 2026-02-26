@@ -204,3 +204,17 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 4. Kliknij **Zaloguj**, aby wejść do aplikacji.
 5. Kliknij **Wyloguj**, aby zakończyć sesję.
 6. Kliknij **Reset hasła**, aby wysłać e-mail resetu.
+
+
+## Logowanie, rejestracja i reset hasła
+1. Na ekranie logowania wpisz poprawny e-mail i hasło, następnie kliknij **Zaloguj**.
+2. Aby utworzyć konto kliknij **Utwórz konto**. Formularz nie przyjmie pustych pól, niepoprawnego e-maila ani hasła bez minimum 6 znaków, cyfry i znaku specjalnego.
+3. Po rejestracji konto dostaje status **Oczekiwanie na zatwierdzenie** i nie otworzy widoku aplikacji do czasu akceptacji przez admina.
+4. Kliknij **Reset hasła** na ekranie startowym, wpisz e-mail i użyj **Wyślij mail**.
+5. Po zalogowaniu w górnym pasku widoczny jest aktualny login oraz przycisk **Wyloguj**.
+
+## Zakładka „Gracze” (admin)
+1. W tabeli admin widzi kolumny: Aplikacja, Nazwa, E-mail, PIN, Uprawnienia, Status, Akcje.
+2. Gracze oczekujący na zatwierdzenie są wyszarzeni i mają tylko akcje **Zatwierdź** oraz **Usuń**.
+3. Po kliknięciu **Zatwierdź** odblokowuje się edycja nazwy, PIN-u i uprawnień.
+4. E-mail jest tylko do odczytu (bez edycji).

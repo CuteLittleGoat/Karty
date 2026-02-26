@@ -21,6 +21,7 @@
         </div>
         <div class="header-controls">
           <div class="auth-session-toolbar" aria-label="Sesja użytkownika">
+            <p id="authCurrentUser" class="status-text" aria-live="polite">Zalogowany: —</p>
             <p id="authStatus" class="status-text" aria-live="polite">Nie zalogowano.</p>
             <div class="auth-session-actions">
               <button id="authLogoutButton" class="secondary" type="button">Wyloguj</button>
@@ -51,6 +52,20 @@
             <button id="authLoginButton" class="primary" type="button">Zaloguj</button>
             <button id="authRegisterButton" class="secondary" type="button">Utwórz konto</button>
           </div>
+          <button id="authOpenResetViewButton" class="link-button" type="button">Reset hasła</button>
+
+          <div id="authResetView" class="auth-reset-view" aria-hidden="true">
+            <label class="auth-field" for="authResetEmailInput">
+              <span>E-mail do resetu</span>
+              <input id="authResetEmailInput" type="email" autocomplete="email" placeholder="np. gracz@karty.pl" />
+            </label>
+            <div class="auth-actions">
+              <button id="authSendResetButton" class="primary" type="button">Wyślij mail</button>
+              <button id="authBackToLoginButton" class="secondary" type="button">Wróć</button>
+            </div>
+          </div>
+
+          <p id="authPendingApproval" class="status-text auth-pending" aria-live="polite">Oczekiwanie na zatwierdzenie</p>
         </div>
       </section>
 
@@ -140,8 +155,10 @@
                     <tr>
                       <th>Aplikacja</th>
                       <th>Nazwa</th>
+                      <th>E-mail</th>
                       <th>PIN</th>
                       <th>Uprawnienia</th>
+                      <th>Status</th>
                       <th></th>
                     </tr>
                   </thead>
