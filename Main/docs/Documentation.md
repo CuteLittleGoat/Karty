@@ -89,14 +89,14 @@ W aplikacji występują m.in. poniższe modale:
 - Zmiana sekcji w obrębie Strefy Gracza nie resetuje już autoryzacji; ponowna weryfikacja jest wymagana dopiero po utracie sesji (`sessionStorage`).
 
 ### 4.3 Zarządzanie graczami
-- Gracze są trzymani w dokumencie `app_settings/player_access` jako tablica `players`.
+- Gracze są trzymani w kolekcji `main_users` (1 dokument = 1 konto użytkownika).
 - Każdy gracz ma:
   - `id`, `name`, `pin`,
   - `appEnabled` (aktywny/nieaktywny),
   - `permissions` (dostęp do zakładek),
   - `statsYearsAccess` (lata statystyk).
 - Moduł admina pozwala:
-  - dodać gracza,
+  - przeglądać konta utworzone przez samych użytkowników (self-register),
   - edytować nazwę/PIN,
   - otworzyć modal uprawnień,
   - otworzyć modal lat statystyk,
@@ -260,20 +260,12 @@ Aplikacja odczytuje konfigurację z `window.firebaseConfig`:
 
 ## 7.2 Kolekcje i dokumenty
 
-### A) `app_settings`
-1. `player_access`
-- `players: Array<Player>`
-- `updatedAt`
+### A) `main_users`
+- dokument: `{uid}`
+- pola: `uid`, `email`, `name`, `role`, `isActive`, `permissions[]`, `statsYearsAccess[]`, `pin`, `source`, `createdAt`, `updatedAt`.
 
-`Player`:
-- `id: string`
-- `name: string`
-- `pin: string (5 cyfr)`
-- `appEnabled: boolean`
-- `permissions: string[]` (klucze zakładek)
-- `statsYearsAccess: string[]` (np. `"2026"`)
-
-2. `rules`
+### B) `main_app_settings`
+1. `rules`
 - `text: string`
 - `createdAt`
 - `updatedAt`
@@ -282,19 +274,19 @@ Aplikacja odczytuje konfigurację z `window.firebaseConfig`:
 3. (opcjonalnie) `next_game`
 - ustawienia związane z bramką PIN najbliższej gry.
 
-### B) `admin_messages`
+### C) `main_admin_messages`
 - dokument `admin_messages`:
   - `message: string`
   - `createdAt`
   - `source`
 
-### C) `chat_messages`
+### D) `main_chat_messages`
 - wiele dokumentów wiadomości:
   - `text`, `authorName`, `authorId`,
   - `createdAt`, `expireAt`,
   - `source`.
 
-### D) `Tables` (gry admina)
+### E) `main_tables` (gry admina)
 - dokument gry:
   - `gameType`, `gameDate`, `name`,
   - `isClosed`,
@@ -305,23 +297,23 @@ Aplikacja odczytuje konfigurację z `window.firebaseConfig`:
 - subkolekcja `confirmations`:
   - `playerId`, `playerName`, `confirmed`, `updatedBy`, `updatedAt`.
 
-### E) `UserGames` (gry użytkowników)
+### F) `main_user_games` (gry użytkowników)
 Jak `Tables`, plus:
 - `createdByPlayerId`,
 - `createdByPlayerName`.
 
 Pola `createdByPlayerId` / `createdByPlayerName` są używane przez logikę UI do separacji danych między graczami (PIN -> właściciel gry), bez zmiany struktury dokumentów Firestore.
 
-### F) `admin_games_stats`
+### G) `main_admin_games_stats`
 - dokumenty roczne (ID = rok, np. `2026`):
   - `rows` — ręczne dane wag i korekt graczy,
   - `visibleColumns` — lista kolumn widocznych w widoku gracza.
 
-### G) `calculators`
+### H) `main_calculators`
 - `tournament` i `cash`:
   - `table1Row`, `table2Rows`, `table3Row`, `table5SplitPercents`, `eliminatedOrder`, `updatedAt`.
 
-### H) Kolekcje wyłączone z użycia w tym projekcie
+### I) Kolekcje wyłączone z użycia w tym projekcie
 Nie modyfikować pod kątem tej aplikacji:
 - `Nekrolog_refresh_jobs`,
 - `Nekrolog_config`,
@@ -329,141 +321,53 @@ Nie modyfikować pod kątem tej aplikacji:
 
 ## 8. Skrypt odtworzenia struktury Firebase (Node.js)
 
-Poniższy skrypt tworzy kompletny szkielet danych wymagany przez aplikację.
+Aktualny skrypt bootstrapu znajduje się w repo: `Main/scripts/firebase/rebuild-main-firebase.js`.
 
-```js
-// scripts/rebuild-firestore-structure.js
-const admin = require("firebase-admin");
-const serviceAccount = require("../test.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-
-const db = admin.firestore();
-const timestamp = admin.firestore.FieldValue.serverTimestamp;
-
-async function ensureBaseDocuments() {
-  await db.collection("app_settings").doc("player_access").set({
-    players: [],
-    updatedAt: timestamp()
-  }, { merge: true });
-
-  await db.collection("app_settings").doc("rules").set({
-    text: "",
-    source: "bootstrap-script",
-    createdAt: timestamp(),
-    updatedAt: timestamp()
-  }, { merge: true });
-
-  await db.collection("admin_messages").doc("admin_messages").set({
-    message: "",
-    source: "bootstrap-script",
-    createdAt: timestamp()
-  }, { merge: true });
-
-  const year = String(new Date().getFullYear());
-  await db.collection("admin_games_stats").doc(year).set({
-    rows: [],
-    visibleColumns: []
-  }, { merge: true });
-
-  for (const mode of ["tournament", "cash"]) {
-    await db.collection("calculators").doc(mode).set({
-      table1Row: { buyIn: "", rebuy: "" },
-      table2Rows: [{ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [] }],
-      table3Row: { percent: "" },
-      table5SplitPercents: [],
-      eliminatedOrder: [],
-      updatedAt: timestamp()
-    }, { merge: true });
-  }
-}
-
-async function ensureGameWithSubcollections(collectionName, gameNamePrefix) {
-  const gameRef = await db.collection(collectionName).add({
-    gameType: "Cashout",
-    gameDate: new Date().toISOString().slice(0, 10),
-    name: `${gameNamePrefix} 1`,
-    isClosed: false,
-    preGameNotes: "",
-    postGameNotes: "",
-    createdAt: timestamp(),
-    ...(collectionName === "UserGames"
-      ? { createdByPlayerId: "system", createdByPlayerName: "System" }
-      : {})
-  });
-
-  await gameRef.collection("rows").add({
-    playerName: "",
-    entryFee: "",
-    rebuy: "",
-    payout: "0",
-    points: "",
-    championship: false,
-    createdAt: timestamp()
-  });
-
-  await gameRef.collection("confirmations").doc("sample-player").set({
-    playerId: "sample-player",
-    playerName: "Sample",
-    confirmed: false,
-    updatedBy: "bootstrap-script",
-    updatedAt: timestamp()
-  }, { merge: true });
-}
-
-async function main() {
-  await ensureBaseDocuments();
-  await ensureGameWithSubcollections("Tables", "Gra admina");
-  await ensureGameWithSubcollections("UserGames", "Gra użytkownika");
-  console.log("Firestore structure rebuilt successfully.");
-}
-
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+Uruchomienie:
+```bash
+cd Main
+npm i firebase-admin
+node scripts/firebase/rebuild-main-firebase.js
 ```
 
-### Uruchomienie skryptu
-1. Utwórz plik `scripts/rebuild-firestore-structure.js`.
-2. Zainstaluj zależność: `npm i firebase-admin`.
-3. Upewnij się, że plik `test.json` jest poprawnym kluczem service account dla docelowego projektu.
-4. Uruchom: `node scripts/rebuild-firestore-structure.js`.
+Skrypt odtwarza podstawowe dokumenty (`main_app_settings/rules`, `main_admin_messages/admin_messages`, `main_calculators/{tournament,cash}`) i wypisuje wzór profilu do `main_users/{uid}`.
 
-## 9. Zasady odtwarzania aplikacji przez innego dewelopera
-Aby odtworzyć aplikację 1:1, należy:
-1. Odtworzyć strukturę HTML z `Main/index.html` (te same identyfikatory i sekcje).
-2. Odtworzyć logikę modułową z `Main/app.js` (inicjalizacja, subskrypcje, obliczenia i modale).
-3. Odtworzyć style i zmienne z `Main/styles.css`.
-4. Skonfigurować `window.firebaseConfig` zgodnie z `config/firebase-config.js`.
-5. Wykonać skrypt bootstrapujący Firestore, aby zapewnić wszystkie kolekcje/dokumenty.
+## 9. Rules Firestore (Main + self-register + aktywacja przez admina)
 
-Ta dokumentacja opisuje **aktualny stan aplikacji** i nie zawiera historii zmian.
+```rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    function hasMainAdminRole() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/main_users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/main_users/$(request.auth.uid)).data.role == "admin";
+    }
 
-### 5.4 Minimalne szerokości kolumn (implementacja)
-- Minimalne szerokości kolumn zostały spięte w CSS jednostką `ch` (ilość znaków), głównie przez selektory `nth-child` dla tabel statycznych i klas tabel renderowanych dynamicznie.
-- Statyczne tabele z przypisanymi szerokościami:
-  - `.players-table` (Nazwa: `30ch`, PIN: `5ch`),
-  - `.game-details-table` i `.confirmations-details-table` (LP/Gracz/Wpisowe/Rebuy/Wypłata/+/-/Punkty wg `Kolumny.md`),
-  - `.admin-games-players-stats-table` i `.admin-games-ranking-table`.
-- Tabele kalkulatora renderowane w JS dostały dedykowane klasy, aby przypisać szerokości zgodne z dokumentem:
-  - Tournament: `.admin-calculator-table1` … `.admin-calculator-table5`,
-  - Cash: `.admin-calculator-cash-table7` … `.admin-calculator-cash-table10`.
-- W `Tabela5` dynamiczne kolumny rebuy są oznaczane atrybutem `data-rebuy-column="true"` (nagłówki i komórki), co utrzymuje minimalnie `8ch` niezależnie od ich liczby.
-- Kolumna `Mod` w `Tabela5` ma minimalną szerokość `8ch` (zwiększoną, aby mieścić do 8 znaków).
-- Modal rebuy zachowuje stałe `8ch` na kolumnę przez istniejące reguły `#adminCalculatorRebuyTable th/td`.
+    match /main_users/{uid} {
+      allow create: if isOwner(uid)
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.isActive == false
+        && request.resource.data.permissions is list;
 
+      allow read: if isOwner(uid) || hasMainAdminRole();
 
-## 10. Moduł Second — aktualny szkielet techniczny
-- `Second/index.html` zawiera strukturę odwzorowującą zakładki Main dla: `Aktualności`, `Czat`, `Regulamin`, `Gracze` oraz dodatkową sekcję `Turniej`.
-- `Second/app.js` odpowiada za montowanie trybu admin/user oraz przełączanie zakładek przez klasę `is-active`.
-- W zakładce `Turniej` (admin i user) zastosowano układ bocznego panelu przycisków (`Instrukcja`, `Odśwież`) i centralny tekst `Strona w budowie`.
-- Tabele `Gracze` w `Second` używają klasy `players-table`, dzięki czemu minimalne szerokości kolumn odpowiadają konfiguracji z Main.
-- Wersja jest celowo offline: brak wywołań Firebase, brak zapisu/odczytu danych backendowych; przyciski pełnią rolę szkieletu UI.
+      allow update: if hasMainAdminRole()
+        || (isOwner(uid)
+          && request.resource.data.permissions == resource.data.permissions
+          && request.resource.data.isActive == resource.data.isActive
+          && request.resource.data.role == resource.data.role);
 
-## Logowanie Firebase Auth (Main)
+      allow delete: if hasMainAdminRole();
+    }
+  }
+}
+```
+
+## 10. Logowanie Firebase Auth (Main)
+
 - W nagłówku dodano wspólny pasek logowania `.auth-toolbar` z polami `#authEmailInput`, `#authPasswordInput` oraz przyciskami `#authLoginButton`, `#authLogoutButton`, `#authResetPasswordButton`.
 - Frontend używa Firebase Auth (compat) i funkcji:
   - `signInWithEmailAndPassword(email, password)` dla przycisku **Zaloguj**,
@@ -473,7 +377,7 @@ Ta dokumentacja opisuje **aktualny stan aplikacji** i nie zawiera historii zmian
 - Po zalogowaniu aplikacja próbuje zapisać metadane sesji do `main_auth_sessions/{uid}` (`uid`, `email`, `module`, `profileCollection`, `profileExists`, `lastLoginAt`, `updatedAt`) przez `set(..., { merge: true })`.
 - Integracja jest przygotowana pod przyszłe Rules: odczyt profilu i zapis sesji są już podpięte do docelowych kolekcji, więc po zaostrzeniu reguł mechanizm będzie działał bez zmian w UI.
 
-## Aktualny model auth i kolekcji (Main)
+## 11. Aktualny model auth i kolekcji (Main)
 - Rejestracja działa z poziomu UI (`#authRegisterButton`) przez `createUserWithEmailAndPassword`.
 - Po rejestracji tworzony jest profil `main_users/{uid}` z polami: `uid`, `email`, `name`, `isActive`, `permissions`, `statsYearsAccess`, znaczniki czasu i `source: self-register`.
 - Logowanie i reset hasła są obsługiwane przez Firebase Auth.
