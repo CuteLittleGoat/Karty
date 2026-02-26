@@ -3,7 +3,7 @@
 ## 1. Start aplikacji
 1. Otwórz stronę aplikacji.
 2. W wersji **PC** główna zawartość aplikacji rozciąga się prawie na całą szerokość okna (zostają tylko niewielkie marginesy po bokach).
-3. W panelach z układem 3-kolumnowym (np. **Lata / treść / Ranking**) szerokość paneli bocznych zostaje stała, a rozszerza się głównie kolumna środkowa z tabelami.
+3. W panelu **Gry admina** (układ **Lata / treść / Ranking**) prawa kolumna **Ranking** jest nieco szersza, a lewa kolumna **Lata** nieco węższa, żeby ograniczyć przewijanie tabeli rankingu.
 4. Na górze widzisz **Panel Administratora** (zakładki admina).
 5. Niżej widzisz od razu pasek zakładek użytkownika (bez osobnego nagłówka nad zakładkami).
 6. Kliknięcie nazwy zakładki przełącza zawartość widoku.
@@ -14,7 +14,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 2.1 Aktualności
 1. Kliknij zakładkę **Aktualności**.
-2. Odczytaj pole **Najnowsze** z ostatnią wiadomością od administratora (pole jest wysokie na 50 linii, więc mieści długie komunikaty bez przewijania całej strony).
+2. Odczytaj pole **Najnowsze** z ostatnią wiadomością od administratora (pole jest wysokie na 25 linii, więc pozostaje czytelne i jednocześnie zajmuje mniej miejsca na ekranie).
 
 ### 2.2 Regulamin
 1. Kliknij zakładkę **Regulamin**.

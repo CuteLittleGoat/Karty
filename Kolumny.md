@@ -154,6 +154,8 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 
 ### 5.3 Ranking
 
+Panel boczny `Ranking` w `Main -> Panel administratora -> Gry admina` został poszerzony względem poprzedniego układu, a panel `Lata` odpowiednio zwężony, aby tabela rankingu częściej mieściła się bez dodatkowego przewijania poziomego.
+
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 | --- | --- | --- | --- | --- |
 | Miejsce | automatyczna | brak stałego limitu | do lewej | Pozycja w rankingu. |
