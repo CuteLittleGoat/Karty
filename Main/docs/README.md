@@ -195,7 +195,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 1. Po wejściu do aplikacji widzisz centralne okno logowania z polami **E-mail** i **Hasło**.
 2. Kliknij **Zaloguj**, aby wejść do aplikacji zgodnie z przypisaną rolą.
 3. Kliknij **Utwórz konto**, aby założyć nowy profil (domyślnie rola `user`).
-4. Po zalogowaniu status konta jest widoczny w nagłówku; gdy logowanie się nie powiedzie, status pokaże też kod błędu (np. `auth/...`).
+4. Po zalogowaniu status konta jest widoczny w nagłówku; przy błędnym logowaniu komunikat wskaże, czy nie znaleziono maila, hasło jest błędne, czy wystąpił problem połączenia z Firebase (plus kod błędu).
 5. Aby zakończyć sesję kliknij **Wyloguj**.
 6. Po odświeżeniu strony aplikacja wymaga ponownego logowania (sesja logowania nie jest trwała).
 7. Aby zresetować hasło wpisz e-mail i kliknij **Reset hasła** (aplikacja wyśle mail resetujący).
