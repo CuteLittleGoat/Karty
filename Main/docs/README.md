@@ -76,15 +76,20 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 3.3 Regulamin
 1. Wejdź w **Regulamin**.
-2. Edytuj treść w polu **Treść regulaminu** (pole ma wysokość 50 linii).
-3. Kliknij **Zapisz**.
+2. Kliknij **Odśwież panel**, aby wymusić pobranie aktualnego regulaminu z bazy.
+3. Edytuj treść w polu **Treść regulaminu** (pole ma wysokość 50 linii).
+4. Kliknij **Zapisz**.
+5. Jeżeli brak uprawnień do kolekcji Firestore, status pod przyciskiem pokaże komunikat o braku uprawnień (zamiast ogólnego błędu).
+
 
 ### 3.4 Gracze
 1. Wejdź w **Gracze**.
-2. Kliknij **Dodaj**, aby dodać nowy wpis gracza.
+2. Kliknij **Odśwież panel**, aby pobrać aktualną listę graczy z bazy.
+3. Kliknij **Dodaj**, aby dodać nowy wpis gracza.
 3. Uzupełnij: Nazwa, PIN, dostęp do aplikacji.
 4. Kliknij **Edytuj** w kolumnie uprawnień i zaznacz dostęp do **Strefa Gracza** oraz do konkretnych sekcji w Strefie (Najbliższa gra, Czat, Gry do potwierdzenia, Gry użytkowników, Statystyki).
 5. Dla **Statystyk** użyj przycisku **Lata**, aby wskazać lata widoczne dla gracza.
+6. Jeżeli zapis listy graczy nie powiedzie się z powodu uprawnień Firestore, status pokaże to wprost.
 
 ### 3.5 Gry admina
 1. Wejdź w **Gry admina**.

@@ -144,6 +144,7 @@ Dodatkowa logika własności dla `main_user_games` (strefa gracza):
 - Aktualności: dokument `main_admin_messages/admin_messages`.
 - Regulamin: dokument `main_app_settings/rules`.
 - Oba moduły mają live update przez `onSnapshot`.
+- Dla operacji administracyjnych (odświeżanie potwierdzeń, zapis graczy, zapis regulaminu) komunikaty błędów rozróżniają co najmniej przypadki `permission-denied` i `unavailable`, aby łatwiej diagnozować problem konfiguracji/reguł Firestore.
 
 ### 4.8 Statystyki i ranking
 - Konfiguracja kolumn: `STATS_COLUMN_CONFIG`.
@@ -258,7 +259,8 @@ Styl wizualny to ciemny motyw „noir + gold + neon”, z kartami, delikatnym gr
 ## 7.1 Konfiguracja projektu
 Aplikacja odczytuje konfigurację z `window.firebaseConfig`:
 - `apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId`, `appId`,
-- nadpisywalne nazwy kolekcji: `tablesCollection`, `gamesCollection`, `gameDetailsCollection`, `userGamesCollection`.
+- nadpisywalne nazwy kolekcji Main: `tablesCollection`, `gamesCollection`, `gameDetailsCollection`, `userGamesCollection`, `playerAccessCollection`, `rulesCollection`, `adminMessagesCollection`, `chatCollection`, `adminGamesStatsCollection`, `calculatorCollection`,
+- przygotowane klucze kolekcji dla modułu Second: `secondTablesCollection`, `secondGamesCollection`, `secondGameDetailsCollection`, `secondUserGamesCollection`, `secondPlayerAccessCollection`, `secondRulesCollection`, `secondAdminMessagesCollection`, `secondChatCollection`, `secondAdminGamesStatsCollection`, `secondCalculatorCollection`.
 
 ## 7.2 Kolekcje i dokumenty
 
