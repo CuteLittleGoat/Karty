@@ -19,6 +19,7 @@ const AUTH_USERS_COLLECTION = "main_users";
 const AUTH_SESSIONS_COLLECTION = "main_auth_sessions";
 const AUTH_MODULE_KEY = "main";
 const AUTH_DELETE_USER_CALLABLE = "deleteMainUserAccount";
+const PROTECTED_AUTH_USER_IDS = new Set(["AV9s1NNHl3Rq4pT4HnfQ7y9ELxa2"]);
 const RULES_DEFAULT_TEXT = "";
 const DEFAULT_GAME_NOTES_TEMPLATE = "Rodzaj gry:\nPrzewidywani gracze:\nStack:\nWpisowe:\nRebuy:\nAdd-on:\nBlindy:\nOrganizacja:\nPodział puli:";
 
@@ -1015,6 +1016,22 @@ const deleteCollectionDocuments = async (collectionRef) => {
   }
 };
 
+const getCollectionDeleteAllowance = async ({ collectionRef, requestedDeleteCount = 1 }) => {
+  if (!collectionRef || requestedDeleteCount <= 0) {
+    return { allowed: true, allowedDeleteCount: 0, totalSampleSize: 0 };
+  }
+
+  const sampleSnapshot = await collectionRef.limit(requestedDeleteCount + 1).get();
+  const totalSampleSize = sampleSnapshot.size;
+  const allowedDeleteCount = Math.max(0, totalSampleSize - 1);
+
+  return {
+    allowed: requestedDeleteCount <= allowedDeleteCount,
+    allowedDeleteCount,
+    totalSampleSize
+  };
+};
+
 const deleteGameCompletely = async ({ db, collectionName, gameId }) => {
   const gameRef = db.collection(collectionName).doc(gameId);
   await deleteCollectionDocuments(gameRef.collection(GAME_DETAILS_COLLECTION));
@@ -1516,6 +1533,11 @@ const syncNextGamesViews = () => {
     }
 
     try {
+      const collectionRef = nextGamesState.db.collection(game.collectionName);
+      const allowance = await getCollectionDeleteAllowance({ collectionRef, requestedDeleteCount: 1 });
+      if (!allowance.allowed) {
+        return;
+      }
       await deleteGameCompletely({
         db: nextGamesState.db,
         collectionName: game.collectionName,
@@ -2631,6 +2653,10 @@ const initUserGamesManager = ({
       deleteButton.disabled = !writeEnabled;
       deleteButton.addEventListener("click", async () => {
         if (!hasWriteAccessToGame(game)) return;
+        const allowance = await getCollectionDeleteAllowance({ collectionRef: db.collection(gamesCollectionName), requestedDeleteCount: 1 });
+        if (!allowance.allowed) {
+          return;
+        }
         const gameRef = db.collection(gamesCollectionName).doc(game.id);
         const detailsSnapshot = await gameRef.collection(gameDetailsCollectionName).get();
         const confirmationsSnapshot = await gameRef.collection(GAME_CONFIRMATIONS_COLLECTION).get();
@@ -2761,9 +2787,14 @@ const initUserGamesManager = ({
       deleteButton.className = "danger admin-row-delete";
       deleteButton.textContent = "Usuń";
       deleteButton.disabled = !writeEnabled;
-      deleteButton.addEventListener("click", () => {
+      deleteButton.addEventListener("click", async () => {
         if (!hasWriteAccessToGame(game)) return;
-        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).delete();
+        const detailsCollectionRef = db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName);
+        const allowance = await getCollectionDeleteAllowance({ collectionRef: detailsCollectionRef, requestedDeleteCount: 1 });
+        if (!allowance.allowed) {
+          return;
+        }
+        await detailsCollectionRef.doc(row.id).delete();
       });
       deleteCell.appendChild(deleteButton);
 
@@ -5187,6 +5218,15 @@ const initAdminPlayers = () => {
       deleteButton.textContent = "Usuń";
       deleteButton.addEventListener("click", async () => {
         try {
+          if (PROTECTED_AUTH_USER_IDS.has(player.id)) {
+            status.textContent = "To konto jest chronione i nie można go usunąć.";
+            return;
+          }
+          const allowance = await getCollectionDeleteAllowance({ collectionRef: db.collection(AUTH_USERS_COLLECTION), requestedDeleteCount: 1 });
+          if (!allowance.allowed) {
+            status.textContent = "Nie można usunąć ostatniego użytkownika z kolekcji main_users.";
+            return;
+          }
           await db.collection(AUTH_USERS_COLLECTION).doc(player.id).delete();
           if (firebaseApp.functions) {
             const deleteCallable = firebaseApp.functions().httpsCallable(AUTH_DELETE_USER_CALLABLE);
@@ -5370,6 +5410,12 @@ const initAdminChat = () => {
         deleteButton.disabled = true;
         status.textContent = "Usuwanie wiadomości...";
         try {
+          const allowance = await getCollectionDeleteAllowance({ collectionRef: db.collection(CHAT_COLLECTION), requestedDeleteCount: 1 });
+          if (!allowance.allowed) {
+            status.textContent = "Nie można usunąć ostatniej wiadomości z kolekcji czatu.";
+            deleteButton.disabled = false;
+            return;
+          }
           await db.collection(CHAT_COLLECTION).doc(doc.id).delete();
           status.textContent = "Wiadomość usunięta.";
         } catch (error) {
@@ -5425,12 +5471,26 @@ const initAdminChat = () => {
           break;
         }
 
+        const allowance = await getCollectionDeleteAllowance({
+          collectionRef: db.collection(CHAT_COLLECTION),
+          requestedDeleteCount: expiredSnapshot.size
+        });
+
+        const docsToDelete = expiredSnapshot.docs.slice(0, allowance.allowedDeleteCount);
+        if (!docsToDelete.length) {
+          break;
+        }
+
         const batch = db.batch();
-        expiredSnapshot.docs.forEach((doc) => {
+        docsToDelete.forEach((doc) => {
           batch.delete(doc.ref);
         });
         await batch.commit();
-        deletedCount += expiredSnapshot.size;
+        deletedCount += docsToDelete.length;
+
+        if (docsToDelete.length < expiredSnapshot.size) {
+          break;
+        }
       }
       status.textContent = `Usunięto ${deletedCount} wiadomości starszych niż 30 dni.`;
     } catch (error) {
@@ -6429,6 +6489,10 @@ const initAdminGames = () => {
       deleteButton.className = "danger";
       deleteButton.textContent = "Usuń";
       deleteButton.addEventListener("click", async () => {
+        const allowance = await getCollectionDeleteAllowance({ collectionRef: db.collection(gamesCollectionName), requestedDeleteCount: 1 });
+        if (!allowance.allowed) {
+          return;
+        }
         const gameRef = db.collection(gamesCollectionName).doc(game.id);
         const detailsSnapshot = await gameRef.collection(gameDetailsCollectionName).get();
         const confirmationsSnapshot = await gameRef.collection(GAME_CONFIRMATIONS_COLLECTION).get();
@@ -6794,8 +6858,13 @@ const initAdminGames = () => {
       deleteButton.type = "button";
       deleteButton.className = "danger admin-row-delete";
       deleteButton.textContent = "Usuń";
-      deleteButton.addEventListener("click", () => {
-        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).delete();
+      deleteButton.addEventListener("click", async () => {
+        const detailsCollectionRef = db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName);
+        const allowance = await getCollectionDeleteAllowance({ collectionRef: detailsCollectionRef, requestedDeleteCount: 1 });
+        if (!allowance.allowed) {
+          return;
+        }
+        await detailsCollectionRef.doc(row.id).delete();
       });
       deleteCell.appendChild(deleteButton);
 

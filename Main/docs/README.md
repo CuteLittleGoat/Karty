@@ -73,7 +73,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 3.2 Czat
 1. Wejdź w **Czat**.
-2. Użyj opcji usuwania wiadomości (pojedynczo lub starszych niż 30 dni).
+2. Użyj opcji usuwania wiadomości (pojedynczo lub starszych niż 30 dni). UI nigdy nie pozwoli usunąć ostatniej wiadomości z kolekcji czatu — zawsze zostaje minimum 1 dokument.
 
 ### 3.3 Regulamin
 1. Wejdź w **Regulamin**.
@@ -86,7 +86,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 3. W kolumnie **Aplikacja** zaznacz aktywację konta, aby użytkownik mógł korzystać z modułu.
 4. W kolumnie **Uprawnienia** kliknij **Edytuj** i zaznacz dostęp do sekcji Strefy Gracza.
 5. Dla **Statystyk** użyj przycisku **Lata**, aby wskazać lata widoczne dla gracza.
-6. Przycisk **Usuń** usuwa profil użytkownika z `main_users` i uruchamia próbę usunięcia konta Authentication przez Cloud Function `deleteMainUserAccount` (jeśli jest wdrożona).
+6. Przycisk **Usuń** usuwa profil użytkownika z `main_users` i uruchamia próbę usunięcia konta Authentication przez Cloud Function `deleteMainUserAccount` (jeśli jest wdrożona). Konto admina `AV9s1NNHl3Rq4pT4HnfQ7y9ELxa2` jest chronione i nie może być skasowane z UI. UI nie pozwala też usunąć ostatniego dokumentu z `main_users`.
 
 ### 3.5 Gry admina
 1. Wejdź w **Gry admina**.
@@ -158,7 +158,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 10. W kolumnie **Wypłata** wpisz kwotę ręcznie (nowy wiersz startuje od `0`).
 11. Kolumna **+/-** liczy automatycznie: `Wypłata - (Buy-In + Rebuy)`.
 12. W ostatnim wierszu kliknij **Dodaj**, aby dopisać kolejny wiersz.
-13. W dowolnym wierszu kliknij **Usuń**, aby go usunąć.
+13. W dowolnym wierszu kliknij **Usuń**, aby go usunąć. Gdy w danej kolekcji zostałby tylko jeden rekord, UI blokuje usunięcie ostatniego wpisu.
 
 #### Cash — Tabela10
 1. Tabela10 jest automatyczna i sortowana malejąco po kolumnie **+/-**.
