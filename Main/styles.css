@@ -692,7 +692,7 @@ select:disabled,
 }
 
 #adminGamesTab .admin-games-layout {
-  grid-template-columns: 220px minmax(0, 1fr) 260px;
+  grid-template-columns: 200px minmax(0, 1fr) 320px;
 }
 
 .admin-games-sidebar,
@@ -775,6 +775,10 @@ select:disabled,
 
 .admin-games-ranking-sidebar {
   align-content: start;
+}
+
+#adminGamesTab .admin-games-ranking-scroll {
+  max-height: 640px;
 }
 
 .admin-games-ranking-row-gold {

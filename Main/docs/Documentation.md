@@ -22,7 +22,7 @@ Całość działa po stronie przeglądarki i komunikuje się bezpośrednio z Fir
 
 ### 3.1 Panel administratora (zakładki)
 Panel admina zawiera zakładki:
-1. **Aktualności** (`adminNewsTab`) — edycja wiadomości globalnej (`adminMessageInput`, `adminMessageSend`); pole `adminMessageInput` ma wysokość 50 linii (`rows="50"`).
+1. **Aktualności** (`adminNewsTab`) — edycja wiadomości globalnej (`adminMessageInput`, `adminMessageSend`); pole `adminMessageInput` ma wysokość 25 linii (`rows="25"`).
 2. **Czat** (`adminChatTab`) — moderacja czatu (`adminChatCleanup`, `adminChatList`).
 3. **Regulamin** (`adminRulesTab`) — edycja treści regulaminu (`adminRulesInput`, `adminRulesSave`); pole `adminRulesInput` ma wysokość 50 linii (`rows="50"`).
 4. **Gracze** (`adminPlayersTab`) — dodawanie/edycja/usuwanie graczy i PIN-ów (`adminPlayersBody`, `adminAddPlayer`).
@@ -36,7 +36,7 @@ Panel admina zawiera zakładki:
 Dodatkowo globalny przycisk odświeżania panelu: `adminPanelRefresh`.
 
 ### 3.2 Strefa gracza
-Widok użytkownika ma 3 zakładki główne: `updatesTab` (Aktualności), `rulesTab` (Regulamin) i `playerZoneTab` (Strefa Gracza). W `updatesTab` pole `latestMessageOutput` ma wysokość 50 linii (`rows="50"`), a w `rulesTab` pole `rulesOutput` także ma 50 linii (`rows="50"`).
+Widok użytkownika ma 3 zakładki główne: `updatesTab` (Aktualności), `rulesTab` (Regulamin) i `playerZoneTab` (Strefa Gracza). W `updatesTab` pole `latestMessageOutput` ma wysokość 25 linii (`rows="25"`), a w `rulesTab` pole `rulesOutput` ma 50 linii (`rows="50"`).
 
 W `playerZoneTab` działa jedna bramka PIN (`playerZonePinInput`, `playerZonePinSubmit`) i po poprawnej autoryzacji renderowany jest layout dwukolumnowy. W tej samej sesji przeglądarki użytkownik nie wpisuje już PIN-u ponownie dla sekcji:
 - lewy panel `Sekcja` (`playerZoneSectionsList`) z przyciskami:
