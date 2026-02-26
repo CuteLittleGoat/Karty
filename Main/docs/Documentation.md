@@ -433,7 +433,7 @@ service cloud.firestore {
 - Rejestracja zapisuje profil z `isApproved: false` i `isActive: false`; użytkownik po utworzeniu konta trafia do stanu „Oczekiwanie na zatwierdzenie”.
 - UI sesji pokazuje aktywny login (`#authCurrentUser`) oraz przycisk wylogowania.
 - Dodano widok resetu hasła na ekranie logowania (`#authResetView`) i wysyłkę przez `sendPasswordResetEmail`.
-- Komunikaty błędów logowania/rejestracji/odczytu profilu pokazują teraz twardą diagnostykę (`kod` + `opis` błędu Firebase) oraz wskazówki dla błędów `permission-denied`, `auth/wrong-password`, `auth/user-not-found`, `auth/invalid-credential`, `auth/too-many-requests`.
+- Komunikaty błędów logowania/rejestracji/odczytu profilu pokazują teraz twardą diagnostykę (`kod` + `opis` błędu Firebase) oraz czytelny opis przyczyn: brak konta dla e-maila (`auth/user-not-found`), błędne hasło (`auth/wrong-password`), błędne dane logowania (`auth/invalid-credential`), problem połączenia z Firebase (`auth/network-request-failed`) i limit prób (`auth/too-many-requests`).
 - Dodatkowo błędy są logowane do `console.error` z kontekstem kolekcji i UID, co ułatwia szybkie odróżnienie problemu Auth od Firestore Rules.
 
 ## Admin / Gracze

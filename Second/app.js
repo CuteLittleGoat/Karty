@@ -77,8 +77,12 @@ const initAuthControls = () => {
 
   const getFirebaseErrorHint = (error, contextLabel) => {
     const code = error?.code;
+    if (code === "auth/user-not-found") return "Nie znaleziono konta dla podanego e-maila.";
+    if (code === "auth/wrong-password") return "Podane hasło jest nieprawidłowe.";
+    if (code === "auth/invalid-credential") return "Dane logowania są nieprawidłowe — sprawdź e-mail i hasło.";
+    if (code === "auth/network-request-failed") return "Nie udało się połączyć z Firebase. Sprawdź połączenie z internetem i konfigurację Firebase.";
+    if (code === "auth/invalid-email") return "Podany adres e-mail ma niepoprawny format.";
     if (code === "permission-denied") return `Wskazówka: sprawdź Firestore Rules i kolekcję ${contextLabel}.`;
-    if (code === "auth/wrong-password" || code === "auth/user-not-found" || code === "auth/invalid-credential") return "Wskazówka: sprawdź e-mail i hasło.";
     if (code === "auth/too-many-requests") return "Wskazówka: zbyt wiele prób logowania — odczekaj chwilę i spróbuj ponownie.";
     return "";
   };

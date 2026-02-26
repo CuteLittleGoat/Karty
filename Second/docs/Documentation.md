@@ -102,5 +102,5 @@ Reguły dla kolekcji `main_users` i `second_users` używają walidacji `permissi
 - Rejestracja zapisuje użytkownika z `isApproved: false` oraz `isActive: false`; do czasu akceptacji aplikacja pokazuje stan oczekiwania.
 - Pasek sesji pokazuje login (`#authCurrentUser`).
 - Dodano osobny widok resetu hasła na ekranie logowania oraz wysyłkę resetu przez Firebase Auth.
-- Komunikaty błędów logowania/rejestracji/odczytu profilu pokazują twardą diagnostykę (`kod` + `opis` błędu Firebase) i wskazówki dla najczęstszych błędów logowania oraz `permission-denied`.
+- Komunikaty błędów logowania/rejestracji/odczytu profilu pokazują twardą diagnostykę (`kod` + `opis` błędu Firebase) i czytelny powód błędu: brak konta dla e-maila, błędne hasło, błędne dane logowania, problem połączenia z Firebase oraz wskazówki dla `permission-denied` i limitu prób logowania.
 - Błędy są logowane do `console.error` z kontekstem (`[Second][Auth][...]`) dla szybkiego debugowania.
