@@ -6,3 +6,4 @@
 6. Jeżeli polecenie użytkownika nie dotyczy zmiany kodu a tylko analizy to wnioski zapisz w folderze Analizy w nowoutworzonym pliku o odekwatnej nazwie do przeprowadzanej analizy
 7. Jeżeli zapisujesz plik z wynikami analizy to w pliku uwzględnij prompt użytkownika, żeby zachować kontekst zapisanych odpowiedzi
 8. Folderu Analizy nie uwzględniaj w żadnych dokumentacjach i instrukcjach
+9. Jeżeli użytkownik pisze, że jakaś funkcjonalność nie działa to sprawedź też czy nie wymaga to modyfikacji w Firebase (strukturze, rules itp). Jeżeli tak to utwórz nowy plik w Analizy z dokładnym opisem co zmienić.
