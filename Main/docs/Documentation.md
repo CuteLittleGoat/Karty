@@ -368,7 +368,8 @@ service cloud.firestore {
 
 ## 10. Logowanie Firebase Auth (Main)
 
-- W nagłówku dodano wspólny pasek logowania `.auth-toolbar` z polami `#authEmailInput`, `#authPasswordInput` oraz przyciskami `#authLoginButton`, `#authLogoutButton`, `#authResetPasswordButton`.
+- Ekran startowy to `#loginScreen` z kartą `.login-card` i polami `#authEmailInput`, `#authPasswordInput` oraz przyciskami `#authLoginButton`, `#authRegisterButton`.
+- W nagłówku po zalogowaniu działa pasek sesji `.auth-session-toolbar` z `#authStatus`, `#authLogoutButton` i `#authResetPasswordButton`.
 - Frontend używa Firebase Auth (compat) i funkcji:
   - `signInWithEmailAndPassword(email, password)` dla przycisku **Zaloguj**,
   - `signOut()` dla przycisku **Wyloguj**,
@@ -379,7 +380,8 @@ service cloud.firestore {
 
 ## 11. Aktualny model auth i kolekcji (Main)
 - Rejestracja działa z poziomu UI (`#authRegisterButton`) przez `createUserWithEmailAndPassword`.
-- Po rejestracji tworzony jest profil `main_users/{uid}` z polami: `uid`, `email`, `name`, `isActive`, `permissions`, `statsYearsAccess`, znaczniki czasu i `source: self-register`.
+- Po rejestracji tworzony jest profil `main_users/{uid}` z polami: `uid`, `email`, `name`, `role`, `isActive`, `permissions`, `statsYearsAccess`, znaczniki czasu i `source: self-register`.
+- Domyślna rola nowego konta to `user`.
 - Logowanie i reset hasła są obsługiwane przez Firebase Auth.
 - Metadata sesji zapisywana jest do `main_auth_sessions/{uid}`.
 - Legacy kolekcje w module Main zostały przepięte na: `main_app_settings`, `main_admin_messages`, `main_chat_messages`, `main_tables`, `main_user_games`, `main_admin_games_stats`, `main_calculators`.

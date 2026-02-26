@@ -2,8 +2,8 @@
 
 ## 1. Zakres modułu
 Moduł `Second` renderuje szkielet UI bez połączenia z Firebase. Zawiera dwa tryby:
-- administrator (`?admin=1`),
-- użytkownik (brak `?admin=1`).
+- administrator (rola `admin`),
+- użytkownik (rola `user`).
 
 ## 2. Pliki modułu
 - `Second/index.html` — definicja struktur UI dla obu trybów (`<template id="adminViewTemplate">`, `<template id="userViewTemplate">`).
@@ -42,9 +42,9 @@ Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry
 ## 4. Logika JavaScript (`Second/app.js`)
 
 ### 4.1 Wybór trybu
-- `isAdminView` sprawdza parametr URL `admin`.
-- Gdy `admin=1`, montowany jest panel admina z podglądem użytkownika.
-- W przeciwnym razie montowany jest wyłącznie widok użytkownika.
+- Po zalogowaniu `renderRoleView()` montuje panel admina z podglądem użytkownika dla roli `admin`.
+- Dla roli `user` montowany jest wyłącznie widok użytkownika.
+- Widok zależy wyłącznie od roli profilu, bez parametrów URL.
 
 ### 4.2 Przełączanie zakładek
 - `setupTabs(...)` obsługuje aktywację przycisków i paneli dla:
@@ -64,7 +64,7 @@ Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry
 ### 4.5 Przycisk „Instrukcja” w rogu aplikacji
 - W nagłówku (`.page-header`) działa kontener `.admin-toolbar` z przyciskiem `#secondInstructionButton`.
 - Przycisk ma klasę `.secondary`, więc używa zielonego wariantu pomocniczego takiego samego jak w `Main/index.html`.
-- `Second/app.js` steruje widocznością przycisku: jest widoczny tylko w trybie administratora (`?admin=1`).
+- `Second/app.js` steruje widocznością przycisku: jest widoczny tylko dla zalogowanego użytkownika z rolą `admin`.
 
 ## 5. Style, fonty i zasady wizualne
 - Fonty ładowane w `index.html`: `Cinzel`, `Cormorant Garamond`, `Inter`, `Rajdhani`.
@@ -80,7 +80,8 @@ W tym etapie moduł Second **nie wykonuje** operacji backendowych:
 Wszystkie przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Strona1`, `Strona2`, `Odśwież`) są elementami szkieletu UI.
 
 ## Logowanie Firebase Auth (Second)
-- W nagłówku dodano wspólny pasek logowania `.auth-toolbar` z polami `#authEmailInput`, `#authPasswordInput` oraz przyciskami `#authLoginButton`, `#authLogoutButton`, `#authResetPasswordButton`.
+- Ekran startowy to `#loginScreen` z kartą `.login-card` i przyciskami `#authLoginButton`, `#authRegisterButton`.
+- W nagłówku po zalogowaniu działa pasek `.auth-session-toolbar` z akcjami `#authLogoutButton` i `#authResetPasswordButton`.
 - Frontend używa Firebase Auth (compat) i funkcji:
   - `signInWithEmailAndPassword(email, password)` dla przycisku **Zaloguj**,
   - `signOut()` dla przycisku **Wyloguj**,
@@ -93,4 +94,5 @@ Wszystkie przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Strona1`, `Str
 - Dodano rejestrację przez UI (`#authRegisterButton`) z `createUserWithEmailAndPassword`.
 - Po rejestracji tworzony jest profil `second_users/{uid}` z domyślnym brakiem uprawnień i `isActive: false`.
 - Logowanie, wylogowanie i reset hasła korzystają z Firebase Auth.
+- Rejestracja zapisuje profil z domyślną rolą `user`.
 - Metadata logowania zapisywana jest do `second_auth_sessions/{uid}`.

@@ -4,9 +4,10 @@
 1. Otwórz stronę aplikacji.
 2. W wersji **PC** główna zawartość aplikacji rozciąga się prawie na całą szerokość okna (zostają tylko niewielkie marginesy po bokach).
 3. W panelach z układem 3-kolumnowym (np. **Lata / treść / Ranking**) szerokość paneli bocznych zostaje stała, a rozszerza się głównie kolumna środkowa z tabelami.
-4. Na górze widzisz **Panel Administratora** (zakładki admina).
-5. Niżej widzisz od razu pasek zakładek użytkownika (bez osobnego nagłówka nad zakładkami).
-6. Kliknięcie nazwy zakładki przełącza zawartość widoku.
+4. Pierwszym ekranem jest **okno logowania** z polami e-mail i hasło oraz przyciskami **Zaloguj** i **Utwórz konto**.
+5. Po zalogowaniu aplikacja automatycznie przełącza widok na podstawie roli konta (`admin` albo `user`).
+6. Dla roli **admin** widzisz panel administratora oraz podgląd widoku użytkownika na dole.
+7. Dla roli **user** widzisz wyłącznie widok użytkownika.
 
 ## 2. Widok użytkownika
 
@@ -81,7 +82,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ### 3.4 Gracze
 1. Wejdź w **Gracze**.
-2. Lista ładuje konta utworzone przez użytkowników przez przycisk **Utwórz konto** w pasku logowania (email + hasło).
+2. Lista ładuje konta utworzone przez użytkowników przez przycisk **Utwórz konto** w oknie logowania (email + hasło).
 3. W kolumnie **Aplikacja** zaznacz aktywację konta, aby użytkownik mógł korzystać z modułu.
 4. W kolumnie **Uprawnienia** kliknij **Edytuj** i zaznacz dostęp do sekcji Strefy Gracza.
 5. Dla **Statystyk** użyj przycisku **Lata**, aby wskazać lata widoczne dla gracza.
@@ -179,8 +180,8 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 
 ## 10. Moduł Second — szybka instrukcja UI
 1. Otwórz `Second/index.html`.
-2. Tryb administratora: dopisz `?admin=1`.
-3. Tryb użytkownika: bez parametru.
+2. Po wejściu zobaczysz ten sam ekran logowania co w module Main.
+3. Po zalogowaniu rola konta wybiera widok: `admin` (panel + podgląd usera) albo `user` (sam widok użytkownika).
 4. W panelu admina dostępne są zakładki: `Aktualności`, `Czat`, `Regulamin`, `Gracze`, `Turniej`.
 5. W `Aktualności` użyj pola `Treść wiadomości` i przycisku `Wyślij` (samo UI).
 6. W `Czat` i `Regulamin` widoczne są opisy i układ identyczne z Main (bez integracji Firebase).
@@ -188,11 +189,11 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 8. W `Turniej` po lewej są przyciski `Instrukcja` i `Odśwież`, a na środku komunikat `Strona w budowie`.
 9. W trybie admin widoczny jest także podgląd końcowego widoku użytkownika.
 
-## 4. Logowanie (nowe przyciski w nagłówku)
-1. W prawym górnym rogu nagłówka wpisz adres w polu **E-mail**.
-2. Wpisz hasło w polu **Hasło**.
-3. Kliknij **Zaloguj**.
-4. Pod przyciskami odczytaj status logowania (np. czy konto ma pełny dostęp do modułu).
+## 4. Logowanie (ekran startowy)
+1. Po wejściu do aplikacji widzisz centralne okno logowania z polami **E-mail** i **Hasło**.
+2. Kliknij **Zaloguj**, aby wejść do aplikacji zgodnie z przypisaną rolą.
+3. Kliknij **Utwórz konto**, aby założyć nowy profil (domyślnie rola `user`).
+4. Po zalogowaniu status konta jest widoczny w nagłówku.
 5. Aby zakończyć sesję kliknij **Wyloguj**.
 6. Aby zresetować hasło wpisz e-mail i kliknij **Reset hasła** (aplikacja wyśle mail resetujący).
 
