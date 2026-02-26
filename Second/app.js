@@ -14,14 +14,84 @@ const getFirebaseApp = () => {
   return window.firebase;
 };
 
+const ADMIN_SECURITY_COLLECTION = "admin_security";
+const ADMIN_SECURITY_DOCUMENT = "credentials";
+const ADMIN_SECURITY_PASSWORD_FIELD = "passwordHash";
+
+const shouldRequestAdminAccess = () => new URLSearchParams(window.location.search).get("admin") === "1";
+
+const getAdminPasswordHash = async () => {
+  const firebaseApp = getFirebaseApp();
+  if (!firebaseApp?.firestore) {
+    throw new Error("FIREBASE_UNAVAILABLE");
+  }
+
+  const db = firebaseApp.firestore();
+  const snapshot = await db
+    .collection(ADMIN_SECURITY_COLLECTION)
+    .doc(ADMIN_SECURITY_DOCUMENT)
+    .get();
+
+  const storedHash = snapshot.get(ADMIN_SECURITY_PASSWORD_FIELD);
+  if (typeof storedHash !== "string" || !storedHash.trim()) {
+    throw new Error("PASSWORD_NOT_CONFIGURED");
+  }
+
+  return storedHash.trim();
+};
+
+const getSha256Hex = async (value) => {
+  if (!window.crypto?.subtle || typeof window.TextEncoder !== "function") {
+    return "";
+  }
+  const encoded = new TextEncoder().encode(value);
+  const digest = await window.crypto.subtle.digest("SHA-256", encoded);
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+};
+
+const isAdminPasswordValid = async (candidatePassword, storedHash) => {
+  if (candidatePassword === storedHash) {
+    return true;
+  }
+  const sha256Hex = await getSha256Hex(candidatePassword);
+  if (!sha256Hex) {
+    return false;
+  }
+  return sha256Hex === storedHash.toLowerCase();
+};
+
+const resolveAdminMode = async () => {
+  if (!shouldRequestAdminAccess()) {
+    return false;
+  }
+
+  let storedHash = "";
+  try {
+    storedHash = await getAdminPasswordHash();
+  } catch (error) {
+    window.alert("Nie udało się odczytać hasła administratora. Otwieram widok użytkownika.");
+    return false;
+  }
+
+  while (true) {
+    const candidatePassword = window.prompt("Podaj hasło administratora");
+    if (candidatePassword === null) {
+      return false;
+    }
+
+    const isValid = await isAdminPasswordValid(candidatePassword, storedHash);
+    if (isValid) {
+      return true;
+    }
+
+    window.alert("Błędne hasło administratora. Spróbuj ponownie.");
+  }
+};
+
 const appRoot = document.querySelector("#appRoot");
-
-const isAdminView = new URLSearchParams(window.location.search).get("admin") === "1";
 const instructionButton = document.querySelector("#secondInstructionButton");
-
-if (instructionButton) {
-  instructionButton.hidden = !isAdminView;
-}
 
 const setupTabs = ({ container, buttonSelector, panelSelector, activeClass = "is-active", getTarget, isPanelMatch }) => {
   const buttons = Array.from(container.querySelectorAll(buttonSelector));
@@ -107,8 +177,17 @@ const setupUserOnlyView = () => {
   appRoot.appendChild(userView);
 };
 
-if (isAdminView) {
-  setupAdminView();
-} else {
-  setupUserOnlyView();
-}
+const bootstrap = async () => {
+  const isAdminView = await resolveAdminMode();
+  if (instructionButton) {
+    instructionButton.hidden = !isAdminView;
+  }
+
+  if (isAdminView) {
+    setupAdminView();
+  } else {
+    setupUserOnlyView();
+  }
+};
+
+void bootstrap();

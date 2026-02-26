@@ -1,13 +1,13 @@
 # Second — Dokumentacja techniczna
 
 ## 1. Zakres modułu
-Moduł `Second` renderuje szkielet UI bez połączenia z Firebase. Zawiera dwa tryby:
-- administrator (`?admin=1`),
-- użytkownik (brak `?admin=1`).
+Moduł `Second` renderuje UI i zawiera bramkę hasła administratora opartą o Firestore. Zawiera dwa tryby:
+- administrator (tylko po poprawnym haśle dla `?admin=1`),
+- użytkownik (brak `?admin=1` lub anulowanie/błędne hasło).
 
 ## 2. Pliki modułu
 - `Second/index.html` — definicja struktur UI dla obu trybów (`<template id="adminViewTemplate">`, `<template id="userViewTemplate">`).
-- `Second/app.js` — logika montowania widoku, przełączania zakładek oraz aktywnego stanu przycisków Turnieju.
+- `Second/app.js` — logika bramki hasła admina (Firestore + prompt), montowania widoku, przełączania zakładek oraz aktywnego stanu przycisków Turnieju.
 - `Second/styles.css` — warstwa wizualna zgodna z motywem modułu Main (te same fonty, tokeny i klasy komponentów).
 - `Second/Kolumny.md` — opis kolumn i minimalnych szerokości w układach tabelarycznych używanych w module Second.
 
@@ -43,10 +43,13 @@ Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry
 
 ## 4. Logika JavaScript (`Second/app.js`)
 
-### 4.1 Wybór trybu
-- `isAdminView` sprawdza parametr URL `admin`.
-- Gdy `admin=1`, montowany jest panel admina z podglądem użytkownika.
-- W przeciwnym razie montowany jest wyłącznie widok użytkownika.
+### 4.1 Wybór trybu i bramka hasła
+- `shouldRequestAdminAccess()` sprawdza parametr URL `admin`.
+- Gdy `admin=1`, `resolveAdminMode()` pobiera z Firestore dokument `admin_security/credentials` i pole `passwordHash`.
+- Użytkownik dostaje `window.prompt("Podaj hasło administratora")`.
+- Poprawne hasło (lub SHA-256 hasła zgodne z `passwordHash`) otwiera panel admina.
+- Błędne hasło pokazuje `alert` i ponawia pytanie.
+- Anulowanie promptu albo brak dostępu do dokumentu wymusza widok użytkownika.
 
 ### 4.2 Przełączanie zakładek
 - `setupTabs(...)` obsługuje aktywację przycisków i paneli dla:
@@ -66,7 +69,7 @@ Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry
 ### 4.5 Przycisk „Instrukcja” w rogu aplikacji
 - W nagłówku (`.page-header`) działa kontener `.admin-toolbar` z przyciskiem `#secondInstructionButton`.
 - Przycisk ma klasę `.secondary`, więc używa zielonego wariantu pomocniczego takiego samego jak w `Main/index.html`.
-- `Second/app.js` steruje widocznością przycisku: jest widoczny tylko w trybie administratora (`?admin=1`).
+- `Second/app.js` steruje widocznością przycisku: jest widoczny tylko po pozytywnej weryfikacji hasła administratora.
 
 ## 5. Style, fonty i zasady wizualne
 - Fonty ładowane w `index.html`: `Cinzel`, `Cormorant Garamond`, `Inter`, `Rajdhani`.
@@ -74,14 +77,13 @@ Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry
 - Tabele `Gracze` korzystają z `players-table`, która ma te same minimalne szerokości kolumn jak w Main dla kolumn `Nazwa` i `PIN`.
 
 ## 6. Dane backendowe
-W tym etapie moduł Second **nie wykonuje** operacji backendowych:
-- brak odczytu z Firebase,
-- brak zapisu do Firebase,
-- brak nasłuchu `onSnapshot`.
+Moduł Second wykonuje pojedynczy odczyt backendowy dla bramki administratora:
+- odczyt Firestore dokumentu `admin_security/credentials`,
+- odczyt pola `passwordHash` (typ `string`) do walidacji hasła z promptu.
 
-Wszystkie przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Strona1`, `Strona2`, `Odśwież`) są elementami szkieletu UI.
+Pozostałe przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Strona1`, `Strona2`, `Odśwież`) nadal są elementami szkieletu UI i nie zapisują danych.
 
 ## Nagłówek (Second)
 - W nagłówku pozostawiono kontener `.header-controls` z paskiem `.admin-toolbar` i przyciskiem `#secondInstructionButton`.
 - Panel logowania e-mail/hasło został usunięty z `Second/index.html`, a moduł nie ładuje już biblioteki `firebase-auth-compat.js`.
-- `Second/app.js` nie zawiera już logiki `initAuthControls`, więc moduł działa bez integracji z Firebase Auth.
+- `Second/app.js` nie zawiera logowania Firebase Auth; bramka admina korzysta z odczytu Firestore i lokalnej walidacji hasła/SHA-256.
