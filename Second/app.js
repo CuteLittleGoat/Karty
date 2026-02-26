@@ -67,6 +67,10 @@ const initAuthControls = () => {
   const auth = firebaseApp.auth();
   const db = firebaseApp.firestore();
   const setStatus = (message) => { status.textContent = message; };
+
+  auth.setPersistence(firebaseApp.auth.Auth.Persistence.NONE).catch(() => {
+    setStatus("Logowanie działa, ale przeglądarka nie pozwala wyłączyć trwałej sesji.");
+  });
   const setResetViewVisible = (visible) => {
     if (!resetView || !openResetViewButton) return;
     resetView.classList.toggle("is-visible", visible);

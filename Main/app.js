@@ -753,6 +753,10 @@ const initAuthControls = () => {
     openResetViewButton.style.display = visible ? "none" : "inline";
   };
 
+  auth.setPersistence(firebaseApp.auth.Auth.Persistence.NONE).catch(() => {
+    setStatus("Logowanie działa, ale przeglądarka nie pozwala wyłączyć trwałej sesji.");
+  });
+
   const persistSessionMetadata = async (user, profile) => {
     if (!user || !db) {
       return;
@@ -3412,6 +3416,21 @@ const normalizeAuthUserRecord = (doc) => {
   });
 };
 
+const isTechnicalEmptyPlayerRecord = (player) => {
+  if (!player) {
+    return true;
+  }
+
+  const hasName = typeof player.name === "string" && player.name.trim().length > 0;
+  const hasEmail = typeof player.email === "string" && player.email.trim().length > 0;
+  const hasPin = typeof player.pin === "string" && player.pin.trim().length > 0;
+  const hasPermissions = Array.isArray(player.permissions) && player.permissions.length > 0;
+  const hasExplicitRole = typeof player.role === "string" && player.role !== "user";
+  const hasRestrictedAccess = player.appEnabled === false || player.isApproved === false;
+
+  return !(hasName || hasEmail || hasPin || hasPermissions || hasExplicitRole || hasRestrictedAccess);
+};
+
 const getAllowedStatisticsYearsForPlayer = (player, availableYears) => {
   const sourceYears = normalizeYearList(availableYears);
   if (!player || !isPlayerAllowedForTab(player, "statsTab")) {
@@ -4832,11 +4851,13 @@ const initAdminPlayers = () => {
 
   const rebuildPinMap = () => {
     const nextMap = new Map();
-    adminPlayersState.players.forEach((player) => {
-      if (isPinValid(player.pin) && !nextMap.has(player.pin)) {
-        nextMap.set(player.pin, player);
-      }
-    });
+    adminPlayersState.players
+      .filter((player) => !isTechnicalEmptyPlayerRecord(player))
+      .forEach((player) => {
+        if (isPinValid(player.pin) && !nextMap.has(player.pin)) {
+          nextMap.set(player.pin, player);
+        }
+      });
     adminPlayersState.playerByPin = nextMap;
   };
 
@@ -4858,7 +4879,9 @@ const initAdminPlayers = () => {
   const savePlayers = async () => {
     try {
       const batch = db.batch();
-      adminPlayersState.players.forEach((player) => {
+      const visiblePlayers = adminPlayersState.players.filter((player) => !isTechnicalEmptyPlayerRecord(player));
+
+      visiblePlayers.forEach((player) => {
         const ref = db.collection(AUTH_USERS_COLLECTION).doc(player.id);
         batch.set(ref, {
           uid: player.uid || player.id,
@@ -5068,7 +5091,9 @@ const initAdminPlayers = () => {
   const renderPlayers = () => {
     const focusState = getFocusedAdminInputState(body);
     body.innerHTML = "";
-    adminPlayersState.players.forEach((player) => {
+    const visiblePlayers = adminPlayersState.players.filter((player) => !isTechnicalEmptyPlayerRecord(player));
+
+    visiblePlayers.forEach((player) => {
       const isApproved = player.isApproved !== false;
       const row = document.createElement("tr");
       if (!isApproved) {
@@ -5250,7 +5275,11 @@ const initAdminPlayers = () => {
     });
 
     restoreFocusedAdminInputState(body, focusState);
-    summary.textContent = `Liczba dodanych graczy: ${adminPlayersState.players.length}`;
+    const hiddenRecordsCount = adminPlayersState.players.length - visiblePlayers.length;
+    summary.textContent = `Liczba dodanych graczy: ${visiblePlayers.length}`;
+    if (hiddenRecordsCount > 0) {
+      status.textContent = `Ukryto techniczne puste rekordy: ${hiddenRecordsCount}.`;
+    }
   };
 
   addButton.disabled = true;
