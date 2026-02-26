@@ -110,6 +110,13 @@
 - W prawym górnym rogu nagłówka modułu `Second` znajduje się zielony przycisk `Instrukcja` (klasa `.secondary`, kontener `.admin-toolbar`), widoczny w trybie administratora i spójny z `Main/index.html`.
 
 
+## Modal logowania administratora (Main + Second)
+- Dla adresu z `?admin=1` oba moduły pokazują własny modal (overlay na całe okno z ciemnym tłem `rgba(4, 9, 22, 0.82)`).
+- Karta modalna ma szerokość `min(460px, 100%)`, tło `#1f2430`, promień `16px`, obramowanie `1px solid rgba(255, 255, 255, 0.16)` i padding `20px`.
+- Pole hasła ma pełną szerokość, wysokość wynikającą z paddingu `11px 12px`, promień `10px` i placeholder `Hasło administratora`.
+- Komunikat walidacyjny dla pustego pola ma kolor `#ff8585`.
+- Przyciski akcji `Anuluj` i `Zaloguj` są wyrównane do prawej i mają odstęp `10px`.
+
 ## Prawy górny obszar nagłówka (Main + Second)
 - W prawym górnym obszarze nagłówka działa kontener `.header-controls` ustawiony pionowo (`flex-direction: column`) z wyrównaniem do prawej (`align-items: flex-end`).
 - Wewnątrz znajduje się pasek `.admin-toolbar` z przyciskiem **Instrukcja** (`.secondary`).

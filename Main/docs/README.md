@@ -10,7 +10,7 @@
 
 ## 1A. Wejście do panelu administratora (`?admin=1`)
 1. Otwórz aplikację z parametrem `?admin=1` w adresie.
-2. Aplikacja wyświetli okienko z prośbą o hasło administratora.
+2. Aplikacja wyświetli modal logowania administratora z polem hasła.
 3. Wpisz hasło i potwierdź:
    - poprawne hasło otwiera panel administratora,
    - błędne hasło pokazuje komunikat błędu i ponownie wyświetla okienko,
