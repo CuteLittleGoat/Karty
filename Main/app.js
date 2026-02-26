@@ -845,6 +845,17 @@ const normalizeNumber = (value) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+
+const getFirestoreErrorMessage = (error, fallbackMessage) => {
+  const code = typeof error?.code === "string" ? error.code : "";
+  if (code === "permission-denied") {
+    return `${fallbackMessage} (brak uprawnień Firestore do kolekcji main_*).`;
+  }
+  if (code === "unavailable") {
+    return `${fallbackMessage} (brak połączenia z Firestore).`;
+  }
+  return fallbackMessage;
+};
 const formatNumber = (value) => {
   if (!Number.isFinite(value)) {
     return "0";
@@ -2993,7 +3004,8 @@ const initAdminConfirmations = () => {
 
       status.textContent = `Załadowano ${games.length} aktywnych gier (Tables + UserGames).`;
     } catch (error) {
-      status.textContent = "Nie udało się pobrać listy potwierdzeń.";
+      status.textContent = getFirestoreErrorMessage(error, "Nie udało się pobrać listy potwierdzeń.");
+      throw error;
     }
   };
 
@@ -4671,7 +4683,7 @@ const initAdminPlayers = () => {
       });
       status.textContent = "Lista graczy zapisana.";
     } catch (error) {
-      status.textContent = "Nie udało się zapisać listy graczy.";
+      status.textContent = getFirestoreErrorMessage(error, "Nie udało się zapisać listy graczy.");
     }
   };
 
@@ -5040,8 +5052,8 @@ const initAdminPlayers = () => {
         synchronizeStatisticsAccessState();
         window.dispatchEvent(new CustomEvent("statistics-access-updated"));
       },
-      () => {
-        status.textContent = "Nie udało się pobrać listy graczy.";
+      (error) => {
+        status.textContent = getFirestoreErrorMessage(error, "Nie udało się pobrać listy graczy.");
       }
     );
 
@@ -6923,8 +6935,8 @@ const initAdminRules = () => {
       saveButton.disabled = false;
       isSaving = false;
     },
-    () => {
-      status.textContent = "Nie udało się pobrać regulaminu. Sprawdź konfigurację Firestore.";
+    (error) => {
+      status.textContent = getFirestoreErrorMessage(error, "Nie udało się pobrać regulaminu. Sprawdź konfigurację Firestore.");
     }
   );
 
@@ -6942,10 +6954,10 @@ const initAdminRules = () => {
       updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
       source: "web-admin"
     }, { merge: true })
-      .catch(() => {
+      .catch((error) => {
         isSaving = false;
         saveButton.disabled = false;
-        status.textContent = "Nie udało się zapisać regulaminu.";
+        status.textContent = getFirestoreErrorMessage(error, "Nie udało się zapisać regulaminu.");
       });
   });
 };

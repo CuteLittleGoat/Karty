@@ -144,6 +144,7 @@ Dodatkowa logika własności dla `main_user_games` (strefa gracza):
 - Aktualności: dokument `main_admin_messages/admin_messages`.
 - Regulamin: dokument `main_app_settings/rules`.
 - Oba moduły mają live update przez `onSnapshot`.
+- Dla operacji administracyjnych (odświeżanie potwierdzeń, zapis graczy, zapis regulaminu) komunikaty błędów rozróżniają co najmniej przypadki `permission-denied` i `unavailable`, aby łatwiej diagnozować problem konfiguracji/reguł Firestore.
 
 ### 4.8 Statystyki i ranking
 - Konfiguracja kolumn: `STATS_COLUMN_CONFIG`.
