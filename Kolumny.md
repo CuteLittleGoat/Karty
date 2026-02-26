@@ -19,6 +19,8 @@ Wartości liczbowe wpisane w polach „wartość oczekiwana” oznaczają liczb�
 | wartość oczekiwana |  |  |  |  |
 | Tabele kalkulatora | 760 px (na małych ekranach 680 px) | brak stałego limitu | do lewej | Dostosowane do pracy na mniejszych ekranach. |
 | wartość oczekiwana |  |  |  |  |
+| Panele boczne w `Gry admina` (`Lata / Ranking`) | 190 px (`Lata`) / 300 px (`Ranking`) | stałe dla paneli bocznych | do lewej | Szerszy panel `Ranking` ogranicza potrzebę poziomego przewijania tabeli rankingowej. |
+| wartość oczekiwana |  |  |  |  |
 | Tabela rebuy w oknie kalkulatora | stała szerokość każdej kolumny: 8 znaków | stała szerokość każdej kolumny: 8 znaków | do lewej | Wszystkie kolumny tej tabeli mają jednakową szerokość. |
 | wartość oczekiwana |  |  |  |  |
 

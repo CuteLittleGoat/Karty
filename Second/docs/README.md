@@ -15,7 +15,7 @@
 
 ### 2.2 Zakładka „Aktualności”
 1. Kliknij zakładkę `Aktualności`.
-2. W sekcji `Wiadomość do graczy` kliknij pole `Treść wiadomości`.
+2. W sekcji `Wiadomość do graczy` kliknij pole `Treść wiadomości` (wysokość pola: 25 linii).
 3. Wpisz komunikat dla graczy.
 4. Kliknij przycisk `Wyślij`.
 5. Obok przycisku widzisz status informujący, że to szkielet UI bez Firebase.
@@ -57,7 +57,7 @@
 
 ### 3.2 „Aktualności”
 1. Wejdź w `Aktualności`.
-2. Przeczytaj pole `Najnowsze` (tylko do odczytu).
+2. Przeczytaj pole `Najnowsze` (tylko do odczytu, wysokość: 25 linii).
 
 ### 3.3 „Czat”
 1. Wejdź w `Czat`.

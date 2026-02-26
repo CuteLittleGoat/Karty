@@ -16,7 +16,7 @@
 - Główny layout kartowy z sekcją admina i sekcją użytkownika.
 - Kontener strony `.page` ma szerokość `min(1720px, 100%)`, dzięki czemu widok PC wypełnia prawie całe okno i nie jest już „wąsko” wyśrodkowany.
 - Zewnętrzne marginesy wizualne na PC wynikają z wewnętrznego paddingu kontenera (`24px` po lewej i prawej).
-- W układach z panelami bocznymi (np. `Lata / środek / Ranking` oraz `Sekcja / środek`) szerokość paneli bocznych pozostaje jak dotąd, a dodatkowa szerokość trafia do centralnej części z tabelami.
+- W układzie `Lata / środek / Ranking` dla `Gry admina` panel `Lata` ma szerokość 190 px, panel `Ranking` 300 px, a środkowa sekcja pozostaje elastyczna. W układzie `Sekcja / środek` zachowane są dotychczasowe proporcje.
 - W zakładkach z dużymi tabelami działa poziomy scroll (`.admin-table-scroll`).
 
 ## Modale szczegółów gier
@@ -50,8 +50,8 @@
 - Przyciski sekcji w „Strefa Gracza” (`.player-zone-button`) mają responsywny font (`clamp`) i zagęszczane odstępy liter, co zapobiega wychodzeniu długich etykiet poza przycisk.
 
 ## Pola tekstowe „Aktualności” i „Regulamin"
-- Pole `Treść wiadomości` w panelu administratora (`#adminMessageInput`) ma wysokość 50 linii.
-- Pole `Najnowsze` w widoku użytkownika (`#latestMessageOutput`) ma wysokość 50 linii.
+- Pole `Treść wiadomości` w panelu administratora (`#adminMessageInput`) ma wysokość 25 linii.
+- Pole `Najnowsze` w widoku użytkownika (`#latestMessageOutput`) ma wysokość 25 linii.
 - Pole `Treść regulaminu` w panelu administratora (`#adminRulesInput`) ma wysokość 50 linii.
 - Pole `Obowiązujące zasady` w widoku użytkownika (`#rulesOutput`) ma wysokość 50 linii.
 
