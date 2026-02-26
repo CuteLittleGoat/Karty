@@ -440,3 +440,17 @@ service cloud.firestore {
 - Tabela graczy rozszerzona o kolumnę e-mail i status zatwierdzenia.
 - Wiersze niezatwierdzone mają klasę `is-pending-approval`, ograniczone akcje (zatwierdź/usuń) oraz zablokowaną edycję pozostałych pól.
 - Zapis profilu utrwala `isApproved`, e-mail pozostaje tylko do odczytu.
+
+## Aktualizacja techniczna: Firebase/Auth/PIN (2026-02-26)
+- `Main/app.js`:
+  - dodano `PIN_FEATURE_ENABLED = false`; wszystkie `get*PinGateState()` zwracają `true`, co odłącza wymuszanie PIN w sekcjach użytkownika,
+  - `getEnabledPermissionKeys()` sortuje uprawnienia wg kolejności `AVAILABLE_PLAYER_TABS`,
+  - dodano filtr `isSeedGameRecord()` do ukrywania rekordów seed w widokach gier/confirmations,
+  - `initAuthControls()` zapisuje status równolegle do `#authStatus` i `#authLoginStatus`, dzięki czemu błędy logowania są widoczne już na ekranie logowania,
+  - `isTechnicalEmptyPlayerRecord()` ukrywa rekordy bez nazwy,
+  - zapis regulaminu (`initAdminRules`) ustawia status sukcesu po `set(...).then(...)`, więc UI nie zatrzymuje się na `Zapisywanie regulaminu...`.
+- `Main/index.html`:
+  - dodano `#authLoginStatus` w karcie logowania.
+- `Pliki/firestore.rules`:
+  - `hasMainAdminRole()` / `hasSecondAdminRole()` akceptują też legacy flagę `isAdmin == true`,
+  - walidacja `permissions` przy create użytkownika dopuszcza `map` albo `list`.

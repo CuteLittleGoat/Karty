@@ -1,4 +1,5 @@
 const PIN_LENGTH = 5;
+const PIN_FEATURE_ENABLED = false;
 const PIN_STORAGE_KEY = "nextGamePinVerified";
 const CHAT_PIN_STORAGE_KEY = "chatPinVerified";
 const CHAT_PLAYER_ID_STORAGE_KEY = "chatPlayerId";
@@ -721,6 +722,7 @@ const initAuthControls = () => {
   const sendResetButton = document.querySelector("#authSendResetButton");
   const backToLoginButton = document.querySelector("#authBackToLoginButton");
   const status = document.querySelector("#authStatus");
+  const loginStatus = document.querySelector("#authLoginStatus");
   const currentUser = document.querySelector("#authCurrentUser");
 
   if (!emailInput || !passwordInput || !loginButton || !registerButton || !logoutButton || !resetButton || !status || !currentUser) {
@@ -742,6 +744,9 @@ const initAuthControls = () => {
 
   const setStatus = (message) => {
     status.textContent = message;
+    if (loginStatus) {
+      loginStatus.textContent = message;
+    }
   };
 
   const formatFirebaseErrorDetails = (error) => {
@@ -1189,6 +1194,7 @@ const getActiveGamesForConfirmations = async (db, gamesCollectionName, source = 
   const toSortedActiveGames = (snapshot) => {
     return snapshot.docs
       .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter((game) => !isSeedGameRecord(game))
       .filter((game) => !Boolean(game.isClosed))
       .sort(compareByGameDateAsc);
   };
@@ -1269,7 +1275,26 @@ const normalizePermissionsMap = (permissions) => {
   }, createEmptyPermissionsMap());
 };
 
-const getEnabledPermissionKeys = (permissions) => Object.keys(normalizePermissionsMap(permissions));
+const getEnabledPermissionKeys = (permissions) => {
+  const normalized = normalizePermissionsMap(permissions);
+  const tabOrder = AVAILABLE_PLAYER_TABS.map((tab) => tab.key);
+  return Object.keys(normalized)
+    .filter((key) => normalized[key] === true)
+    .sort((left, right) => {
+      const leftIndex = tabOrder.indexOf(left);
+      const rightIndex = tabOrder.indexOf(right);
+      if (leftIndex !== -1 || rightIndex !== -1) {
+        if (leftIndex === -1) {
+          return 1;
+        }
+        if (rightIndex === -1) {
+          return -1;
+        }
+        return leftIndex - rightIndex;
+      }
+      return left.localeCompare(right, "pl");
+    });
+};
 
 const hasPermission = (permissions, tabKey) => normalizePermissionsMap(permissions)[tabKey] === true;
 
@@ -1305,13 +1330,13 @@ const getEffectiveVerifiedPlayer = (playerIdStorageKey) => {
   return buildAuthPlayerFromProfile();
 };
 
-const getPinGateState = () => sessionStorage.getItem(PIN_STORAGE_KEY) === "1";
+const getPinGateState = () => PIN_FEATURE_ENABLED ? sessionStorage.getItem(PIN_STORAGE_KEY) === "1" : true;
 
 const setPinGateState = (isVerified) => {
   sessionStorage.setItem(PIN_STORAGE_KEY, isVerified ? "1" : "0");
 };
 
-const getChatPinGateState = () => sessionStorage.getItem(CHAT_PIN_STORAGE_KEY) === "1";
+const getChatPinGateState = () => PIN_FEATURE_ENABLED ? sessionStorage.getItem(CHAT_PIN_STORAGE_KEY) === "1" : true;
 
 const setChatPinGateState = (isVerified) => {
   sessionStorage.setItem(CHAT_PIN_STORAGE_KEY, isVerified ? "1" : "0");
@@ -1327,7 +1352,7 @@ const setChatVerifiedPlayerId = (playerId) => {
 
 const getChatVerifiedPlayer = () => getEffectiveVerifiedPlayer(CHAT_PLAYER_ID_STORAGE_KEY);
 
-const getConfirmationsPinGateState = () => sessionStorage.getItem(CONFIRMATIONS_PIN_STORAGE_KEY) === "1";
+const getConfirmationsPinGateState = () => PIN_FEATURE_ENABLED ? sessionStorage.getItem(CONFIRMATIONS_PIN_STORAGE_KEY) === "1" : true;
 
 const setConfirmationsPinGateState = (isVerified) => {
   sessionStorage.setItem(CONFIRMATIONS_PIN_STORAGE_KEY, isVerified ? "1" : "0");
@@ -1343,7 +1368,7 @@ const setConfirmationsVerifiedPlayerId = (playerId) => {
 
 const getConfirmationsVerifiedPlayer = () => getEffectiveVerifiedPlayer(CONFIRMATIONS_PLAYER_ID_STORAGE_KEY);
 
-const getUserGamesPinGateState = () => sessionStorage.getItem(USER_GAMES_PIN_STORAGE_KEY) === "1";
+const getUserGamesPinGateState = () => PIN_FEATURE_ENABLED ? sessionStorage.getItem(USER_GAMES_PIN_STORAGE_KEY) === "1" : true;
 
 const setUserGamesPinGateState = (isVerified) => {
   sessionStorage.setItem(USER_GAMES_PIN_STORAGE_KEY, isVerified ? "1" : "0");
@@ -1359,7 +1384,7 @@ const setUserGamesVerifiedPlayerId = (playerId) => {
 
 const getUserGamesVerifiedPlayer = () => getEffectiveVerifiedPlayer(USER_GAMES_PLAYER_ID_STORAGE_KEY);
 
-const getStatisticsPinGateState = () => sessionStorage.getItem(STATISTICS_PIN_STORAGE_KEY) === "1";
+const getStatisticsPinGateState = () => PIN_FEATURE_ENABLED ? sessionStorage.getItem(STATISTICS_PIN_STORAGE_KEY) === "1" : true;
 
 const setStatisticsPinGateState = (isVerified) => {
   sessionStorage.setItem(STATISTICS_PIN_STORAGE_KEY, isVerified ? "1" : "0");
@@ -1375,7 +1400,7 @@ const setStatisticsVerifiedPlayerId = (playerId) => {
 
 const getStatisticsVerifiedPlayer = () => getEffectiveVerifiedPlayer(STATISTICS_PLAYER_ID_STORAGE_KEY);
 
-const getPlayerZonePinGateState = () => sessionStorage.getItem(PLAYER_ZONE_PIN_STORAGE_KEY) === "1";
+const getPlayerZonePinGateState = () => PIN_FEATURE_ENABLED ? sessionStorage.getItem(PLAYER_ZONE_PIN_STORAGE_KEY) === "1" : true;
 
 const setPlayerZonePinGateState = (isVerified) => {
   sessionStorage.setItem(PLAYER_ZONE_PIN_STORAGE_KEY, isVerified ? "1" : "0");
@@ -1390,6 +1415,17 @@ const setPlayerZoneVerifiedPlayerId = (playerId) => {
 };
 
 const getPlayerZoneVerifiedPlayer = () => getEffectiveVerifiedPlayer(PLAYER_ZONE_PLAYER_ID_STORAGE_KEY);
+
+const isSeedGameRecord = (data) => {
+  if (!data || typeof data !== "object") {
+    return false;
+  }
+  if (data.isSeed === true || data.seed === true) {
+    return true;
+  }
+  const source = typeof data.source === "string" ? data.source.toLowerCase() : "";
+  return source.includes("seed") || source.includes("default-seed");
+};
 
 const addDays = (dateValue, days) => {
   const baseDate = new Date(dateValue);
@@ -1693,8 +1729,9 @@ const initNextGamesView = () => {
     gameType: typeof doc.data()?.gameType === "string" ? doc.data().gameType : "",
     gameDate: typeof doc.data()?.gameDate === "string" ? doc.data().gameDate : "",
     name: typeof doc.data()?.name === "string" ? doc.data().name : "",
-    isClosed: Boolean(doc.data()?.isClosed)
-  }));
+    isClosed: Boolean(doc.data()?.isClosed),
+    source: typeof doc.data()?.source === "string" ? doc.data().source : ""
+  })).filter((game) => !isSeedGameRecord(game));
 
   if (typeof nextGamesState.adminUnsubscribe === "function") {
     nextGamesState.adminUnsubscribe();
@@ -3530,7 +3567,11 @@ const isTechnicalEmptyPlayerRecord = (player) => {
   const hasExplicitRole = typeof player.role === "string" && player.role !== "user";
   const hasRestrictedAccess = player.appEnabled === false || player.isApproved === false;
 
-  return !(hasName || hasEmail || hasPin || hasPermissions || hasExplicitRole || hasRestrictedAccess);
+  if (!hasName) {
+    return true;
+  }
+
+  return !(hasEmail || hasPin || hasPermissions || hasExplicitRole || hasRestrictedAccess);
 };
 
 const getAllowedStatisticsYearsForPlayer = (player, availableYears) => {
@@ -7325,6 +7366,11 @@ const initAdminRules = () => {
       updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
       source: "web-admin"
     }, { merge: true })
+      .then(() => {
+        isSaving = false;
+        saveButton.disabled = false;
+        status.textContent = "Regulamin zapisany.";
+      })
       .catch(() => {
         isSaving = false;
         saveButton.disabled = false;
