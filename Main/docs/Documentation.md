@@ -470,10 +470,12 @@ Ta dokumentacja opisuje **aktualny stan aplikacji** i nie zawiera historii zmian
 
 ## 11. Bramka hasła administratora (`?admin=1`)
 - `Main/app.js` używa `resolveAdminMode()` przed uruchomieniem modułów.
-- Dla `?admin=1` wykonywany jest odczyt Firestore: kolekcja `admin_security`, dokument `credentials`, pole `passwordHash`.
-- Aplikacja pokazuje `window.prompt("Podaj hasło administratora")`.
+- Dla `?admin=1` aplikacja najpierw próbuje odczytać Firestore: kolekcja `admin_security`, dokument `credentials`, pole `passwordHash`.
+- Aplikacja pokazuje własny modal logowania z polem `input[type="password"]`, przyciskami `Zaloguj` i `Anuluj` oraz walidacją pustego pola.
 - Walidacja akceptuje:
   - dokładną zgodność wpisanego hasła z `passwordHash`,
   - lub zgodność SHA-256 wpisanego hasła z wartością `passwordHash` (hex).
-- Błędne hasło powoduje `alert` i ponowne pytanie o hasło.
-- `Anuluj` w promptcie albo błąd odczytu hasła przełącza aplikację do widoku użytkownika (`document.body` bez klasy `is-admin`).
+- Błędne hasło wyświetla komunikat bezpośrednio w modalu i ponownie pokazuje formularz hasła (bez systemowego `alert`).
+- `Anuluj` w modalu logowania przełącza aplikację do widoku użytkownika (`document.body` bez klasy `is-admin`).
+- Gdy odczyt Firestore się nie powiedzie, aplikacja używa awaryjnie `window.firebaseConfig.adminPasswordHash` lub `window.firebaseConfig.adminPassword` (jeśli skonfigurowane).
+- Brak hasła zarówno w Firestore, jak i w konfiguracji wyświetla komunikat w modalu logowania i pozostawia możliwość ponowienia próby lub kliknięcia `Anuluj`.

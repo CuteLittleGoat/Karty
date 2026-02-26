@@ -7,7 +7,7 @@ Moduł `Second` renderuje UI i zawiera bramkę hasła administratora opartą o F
 
 ## 2. Pliki modułu
 - `Second/index.html` — definicja struktur UI dla obu trybów (`<template id="adminViewTemplate">`, `<template id="userViewTemplate">`).
-- `Second/app.js` — logika bramki hasła admina (Firestore + prompt), montowania widoku, przełączania zakładek oraz aktywnego stanu przycisków Turnieju.
+- `Second/app.js` — logika bramki hasła admina (Firestore + własny modal logowania), montowania widoku, przełączania zakładek oraz aktywnego stanu przycisków Turnieju.
 - `Second/styles.css` — warstwa wizualna zgodna z motywem modułu Main (te same fonty, tokeny i klasy komponentów).
 - `Second/Kolumny.md` — opis kolumn i minimalnych szerokości w układach tabelarycznych używanych w module Second.
 
@@ -45,11 +45,13 @@ Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry
 
 ### 4.1 Wybór trybu i bramka hasła
 - `shouldRequestAdminAccess()` sprawdza parametr URL `admin`.
-- Gdy `admin=1`, `resolveAdminMode()` pobiera z Firestore dokument `admin_security/credentials` i pole `passwordHash`.
-- Użytkownik dostaje `window.prompt("Podaj hasło administratora")`.
+- Gdy `admin=1`, `resolveAdminMode()` próbuje pobrać z Firestore dokument `admin_security/credentials` i pole `passwordHash`.
+- Użytkownik dostaje modal logowania z polem hasła (`input[type="password"]`) i przyciskami `Zaloguj` / `Anuluj`.
 - Poprawne hasło (lub SHA-256 hasła zgodne z `passwordHash`) otwiera panel admina.
-- Błędne hasło pokazuje `alert` i ponawia pytanie.
-- Anulowanie promptu albo brak dostępu do dokumentu wymusza widok użytkownika.
+- Błędne hasło pokazuje komunikat w modalu i ponawia formularz logowania (bez systemowego `alert`).
+- Anulowanie modala wymusza widok użytkownika.
+- Jeśli Firestore zwróci błąd odczytu hasła, moduł używa wartości awaryjnej `window.firebaseConfig.adminPasswordHash` lub `window.firebaseConfig.adminPassword`.
+- Brak hasła w obu źródłach pokazuje komunikat w modalu; użytkownik może ponowić próbę lub anulować przejście do widoku admina.
 
 ### 4.2 Przełączanie zakładek
 - `setupTabs(...)` obsługuje aktywację przycisków i paneli dla:
@@ -79,7 +81,8 @@ Sekcja `Turniej` (admin i user) używa układu analogicznego do sekcji typu `Gry
 ## 6. Dane backendowe
 Moduł Second wykonuje pojedynczy odczyt backendowy dla bramki administratora:
 - odczyt Firestore dokumentu `admin_security/credentials`,
-- odczyt pola `passwordHash` (typ `string`) do walidacji hasła z promptu.
+- odczyt pola `passwordHash` (typ `string`) do walidacji hasła wpisanego w modalu logowania,
+- fallback do `window.firebaseConfig.adminPasswordHash` lub `window.firebaseConfig.adminPassword`, gdy odczyt Firestore zakończy się błędem.
 
 Pozostałe przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Strona1`, `Strona2`, `Odśwież`) nadal są elementami szkieletu UI i nie zapisują danych.
 
