@@ -90,6 +90,7 @@ W aplikacji występują m.in. poniższe modale:
 
 ### 4.3 Zarządzanie graczami
 - Gracze są trzymani w kolekcji `main_users` (1 dokument = 1 konto użytkownika).
+- Widok admina ukrywa techniczne puste rekordy (bez e-maila, nazwy, PIN-u i uprawnień), żeby tabela nie pokazywała pustych wierszy.
 - Każdy gracz ma:
   - `id`, `name`, `pin`,
   - `appEnabled` (aktywny/nieaktywny),
@@ -375,6 +376,7 @@ service cloud.firestore {
 - Ekran startowy to `#loginScreen` z kartą `.login-card` i polami `#authEmailInput`, `#authPasswordInput` oraz przyciskami `#authLoginButton`, `#authRegisterButton`.
 - W nagłówku po zalogowaniu działa pasek sesji `.auth-session-toolbar` z `#authStatus`, `#authLogoutButton` i `#authResetPasswordButton`.
 - Frontend używa Firebase Auth (compat) i funkcji:
+  - `setPersistence(firebase.auth.Auth.Persistence.NONE)` aby po odświeżeniu strony wymusić ponowne logowanie (brak trwałej sesji),
   - `signInWithEmailAndPassword(email, password)` dla przycisku **Zaloguj**,
   - `signOut()` dla przycisku **Wyloguj**,
   - `sendPasswordResetEmail(email)` dla przycisku **Reset hasła**.

@@ -87,6 +87,7 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 4. W kolumnie **Uprawnienia** kliknij **Edytuj** i zaznacz dostęp do sekcji Strefy Gracza.
 5. Dla **Statystyk** użyj przycisku **Lata**, aby wskazać lata widoczne dla gracza.
 6. Przycisk **Usuń** usuwa profil użytkownika z `main_users` i uruchamia próbę usunięcia konta Authentication przez Cloud Function `deleteMainUserAccount` (jeśli jest wdrożona). Konto admina `AV9s1NNHl3Rq4pT4HnfQ7y9ELxa2` jest chronione i nie może być skasowane z UI. UI nie pozwala też usunąć ostatniego dokumentu z `main_users`.
+7. Puste techniczne rekordy (bez nazwy/e-maila/PIN-u/uprawnień) są automatycznie ukrywane na liście — nie wpływają na normalną obsługę graczy.
 
 ### 3.5 Gry admina
 1. Wejdź w **Gry admina**.
@@ -196,7 +197,8 @@ W górnym pasku użytkownika są teraz tylko 3 zakładki: **Aktualności**, **Re
 3. Kliknij **Utwórz konto**, aby założyć nowy profil (domyślnie rola `user`).
 4. Po zalogowaniu status konta jest widoczny w nagłówku.
 5. Aby zakończyć sesję kliknij **Wyloguj**.
-6. Aby zresetować hasło wpisz e-mail i kliknij **Reset hasła** (aplikacja wyśle mail resetujący).
+6. Po odświeżeniu strony aplikacja wymaga ponownego logowania (sesja logowania nie jest trwała).
+7. Aby zresetować hasło wpisz e-mail i kliknij **Reset hasła** (aplikacja wyśle mail resetujący).
 
 ## Logowanie i rejestracja (Email/Hasło)
 1. W nagłówku wpisz e-mail i hasło.

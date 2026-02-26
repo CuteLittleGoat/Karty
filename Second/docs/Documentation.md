@@ -83,6 +83,7 @@ Wszystkie przyciski (`Wyślij`, `Zapisz`, `Dodaj`, `Instrukcja`, `Strona1`, `Str
 - Ekran startowy to `#loginScreen` z kartą `.login-card` i przyciskami `#authLoginButton`, `#authRegisterButton`.
 - W nagłówku po zalogowaniu działa pasek `.auth-session-toolbar` z akcjami `#authLogoutButton` i `#authResetPasswordButton`.
 - Frontend używa Firebase Auth (compat) i funkcji:
+  - `setPersistence(firebase.auth.Auth.Persistence.NONE)` aby po odświeżeniu strony wymusić ponowne logowanie (brak trwałej sesji),
   - `signInWithEmailAndPassword(email, password)` dla przycisku **Zaloguj**,
   - `signOut()` dla przycisku **Wyloguj**,
   - `sendPasswordResetEmail(email)` dla przycisku **Reset hasła**.
