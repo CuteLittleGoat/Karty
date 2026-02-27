@@ -39,3 +39,8 @@
 ## 5. Integracja danych
 - Firebase inicjalizowany przez `window.firebaseConfig` (z `config/firebase-config.js`).
 - Firestore używany m.in. dla: aktualności, regulaminu, notatek admina, czatu, graczy, gier i statystyk.
+
+## 6. Kalkulator Cash — logika Tabela8
+- Funkcja `getCashMetrics` wylicza wartości dla widoku Cash na podstawie danych z `state.cash.table9Rows` i `state.cash.table8Row.rake`.
+- Wartość **Rake** jest obliczana jako: `(suma Buy-In + suma Rebuy) × (procent / 100)`.
+- Wartość **Pot** i sumy po potrąceniu procentu pozostają liczone jako wartości po odjęciu rake (`1 - procent/100`).
