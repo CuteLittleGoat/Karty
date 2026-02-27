@@ -73,6 +73,7 @@ Strefa Gracza zawiera sekcje:
 - Gry do potwierdzenia
 - Gry użytkowników
 - Statystyki
+- Kontenery tabel w Strefie Gracza wymuszają lokalne przewijanie poziome (`overflow-x: auto`) i nie pozwalają, aby siatka lub tabela wyjechała poza kartę przy mniejszym oknie (desktop i mobile).
 
 ### 4.3 Modale
 - Logowanie administratora.
@@ -97,5 +98,7 @@ Strefa Gracza zawiera sekcje:
 ## 7. Styl i responsywność
 - Motyw oparty o zmienne CSS (`:root`) dla kolorów, fontów, odstępów i promieni.
 - Układ kart i tabel oparty o grid/flex.
+- Kontenery `.admin-games-content`, `.admin-games-section` i `.player-zone-panel` używają `min-width: 0`, aby prawidłowo się zwężać w układzie grid.
+- W Strefie Gracza `.admin-table-scroll` ma wymuszone `max-width: 100%` i `overflow-x: auto`, a `.admin-data-table` ma `width: max-content` + `min-width: 100%`, dzięki czemu poziomy pasek przewijania pojawia się wewnątrz sekcji, gdy jest za mało miejsca.
 - Responsywność dla mniejszych szerokości ekranu jest realizowana przez media queries.
 - Wspólny język wizualny: ciemne tło, złoto-zielone akcenty, kontrastowe komunikaty statusu.

@@ -4,7 +4,7 @@
 
 | Obszar | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 |---|---|---|---|---|
-| Główne tabele w panelach | 860 px | brak stałego limitu | do lewej | Tabela zajmuje całą dostępną szerokość sekcji. |
+| Główne tabele w panelach | 860 px | brak stałego limitu | do lewej | Tabela zajmuje całą dostępną szerokość sekcji, a przy zbyt małym oknie przewija się poziomo wewnątrz kontenera. |
 | wartość oczekiwana |  |  |  |  |
 | Tabela graczy | 700 px | brak stałego limitu | do lewej (kolumna z polem wyboru wizualnie na środku) | Kolumna z polem wyboru ma około 88 px. |
 | wartość oczekiwana |  |  |  |  |
