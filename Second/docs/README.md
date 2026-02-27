@@ -70,6 +70,7 @@
 ### 4.4 Notatki
 - Pole ręczne: **Treść notatek**.
 - Przycisk: **Zapisz**.
+- Podczas pisania pole nie jest nadpisywane przez automatyczne odświeżenia, więc kursor pozostaje stabilny aż do zapisu lub opuszczenia pola.
 
 ### 4.5 Gracze
 - Przyciski: **Dodaj** oraz akcje wierszy tabeli.

@@ -10,6 +10,10 @@
 - Modal instrukcji ładuje treść z adresu:
   - `https://cutelittlegoat.github.io/Karty/Main/docs/README.md`
 - Czerwony komunikat o tymczasowym pominięciu hasła admina jest pokazywany tylko w trybie administratora (`body.is-admin`).
+- Dodano ochronę przed nadpisywaniem aktywnie edytowanych pól przez snapshot Firestore:
+  - kalkulator ignoruje snapshot dla aktywnego trybu podczas edycji (`table1`, `table2`, `table3`, `table5`, `table9`) albo gdy czeka lokalny debounce zapisu,
+  - lista graczy ignoruje snapshot podczas aktywnej edycji pól gracza i oczekującego debounce,
+  - pola **Regulamin** i **Notatki** nie są nadpisywane przez snapshot, gdy użytkownik aktywnie pisze (bez zapisu).
 
 ## 3. Obsługa modala instrukcji (`initInstructionModal`)
 - Elementy DOM:

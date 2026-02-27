@@ -549,14 +549,16 @@ const setupAdminView = () => {
     const db = firebaseApp.firestore();
     const notesDocRef = db.collection(ADMIN_NOTES_COLLECTION).doc(SECOND_ADMIN_NOTES_DOCUMENT);
     let isSaving = false;
+    let hasLocalEdits = false;
 
     notesDocRef.onSnapshot(
       (snapshot) => {
         const data = snapshot.data();
         const notesText = typeof data?.text === "string" ? data.text : "";
-        if (document.activeElement !== notesInput || !isSaving) {
-          notesInput.value = notesText;
+        if (document.activeElement === notesInput && hasLocalEdits && !isSaving) {
+          return;
         }
+        notesInput.value = notesText;
         notesStatus.textContent = notesText ? "Notatki są aktualne." : "Brak zapisanej treści notatek.";
         notesSaveButton.disabled = false;
         isSaving = false;
@@ -566,11 +568,20 @@ const setupAdminView = () => {
       }
     );
 
+    notesInput.addEventListener("input", () => {
+      hasLocalEdits = true;
+    });
+
+    notesInput.addEventListener("blur", () => {
+      hasLocalEdits = false;
+    });
+
     notesSaveButton.addEventListener("click", () => {
       if (isSaving) {
         return;
       }
 
+      hasLocalEdits = false;
       isSaving = true;
       notesSaveButton.disabled = true;
       notesStatus.textContent = "Zapisywanie notatek...";

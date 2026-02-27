@@ -211,6 +211,8 @@ Na górze panelu są przyciski zakładek:
 
 Kliknięcie przycisku zakładki przełącza aktualny widok roboczy.
 
+Ważne podczas edycji: pola edycyjne (np. Gracze, Gry, Kalkulator, Regulamin, Notatki) zachowują fokus i pozycję kursora w trakcie autozapisu — możesz pisać lub trzymać Backspace bez ponownego klikania pola po każdym odświeżeniu danych.
+
 ---
 
 ## 5. Zakładka admina „Aktualności”

@@ -14,6 +14,7 @@
   - `#secondInstructionContent`
 - Treść instrukcji ładowana jest z:
   - `https://cutelittlegoat.github.io/Karty/Second/docs/README.md`
+- Dodano ochronę pola **Notatki** przed nadpisaniem przez snapshot podczas aktywnej edycji (bez klikania „Zapisz”).
 
 ## 3. Obsługa modala instrukcji (`initInstructionModal`)
 - Pierwsze otwarcie pobiera markdown przez `fetch`.
