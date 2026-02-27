@@ -103,7 +103,7 @@ Dodatkowo `body::before` nakłada subtelny świetlny overlay (`opacity: 0.25`) z
 ## 4) Style stref funkcjonalnych (wspólne założenia)
 
 - **Panel administratora**: zakładki, sekcje kartowe, tabele danych i formularze w jednym spójnym systemie kolorów.
-- **Strefa gracza**: karty z czytelną hierarchią nagłówków, statusy i formularze czatu/notatek.
+- **Strefa gracza**: karty z czytelną hierarchią nagłówków, statusy i formularze czatu/notatek; tabele przewijają się poziomo wewnątrz panelu, gdy brakuje szerokości, również na mobile.
 - **Modale funkcjonalne** (logowanie, instrukcja, szczegóły): wspólny layout i zachowanie wizualne.
 - **Statusy**: `.status-text` oraz wariant błędu `.status-text-danger` wykorzystują odpowiednio neutralny i „danger” kolor.
 
@@ -113,7 +113,7 @@ Dodatkowo `body::before` nakłada subtelny świetlny overlay (`opacity: 0.25`) z
 
 W obu modułach stosowane są media query, które:
 - układają nagłówek i paski narzędzi pionowo na mniejszych szerokościach,
-- utrzymują czytelność tabel przez poziome przewijanie (`overflow-x: auto`),
+- utrzymują czytelność tabel przez poziome przewijanie (`overflow-x: auto`) w obrębie panelu, bez wychodzenia tabel poza kartę,
 - dostosowują sekcje panelowe do małych ekranów bez utraty funkcjonalności.
 
 ---

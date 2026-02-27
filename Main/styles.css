@@ -701,6 +701,7 @@ select:disabled,
   border-radius: var(--radius-md);
   border: 1px solid var(--border2);
   background: rgba(0, 0, 0, 0.32);
+  min-width: 0;
 }
 
 .admin-games-sidebar {
@@ -740,6 +741,7 @@ select:disabled,
 .admin-games-section {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .admin-games-players-stats-table {
@@ -1208,10 +1210,22 @@ button.danger {
 .player-zone-panel {
   display: none;
   gap: var(--gap-3);
+  min-width: 0;
 }
 
 .player-zone-panel.is-active {
   display: grid;
+}
+
+.player-zone-sections-content .admin-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.player-zone-sections-content .admin-data-table {
+  width: max-content;
+  min-width: 100%;
 }
 
 

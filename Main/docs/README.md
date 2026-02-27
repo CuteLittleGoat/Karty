@@ -37,6 +37,7 @@ W widoku użytkownika dostępne są zakładki:
 
 ### 3.1 Najbliższa gra
 - Podgląd tabeli najbliższej gry.
+- Jeśli szerokość okna jest zbyt mała, tabela przewija się poziomo wewnątrz sekcji (na desktopie i mobile), dzięki czemu nic nie wychodzi poza panel.
 
 ### 3.2 Czat
 - Przegląd wiadomości.
