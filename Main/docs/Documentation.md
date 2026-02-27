@@ -30,6 +30,7 @@ Moduł operuje m.in. na kolekcjach i dokumentach:
 - `admin_security/credentials`
 - `app_settings/player_access`
 - `chat_messages`
+- `admin_notes`
 - `Tables`
 - `UserGames`
 - `rows` (szczegóły gry jako podkolekcja)
@@ -38,7 +39,7 @@ Moduł operuje m.in. na kolekcjach i dokumentach:
 - `calculators`
 
 ### 3.2 Obszary danych
-- Aktualności i regulamin.
+- Aktualności, regulamin i notatki administratora per moduł (`admin_notes/main`, `admin_notes/second`).
 - Lista graczy i ich uprawnienia.
 - Gry admina i gry użytkowników.
 - Szczegóły gier (wiersze graczy, wartości finansowe, punkty).
@@ -53,6 +54,7 @@ Zakładki:
 - Aktualności
 - Czat
 - Regulamin
+- Notatki
 - Gracze
 - Gry admina
 - Gry użytkowników
@@ -110,3 +112,121 @@ Strefa Gracza zawiera sekcje:
 - Responsywność dla mniejszych szerokości ekranu jest realizowana przez media queries.
 - Wspólny język wizualny: ciemne tło, złoto-zielone akcenty, kontrastowe komunikaty statusu.
 - Kontener wiadomości czatu (`.chat-messages`) ma stałą minimalną wysokość (`260px`, na mobile `180px`) oraz pionowy scrollbar, aby historia wiadomości nie „zapadała się” na małych ekranach.
+
+## 8. Aktualne reguły Firestore (2026-02-27)
+```firebase
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.role == "admin";
+    }
+
+    match /admin_security/{docId} {
+      allow read, write: if true;
+    }
+
+    match /admin_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    match /app_settings/{docId} {
+      allow read, write: if true;
+    }
+
+    match /admin_notes/{docId} {
+      allow read, write: if true;
+    }
+
+    match /Tables/{tableId} {
+      allow read, write: if true;
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /UserGames/{gameId} {
+      allow read, write: if true;
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /Collection1/{docId} {
+      allow read, write: if true;
+    }
+
+    match /chat_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    match /admin_games_stats/{year} {
+      allow read, write: if true;
+    }
+
+    match /players/{docId} {
+      allow read, write: if true;
+    }
+
+    match /calculators/{type} {
+      allow read, write: if true;
+
+      match /definitions/{versionId} {
+        allow read, write: if true;
+      }
+
+      match /placeholders/{placeholderId} {
+        allow read, write: if true;
+      }
+
+      match /sessions/{sessionId} {
+        allow read, write: if true;
+
+        match /variables/{varDocId} {
+          allow read, write: if true;
+        }
+
+        match /calculationFlags/{flagDocId} {
+          allow read, write: if true;
+        }
+
+        match /tables/{tableId} {
+          allow read, write: if true;
+
+          match /rows/{rowId} {
+            allow read, write: if true;
+          }
+        }
+
+        match /snapshots/{snapshotId} {
+          allow read, write: if true;
+        }
+      }
+    }
+
+    match /Nekrolog_config/{docId} {
+      allow read, write: if true;
+    }
+
+    match /Nekrolog_snapshots/{docId} {
+      allow read, write: if true;
+    }
+
+    match /Nekrolog_refresh_jobs/{docId} {
+      allow read: if true;
+      allow write: if docId == "latest";
+    }
+  }
+}
+```

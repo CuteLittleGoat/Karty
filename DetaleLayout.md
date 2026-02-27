@@ -104,6 +104,7 @@ Dodatkowo `body::before` nakłada subtelny świetlny overlay (`opacity: 0.25`) z
 ## 4) Style stref funkcjonalnych (wspólne założenia)
 
 - **Panel administratora**: zakładki, sekcje kartowe, tabele danych i formularze w jednym spójnym systemie kolorów.
+- W panelu administratora (Main i Second) zakładka **Notatki** korzysta z tego samego układu co **Regulamin**: duży `textarea` (`rows=50`), etykieta nad polem i dolny pasek akcji z przyciskiem `Zapisz` oraz statusem (`.admin-rules-actions`).
 - **Strefa gracza**: karty z czytelną hierarchią nagłówków, statusy i formularze czatu/notatek; tabele przewijają się poziomo wewnątrz panelu, gdy brakuje szerokości, również na mobile.
 - W sekcji Czat kontener listy wiadomości (`.chat-messages`) ma stałą minimalną wysokość (`260px`, na ekranach do 720px: `180px`), pionowy scrollbar (`overflow-y: auto`) i stylowany uchwyt suwaka dla czytelności historii rozmowy; przy otwieraniu widoku Czat suwak jest domyślnie ustawiany na sam dół listy.
 - **Modale funkcjonalne** (logowanie, instrukcja, szczegóły): wspólny layout i zachowanie wizualne.

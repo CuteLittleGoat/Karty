@@ -69,6 +69,7 @@ W widoku użytkownika dostępne są zakładki:
 - **Aktualności**
 - **Czat**
 - **Regulamin**
+- **Notatki**
 - **Gracze**
 - **Gry admina**
 - **Gry użytkowników**
@@ -92,13 +93,18 @@ W widoku użytkownika dostępne są zakładki:
 1. Edytuj treść zasad.
 2. Kliknij **Zapisz**.
 
-### 4.5 Gracze
+### 4.5 Notatki
+1. Wejdź w zakładkę **Notatki**.
+2. Wpisz lub zmodyfikuj treść w dużym polu tekstowym.
+3. Kliknij **Zapisz** na dole sekcji.
+
+### 4.6 Gracze
 - Dodawanie gracza (**Dodaj**).
 - Edycja nazwy i PIN.
 - Zarządzanie uprawnieniami do sekcji Strefy Gracza.
 - Zarządzanie listą lat dla statystyk konkretnego gracza.
 
-### 4.6 Gry admina
+### 4.7 Gry admina
 - Wybór roku.
 - Dodawanie gry i edycja danych w tabeli.
 - Otwieranie **Szczegóły** gry i edycja wierszy graczy.
@@ -106,25 +112,25 @@ W widoku użytkownika dostępne są zakładki:
 - Jeżeli próbujesz usunąć ostatni rekord z kolekcji głównej, pojawi się komunikat blokujący usunięcie.
 - Podgląd sekcji **Statystyki** i **Ranking** dla wybranego roku.
 
-### 4.7 Gry użytkowników
+### 4.8 Gry użytkowników
 - Wybór roku.
 - Dodawanie gry.
 - Otwieranie szczegółów i notatek.
 
-### 4.8 Najbliższa gra
+### 4.9 Najbliższa gra
 - Podgląd i edycja danych tabeli najbliższej gry.
 
-### 4.9 Statystyki
+### 4.10 Statystyki
 - Wybór roku.
 - Podgląd statystyk i rankingu.
 - W głównej tabeli statystyk (kolumny m.in. **Gracz**, **Mistrzostwo**, **Ilość spotkań**) co drugi wiersz ma delikatnie inne tło (zebra striping), co ułatwia śledzenie danych w szerokich tabelach.
 - Eksport przez **Eksportuj**.
 
-### 4.10 Gry do potwierdzenia
+### 4.11 Gry do potwierdzenia
 - Podgląd statusów potwierdzeń.
 - Otwieranie szczegółów gry.
 
-### 4.11 Kalkulator
+### 4.12 Kalkulator
 - Przełączanie trybu: **Tournament** / **Cash**.
 - Praca na zestawach tabel kalkulatora.
 - Obsługa modala rebuy gracza.
