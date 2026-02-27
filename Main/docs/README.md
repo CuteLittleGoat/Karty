@@ -131,10 +131,11 @@ W widoku użytkownika dostępne są zakładki:
 - Otwieranie szczegółów gry.
 
 ### 4.12 Kalkulator
-- Przełączanie trybu: **Tournament** / **Cash**.
+- Przełączanie trybu: **Tournament1** / **Tournament2** / **Cash**.
 - Praca na zestawach tabel kalkulatora.
 - Obsługa modala rebuy gracza.
-- W trybie **Tournament** w **Tabela5** (kolumna **Podział puli**) każdą wartość możesz edytować ręcznie: kliknij pole procentowe, wpisz nową wartość i kliknij poza polem, aby ponownie zobaczyć znak `%`.
+- W trybach **Tournament1** i **Tournament2** w **Tabela5** (kolumna **Podział puli**) każdą wartość możesz edytować ręcznie: kliknij pole procentowe, wpisz nową wartość i kliknij poza polem, aby ponownie zobaczyć znak `%`.
+- **Tournament1** i **Tournament2** mają identyczny układ i obliczenia, ale każdy tryb zapisuje dane niezależnie (zmiana wartości w jednym trybie nie nadpisuje drugiego).
 - Wprowadzone wartości procentowe w **Tabela5** zapisują się automatycznie i wracają po restarcie aplikacji.
 - Jeżeli suma procentów w kolumnie **Podział puli** jest inna niż 100, pod tabelą pojawia się czerwony komunikat: **Nie sumuje się do 100%**.
 
