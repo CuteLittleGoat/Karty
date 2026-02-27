@@ -109,6 +109,8 @@ Dodatkowo `body::before` nakłada subtelny świetlny overlay (`opacity: 0.25`) z
 - W sekcji Czat kontener listy wiadomości (`.chat-messages`) ma stałą minimalną wysokość (`260px`, na ekranach do 720px: `180px`), pionowy scrollbar (`overflow-y: auto`) i stylowany uchwyt suwaka dla czytelności historii rozmowy; przy otwieraniu widoku Czat suwak jest domyślnie ustawiany na sam dół listy.
 - **Modale funkcjonalne** (logowanie, instrukcja, szczegóły): wspólny layout i zachowanie wizualne.
 - **Statusy**: `.status-text` oraz wariant błędu `.status-text-danger` wykorzystują odpowiednio neutralny i „danger” kolor.
+- W tabelach szczegółów gry (`.game-details-table`) wiersz gracza z potwierdzoną obecnością ma złote podświetlenie przez klasę `.confirmed-row` (złote tło + złota linia wewnętrzna).
+- W nagłówku kolumny `Rebuy/Add-on` w modalach szczegółów gry użyty jest przycisk z tym samym stylem co nagłówek zbiorczy `Wpisowe` (`.admin-weight-bulk-button`).
 - W `Main` w zakładce **Kalkulator → Tournament → Tabela5** pod tabelą może pojawić się czerwony komunikat walidacyjny `Nie sumuje się do 100%` (klasy `.status-text.status-text-danger`), kiedy suma procentów w kolumnie `Podział puli` jest różna od 100.
 
 ---

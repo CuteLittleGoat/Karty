@@ -5,16 +5,14 @@
 - `Main/styles.css` — motyw, layout kart, tabele i style modali.
 - `Main/app.js` — logika Firebase, zakładek, panelu admina, strefy gracza, kalkulatora i modali.
 
-## 2. Zmiana wprowadzona w tej wersji
-- Przycisk **Instrukcja** jest dostępny zarówno dla administratora, jak i dla użytkownika (wspólny przycisk w nagłówku).
-- Modal instrukcji ładuje treść z adresu:
-  - `https://cutelittlegoat.github.io/Karty/Main/docs/README.md`
-- W module `Main` ponownie aktywowano wymaganie hasła administratora przed otwarciem panelu admina (`resolveAdminMode`).
-- Czerwony komunikat testowy przy przycisku **Instrukcja** został usunięty z nagłówka modułu `Main`.
-- Dodano ochronę przed nadpisywaniem aktywnie edytowanych pól przez snapshot Firestore:
-  - kalkulator ignoruje snapshot dla aktywnego trybu podczas edycji (`table1`, `table2`, `table3`, `table5`, `table9`) albo gdy czeka lokalny debounce zapisu,
-  - lista graczy ignoruje snapshot podczas aktywnej edycji pól gracza i oczekującego debounce,
-  - pola **Regulamin** i **Notatki** nie są nadpisywane przez snapshot, gdy użytkownik aktywnie pisze (bez zapisu).
+## 2. Aktualny zakres funkcjonalny tej wersji
+- Edytor notatek (`getSummaryNotesModalController`) zapamiętuje ostatnie zaznaczenie tekstu i odtwarza je po kliknięciu przycisku koloru, dzięki czemu kolorowanie działa poprawnie również na desktopie przy kolejnych zmianach koloru.
+- Lista gier (zakładki **Gry admina** i **Gry użytkowników**) ma kolumnę `IlośćPotwierdzonych` z wartością `potwierdzeni/zapisani`, liczoną dynamicznie z wierszy gry i subkolekcji `confirmations`.
+- Modale `Szczegóły gry` (`#gameDetailsModal`, `#userGameDetailsModal`, `#playerUserGameDetailsModal`) mają:
+  - przycisk zbiorczy `Rebuy/Add-on` (bulk update wszystkich wierszy),
+  - przycisk `Rebuy/Add-on` w każdym wierszu (edycja pojedynczego rekordu),
+  - złote podświetlenie wiersza gracza z potwierdzoną obecnością (`.confirmed-row`).
+- Tworzenie i filtrowanie gier użytkownika zostało rozszerzone o powiązanie także po PIN-ie twórcy (`createdByPlayerPin`) oraz kompatybilność z istniejącym powiązaniem po `createdByPlayerId`.
 
 ## 3. Obsługa modala instrukcji (`initInstructionModal`)
 - Elementy DOM:

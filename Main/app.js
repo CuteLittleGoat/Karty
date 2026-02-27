@@ -521,6 +521,19 @@ const getSummaryNotesModalController = (() => {
       readOnlyMessage: "Brak uprawnień do edycji notatek.",
       textareaPlaceholder: "Wpisz notatki..."
     };
+    let lastSelectionRange = null;
+
+    const rememberEditorSelection = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) {
+        return;
+      }
+      const range = selection.getRangeAt(0);
+      if (!editor.contains(range.commonAncestorContainer)) {
+        return;
+      }
+      lastSelectionRange = range.cloneRange();
+    };
 
     const applyColor = (colorKey) => {
       if (!state.canWrite) {
@@ -530,7 +543,17 @@ const getSummaryNotesModalController = (() => {
 
       const selectedColor = NOTES_COLOR_MAP[colorKey];
       const selection = window.getSelection();
-      if (!selectedColor || !selection || selection.rangeCount === 0 || selection.isCollapsed) {
+      if (!selectedColor || !selection) {
+        status.textContent = "Zaznacz fragment tekstu, a potem wybierz kolor.";
+        return;
+      }
+
+      if ((selection.rangeCount === 0 || selection.isCollapsed) && lastSelectionRange) {
+        selection.removeAllRanges();
+        selection.addRange(lastSelectionRange.cloneRange());
+      }
+
+      if (selection.rangeCount === 0 || selection.isCollapsed) {
         status.textContent = "Zaznacz fragment tekstu, a potem wybierz kolor.";
         return;
       }
@@ -550,6 +573,7 @@ const getSummaryNotesModalController = (() => {
 
       const normalized = sanitizeRichTextWithAllowedColors(editor.innerHTML, NOTES_COLOR_MAP);
       editor.innerHTML = normalized;
+      lastSelectionRange = null;
       status.textContent = "Kolor zastosowany. Kliknij Zapisz, aby utrwalić zmiany.";
     };
 
@@ -592,6 +616,7 @@ const getSummaryNotesModalController = (() => {
 
       title.textContent = `${state.notesLabel}: ${state.gameName}`;
       editor.innerHTML = state.notes;
+      lastSelectionRange = null;
       editor.dataset.placeholder = state.textareaPlaceholder;
       editor.contentEditable = state.canWrite ? "true" : "false";
       editor.setAttribute("aria-readonly", state.canWrite ? "false" : "true");
@@ -646,10 +671,16 @@ const getSummaryNotesModalController = (() => {
     });
 
     colorButtons.forEach((button) => {
+      button.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+      });
       button.addEventListener("click", () => {
         applyColor(button.dataset.notesColor);
       });
     });
+
+    editor.addEventListener("mouseup", rememberEditorSelection);
+    editor.addEventListener("keyup", rememberEditorSelection);
 
     closeButton.addEventListener("click", closeModal);
     modal.addEventListener("click", (event) => {
@@ -1596,6 +1627,37 @@ const getAllPlayersConfirmedForGame = async ({ db, collectionName, gameId, gameD
   return playerNames.every((playerName) => confirmedPlayers.has(playerName));
 };
 
+const getUniquePlayerNamesFromRows = (rows = []) => Array.from(new Set(rows
+  .map((row) => (typeof row?.playerName === "string" ? row.playerName.trim() : ""))
+  .filter(Boolean)));
+
+const getConfirmedPlayersFromConfirmations = (confirmations = []) => {
+  const confirmedPlayers = new Set();
+  confirmations.forEach((confirmation) => {
+    const playerName = typeof confirmation?.playerName === "string" ? confirmation.playerName.trim() : "";
+    if (playerName && confirmation?.confirmed === true) {
+      confirmedPlayers.add(playerName);
+    }
+  });
+  return confirmedPlayers;
+};
+
+const getConfirmedCountLabel = (rows = [], confirmations = []) => {
+  const playerNames = getUniquePlayerNamesFromRows(rows);
+  const confirmedPlayers = getConfirmedPlayersFromConfirmations(confirmations);
+  const confirmedCount = playerNames.reduce((count, playerName) => (confirmedPlayers.has(playerName) ? count + 1 : count), 0);
+  return `${confirmedCount}/${playerNames.length}`;
+};
+
+const isGameOwnedByPlayer = (game, player) => {
+  if (!game || !player) {
+    return false;
+  }
+  const byPlayerId = typeof game.createdByPlayerId === "string" && game.createdByPlayerId === player.id;
+  const byPin = typeof game.createdByPlayerPin === "string" && game.createdByPlayerPin === player.pin;
+  return byPlayerId || byPin;
+};
+
 const synchronizeNextGamesConfirmations = async () => {
   if (!nextGamesState.db) {
     syncNextGamesViews();
@@ -2409,6 +2471,7 @@ const initUserGamesManager = ({
   modalMetaSelector,
   modalBodySelector,
   modalEntryFeeBulkButtonSelector,
+  modalRebuyBulkButtonSelector,
   modalCloseSelector,
   modalAddRowButtonSelector,
   selectedYearStorageKey,
@@ -2426,6 +2489,7 @@ const initUserGamesManager = ({
   const modalMeta = document.querySelector(modalMetaSelector);
   const modalBody = document.querySelector(modalBodySelector);
   const modalEntryFeeBulkButton = modalEntryFeeBulkButtonSelector ? document.querySelector(modalEntryFeeBulkButtonSelector) : null;
+  const modalRebuyBulkButton = modalRebuyBulkButtonSelector ? document.querySelector(modalRebuyBulkButtonSelector) : null;
   const modalClose = document.querySelector(modalCloseSelector);
   const modalAddRowButton = document.querySelector(modalAddRowButtonSelector);
 
@@ -2449,6 +2513,8 @@ const initUserGamesManager = ({
     games: [],
     detailsByGame: new Map(),
     detailsUnsubscribers: new Map(),
+    confirmationsByGame: new Map(),
+    confirmationUnsubscribers: new Map(),
     activeGameIdInModal: null,
     playerOptions: []
   };
@@ -2685,7 +2751,7 @@ const initUserGamesManager = ({
     if (!games.length) {
       const emptyRow = document.createElement("tr");
       const emptyCell = document.createElement("td");
-      emptyCell.colSpan = 5;
+      emptyCell.colSpan = 6;
       emptyCell.textContent = "Brak gier z datą w wybranym roku.";
       emptyRow.appendChild(emptyCell);
       gamesTableBody.appendChild(emptyRow);
@@ -2813,6 +2879,11 @@ const initUserGamesManager = ({
       });
       closedCell.appendChild(closedInput);
 
+      const confirmationsCell = document.createElement("td");
+      const detailRows = state.detailsByGame.get(game.id) ?? [];
+      const confirmations = state.confirmationsByGame.get(game.id) ?? [];
+      confirmationsCell.textContent = getConfirmedCountLabel(detailRows, confirmations);
+
       const deleteCell = document.createElement("td");
       const deleteButton = document.createElement("button");
       deleteButton.type = "button";
@@ -2832,7 +2903,7 @@ const initUserGamesManager = ({
       });
       deleteCell.appendChild(deleteButton);
 
-      row.append(gameTypeCell, dateCell, nameCell, closedCell, deleteCell);
+      row.append(gameTypeCell, dateCell, nameCell, closedCell, confirmationsCell, deleteCell);
       gamesTableBody.appendChild(row);
     });
 
@@ -2850,11 +2921,17 @@ const initUserGamesManager = ({
     modalBody.innerHTML = "";
 
     const rows = state.detailsByGame.get(gameId) ?? [];
+    const confirmations = state.confirmationsByGame.get(gameId) ?? [];
+    const confirmedPlayers = getConfirmedPlayersFromConfirmations(confirmations);
     const gamePool = rows.reduce((sum, row) => sum + parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy), 0);
     modalMeta.textContent = `${modalMeta.textContent} | Pula: ${gamePool} | Ilość graczy: ${rows.length}`;
     rows.forEach((row, index) => { 
       const tr = document.createElement("tr");
       const writeEnabled = hasWriteAccessToGame(game);
+      const normalizedPlayerName = typeof row.playerName === "string" ? row.playerName.trim() : "";
+      if (normalizedPlayerName && confirmedPlayers.has(normalizedPlayerName)) {
+        tr.classList.add("confirmed-row");
+      }
 
       const lpCell = document.createElement("td");
       lpCell.textContent = String(index + 1);
@@ -2921,7 +2998,28 @@ const initUserGamesManager = ({
       };
 
       const entryFeeCell = createNumericCell("entryFee");
-      const rebuyCell = createNumericCell("rebuy");
+      const rebuyCell = document.createElement("td");
+      const rebuyButton = document.createElement("button");
+      rebuyButton.type = "button";
+      rebuyButton.className = "secondary";
+      rebuyButton.textContent = row.rebuy ?? "";
+      rebuyButton.disabled = !writeEnabled;
+      rebuyButton.addEventListener("click", () => {
+        if (!hasWriteAccessToGame(game)) {
+          return;
+        }
+        const promptValue = window.prompt("Podaj wartość Rebuy/Add-on.", row.rebuy ?? "");
+        if (promptValue === null) {
+          return;
+        }
+        const normalized = sanitizeIntegerInput(promptValue);
+        if (normalized === "-") {
+          status.textContent = "Podaj poprawną wartość liczbową Rebuy/Add-on.";
+          return;
+        }
+        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ rebuy: normalized });
+      });
+      rebuyCell.appendChild(rebuyButton);
       const payoutCell = createNumericCell("payout");
 
       const profitCell = document.createElement("td");
@@ -2999,6 +3097,13 @@ const initUserGamesManager = ({
         state.detailsByGame.delete(gameId);
       }
     });
+    state.confirmationUnsubscribers.forEach((unsubscribe, gameId) => {
+      if (!activeIds.has(gameId)) {
+        unsubscribe();
+        state.confirmationUnsubscribers.delete(gameId);
+        state.confirmationsByGame.delete(gameId);
+      }
+    });
 
     state.games.forEach((game) => {
       if (state.detailsUnsubscribers.has(game.id)) {
@@ -3012,6 +3117,15 @@ const initUserGamesManager = ({
         renderSummaries();
       });
       state.detailsUnsubscribers.set(game.id, unsubscribe);
+
+      const confirmationUnsubscribe = db.collection(gamesCollectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).onSnapshot((confirmationSnapshot) => {
+        state.confirmationsByGame.set(game.id, confirmationSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+        if (state.activeGameIdInModal === game.id) {
+          renderModal(game.id);
+        }
+        renderGamesTable();
+      });
+      state.confirmationUnsubscribers.set(game.id, confirmationUnsubscribe);
     });
 
     synchronizeYearsFromGames();
@@ -3102,6 +3216,39 @@ const initUserGamesManager = ({
     });
   }
 
+
+  if (modalRebuyBulkButton) {
+    modalRebuyBulkButton.addEventListener("click", async () => {
+      if (!canWrite()) {
+        return;
+      }
+      if (!state.activeGameIdInModal) {
+        status.textContent = "Otwórz szczegóły gry, aby zbiorczo ustawić Rebuy/Add-on.";
+        return;
+      }
+      const activeGame = state.games.find((game) => game.id === state.activeGameIdInModal);
+      if (!activeGame || !hasWriteAccessToGame(activeGame)) {
+        status.textContent = "Brak uprawnień do edycji tej gry.";
+        return;
+      }
+      const promptValue = window.prompt("Podaj wartość Rebuy/Add-on dla wszystkich graczy.", "");
+      if (promptValue === null) {
+        return;
+      }
+      const normalized = sanitizeIntegerInput(promptValue);
+      if (normalized === "-") {
+        status.textContent = "Podaj poprawną wartość liczbową Rebuy/Add-on.";
+        return;
+      }
+      const rows = state.detailsByGame.get(state.activeGameIdInModal) ?? [];
+      await Promise.all(rows.map((row) => db.collection(gamesCollectionName)
+        .doc(state.activeGameIdInModal)
+        .collection(gameDetailsCollectionName)
+        .doc(row.id)
+        .update({ rebuy: normalized })));
+      status.textContent = `Ustawiono Rebuy/Add-on ${normalized || "(puste)"} dla ${rows.length} wierszy.`;
+    });
+  }
   modalClose.addEventListener("click", closeModal);
   modal.addEventListener("click", (event) => {
     if (event.target === modal) {
@@ -3126,6 +3273,7 @@ const initAdminUserGames = () => {
     modalMetaSelector: "#userGameDetailsMeta",
     modalBodySelector: "#userGameDetailsBody",
     modalEntryFeeBulkButtonSelector: "#userGameDetailsModal .game-entry-fee-bulk-button",
+    modalRebuyBulkButtonSelector: "#userGameDetailsModal .game-rebuy-bulk-button",
     modalCloseSelector: "#userGameDetailsClose",
     modalAddRowButtonSelector: "#userGameDetailsAddRow",
     selectedYearStorageKey: ADMIN_USER_GAMES_SELECTED_YEAR_STORAGE_KEY,
@@ -3148,6 +3296,7 @@ const initPlayerUserGames = () => {
     modalMetaSelector: "#playerUserGameDetailsMeta",
     modalBodySelector: "#playerUserGameDetailsBody",
     modalEntryFeeBulkButtonSelector: "#playerUserGameDetailsModal .game-entry-fee-bulk-button",
+    modalRebuyBulkButtonSelector: "#playerUserGameDetailsModal .game-rebuy-bulk-button",
     modalCloseSelector: "#playerUserGameDetailsClose",
     modalAddRowButtonSelector: "#playerUserGameDetailsAddRow",
     selectedYearStorageKey: USER_GAMES_SELECTED_YEAR_STORAGE_KEY,
@@ -3157,17 +3306,18 @@ const initPlayerUserGames = () => {
     },
     canAccessGame: (game) => {
       const player = getUserGamesVerifiedPlayer();
-      return Boolean(player) && game?.createdByPlayerId === player.id;
+      return isGameOwnedByPlayer(game, player);
     },
     canEditGame: (game) => {
       const player = getUserGamesVerifiedPlayer();
-      return Boolean(player) && game?.createdByPlayerId === player.id;
+      return isGameOwnedByPlayer(game, player);
     },
     createGamePayload: () => {
       const player = getUserGamesVerifiedPlayer();
       return {
         createdByPlayerId: player?.id || "",
-        createdByPlayerName: player?.name || ""
+        createdByPlayerName: player?.name || "",
+        createdByPlayerPin: player?.pin || ""
       };
     }
   });
@@ -6244,6 +6394,7 @@ const initAdminGames = () => {
   const modalClose = document.querySelector("#gameDetailsClose");
   const modalAddRowButton = document.querySelector("#gameDetailsAddRow");
   const modalEntryFeeBulkButton = document.querySelector("#gameDetailsModal .game-entry-fee-bulk-button");
+  const modalRebuyBulkButton = document.querySelector("#gameDetailsModal .game-rebuy-bulk-button");
 
   if (!yearsList || !gamesTableBody || !summariesContainer || !statsBody || !playersStatsBody || !rankingBody || !status || !addGameButton) {
     return;
@@ -6269,6 +6420,8 @@ const initAdminGames = () => {
     games: [],
     detailsByGame: new Map(),
     detailsUnsubscribers: new Map(),
+    confirmationsByGame: new Map(),
+    confirmationUnsubscribers: new Map(),
     activeGameIdInModal: null,
     playerOptions: [],
     manualStatsByYear: new Map()
@@ -6529,7 +6682,7 @@ const initAdminGames = () => {
     if (!games.length) {
       const emptyRow = document.createElement("tr");
       const emptyCell = document.createElement("td");
-      emptyCell.colSpan = 5;
+      emptyCell.colSpan = 6;
       emptyCell.textContent = "Brak gier z datą w wybranym roku.";
       emptyRow.appendChild(emptyCell);
       gamesTableBody.appendChild(emptyRow);
@@ -6615,6 +6768,11 @@ const initAdminGames = () => {
       });
       closedCell.appendChild(closedInput);
 
+      const confirmationsCell = document.createElement("td");
+      const detailRows = state.detailsByGame.get(game.id) ?? [];
+      const confirmations = state.confirmationsByGame.get(game.id) ?? [];
+      confirmationsCell.textContent = getConfirmedCountLabel(detailRows, confirmations);
+
       const deleteCell = document.createElement("td");
       const deleteButton = document.createElement("button");
       deleteButton.type = "button";
@@ -6636,7 +6794,7 @@ const initAdminGames = () => {
       });
       deleteCell.appendChild(deleteButton);
 
-      row.append(gameTypeCell, dateCell, nameCell, closedCell, deleteCell);
+      row.append(gameTypeCell, dateCell, nameCell, closedCell, confirmationsCell, deleteCell);
       gamesTableBody.appendChild(row);
     });
 
@@ -6893,10 +7051,16 @@ const initAdminGames = () => {
     modalBody.innerHTML = "";
 
     const rows = state.detailsByGame.get(gameId) ?? [];
+    const confirmations = state.confirmationsByGame.get(gameId) ?? [];
+    const confirmedPlayers = getConfirmedPlayersFromConfirmations(confirmations);
     const gamePool = rows.reduce((sum, row) => sum + parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy), 0);
     modalMeta.textContent = `${modalMeta.textContent} | Pula: ${gamePool} | Ilość graczy: ${rows.length}`;
     rows.forEach((row, index) => { 
       const tr = document.createElement("tr");
+      const normalizedPlayerName = typeof row.playerName === "string" ? row.playerName.trim() : "";
+      if (normalizedPlayerName && confirmedPlayers.has(normalizedPlayerName)) {
+        tr.classList.add("confirmed-row");
+      }
 
       const lpCell = document.createElement("td");
       lpCell.textContent = String(index + 1);
@@ -6959,7 +7123,24 @@ const initAdminGames = () => {
       };
 
       const entryFeeCell = createNumericCell("entryFee");
-      const rebuyCell = createNumericCell("rebuy");
+      const rebuyCell = document.createElement("td");
+      const rebuyButton = document.createElement("button");
+      rebuyButton.type = "button";
+      rebuyButton.className = "secondary";
+      rebuyButton.textContent = row.rebuy ?? "";
+      rebuyButton.addEventListener("click", () => {
+        const promptValue = window.prompt("Podaj wartość Rebuy/Add-on.", row.rebuy ?? "");
+        if (promptValue === null) {
+          return;
+        }
+        const normalized = sanitizeIntegerInput(promptValue);
+        if (normalized === "-") {
+          status.textContent = "Podaj poprawną wartość liczbową Rebuy/Add-on.";
+          return;
+        }
+        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ rebuy: normalized });
+      });
+      rebuyCell.appendChild(rebuyButton);
       const payoutCell = createNumericCell("payout");
 
       const profitCell = document.createElement("td");
@@ -7094,20 +7275,38 @@ const initAdminGames = () => {
           state.detailsByGame.delete(gameId);
         }
       });
+      state.confirmationUnsubscribers.forEach((unsubscribe, gameId) => {
+        if (!activeIds.has(gameId)) {
+          unsubscribe();
+          state.confirmationUnsubscribers.delete(gameId);
+          state.confirmationsByGame.delete(gameId);
+        }
+      });
 
       state.games.forEach((game) => {
-        if (state.detailsUnsubscribers.has(game.id)) {
-          return;
+        if (!state.detailsUnsubscribers.has(game.id)) {
+          const unsubscribe = db.collection(gamesCollectionName).doc(game.id).collection(gameDetailsCollectionName).orderBy("createdAt", "asc").onSnapshot((rowSnapshot) => {
+            state.detailsByGame.set(game.id, rowSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+            if (state.activeGameIdInModal === game.id) {
+              renderModal(game.id);
+            }
+            renderGamesTable();
+            renderSummaries();
+            renderStatsTable();
+          });
+          state.detailsUnsubscribers.set(game.id, unsubscribe);
         }
-        const unsubscribe = db.collection(gamesCollectionName).doc(game.id).collection(gameDetailsCollectionName).orderBy("createdAt", "asc").onSnapshot((rowSnapshot) => {
-          state.detailsByGame.set(game.id, rowSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-          if (state.activeGameIdInModal === game.id) {
-            renderModal(game.id);
-          }
-          renderSummaries();
-          renderStatsTable();
-        });
-        state.detailsUnsubscribers.set(game.id, unsubscribe);
+
+        if (!state.confirmationUnsubscribers.has(game.id)) {
+          const confirmationUnsubscribe = db.collection(gamesCollectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).onSnapshot((confirmationSnapshot) => {
+            state.confirmationsByGame.set(game.id, confirmationSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+            if (state.activeGameIdInModal === game.id) {
+              renderModal(game.id);
+            }
+            renderGamesTable();
+          });
+          state.confirmationUnsubscribers.set(game.id, confirmationUnsubscribe);
+        }
       });
 
       synchronizeYearsFromGames();
@@ -7192,6 +7391,32 @@ const initAdminGames = () => {
         .doc(row.id)
         .update({ entryFee: normalized })));
       status.textContent = `Ustawiono wpisowe ${normalized} dla ${rows.length} wierszy.`;
+    });
+  }
+
+
+  if (modalRebuyBulkButton) {
+    modalRebuyBulkButton.addEventListener("click", async () => {
+      if (!state.activeGameIdInModal) {
+        status.textContent = "Otwórz szczegóły gry, aby zbiorczo ustawić Rebuy/Add-on.";
+        return;
+      }
+      const promptValue = window.prompt("Podaj wartość Rebuy/Add-on dla wszystkich graczy.", "");
+      if (promptValue === null) {
+        return;
+      }
+      const normalized = sanitizeIntegerInput(promptValue);
+      if (normalized === "-") {
+        status.textContent = "Podaj poprawną wartość liczbową Rebuy/Add-on.";
+        return;
+      }
+      const rows = state.detailsByGame.get(state.activeGameIdInModal) ?? [];
+      await Promise.all(rows.map((row) => db.collection(gamesCollectionName)
+        .doc(state.activeGameIdInModal)
+        .collection(gameDetailsCollectionName)
+        .doc(row.id)
+        .update({ rebuy: normalized })));
+      status.textContent = `Ustawiono Rebuy/Add-on ${normalized || "(puste)"} dla ${rows.length} wierszy.`;
     });
   }
 

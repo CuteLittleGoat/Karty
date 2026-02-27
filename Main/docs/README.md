@@ -143,6 +143,10 @@ Kolumna **CzyZamknięta** (checkbox):
 - zaznacz, aby oznaczyć grę jako zamkniętą,
 - odznacz, aby przywrócić status otwartej.
 
+Kolumna **IlośćPotwierdzonych**:
+- pokazuje format `potwierdzeni/zapisani` (np. `2/3`, `3/3`, `4/10`),
+- licznik aktualizuje się automatycznie po zmianach w składzie graczy i potwierdzeniach.
+
 ### E) Modal „Szczegóły” gry (po kliknięciu „Szczegóły”)
 W modalu:
 1. Kliknij **Dodaj**, aby dodać nowego uczestnika (wiersz).
@@ -156,11 +160,14 @@ W modalu:
 3. Kolumna **+/-** liczy się automatycznie.
 4. Kliknij **Usuń** w wierszu, aby usunąć konkretnego gracza z tej gry.
 5. Nagłówek **Wpisowe** (przycisk zbiorczy) pozwala nadać jedną wartość wpisowego wszystkim wierszom naraz.
-6. Zamknięcie modalu: przycisk `×`, kliknięcie poza modalem lub klawisz `Esc`.
+6. Nagłówek **Rebuy/Add-on** (przycisk zbiorczy) działa analogicznie i ustawia jedną wartość Rebuy/Add-on dla wszystkich wierszy.
+7. W kolumnie **Rebuy/Add-on** w każdym wierszu jest przycisk — kliknij go, wpisz wartość i zatwierdź, aby edytować tylko ten jeden wiersz.
+8. Wiersz gracza z potwierdzoną obecnością jest podświetlony na złoto.
+9. Zamknięcie modalu: przycisk `×`, kliknięcie poza modalem lub klawisz `Esc`.
 
 ### F) Modal „Notatki do gry”
 Przyciski:
-- **Złoty / Zielony / Czerwony / Biały** — zmieniają kolor motywu notatek,
+- **Złoty / Zielony / Czerwony / Biały** — zmieniają kolor zaznaczonego fragmentu tekstu (kolor można zmieniać wielokrotnie),
 - **Zapisz** — zapisuje treść notatek,
 - **Domyślne** — przywraca domyślną treść szablonu notatek dla gry.
 
