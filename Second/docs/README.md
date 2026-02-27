@@ -4,7 +4,8 @@
 1. Otwórz `Second/index.html` w przeglądarce.
 2. Widok domyślny to tryb użytkownika.
 3. Aby wejść do panelu administratora, dopisz `?admin=1` do adresu.
-4. W modalu logowania wpisz hasło administratora i kliknij **Zaloguj**.
+4. Logowanie hasłem administratora jest **tymczasowo wyłączone** na czas testów — po wejściu z `?admin=1` panel otwiera się od razu.
+5. Obok przycisku **Instrukcja** pojawia się czerwony komunikat: **tymczasowo brak potrzeby wpisywania hasła admina**.
 
 ## 2. Widok użytkownika
 Dostępne zakładki:
@@ -64,4 +65,4 @@ Dostępne zakładki:
 ## 4. Dodatkowe elementy UI
 - Przycisk **Instrukcja** w prawym górnym obszarze nagłówka.
 - Modal instrukcji ładowany po kliknięciu przycisku.
-- Modal logowania administratora (przy `?admin=1`).
+- Modal logowania administratora (funkcja tymczasowo wyłączona na czas testów).

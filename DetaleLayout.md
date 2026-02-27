@@ -126,6 +126,15 @@ Większość stylów `Main/styles.css` i `Second/styles.css` jest taka sama. Akt
 
 To oznacza, że w **Second** lewy panel lat jest szerszy, a prawa kolumna rankingu węższa.
 
+### 6.1 Wspólny komunikat testowy przy przycisku Instrukcja
+W obu modułach (`Main`, `Second`) obok przycisku **Instrukcja** w pasku `.admin-toolbar` wyświetlany jest czerwony napis:
+- `tymczasowo brak potrzeby wpisywania hasła admina`
+
+Parametry stylu tego komunikatu (`.admin-password-bypass-note`):
+- kolor: `#ff4d4d`,
+- rozmiar: `var(--fs-small)`,
+- grubość: `700`.
+
 ---
 
 ## 7) Zasada aktualizacji

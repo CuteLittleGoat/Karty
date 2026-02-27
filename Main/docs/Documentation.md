@@ -9,8 +9,8 @@
 
 ### 2.1 Autoryzacja administratora
 - Tryb administratora uruchamia się przy `?admin=1`.
-- Hasło administratora jest walidowane na podstawie skrótu SHA-256.
-- Hash hasła jest odczytywany z dokumentu `admin_security/credentials` (pole `passwordHash`).
+- Mechanizm hasła administratora (SHA-256 + `admin_security/credentials.passwordHash`) jest zachowany w kodzie, ale **tymczasowo wyłączony** przez przełącznik `TEMPORARILY_DISABLE_ADMIN_PASSWORD = true`.
+- Na czas testów wejście do panelu admina jest automatyczne, co ułatwia późniejsze przywrócenie pełnej autoryzacji przez zmianę jednego przełącznika.
 
 ### 2.2 Autoryzacja gracza (PIN)
 - PIN ma długość 5 cyfr.

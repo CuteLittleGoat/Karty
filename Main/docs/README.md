@@ -4,7 +4,8 @@
 1. Otwórz `Main/index.html` w przeglądarce.
 2. Standardowo aplikacja startuje w widoku użytkownika.
 3. Aby wejść do panelu administratora, dodaj do adresu parametr `?admin=1`.
-4. W modalu logowania wpisz hasło administratora i kliknij **Zaloguj**.
+4. Logowanie hasłem administratora jest **tymczasowo wyłączone** na czas testów — po wejściu z `?admin=1` panel otwiera się od razu.
+5. Obok przycisku **Instrukcja** pojawia się czerwony komunikat: **tymczasowo brak potrzeby wpisywania hasła admina**.
 
 ## 2. Widok użytkownika
 
@@ -120,7 +121,7 @@ W widoku użytkownika dostępne są zakładki:
 - Obsługa modala rebuy gracza.
 
 ## 5. Okna modalne używane w module Main
-- Logowanie administratora.
+- Logowanie administratora (funkcja tymczasowo wyłączona na czas testów).
 - Instrukcja.
 - Uprawnienia gracza.
 - Lata statystyk gracza.

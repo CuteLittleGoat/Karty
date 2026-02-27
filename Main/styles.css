@@ -122,6 +122,13 @@ h1 {
   gap: var(--gap-2);
 }
 
+.admin-password-bypass-note {
+  color: #ff4d4d;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  text-transform: none;
+}
+
 .header-controls {
   margin-left: auto;
   display: flex;
