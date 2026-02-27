@@ -2,8 +2,6 @@
 
 ## Sekcja użytkownika
 
-> Ta sekcja opisuje wyłącznie widok użytkownika (bez dostępu do zakładek administracyjnych, np. **Gracze**).
-
 ## 1. Wejście do modułu
 1. Otwórz `Main/index.html`.
 2. W prawym górnym rogu kliknij **Instrukcja**, aby otworzyć tę instrukcję w oknie modalnym.
@@ -80,8 +78,6 @@
 ---
 
 ## Sekcja administratora
-
-> Do panelu administratora wejdziesz przez URL z parametrem `?admin=1`.
 
 ## 3. Pasek górny
 - **Instrukcja** — otwiera modal z instrukcją modułu Main.
