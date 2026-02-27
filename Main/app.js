@@ -1269,6 +1269,32 @@ const scheduleDebouncedUpdate = (key, callback, delay = 400) => {
   debounceTimers.set(key, timeoutId);
 };
 
+const hasPendingDebounceWithPrefix = (prefix) => {
+  if (!prefix) {
+    return false;
+  }
+
+  for (const key of debounceTimers.keys()) {
+    if (typeof key === "string" && key.startsWith(prefix)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const isEditingSection = (sectionNames) => {
+  if (!Array.isArray(sectionNames) || !sectionNames.length) {
+    return false;
+  }
+
+  const activeElement = document.activeElement;
+  if (!isFocusableFormControl(activeElement)) {
+    return false;
+  }
+
+  return sectionNames.includes(activeElement.dataset.section ?? "");
+};
+
 const sanitizePin = (value) => value.replace(/\D/g, "").slice(0, PIN_LENGTH);
 const isPinValid = (value) => /^\d{5}$/.test(value);
 const generateRandomPin = () => `${Math.floor(Math.random() * 10 ** PIN_LENGTH)}`.padStart(PIN_LENGTH, "0");
@@ -4883,6 +4909,9 @@ const initAdminCalculator = () => {
       if (!snapshot.exists) {
         return;
       }
+      if (state.mode === mode && (isEditingSection(["table1", "table2", "table3", "table5", "table9"]) || hasPendingDebounceWithPrefix(`admin-calculator-${mode}`))) {
+        return;
+      }
       state[mode] = normalizeCalculatorModeState(mode, snapshot.data());
       render();
     }, () => {
@@ -5386,6 +5415,9 @@ const initAdminPlayers = () => {
     .doc(PLAYER_ACCESS_DOCUMENT)
     .onSnapshot(
       (snapshot) => {
+        if (isEditingSection(["players"]) || hasPendingDebounceWithPrefix("players:")) {
+          return;
+        }
         const data = snapshot.data();
         const rawPlayers = Array.isArray(data?.players) ? data.players : [];
         adminPlayersState.players = rawPlayers.map(normalizePlayerRecord);
@@ -7246,6 +7278,7 @@ const initAdminRules = () => {
   const db = firebaseApp.firestore();
   const rulesDocRef = db.collection(PLAYER_ACCESS_COLLECTION).doc(RULES_DOCUMENT);
   let isSaving = false;
+  let hasLocalEdits = false;
 
   registerAdminRefreshHandler("adminRulesTab", async () => {
     await rulesDocRef.get({ source: "server" });
@@ -7255,9 +7288,10 @@ const initAdminRules = () => {
     (snapshot) => {
       const data = snapshot.data();
       const rulesText = typeof data?.text === "string" ? data.text : RULES_DEFAULT_TEXT;
-      if (document.activeElement !== input || !isSaving) {
-        input.value = rulesText;
+      if (document.activeElement === input && hasLocalEdits && !isSaving) {
+        return;
       }
+      input.value = rulesText;
       status.textContent = data?.text ? "Regulamin jest aktualny." : "Brak zapisanej treści regulaminu.";
       saveButton.disabled = false;
       isSaving = false;
@@ -7267,11 +7301,20 @@ const initAdminRules = () => {
     }
   );
 
+  input.addEventListener("input", () => {
+    hasLocalEdits = true;
+  });
+
+  input.addEventListener("blur", () => {
+    hasLocalEdits = false;
+  });
+
   saveButton.addEventListener("click", () => {
     if (isSaving) {
       return;
     }
 
+    hasLocalEdits = false;
     status.textContent = "Zapisywanie regulaminu...";
     isSaving = true;
     saveButton.disabled = true;
@@ -7309,6 +7352,7 @@ const initAdminNotes = () => {
   const db = firebaseApp.firestore();
   const notesDocRef = db.collection(ADMIN_NOTES_COLLECTION).doc(MAIN_ADMIN_NOTES_DOCUMENT);
   let isSaving = false;
+  let hasLocalEdits = false;
 
   registerAdminRefreshHandler("adminNotesTab", async () => {
     await notesDocRef.get({ source: "server" });
@@ -7318,9 +7362,10 @@ const initAdminNotes = () => {
     (snapshot) => {
       const data = snapshot.data();
       const notesText = typeof data?.text === "string" ? data.text : "";
-      if (document.activeElement !== input || !isSaving) {
-        input.value = notesText;
+      if (document.activeElement === input && hasLocalEdits && !isSaving) {
+        return;
       }
+      input.value = notesText;
       status.textContent = notesText ? "Notatki są aktualne." : "Brak zapisanej treści notatek.";
       saveButton.disabled = false;
       isSaving = false;
@@ -7330,11 +7375,20 @@ const initAdminNotes = () => {
     }
   );
 
+  input.addEventListener("input", () => {
+    hasLocalEdits = true;
+  });
+
+  input.addEventListener("blur", () => {
+    hasLocalEdits = false;
+  });
+
   saveButton.addEventListener("click", () => {
     if (isSaving) {
       return;
     }
 
+    hasLocalEdits = false;
     status.textContent = "Zapisywanie notatek...";
     isSaving = true;
     saveButton.disabled = true;
