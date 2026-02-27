@@ -92,6 +92,7 @@ Dodatkowo `body::before` nakłada subtelny świetlny overlay (`opacity: 0.25`) z
 
 ### 3.3 Tabele i formularze
 - Tabele administracyjne: `border-collapse: collapse`, hover wiersza, sticky estetyka panelowa.
+- W `Main` główna tabela statystyk graczy (`.admin-games-players-stats-table`) stosuje zebra striping: parzyste wiersze mają tło `rgba(237, 235, 230, 0.04)`, co poprawia czytelność szerokiego zestawu kolumn.
 - Inputy, selecty, textarea: spójny ciemny styl, jasny tekst, obwódki i efekty focus (złoto/neon zależnie od kontekstu).
 - Przyciski:
   - `.primary` — nacisk na akcent złoty,

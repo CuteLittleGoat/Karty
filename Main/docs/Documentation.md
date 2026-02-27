@@ -100,6 +100,7 @@ Strefa Gracza zawiera sekcje:
 ## 7. Styl i responsywność
 - Motyw oparty o zmienne CSS (`:root`) dla kolorów, fontów, odstępów i promieni.
 - Układ kart i tabel oparty o grid/flex.
+- Główna tabela statystyk graczy w zakładce administratora **Gry admina → Statystyki** (`.admin-games-players-stats-table`) używa zebra striping: parzyste wiersze (`tbody tr:nth-child(even)`) mają subtelne jaśniejsze tło `rgba(237, 235, 230, 0.04)`, zachowując kontrast i spójność z ciemnym motywem.
 - Kontenery `.admin-games-content`, `.admin-games-section` i `.player-zone-panel` używają `min-width: 0`, aby prawidłowo się zwężać w układzie grid.
 - W Strefie Gracza `.admin-table-scroll` ma wymuszone `max-width: 100%` i `overflow-x: auto`, a `.admin-data-table` ma `width: max-content` + `min-width: 100%`, dzięki czemu poziomy pasek przewijania pojawia się wewnątrz sekcji, gdy jest za mało miejsca.
 - Responsywność dla mniejszych szerokości ekranu jest realizowana przez media queries.
