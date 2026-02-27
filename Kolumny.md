@@ -14,6 +14,8 @@
 | wartość oczekiwana |  |  |  |  |
 | Tabela rebuy w oknie kalkulatora | stała szerokość każdej kolumny: 8 znaków | stała szerokość każdej kolumny: 8 znaków | do lewej | Wszystkie kolumny tej tabeli mają jednakową szerokość. |
 | wartość oczekiwana |  |  |  |  |
+| Układ zakładek admina z rankingiem (Main: Gry admina, Statystyki) | 190 px (Lata) / elastyczna środkowa / 300 px (Ranking) | brak stałego limitu | układ od lewej do prawej | Sekcja Ranking jest przypięta do prawej kolumny. |
+| wartość oczekiwana |  |  |  |  |
 
 ## 1) Gracze (panel administratora)
 
