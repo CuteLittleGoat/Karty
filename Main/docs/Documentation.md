@@ -45,7 +45,7 @@ Moduł operuje m.in. na kolekcjach i dokumentach:
 - Szczegóły gier (wiersze graczy, wartości finansowe, punkty).
 - Potwierdzenia gier.
 - Statystyki i ranking.
-- Dane kalkulatora (Tournament/Cash).
+- Dane kalkulatora (Tournament1/Tournament2/Cash).
 
 ## 4. Widoki i komponenty UI
 
@@ -95,12 +95,12 @@ Strefa Gracza zawiera sekcje:
 - W trybie tylko do odczytu kontrolki edycji są ukryte.
 
 ## 6. Kalkulator
-- Zakładka kalkulatora udostępnia dwa tryby: `Tournament` i `Cash`.
+- Zakładka kalkulatora udostępnia trzy tryby: `Tournament1`, `Tournament2` i `Cash`.
 - Każdy tryb renderuje dedykowane tabele.
 - Modal rebuy pozwala dynamicznie dodawać i usuwać kolumny rebuy.
 - Tabele kalkulatora aktualizują wartości podsumowań na podstawie danych wejściowych.
-- W trybie `Tournament` konfiguracja procentów z `Tabela5` (`table5SplitPercents`) jest synchronizowana z liczbą wierszy `Tabela2`; domyślne wartości startowe to `50`, `30`, `20`, a kolejne pola są puste.
-- Wszystkie wartości kolumny `Podział puli` są edytowalne i zapisywane w dokumencie Firestore `calculators/tournament` przez `persistCalculatorModeState` (z użyciem `serializeCalculatorModeState`), dzięki czemu odtwarzają się po ponownym uruchomieniu aplikacji.
+- W trybach `Tournament1` i `Tournament2` konfiguracja procentów z `Tabela5` (`table5SplitPercents`) jest synchronizowana z liczbą wierszy `Tabela2`; domyślne wartości startowe to `50`, `30`, `20`, a kolejne pola są puste.
+- Wszystkie wartości kolumny `Podział puli` są edytowalne i zapisywane przez `persistCalculatorModeState` (z użyciem `serializeCalculatorModeState`) do niezależnych dokumentów Firestore dla trybów turniejowych (`calculators/tournament` dla `Tournament1` oraz `calculators/tournament2` dla `Tournament2`), dzięki czemu dane odtwarzają się po ponownym uruchomieniu aplikacji i nie nadpisują się między zakładkami.
 - Po renderze `Tabela5` obliczana jest suma procentów; jeżeli wynik jest różny od `100`, UI wyświetla czerwone ostrzeżenie `Nie sumuje się do 100%` (`status-text status-text-danger`).
 
 ## 7. Styl i responsywność

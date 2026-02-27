@@ -3602,6 +3602,7 @@ const initAdminCalculator = () => {
 
   const firebaseApp = getFirebaseApp();
   const CALCULATOR_COLLECTION = "calculators";
+  const TOURNAMENT_MODES = new Set(["tournament1", "tournament2"]);
 
   const createInitialState = () => ({
     table1Row: { id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" },
@@ -3618,9 +3619,10 @@ const initAdminCalculator = () => {
   });
 
   const state = {
-    mode: "tournament",
+    mode: "tournament1",
     playerOptions: [],
-    tournament: createInitialState(),
+    tournament1: createInitialState(),
+    tournament2: createInitialState(),
     cash: createInitialCashState(),
     rebuyModal: {
       mode: null,
@@ -3628,8 +3630,14 @@ const initAdminCalculator = () => {
     }
   };
 
-  const getModeState = () => (state.mode === "cash" ? state.cash : state.tournament);
-  const getCalculatorDocRef = (mode) => firebaseApp.firestore().collection(CALCULATOR_COLLECTION).doc(mode);
+  const getModeState = () => (state.mode === "cash" ? state.cash : state[state.mode]);
+  const getCalculatorDocId = (mode) => {
+    if (mode === "tournament1") {
+      return "tournament";
+    }
+    return mode;
+  };
+  const getCalculatorDocRef = (mode) => firebaseApp.firestore().collection(CALCULATOR_COLLECTION).doc(getCalculatorDocId(mode));
   const sanitizeInteger = (value) => String(value ?? "").replace(/[^0-9]/g, "");
   const sanitizeSignedInteger = (value) => {
     const normalized = String(value ?? "").replace(/\s+/g, "");
@@ -3785,11 +3793,11 @@ const initAdminCalculator = () => {
   };
 
   const persistCalculatorModeState = (mode) => {
-    if (!firebaseApp || (mode !== "tournament" && mode !== "cash")) {
+    if (!firebaseApp || (!TOURNAMENT_MODES.has(mode) && mode !== "cash")) {
       return Promise.resolve();
     }
 
-    const modeState = mode === "cash" ? state.cash : state.tournament;
+    const modeState = mode === "cash" ? state.cash : state[mode];
     const payload = serializeCalculatorModeState(mode, modeState);
     return getCalculatorDocRef(mode).set({
       ...payload,
@@ -3834,8 +3842,8 @@ const initAdminCalculator = () => {
     if (state.rebuyModal.mode === "cash") {
       return state.cash;
     }
-    if (state.rebuyModal.mode === "tournament") {
-      return state.tournament;
+    if (TOURNAMENT_MODES.has(state.rebuyModal.mode)) {
+      return state[state.rebuyModal.mode];
     }
     return null;
   };
@@ -4108,7 +4116,7 @@ const initAdminCalculator = () => {
 
     const focusState = getFocusedAdminInputState(rebuyModal);
 
-    const modeState = state.rebuyModal.mode === "cash" ? state.cash : state.tournament;
+    const modeState = state.rebuyModal.mode === "cash" ? state.cash : state[state.rebuyModal.mode];
     const rowGlobalOffset = getRowRebuyGlobalOffset(modeState, row.id);
 
     let headerHtml = "<thead><tr>";
@@ -4849,7 +4857,9 @@ const initAdminCalculator = () => {
 
   modeButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      state.mode = button.dataset.calculatorMode === "cash" ? "cash" : "tournament";
+      state.mode = TOURNAMENT_MODES.has(button.dataset.calculatorMode) || button.dataset.calculatorMode === "cash"
+        ? button.dataset.calculatorMode
+        : "tournament1";
       modeButtons.forEach((entry) => {
         entry.classList.toggle("is-active", entry === button);
       });
@@ -4868,7 +4878,7 @@ const initAdminCalculator = () => {
     return;
   }
 
-  ["tournament", "cash"].forEach((mode) => {
+  ["tournament1", "tournament2", "cash"].forEach((mode) => {
     getCalculatorDocRef(mode).onSnapshot((snapshot) => {
       if (!snapshot.exists) {
         return;
