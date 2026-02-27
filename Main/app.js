@@ -2998,28 +2998,7 @@ const initUserGamesManager = ({
       };
 
       const entryFeeCell = createNumericCell("entryFee");
-      const rebuyCell = document.createElement("td");
-      const rebuyButton = document.createElement("button");
-      rebuyButton.type = "button";
-      rebuyButton.className = "secondary";
-      rebuyButton.textContent = row.rebuy ?? "";
-      rebuyButton.disabled = !writeEnabled;
-      rebuyButton.addEventListener("click", () => {
-        if (!hasWriteAccessToGame(game)) {
-          return;
-        }
-        const promptValue = window.prompt("Podaj wartość Rebuy/Add-on.", row.rebuy ?? "");
-        if (promptValue === null) {
-          return;
-        }
-        const normalized = sanitizeIntegerInput(promptValue);
-        if (normalized === "-") {
-          status.textContent = "Podaj poprawną wartość liczbową Rebuy/Add-on.";
-          return;
-        }
-        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ rebuy: normalized });
-      });
-      rebuyCell.appendChild(rebuyButton);
+      const rebuyCell = createNumericCell("rebuy");
       const payoutCell = createNumericCell("payout");
 
       const profitCell = document.createElement("td");
@@ -7123,24 +7102,7 @@ const initAdminGames = () => {
       };
 
       const entryFeeCell = createNumericCell("entryFee");
-      const rebuyCell = document.createElement("td");
-      const rebuyButton = document.createElement("button");
-      rebuyButton.type = "button";
-      rebuyButton.className = "secondary";
-      rebuyButton.textContent = row.rebuy ?? "";
-      rebuyButton.addEventListener("click", () => {
-        const promptValue = window.prompt("Podaj wartość Rebuy/Add-on.", row.rebuy ?? "");
-        if (promptValue === null) {
-          return;
-        }
-        const normalized = sanitizeIntegerInput(promptValue);
-        if (normalized === "-") {
-          status.textContent = "Podaj poprawną wartość liczbową Rebuy/Add-on.";
-          return;
-        }
-        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ rebuy: normalized });
-      });
-      rebuyCell.appendChild(rebuyButton);
+      const rebuyCell = createNumericCell("rebuy");
       const payoutCell = createNumericCell("payout");
 
       const profitCell = document.createElement("td");

@@ -10,7 +10,7 @@
 - Lista gier (zakładki **Gry admina** i **Gry użytkowników**) ma kolumnę `IlośćPotwierdzonych` z wartością `potwierdzeni/zapisani`, liczoną dynamicznie z wierszy gry i subkolekcji `confirmations`.
 - Modale `Szczegóły gry` (`#gameDetailsModal`, `#userGameDetailsModal`, `#playerUserGameDetailsModal`) mają:
   - przycisk zbiorczy `Rebuy/Add-on` (bulk update wszystkich wierszy),
-  - przycisk `Rebuy/Add-on` w każdym wierszu (edycja pojedynczego rekordu),
+  - edytowalne pole `Rebuy/Add-on` w każdym wierszu (możliwość ręcznej korekty po bulk update),
   - złote podświetlenie wiersza gracza z potwierdzoną obecnością (`.confirmed-row`).
 - Tworzenie i filtrowanie gier użytkownika zostało rozszerzone o powiązanie także po PIN-ie twórcy (`createdByPlayerPin`) oraz kompatybilność z istniejącym powiązaniem po `createdByPlayerId`.
 
