@@ -12,6 +12,7 @@ Dostępne zakładki:
 - **Aktualności**
 - **Czat**
 - **Regulamin**
+- **Notatki**
 - **Gracze**
 - **Turniej**
 
@@ -38,6 +39,7 @@ Dostępne zakładki:
 - **Aktualności**
 - **Czat**
 - **Regulamin**
+- **Notatki**
 - **Gracze**
 - **Turniej**
 
@@ -53,13 +55,18 @@ Dostępne zakładki:
 1. Edytuj treść regulaminu.
 2. Kliknij **Zapisz**.
 
-### 3.4 Gracze
+### 3.4 Notatki
+1. Wejdź w zakładkę **Notatki**.
+2. Wpisz treść notatki w dużym polu tekstowym.
+3. Kliknij **Zapisz** — dane zapisują się w Firebase w dokumencie modułu Second.
+
+### 3.5 Gracze
 - Dodawanie gracza.
 - Edycja nazwy i PIN.
 - Usuwanie gracza (z ochroną przed usunięciem ostatniego rekordu kolekcji głównej).
 - Operacje usuwania dokumentów w podkolekcjach nie są blokowane przez tę ochronę.
 
-### 3.5 Turniej
+### 3.6 Turniej
 - Układ panelowy identyczny wizualnie z widokiem użytkownika.
 - Sekcja ma charakter informacyjny (placeholder).
 

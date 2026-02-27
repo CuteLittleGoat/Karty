@@ -18,6 +18,8 @@ const ADMIN_MESSAGES_DOCUMENT = "admin_messages";
 const ADMIN_SECURITY_COLLECTION = "admin_security";
 const ADMIN_SECURITY_DOCUMENT = "credentials";
 const ADMIN_SECURITY_PASSWORD_FIELD = "passwordHash";
+const ADMIN_NOTES_COLLECTION = "admin_notes";
+const MAIN_ADMIN_NOTES_DOCUMENT = "main";
 const RULES_DEFAULT_TEXT = "";
 const DEFAULT_GAME_NOTES_TEMPLATE = "Rodzaj gry:\nPrzewidywani gracze:\nStack:\nWpisowe:\nRebuy:\nAdd-on:\nBlindy:\nOrganizacja:\nPodział puli:";
 
@@ -7277,6 +7279,70 @@ const initAdminRules = () => {
   });
 };
 
+const initAdminNotes = () => {
+  const input = document.querySelector("#adminNotesInput");
+  const saveButton = document.querySelector("#adminNotesSave");
+  const status = document.querySelector("#adminNotesStatus");
+
+  if (!input || !saveButton || !status) {
+    return;
+  }
+
+  const firebaseApp = getFirebaseApp();
+  if (!firebaseApp) {
+    input.disabled = true;
+    saveButton.disabled = true;
+    status.textContent = "Uzupełnij konfigurację Firebase, aby edytować notatki.";
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+  const notesDocRef = db.collection(ADMIN_NOTES_COLLECTION).doc(MAIN_ADMIN_NOTES_DOCUMENT);
+  let isSaving = false;
+
+  registerAdminRefreshHandler("adminNotesTab", async () => {
+    await notesDocRef.get({ source: "server" });
+  });
+
+  notesDocRef.onSnapshot(
+    (snapshot) => {
+      const data = snapshot.data();
+      const notesText = typeof data?.text === "string" ? data.text : "";
+      if (document.activeElement !== input || !isSaving) {
+        input.value = notesText;
+      }
+      status.textContent = notesText ? "Notatki są aktualne." : "Brak zapisanej treści notatek.";
+      saveButton.disabled = false;
+      isSaving = false;
+    },
+    () => {
+      status.textContent = "Nie udało się pobrać notatek. Sprawdź konfigurację Firestore.";
+    }
+  );
+
+  saveButton.addEventListener("click", () => {
+    if (isSaving) {
+      return;
+    }
+
+    status.textContent = "Zapisywanie notatek...";
+    isSaving = true;
+    saveButton.disabled = true;
+
+    void notesDocRef.set({
+      text: input.value,
+      updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+      updatedBy: "web-admin",
+      module: "main"
+    }, { merge: true })
+      .catch(() => {
+        isSaving = false;
+        saveButton.disabled = false;
+        status.textContent = "Nie udało się zapisać notatek.";
+      });
+  });
+};
+
 const initRulesDisplay = () => {
   const output = document.querySelector("#rulesOutput");
   const status = document.querySelector("#rulesStatus");
@@ -7399,6 +7465,7 @@ const bootstrap = async () => {
   initAdminMessaging();
   initAdminChat();
   initAdminRules();
+  initAdminNotes();
   initAdminGames();
   initAdminUserGames();
   initAdminConfirmations();

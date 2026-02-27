@@ -157,6 +157,8 @@ const getFirebaseApp = () => {
 const ADMIN_SECURITY_COLLECTION = "admin_security";
 const ADMIN_SECURITY_DOCUMENT = "credentials";
 const ADMIN_SECURITY_PASSWORD_FIELD = "passwordHash";
+const ADMIN_NOTES_COLLECTION = "admin_notes";
+const SECOND_ADMIN_NOTES_DOCUMENT = "second";
 
 const shouldRequestAdminAccess = () => new URLSearchParams(window.location.search).get("admin") === "1";
 
@@ -451,6 +453,68 @@ const setupAdminView = () => {
   previewMount.appendChild(userPreview);
 
   appRoot.appendChild(fragment);
+
+  const initAdminNotes = () => {
+    const notesInput = rootCard.querySelector("#adminNotesInput");
+    const notesSaveButton = rootCard.querySelector("#adminNotesSave");
+    const notesStatus = rootCard.querySelector("#adminNotesStatus");
+
+    if (!notesInput || !notesSaveButton || !notesStatus) {
+      return;
+    }
+
+    const firebaseApp = getFirebaseApp();
+    if (!firebaseApp) {
+      notesInput.disabled = true;
+      notesSaveButton.disabled = true;
+      notesStatus.textContent = "Uzupełnij konfigurację Firebase, aby edytować notatki.";
+      return;
+    }
+
+    const db = firebaseApp.firestore();
+    const notesDocRef = db.collection(ADMIN_NOTES_COLLECTION).doc(SECOND_ADMIN_NOTES_DOCUMENT);
+    let isSaving = false;
+
+    notesDocRef.onSnapshot(
+      (snapshot) => {
+        const data = snapshot.data();
+        const notesText = typeof data?.text === "string" ? data.text : "";
+        if (document.activeElement !== notesInput || !isSaving) {
+          notesInput.value = notesText;
+        }
+        notesStatus.textContent = notesText ? "Notatki są aktualne." : "Brak zapisanej treści notatek.";
+        notesSaveButton.disabled = false;
+        isSaving = false;
+      },
+      () => {
+        notesStatus.textContent = "Nie udało się pobrać notatek z Firebase.";
+      }
+    );
+
+    notesSaveButton.addEventListener("click", () => {
+      if (isSaving) {
+        return;
+      }
+
+      isSaving = true;
+      notesSaveButton.disabled = true;
+      notesStatus.textContent = "Zapisywanie notatek...";
+
+      void notesDocRef.set({
+        text: notesInput.value,
+        updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+        updatedBy: "web-admin",
+        module: "second"
+      }, { merge: true })
+        .catch(() => {
+          isSaving = false;
+          notesSaveButton.disabled = false;
+          notesStatus.textContent = "Nie udało się zapisać notatek.";
+        });
+    });
+  };
+
+  initAdminNotes();
 };
 
 const setupUserOnlyView = () => {
