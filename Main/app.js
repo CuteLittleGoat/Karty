@@ -1727,14 +1727,39 @@ const updateChatVisibility = () => {
   content.classList.toggle("is-visible", isVerified);
 };
 
+const sortChatDocumentsByCreatedAtAsc = (documents) => {
+  return [...documents].sort((docA, docB) => {
+    const createdAtA = docA?.data()?.createdAt;
+    const createdAtB = docB?.data()?.createdAt;
+
+    const millisA = typeof createdAtA?.toMillis === "function" ? createdAtA.toMillis() : 0;
+    const millisB = typeof createdAtB?.toMillis === "function" ? createdAtB.toMillis() : 0;
+
+    if (millisA !== millisB) {
+      return millisA - millisB;
+    }
+    return docA.id.localeCompare(docB.id, "pl");
+  });
+};
+
+const scrollContainerToBottom = (container) => {
+  if (!container) {
+    return;
+  }
+  requestAnimationFrame(() => {
+    container.scrollTop = container.scrollHeight;
+  });
+};
+
 const renderPlayerChatMessages = (documents) => {
   const chatMessages = document.querySelector("#chatMessages");
   if (!chatMessages) {
     return;
   }
 
+  const sortedDocuments = sortChatDocumentsByCreatedAtAsc(documents);
   chatMessages.innerHTML = "";
-  if (!documents.length) {
+  if (!sortedDocuments.length) {
     const empty = document.createElement("p");
     empty.className = "chat-empty";
     empty.textContent = "Brak wiadomości na czacie.";
@@ -1742,7 +1767,7 @@ const renderPlayerChatMessages = (documents) => {
     return;
   }
 
-  documents.forEach((doc) => {
+  sortedDocuments.forEach((doc) => {
     const data = doc.data();
     const item = document.createElement("article");
     item.className = "chat-message-item";
@@ -1768,7 +1793,7 @@ const renderPlayerChatMessages = (documents) => {
     chatMessages.appendChild(item);
   });
 
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  scrollContainerToBottom(chatMessages);
 };
 
 const initChatTab = () => {
@@ -5404,8 +5429,9 @@ const initAdminChat = () => {
   const db = firebaseApp.firestore();
 
   const renderAdminMessages = (documents) => {
+    const sortedDocuments = sortChatDocumentsByCreatedAtAsc(documents);
     list.innerHTML = "";
-    if (!documents.length) {
+    if (!sortedDocuments.length) {
       const empty = document.createElement("p");
       empty.className = "chat-empty";
       empty.textContent = "Brak wiadomości czatu do moderacji.";
@@ -5413,7 +5439,7 @@ const initAdminChat = () => {
       return;
     }
 
-    documents.forEach((doc) => {
+    sortedDocuments.forEach((doc) => {
       const data = doc.data();
       const row = document.createElement("article");
       row.className = "admin-chat-item";
@@ -5451,6 +5477,8 @@ const initAdminChat = () => {
       row.appendChild(actions);
       list.appendChild(row);
     });
+
+    scrollContainerToBottom(list);
   };
 
   const refreshChatData = async () => {

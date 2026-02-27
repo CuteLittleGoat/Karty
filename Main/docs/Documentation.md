@@ -74,6 +74,8 @@ Strefa Gracza zawiera sekcje:
 - Gry użytkowników
 - Statystyki
 - Kontenery tabel w Strefie Gracza wymuszają lokalne przewijanie poziome (`overflow-x: auto`) i nie pozwalają, aby siatka lub tabela wyjechała poza kartę przy mniejszym oknie (desktop i mobile).
+- Czat użytkownika renderuje wspólną listę wiadomości z kolekcji `chat_messages` (autor, data, treść) i stosuje identyczne sortowanie jak panel admina (`createdAt` rosnąco, najnowsze na dole).
+- Lista czatu użytkownika (`#chatMessages`) i lista moderacyjna admina (`#adminChatList`) po każdym renderze przewijają się automatycznie na dół (`scrollTop = scrollHeight`), aby domyślnie pokazać najnowsze wiadomości.
 
 ### 4.3 Modale
 - Logowanie administratora.
