@@ -694,11 +694,11 @@ select:disabled,
 }
 
 #adminGamesTab .admin-games-layout {
-  grid-template-columns: 190px minmax(0, 1fr) 300px;
+  grid-template-columns: 20ch minmax(0, 1fr) 42ch;
 }
 
 #adminStatisticsTab .admin-games-layout {
-  grid-template-columns: 190px minmax(0, 1fr) 300px;
+  grid-template-columns: 20ch minmax(0, 1fr) 42ch;
 }
 
 .admin-games-sidebar,
@@ -783,6 +783,42 @@ select:disabled,
 
 .admin-games-ranking-sidebar {
   align-content: start;
+}
+
+#adminGamesTab .admin-games-ranking-table,
+#adminStatisticsTab .admin-games-ranking-table {
+  min-width: 0;
+  table-layout: fixed;
+}
+
+#adminGamesTab .admin-games-ranking-table td,
+#adminStatisticsTab .admin-games-ranking-table td {
+  height: calc(var(--admin-games-panel-item-height) * 2);
+  vertical-align: middle;
+}
+
+#adminGamesTab .admin-games-ranking-table th:nth-child(1),
+#adminGamesTab .admin-games-ranking-table td:nth-child(1),
+#adminStatisticsTab .admin-games-ranking-table th:nth-child(1),
+#adminStatisticsTab .admin-games-ranking-table td:nth-child(1) {
+  text-align: left;
+}
+
+#adminGamesTab .admin-games-ranking-table th:nth-child(2),
+#adminGamesTab .admin-games-ranking-table td:nth-child(2),
+#adminStatisticsTab .admin-games-ranking-table th:nth-child(2),
+#adminStatisticsTab .admin-games-ranking-table td:nth-child(2) {
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+#adminGamesTab .admin-games-ranking-table th:nth-child(3),
+#adminGamesTab .admin-games-ranking-table td:nth-child(3),
+#adminStatisticsTab .admin-games-ranking-table th:nth-child(3),
+#adminStatisticsTab .admin-games-ranking-table td:nth-child(3) {
+  text-align: center;
 }
 
 .admin-games-ranking-row-gold {
@@ -1633,7 +1669,7 @@ body.modal-open {
 .admin-games-ranking-table th:nth-child(1),
 .admin-games-ranking-table td:nth-child(1) { min-width: 3ch; }
 .admin-games-ranking-table th:nth-child(2),
-.admin-games-ranking-table td:nth-child(2) { min-width: 25ch; }
+.admin-games-ranking-table td:nth-child(2) { min-width: 16ch; }
 .admin-games-ranking-table th:nth-child(3),
 .admin-games-ranking-table td:nth-child(3) { min-width: 8ch; }
 

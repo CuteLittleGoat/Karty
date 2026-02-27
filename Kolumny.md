@@ -14,7 +14,7 @@
 | wartość oczekiwana |  |  |  |  |
 | Tabela rebuy w oknie kalkulatora | stała szerokość każdej kolumny: 8 znaków | stała szerokość każdej kolumny: 8 znaków | do lewej | Wszystkie kolumny tej tabeli mają jednakową szerokość. |
 | wartość oczekiwana |  |  |  |  |
-| Układ zakładek admina z rankingiem (Main: Gry admina, Statystyki) | 190 px (Lata) / elastyczna środkowa / 300 px (Ranking) | brak stałego limitu | układ od lewej do prawej | Sekcja Ranking jest przypięta do prawej kolumny. |
+| Układ zakładek admina z rankingiem (Main: Gry admina, Statystyki) | 20 ch (Lata) / elastyczna środkowa / 42 ch (Ranking) | brak stałego limitu | układ od lewej do prawej | Sekcja Ranking jest przypięta do prawej kolumny i mieści pełną tabelę bez przewijania. |
 | wartość oczekiwana |  |  |  |  |
 
 ## 1) Gracze (panel administratora)
@@ -141,11 +141,11 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 |---|---|---|---|---|
-| Miejsce | automatyczna | brak stałego limitu | do lewej | Pozycja w rankingu. |
+| Miejsce | 3 znaki | brak stałego limitu | pionowo środek, poziomo do lewej | Wiersze rankingu mają podwójną wysokość względem poprzedniego układu. |
 | wartość oczekiwana |  |  |  |  |
-| Gracz | automatyczna | brak stałego limitu | do lewej | Nazwa gracza. |
+| Gracz | 16 znaków | brak stałego limitu | pionowo środek, poziomo do lewej | Kolumna zwężona; nazwy zawijają się tylko między słowami (bez łamania słów). |
 | wartość oczekiwana |  |  |  |  |
-| Wynik | automatyczna | brak stałego limitu | do lewej | Wynik punktowy. |
+| Wynik | 8 znaków | brak stałego limitu | środek (pion i poziom) | Wynik punktowy. |
 | wartość oczekiwana |  |  |  |  |
 
 ## 6) Kalkulator
