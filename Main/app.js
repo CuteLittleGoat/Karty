@@ -7388,6 +7388,7 @@ const initRulesDisplay = () => {
 
 const initInstructionModal = () => {
   const openButton = document.querySelector("#adminInstructionButton");
+  const adminPasswordBypassNote = document.querySelector("#adminPasswordBypassNote");
   const modal = document.querySelector("#instructionModal");
   const closeButton = document.querySelector("#instructionClose");
   const content = document.querySelector("#instructionContent");
@@ -7397,7 +7398,11 @@ const initInstructionModal = () => {
     return;
   }
 
-  const instructionUrl = "https://cutelittlegoat.github.io/Karty/docs/README.md";
+  if (adminPasswordBypassNote) {
+    adminPasswordBypassNote.hidden = !document.body.classList.contains("is-admin");
+  }
+
+  const instructionUrl = "https://cutelittlegoat.github.io/Karty/Main/docs/README.md";
   let cachedText = "";
   let isLoading = false;
 
