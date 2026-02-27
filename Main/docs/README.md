@@ -13,10 +13,11 @@ Instrukcja jest podzielona na dwie części:
 
 1. Otwórz plik `Main/index.html` w przeglądarce.
 2. Na górze ekranu zobaczysz nagłówek oraz przycisk **Instrukcja** (prawy górny róg).
-3. Domyślnie na stronie są dwa główne obszary:
+3. Jeśli otworzysz moduł z parametrem `?admin=1`, najpierw pojawi się okno logowania administratora z polem hasła.
+4. Po poprawnym wpisaniu hasła zobaczysz dwa główne obszary:
    - **Panel Administratora** (duża karta z wieloma zakładkami),
    - **Panel użytkownika** (zakładki: Aktualności, Regulamin, Strefa Gracza).
-4. Kliknięcie **Instrukcja** otwiera okno modalne z instrukcją; zamkniesz je przyciskiem `×`.
+5. Kliknięcie **Instrukcja** otwiera okno modalne z instrukcją; zamkniesz je przyciskiem `×`.
 
 ---
 

@@ -9,7 +9,8 @@
 - Przycisk **Instrukcja** jest dostępny zarówno dla administratora, jak i dla użytkownika (wspólny przycisk w nagłówku).
 - Modal instrukcji ładuje treść z adresu:
   - `https://cutelittlegoat.github.io/Karty/Main/docs/README.md`
-- Czerwony komunikat o tymczasowym pominięciu hasła admina jest pokazywany tylko w trybie administratora (`body.is-admin`).
+- W module `Main` ponownie aktywowano wymaganie hasła administratora przed otwarciem panelu admina (`resolveAdminMode`).
+- Czerwony komunikat testowy przy przycisku **Instrukcja** został usunięty z nagłówka modułu `Main`.
 - Dodano ochronę przed nadpisywaniem aktywnie edytowanych pól przez snapshot Firestore:
   - kalkulator ignoruje snapshot dla aktywnego trybu podczas edycji (`table1`, `table2`, `table3`, `table5`, `table9`) albo gdy czeka lokalny debounce zapisu,
   - lista graczy ignoruje snapshot podczas aktywnej edycji pól gracza i oczekującego debounce,
@@ -33,8 +34,7 @@
 - Klasy CSS:
   - `.admin-only` / `.user-only` sterowane przez `body.is-admin`.
 - Header:
-  - przycisk instrukcji widoczny zawsze,
-  - notka o haśle admina sterowana atrybutem `hidden`.
+  - przycisk instrukcji widoczny zawsze.
 
 ## 5. Integracja danych
 - Firebase inicjalizowany przez `window.firebaseConfig` (z `config/firebase-config.js`).

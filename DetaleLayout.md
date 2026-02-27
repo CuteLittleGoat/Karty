@@ -128,11 +128,11 @@ Większość stylów `Main/styles.css` i `Second/styles.css` jest taka sama. Akt
 - **Main**: `grid-template-columns: 20ch minmax(0, 1fr) 42ch` (panel **Lata** zwężony do ok. 20 znaków, a panel **Ranking** poszerzony, aby cała sekcja była widoczna bez przewijania).
 - **Second**: `grid-template-columns: 220px minmax(0, 1fr) 260px` (szersza kolumna **Lata** i węższa kolumna **Ranking**).
 
-### 6.1 Wspólny komunikat testowy przy przycisku Instrukcja
-W obu modułach (`Main`, `Second`) obok przycisku **Instrukcja** w pasku `.admin-toolbar` wyświetlany jest czerwony napis:
-- `tymczasowo brak potrzeby wpisywania hasła admina`
+### 6.1 Komunikat testowy przy przycisku Instrukcja
+- **Main**: czerwony komunikat testowy obok przycisku **Instrukcja** został usunięty.
+- **Second**: obok przycisku **Instrukcja** nadal wyświetlany jest czerwony napis `tymczasowo brak potrzeby wpisywania hasła admina` (klasa `.admin-password-bypass-note`).
 
-Parametry stylu tego komunikatu (`.admin-password-bypass-note`):
+Parametry stylu komunikatu w module `Second` (`.admin-password-bypass-note`):
 - kolor: `#ff4d4d`,
 - rozmiar: `var(--fs-small)`,
 - grubość: `700`.
