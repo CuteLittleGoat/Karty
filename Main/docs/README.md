@@ -93,6 +93,8 @@ W widoku użytkownika dostępne są zakładki:
 - Wybór roku.
 - Dodawanie gry i edycja danych w tabeli.
 - Otwieranie **Szczegóły** gry i edycja wierszy graczy.
+- Usuwanie gry przyciskiem **Usuń** (wraz z jej detalami).
+- Jeżeli próbujesz usunąć ostatni rekord z kolekcji głównej, pojawi się komunikat blokujący usunięcie.
 - Podgląd sekcji **Statystyki** i **Ranking** dla wybranego roku.
 
 ### 4.7 Gry użytkowników

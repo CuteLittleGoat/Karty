@@ -18,7 +18,8 @@
 - Stan autoryzacji jest utrzymywany lokalnie (klucze `localStorage` dla poszczególnych sekcji).
 
 ### 2.3 Blokada usunięcia ostatniego dokumentu
-- Wbudowana ochrona Firestore blokuje usunięcie ostatniego dokumentu w kolekcji.
+- Wbudowana ochrona Firestore blokuje usunięcie ostatniego dokumentu tylko w kolekcjach głównych (top-level).
+- Podkolekcje (np. `rows`, `confirmations`) nie są blokowane, dzięki czemu usunięcie gry z jej detalami działa poprawnie.
 - Dotyczy usuwania pojedynczego dokumentu i usuwania wsadowego (`batch`).
 
 ## 3. Dane i kolekcje Firestore
