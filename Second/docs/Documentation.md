@@ -5,16 +5,19 @@
 - `Second/styles.css` — wspólny motyw wizualny, layout kart, tabele i style modali.
 - `Second/app.js` — logika zakładek, autoryzacji admina, notatek i obsługi instrukcji.
 
-## 2. Zmiana wprowadzona w tej wersji
-- Przycisk **Instrukcja** działa w obu widokach (użytkownik i admin).
-- Dodano dedykowany modal instrukcji dla modułu Second:
-  - `#secondInstructionModal`
-  - `#secondInstructionClose`
-  - `#secondInstructionStatus`
-  - `#secondInstructionContent`
-- Treść instrukcji ładowana jest z:
-  - `https://cutelittlegoat.github.io/Karty/Second/docs/README.md`
-- Dodano ochronę pola **Notatki** przed nadpisaniem przez snapshot podczas aktywnej edycji (bez klikania „Zapisz”).
+## 2. Obsługa paska narzędzi administratora
+- Przycisk odświeżania ma identyfikator `#adminPanelRefresh`.
+- Komunikaty statusu odświeżania są wypisywane do `#adminPanelRefreshStatus`.
+- Logika odświeżania opiera się o mapę `adminRefreshHandlers` oraz funkcję `registerAdminRefreshHandler(tabId, handler)`.
+- `initAdminPanelRefresh`:
+  - sprawdza, która zakładka `.admin-panel-content` jest aktywna,
+  - uruchamia przypisany handler odświeżania,
+  - używa komunikatów zgodnych z modułem Main:
+    - `Odświeżanie danych...`,
+    - `Dane zostały odświeżone.`,
+    - `Nie udało się odświeżyć danych.`,
+    - `Ta zakładka nie ma danych do odświeżenia.`,
+    - `Nie udało się rozpoznać aktywnej zakładki.`.
 
 ## 3. Obsługa modala instrukcji (`initInstructionModal`)
 - Pierwsze otwarcie pobiera markdown przez `fetch`.
@@ -34,3 +37,5 @@
 - Firebase inicjalizowany warunkowo przez `getFirebaseApp()`.
 - Zaimplementowana ochrona usuwania ostatniego dokumentu top-level collection.
 - Zakładka notatek admina zapisuje dane do `admin_notes/second`.
+- Dla zakładki notatek zarejestrowano handler odświeżania `registerAdminRefreshHandler("adminNotesTab", refreshNotesData)`.
+- `refreshNotesData` pobiera dokument notatek z serwera (`get({ source: "server" })`), aktualizuje pole tekstowe i status sekcji notatek.

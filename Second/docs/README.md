@@ -51,6 +51,12 @@
 ## 3. Pasek górny
 - **Instrukcja** — otwiera modal z instrukcją modułu Second.
 - Czerwony komunikat obok przycisku — tylko informacja o tymczasowym wyłączeniu hasła admina.
+- **Odśwież** — działa w aktualnie otwartej zakładce panelu administratora:
+  1. Przejdź do wybranej zakładki administratora.
+  2. Kliknij **Odśwież** w prawym górnym rogu panelu.
+  3. W trakcie pobierania zobaczysz komunikat **Odświeżanie danych...**.
+  4. Po sukcesie zobaczysz komunikat **Dane zostały odświeżone.**
+  5. Jeżeli zakładka nie ma jeszcze podpiętego odświeżania, zobaczysz komunikat **Ta zakładka nie ma danych do odświeżenia.**
 
 ## 4. Zakładki administratora
 
@@ -70,6 +76,7 @@
 ### 4.4 Notatki
 - Pole ręczne: **Treść notatek**.
 - Przycisk: **Zapisz**.
+- Dane notatek można odświeżyć ręcznie przyciskiem **Odśwież** (w nagłówku panelu).
 - Podczas pisania pole nie jest nadpisywane przez automatyczne odświeżenia, więc kursor pozostaje stabilny aż do zapisu lub opuszczenia pola.
 
 ### 4.5 Gracze

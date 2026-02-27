@@ -374,6 +374,14 @@ const resolveAdminMode = async () => {
 
 const appRoot = document.querySelector("#appRoot");
 const adminPasswordBypassNote = document.querySelector("#secondAdminPasswordBypassNote");
+const adminRefreshHandlers = new Map();
+
+const registerAdminRefreshHandler = (tabId, handler) => {
+  if (!tabId || typeof handler !== "function") {
+    return;
+  }
+  adminRefreshHandlers.set(tabId, handler);
+};
 
 const initInstructionModal = () => {
   const openButton = document.querySelector("#secondInstructionButton");
@@ -529,6 +537,48 @@ const setupAdminView = () => {
 
   appRoot.appendChild(fragment);
 
+  const initAdminPanelRefresh = () => {
+    const refreshButton = rootCard.querySelector("#adminPanelRefresh");
+    const panelStatus = rootCard.querySelector("#adminPanelRefreshStatus");
+    if (!refreshButton) {
+      return;
+    }
+
+    const setPanelStatus = (message) => {
+      if (panelStatus) {
+        panelStatus.textContent = message;
+      }
+    };
+
+    refreshButton.addEventListener("click", async () => {
+      const activePanel = rootCard.querySelector(".admin-panel-content.is-active");
+      const activeTabId = activePanel?.id;
+
+      if (!activeTabId) {
+        setPanelStatus("Nie udało się rozpoznać aktywnej zakładki.");
+        return;
+      }
+
+      const refreshHandler = adminRefreshHandlers.get(activeTabId);
+      if (!refreshHandler) {
+        setPanelStatus("Ta zakładka nie ma danych do odświeżenia.");
+        return;
+      }
+
+      setPanelStatus("Odświeżanie danych...");
+      refreshButton.disabled = true;
+
+      try {
+        await refreshHandler();
+        setPanelStatus("Dane zostały odświeżone.");
+      } catch (error) {
+        setPanelStatus("Nie udało się odświeżyć danych.");
+      } finally {
+        refreshButton.disabled = false;
+      }
+    });
+  };
+
   const initAdminNotes = () => {
     const notesInput = rootCard.querySelector("#adminNotesInput");
     const notesSaveButton = rootCard.querySelector("#adminNotesSave");
@@ -550,6 +600,18 @@ const setupAdminView = () => {
     const notesDocRef = db.collection(ADMIN_NOTES_COLLECTION).doc(SECOND_ADMIN_NOTES_DOCUMENT);
     let isSaving = false;
     let hasLocalEdits = false;
+
+    const refreshNotesData = async () => {
+      const snapshot = await notesDocRef.get({ source: "server" });
+      const data = snapshot.data();
+      const notesText = typeof data?.text === "string" ? data.text : "";
+      notesInput.value = notesText;
+      hasLocalEdits = false;
+      notesStatus.textContent = notesText ? "Notatki są aktualne." : "Brak zapisanej treści notatek.";
+      notesSaveButton.disabled = false;
+    };
+
+    registerAdminRefreshHandler("adminNotesTab", refreshNotesData);
 
     notesDocRef.onSnapshot(
       (snapshot) => {
@@ -601,6 +663,7 @@ const setupAdminView = () => {
   };
 
   initAdminNotes();
+  initAdminPanelRefresh();
 };
 
 const setupUserOnlyView = () => {
