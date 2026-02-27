@@ -1,5 +1,3 @@
-# Second — instrukcja obsługi UI
-
 ## Sekcja użytkownika
 
 ## 1. Wejście do modułu
@@ -49,8 +47,6 @@
 ---
 
 ## Sekcja administratora
-
-> Dostęp: uruchom moduł z parametrem `?admin=1`.
 
 ## 3. Pasek górny
 - **Instrukcja** — otwiera modal z instrukcją modułu Second.
