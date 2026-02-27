@@ -114,6 +114,7 @@ W widoku użytkownika dostępne są zakładki:
 ### 4.9 Statystyki
 - Wybór roku.
 - Podgląd statystyk i rankingu.
+- W głównej tabeli statystyk (kolumny m.in. **Gracz**, **Mistrzostwo**, **Ilość spotkań**) co drugi wiersz ma delikatnie inne tło (zebra striping), co ułatwia śledzenie danych w szerokich tabelach.
 - Eksport przez **Eksportuj**.
 
 ### 4.10 Gry do potwierdzenia
