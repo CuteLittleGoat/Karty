@@ -681,8 +681,7 @@ const getAdminMode = () => {
   return params.get("admin") === "1";
 };
 
-// Funkcja tymczasowo wyłączona: na czas testów pomijamy wymaganie hasła administratora.
-const TEMPORARILY_DISABLE_ADMIN_PASSWORD = true;
+const TEMPORARILY_DISABLE_ADMIN_PASSWORD = false;
 
 const getAdminPasswordHash = async () => {
   const firebaseApp = getFirebaseApp();
@@ -7442,7 +7441,6 @@ const initRulesDisplay = () => {
 
 const initInstructionModal = () => {
   const openButton = document.querySelector("#adminInstructionButton");
-  const adminPasswordBypassNote = document.querySelector("#adminPasswordBypassNote");
   const modal = document.querySelector("#instructionModal");
   const closeButton = document.querySelector("#instructionClose");
   const content = document.querySelector("#instructionContent");
@@ -7450,10 +7448,6 @@ const initInstructionModal = () => {
 
   if (!openButton || !modal || !content || !status) {
     return;
-  }
-
-  if (adminPasswordBypassNote) {
-    adminPasswordBypassNote.hidden = !document.body.classList.contains("is-admin");
   }
 
   const instructionUrl = "https://cutelittlegoat.github.io/Karty/Main/docs/README.md";
