@@ -55,7 +55,8 @@ Dostępne zakładki:
 ### 3.4 Gracze
 - Dodawanie gracza.
 - Edycja nazwy i PIN.
-- Usuwanie gracza (z ochroną przed usunięciem ostatniego rekordu).
+- Usuwanie gracza (z ochroną przed usunięciem ostatniego rekordu kolekcji głównej).
+- Operacje usuwania dokumentów w podkolekcjach nie są blokowane przez tę ochronę.
 
 ### 3.5 Turniej
 - Układ panelowy identyczny wizualnie z widokiem użytkownika.

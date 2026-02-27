@@ -14,7 +14,8 @@
 
 ### 2.2 Ochrona usuwania ostatniego dokumentu
 - Moduł instaluje globalną ochronę dla Firestore (`delete` i `batch.delete`).
-- Próba usunięcia ostatniego dokumentu w kolekcji jest blokowana.
+- Blokada działa dla kolekcji głównych (top-level), aby nie dopuścić do usunięcia ich ostatniego dokumentu.
+- Podkolekcje nie są obejmowane blokadą, więc operacje usuwania rekordów z detalami działają poprawnie.
 - Użytkownik dostaje komunikat ostrzegawczy.
 
 ## 3. Zakres funkcjonalny

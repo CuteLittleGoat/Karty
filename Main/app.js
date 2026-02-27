@@ -893,8 +893,21 @@ const notifyLastDocumentDeleteBlocked = () => {
   window.alert("Nie można usunąć ostatniego dokumentu z kolekcji. Dodaj nowy rekord przed usunięciem obecnego.");
 };
 
+const isCollectionProtectedAgainstFullDeletion = (collectionRef) => {
+  const collectionPath = collectionRef?.path;
+  if (typeof collectionPath !== "string" || !collectionPath.trim()) {
+    return false;
+  }
+
+  return !collectionPath.includes("/");
+};
+
 const isRemovingLastDocument = async ({ collectionRef, candidateDocRefs }) => {
   if (!collectionRef || !Array.isArray(candidateDocRefs) || !candidateDocRefs.length) {
+    return false;
+  }
+
+  if (!isCollectionProtectedAgainstFullDeletion(collectionRef)) {
     return false;
   }
 
@@ -973,6 +986,9 @@ const installFirestoreDeleteProtection = (firebaseApp) => {
         const refsByCollectionPath = new Map();
         pendingDeleteRefs.forEach((docRef) => {
           if (!docRef?.parent?.path) {
+            return;
+          }
+          if (!isCollectionProtectedAgainstFullDeletion(docRef.parent)) {
             return;
           }
           if (!refsByCollectionPath.has(docRef.parent.path)) {
