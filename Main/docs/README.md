@@ -1,5 +1,3 @@
-# Main — instrukcja obsługi UI
-
 ## Sekcja użytkownika
 
 ## 1. Wejście do modułu
