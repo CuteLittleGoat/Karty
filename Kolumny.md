@@ -44,6 +44,8 @@
 | wartość oczekiwana |  |  |  |  |
 | Status zamknięcia / potwierdzeń | automatyczna | brak stałego limitu | do lewej | Pole wyboru tak/nie. |
 | wartość oczekiwana |  |  |  |  |
+| IlośćPotwierdzonych | automatyczna | brak stałego limitu | do lewej | Format `potwierdzeni/zapisani`, np. `3/5`. |
+| wartość oczekiwana |  |  |  |  |
 | Akcje | automatyczna | brak stałego limitu | do lewej | Przyciski (np. szczegóły, usuwanie). |
 | wartość oczekiwana |  |  |  |  |
 
@@ -59,7 +61,7 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 | wartość oczekiwana |  |  |  |  |
 | Wpisowe | automatyczna | brak stałego limitu | do lewej | Pole liczbowe. |
 | wartość oczekiwana |  |  |  |  |
-| Rebuy / Add-on | automatyczna | brak stałego limitu | do lewej | Pole liczbowe. |
+| Rebuy / Add-on | automatyczna | brak stałego limitu | do lewej | Przycisk otwierający okno wpisania wartości (analogicznie do Wpisowego). |
 | wartość oczekiwana |  |  |  |  |
 | Wypłata | automatyczna | brak stałego limitu | do lewej | Pole liczbowe. |
 | wartość oczekiwana |  |  |  |  |
