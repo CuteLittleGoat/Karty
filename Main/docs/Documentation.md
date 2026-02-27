@@ -75,6 +75,7 @@ Strefa Gracza zawiera sekcje:
 - Statystyki
 - Kontenery tabel w Strefie Gracza wymuszają lokalne przewijanie poziome (`overflow-x: auto`) i nie pozwalają, aby siatka lub tabela wyjechała poza kartę przy mniejszym oknie (desktop i mobile).
 - Czat użytkownika renderuje wspólną listę wiadomości z kolekcji `chat_messages` (autor, data, treść) i stosuje identyczne sortowanie jak panel admina (`createdAt` rosnąco, najnowsze na dole).
+- Subskrypcja czatu użytkownika jest uruchamiana automatycznie po poprawnej autoryzacji PIN-em Strefy Gracza (przez `syncPlayerZoneSectionAccess` i callback `chatState.startPlayerSubscription`), bez potrzeby dodatkowej akcji w samym panelu Czat.
 - Lista czatu użytkownika (`#chatMessages`) i lista moderacyjna admina (`#adminChatList`) po każdym renderze przewijają się automatycznie na dół (`scrollTop = scrollHeight`), aby domyślnie pokazać najnowsze wiadomości.
 
 ### 4.3 Modale
@@ -108,3 +109,4 @@ Strefa Gracza zawiera sekcje:
 - W Strefie Gracza `.admin-table-scroll` ma wymuszone `max-width: 100%` i `overflow-x: auto`, a `.admin-data-table` ma `width: max-content` + `min-width: 100%`, dzięki czemu poziomy pasek przewijania pojawia się wewnątrz sekcji, gdy jest za mało miejsca.
 - Responsywność dla mniejszych szerokości ekranu jest realizowana przez media queries.
 - Wspólny język wizualny: ciemne tło, złoto-zielone akcenty, kontrastowe komunikaty statusu.
+- Kontener wiadomości czatu (`.chat-messages`) ma stałą minimalną wysokość (`260px`, na mobile `180px`) oraz pionowy scrollbar, aby historia wiadomości nie „zapadała się” na małych ekranach.

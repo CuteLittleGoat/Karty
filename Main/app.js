@@ -250,7 +250,9 @@ const adminPlayersState = {
 };
 const chatState = {
   unsubscribe: null,
-  adminUnsubscribe: null
+  adminUnsubscribe: null,
+  startPlayerSubscription: null,
+  stopPlayerSubscription: null
 };
 const nextGamesState = {
   adminGames: [],
@@ -1825,7 +1827,15 @@ const initChatTab = () => {
     }
   };
 
+  chatState.stopPlayerSubscription = stopSubscription;
+
   const startSubscription = () => {
+    const player = getChatVerifiedPlayer();
+    if (!getChatPinGateState() || !player || !isPlayerAllowedForTab(player, "chatTab")) {
+      stopSubscription();
+      return;
+    }
+
     stopSubscription();
     chatState.unsubscribe = db.collection(CHAT_COLLECTION)
       .orderBy("createdAt", "asc")
@@ -1840,6 +1850,8 @@ const initChatTab = () => {
         }
       );
   };
+
+  chatState.startPlayerSubscription = startSubscription;
 
   const verifyPin = () => {
     const pinValue = sanitizePin(input.value);
@@ -3324,9 +3336,12 @@ const initUserTabs = () => {
     setUserGamesVerifiedPlayerId(hasSectionAccess("userGamesTab") ? playerId : "");
     setStatisticsVerifiedPlayerId(hasSectionAccess("statsTab") ? playerId : "");
 
-    if (!hasSectionAccess("chatTab") && typeof chatState.unsubscribe === "function") {
-      chatState.unsubscribe();
-      chatState.unsubscribe = null;
+    if (hasSectionAccess("chatTab") && typeof chatState.startPlayerSubscription === "function") {
+      chatState.startPlayerSubscription();
+    }
+
+    if (!hasSectionAccess("chatTab") && typeof chatState.stopPlayerSubscription === "function") {
+      chatState.stopPlayerSubscription();
     }
 
     updatePinVisibility();
