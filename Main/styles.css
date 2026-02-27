@@ -279,6 +279,10 @@ h1 {
   background: rgba(0, 0, 0, 0.28);
 }
 
+.admin-games-players-stats-table tbody tr:nth-child(even) {
+  background: rgba(237, 235, 230, 0.04);
+}
+
 .admin-data-table tbody tr:hover {
   background: rgba(0, 0, 0, 0.2);
 }

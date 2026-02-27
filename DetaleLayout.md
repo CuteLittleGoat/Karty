@@ -92,6 +92,7 @@ Dodatkowo `body::before` nakłada subtelny świetlny overlay (`opacity: 0.25`) z
 
 ### 3.3 Tabele i formularze
 - Tabele administracyjne: `border-collapse: collapse`, hover wiersza, sticky estetyka panelowa.
+- W `Main` główna tabela statystyk graczy (`.admin-games-players-stats-table`) stosuje zebra striping: parzyste wiersze mają tło `rgba(237, 235, 230, 0.04)`, co poprawia czytelność szerokiego zestawu kolumn.
 - Inputy, selecty, textarea: spójny ciemny styl, jasny tekst, obwódki i efekty focus (złoto/neon zależnie od kontekstu).
 - Przyciski:
   - `.primary` — nacisk na akcent złoty,
@@ -107,6 +108,7 @@ Dodatkowo `body::before` nakłada subtelny świetlny overlay (`opacity: 0.25`) z
 - W sekcji Czat kontener listy wiadomości (`.chat-messages`) ma stałą minimalną wysokość (`260px`, na ekranach do 720px: `180px`), pionowy scrollbar (`overflow-y: auto`) i stylowany uchwyt suwaka dla czytelności historii rozmowy.
 - **Modale funkcjonalne** (logowanie, instrukcja, szczegóły): wspólny layout i zachowanie wizualne.
 - **Statusy**: `.status-text` oraz wariant błędu `.status-text-danger` wykorzystują odpowiednio neutralny i „danger” kolor.
+- W `Main` w zakładce **Kalkulator → Tournament → Tabela5** pod tabelą może pojawić się czerwony komunikat walidacyjny `Nie sumuje się do 100%` (klasy `.status-text.status-text-danger`), kiedy suma procentów w kolumnie `Podział puli` jest różna od 100.
 
 ---
 

@@ -97,10 +97,14 @@ Strefa Gracza zawiera sekcje:
 - Każdy tryb renderuje dedykowane tabele.
 - Modal rebuy pozwala dynamicznie dodawać i usuwać kolumny rebuy.
 - Tabele kalkulatora aktualizują wartości podsumowań na podstawie danych wejściowych.
+- W trybie `Tournament` konfiguracja procentów z `Tabela5` (`table5SplitPercents`) jest synchronizowana z liczbą wierszy `Tabela2`; domyślne wartości startowe to `50`, `30`, `20`, a kolejne pola są puste.
+- Wszystkie wartości kolumny `Podział puli` są edytowalne i zapisywane w dokumencie Firestore `calculators/tournament` przez `persistCalculatorModeState` (z użyciem `serializeCalculatorModeState`), dzięki czemu odtwarzają się po ponownym uruchomieniu aplikacji.
+- Po renderze `Tabela5` obliczana jest suma procentów; jeżeli wynik jest różny od `100`, UI wyświetla czerwone ostrzeżenie `Nie sumuje się do 100%` (`status-text status-text-danger`).
 
 ## 7. Styl i responsywność
 - Motyw oparty o zmienne CSS (`:root`) dla kolorów, fontów, odstępów i promieni.
 - Układ kart i tabel oparty o grid/flex.
+- Główna tabela statystyk graczy w zakładce administratora **Gry admina → Statystyki** (`.admin-games-players-stats-table`) używa zebra striping: parzyste wiersze (`tbody tr:nth-child(even)`) mają subtelne jaśniejsze tło `rgba(237, 235, 230, 0.04)`, zachowując kontrast i spójność z ciemnym motywem.
 - Kontenery `.admin-games-content`, `.admin-games-section` i `.player-zone-panel` używają `min-width: 0`, aby prawidłowo się zwężać w układzie grid.
 - W Strefie Gracza `.admin-table-scroll` ma wymuszone `max-width: 100%` i `overflow-x: auto`, a `.admin-data-table` ma `width: max-content` + `min-width: 100%`, dzięki czemu poziomy pasek przewijania pojawia się wewnątrz sekcji, gdy jest za mało miejsca.
 - Responsywność dla mniejszych szerokości ekranu jest realizowana przez media queries.

@@ -117,6 +117,7 @@ W widoku użytkownika dostępne są zakładki:
 ### 4.9 Statystyki
 - Wybór roku.
 - Podgląd statystyk i rankingu.
+- W głównej tabeli statystyk (kolumny m.in. **Gracz**, **Mistrzostwo**, **Ilość spotkań**) co drugi wiersz ma delikatnie inne tło (zebra striping), co ułatwia śledzenie danych w szerokich tabelach.
 - Eksport przez **Eksportuj**.
 
 ### 4.10 Gry do potwierdzenia
@@ -127,6 +128,9 @@ W widoku użytkownika dostępne są zakładki:
 - Przełączanie trybu: **Tournament** / **Cash**.
 - Praca na zestawach tabel kalkulatora.
 - Obsługa modala rebuy gracza.
+- W trybie **Tournament** w **Tabela5** (kolumna **Podział puli**) każdą wartość możesz edytować ręcznie: kliknij pole procentowe, wpisz nową wartość i kliknij poza polem, aby ponownie zobaczyć znak `%`.
+- Wprowadzone wartości procentowe w **Tabela5** zapisują się automatycznie i wracają po restarcie aplikacji.
+- Jeżeli suma procentów w kolumnie **Podział puli** jest inna niż 100, pod tabelą pojawia się czerwony komunikat: **Nie sumuje się do 100%**.
 
 ## 5. Okna modalne używane w module Main
 - Logowanie administratora (funkcja tymczasowo wyłączona na czas testów).

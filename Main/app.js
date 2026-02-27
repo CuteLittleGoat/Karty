@@ -3879,25 +3879,40 @@ const initAdminCalculator = () => {
     };
   };
 
-  const getPrizeSplitPercent = (index) => {
+  const getDefaultPrizeSplitPercent = (index) => {
     if (index === 0) {
-      return 50;
+      return "50";
     }
     if (index === 1) {
-      return 30;
+      return "30";
     }
     if (index === 2) {
-      return 20;
+      return "20";
     }
-    return 0;
+    return "";
+  };
+
+  const syncTable5ConfigWithRows = (modeState) => {
+    if (!modeState || !Array.isArray(modeState.table2Rows)) {
+      return;
+    }
+
+    const targetLength = modeState.table2Rows.length;
+    const currentPercents = Array.isArray(modeState.table5SplitPercents) ? modeState.table5SplitPercents : [];
+    const currentMods = Array.isArray(modeState.table5Mods) ? modeState.table5Mods : [];
+
+    modeState.table5SplitPercents = Array.from({ length: targetLength }, (_, index) => {
+      const normalizedValue = sanitizeInteger(currentPercents[index]);
+      return normalizedValue !== "" ? normalizedValue : getDefaultPrizeSplitPercent(index);
+    });
+
+    modeState.table5Mods = Array.from({ length: targetLength }, (_, index) => sanitizeSignedInteger(currentMods[index]));
   };
 
   const getTable5SplitPercentValue = (modeState, index) => {
+    syncTable5ConfigWithRows(modeState);
     const rawValue = sanitizeInteger(modeState.table5SplitPercents[index]);
-    if (rawValue !== "") {
-      return rawValue;
-    }
-    return String(getPrizeSplitPercent(index));
+    return rawValue;
   };
 
   const getTable5ModValue = (modeState, index) => sanitizeSignedInteger(modeState.table5Mods[index]);
@@ -3925,6 +3940,7 @@ const initAdminCalculator = () => {
 
   const getTable5Rows = () => {
     const modeState = getModeState();
+    syncTable5ConfigWithRows(modeState);
     const metrics = getCalculatorMetrics();
     const visibleRebuyValues = getVisibleGlobalRebuyValues(modeState, metrics.percentDecimal);
     return modeState.table2Rows.map((row, index) => {
@@ -4434,6 +4450,7 @@ const initAdminCalculator = () => {
 
   const renderTable5 = () => {
     const modeState = getModeState();
+    syncTable5ConfigWithRows(modeState);
     const table5Rows = getTable5Rows();
     const rebuyColumnsCount = modeState.table2Rows.reduce(
       (count, row) => count + row.rebuys.filter((value) => sanitizeInteger(value) !== "").length,
@@ -4523,6 +4540,14 @@ const initAdminCalculator = () => {
     const scroll = createScroll();
     scroll.appendChild(table);
     rootTable5.appendChild(scroll);
+
+    const splitPercentsSum = table5Rows.reduce((sum, row) => sum + row.splitPercent, 0);
+    if (splitPercentsSum !== 100) {
+      const mismatchWarning = document.createElement("p");
+      mismatchWarning.className = "status-text status-text-danger";
+      mismatchWarning.textContent = "Nie sumuje się do 100%";
+      rootTable5.appendChild(mismatchWarning);
+    }
   };
 
   const renderCashTable7 = () => {
