@@ -1753,6 +1753,11 @@ const scrollContainerToBottom = (container) => {
   });
 };
 
+const scrollChatListsToBottom = () => {
+  scrollContainerToBottom(document.querySelector("#chatMessages"));
+  scrollContainerToBottom(document.querySelector("#adminChatList"));
+};
+
 const renderPlayerChatMessages = (documents) => {
   const chatMessages = document.querySelector("#chatMessages");
   if (!chatMessages) {
@@ -3359,6 +3364,10 @@ const initUserTabs = () => {
     zonePanels.forEach((panel) => {
       panel.classList.toggle("is-active", panel.id === target);
     });
+
+    if (target === "chatTab") {
+      scrollChatListsToBottom();
+    }
   };
 
   const renderPlayerZoneSections = () => {
@@ -3561,6 +3570,10 @@ const initAdminPanelTabs = () => {
     tabPanels.forEach((panel) => {
       panel.classList.toggle("is-active", panel.id === target);
     });
+
+    if (target === "adminChatTab") {
+      scrollChatListsToBottom();
+    }
   };
 
   tabButtons.forEach((button) => {
