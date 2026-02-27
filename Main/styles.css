@@ -1345,12 +1345,23 @@ button.danger {
 .chat-messages {
   display: grid;
   gap: 10px;
+  min-height: 260px;
   max-height: 420px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 12px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border2);
   background: rgba(0, 0, 0, 0.3);
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 10px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(237, 235, 230, 0.35);
 }
 
 .chat-message-item {
@@ -1751,6 +1762,11 @@ body.modal-open {
   .chat-form-actions {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .chat-messages {
+    min-height: 180px;
+    max-height: 300px;
   }
 }
 
