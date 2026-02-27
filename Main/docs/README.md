@@ -40,7 +40,9 @@ W widoku użytkownika dostępne są zakładki:
 - Jeśli szerokość okna jest zbyt mała, tabela przewija się poziomo wewnątrz sekcji (na desktopie i mobile), dzięki czemu nic nie wychodzi poza panel.
 
 ### 3.2 Czat
-- Przegląd wiadomości.
+- Przegląd wiadomości od wszystkich użytkowników czatu (wspólny strumień rozmowy).
+- Wiadomości są sortowane jak w panelu admina: od najstarszej do najnowszej, a najnowsze wpisy znajdują się na dole listy.
+- Po wejściu do sekcji i po odświeżeniu listy przewijanie ustawia się domyślnie na dół, aby od razu widzieć najnowsze wiadomości.
 - Wysłanie nowej wiadomości przyciskiem **Wyślij**.
 
 ### 3.3 Gry do potwierdzenia
@@ -79,6 +81,8 @@ W widoku użytkownika dostępne są zakładki:
 
 ### 4.3 Czat
 - Podgląd rozmowy.
+- Wiadomości są wyświetlane od najstarszej do najnowszej (najnowsze na dole).
+- Po wejściu do zakładki i po każdej aktualizacji listy przewijanie ustawia się na dół, aby od razu widzieć najnowsze wpisy.
 - Usunięcie wiadomości starszych niż 30 dni przyciskiem **Usuń starsze niż 30 dni**.
 
 ### 4.4 Regulamin
