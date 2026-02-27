@@ -1,76 +1,86 @@
-# Second — instrukcja użytkownika (UI)
+# Second — instrukcja obsługi UI
 
-## 1. Uruchomienie
-1. Otwórz `Second/index.html` w przeglądarce.
-2. Widok domyślny to tryb użytkownika.
-3. Aby wejść do panelu administratora, dopisz `?admin=1` do adresu.
-4. Logowanie hasłem administratora jest **tymczasowo wyłączone** na czas testów — po wejściu z `?admin=1` panel otwiera się od razu.
-5. Obok przycisku **Instrukcja** pojawia się czerwony komunikat: **tymczasowo brak potrzeby wpisywania hasła admina**.
+## Sekcja użytkownika
 
-## 2. Widok użytkownika
-Dostępne zakładki:
-- **Aktualności**
-- **Czat**
-- **Regulamin**
-- **Notatki**
-- **Gracze**
-- **Turniej**
+## 1. Wejście do modułu
+1. Otwórz `Second/index.html`.
+2. W nagłówku kliknij **Instrukcja**, aby otworzyć instrukcję modułu Second.
+3. Domyślnie uruchamiany jest widok użytkownika.
+
+## 2. Zakładki użytkownika
 
 ### 2.1 Aktualności
-- Podgląd najnowszej wiadomości.
+- Cel: odczyt komunikatu od administratora.
+- Elementy:
+  - pole tylko do odczytu **Najnowsze**,
+  - status pod polem.
+- Ręczne/automatyczne:
+  - brak ręcznej edycji,
+  - treść ładowana automatycznie.
 
 ### 2.2 Czat
-- Podgląd wiadomości.
-- Wysłanie wiadomości przez **Wyślij**.
+- Przyciski:
+  - **Otwórz** (w sekcji PIN),
+  - **Wyślij** (wysłanie wiadomości).
+- Pola ręczne:
+  - pole PIN,
+  - pole **Twoja wiadomość**.
+- Pola automatyczne:
+  - lista wiadomości,
+  - statusy po wysłaniu.
 
 ### 2.3 Regulamin
-- Podgląd aktualnego regulaminu.
+- Pole tylko do odczytu: **Obowiązujące zasady**.
+- Ręczne/automatyczne:
+  - użytkownik nie edytuje,
+  - treść pobierana automatycznie.
 
 ### 2.4 Gracze
-- Podgląd listy graczy i ich PIN.
+- Widok tabeli graczy w trybie odczytu dla użytkownika.
+- Ręczne/automatyczne:
+  - brak ręcznej edycji,
+  - lista budowana automatycznie.
 
 ### 2.5 Turniej
-- Widok z lewym panelem i sekcją treści.
-- Dostępne przyciski panelu: **Strona1** i **Strona2**.
-- Część główna wyświetla komunikat o stronie w budowie.
+- Przyciski: **Strona1**, **Strona2**.
+- Funkcja: przełączanie sekcji roboczych widoku turniejowego.
+- Dane: aktualnie sekcja ma charakter informacyjny (strona w budowie).
 
-## 3. Panel administratora
-Dostępne zakładki:
-- **Aktualności**
-- **Czat**
-- **Regulamin**
-- **Notatki**
-- **Gracze**
-- **Turniej**
+---
 
-### 3.1 Aktualności
-1. Wpisz wiadomość.
-2. Kliknij **Wyślij**.
+## Sekcja administratora
 
-### 3.2 Czat
-- Podgląd wiadomości.
-- Czyszczenie wiadomości starszych niż 30 dni.
+> Dostęp: uruchom moduł z parametrem `?admin=1`.
 
-### 3.3 Regulamin
-1. Edytuj treść regulaminu.
-2. Kliknij **Zapisz**.
+## 3. Pasek górny
+- **Instrukcja** — otwiera modal z instrukcją modułu Second.
+- Czerwony komunikat obok przycisku — tylko informacja o tymczasowym wyłączeniu hasła admina.
 
-### 3.4 Notatki
-1. Wejdź w zakładkę **Notatki**.
-2. Wpisz treść notatki w dużym polu tekstowym.
-3. Kliknij **Zapisz** — dane zapisują się w Firebase w dokumencie modułu Second.
+## 4. Zakładki administratora
 
-### 3.5 Gracze
-- Dodawanie gracza.
-- Edycja nazwy i PIN.
-- Usuwanie gracza (z ochroną przed usunięciem ostatniego rekordu kolekcji głównej).
-- Operacje usuwania dokumentów w podkolekcjach nie są blokowane przez tę ochronę.
+### 4.1 Aktualności
+- Pole ręczne: **Treść wiadomości**.
+- Przycisk: **Wyślij**.
+- Pola automatyczne: status zapisu.
 
-### 3.6 Turniej
-- Układ panelowy identyczny wizualnie z widokiem użytkownika.
-- Sekcja ma charakter informacyjny (placeholder).
+### 4.2 Czat
+- Przycisk: **Usuń starsze niż 30 dni**.
+- Dane listy wiadomości są automatyczne.
 
-## 4. Dodatkowe elementy UI
-- Przycisk **Instrukcja** w prawym górnym obszarze nagłówka.
-- Modal instrukcji ładowany po kliknięciu przycisku.
-- Modal logowania administratora (funkcja tymczasowo wyłączona na czas testów).
+### 4.3 Regulamin
+- Pole ręczne: **Treść regulaminu**.
+- Przycisk: **Zapisz**.
+
+### 4.4 Notatki
+- Pole ręczne: **Treść notatek**.
+- Przycisk: **Zapisz**.
+
+### 4.5 Gracze
+- Przyciski: **Dodaj** oraz akcje wierszy tabeli.
+- Pola ręczne: nazwa, PIN, uprawnienia.
+- Pola automatyczne: odświeżanie listy i statusy.
+
+### 4.6 Turniej
+- Przyciski: **Strona1**, **Strona2**.
+- Funkcja: przełączanie obszaru roboczego zakładki.
+- Pola ręczne/automatyczne: aktualnie zakładka ma charakter szkieletowy (bez aktywnych formularzy obliczeniowych).

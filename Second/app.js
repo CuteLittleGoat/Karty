@@ -373,8 +373,83 @@ const resolveAdminMode = async () => {
 };
 
 const appRoot = document.querySelector("#appRoot");
-const instructionButton = document.querySelector("#secondInstructionButton");
 const adminPasswordBypassNote = document.querySelector("#secondAdminPasswordBypassNote");
+
+const initInstructionModal = () => {
+  const openButton = document.querySelector("#secondInstructionButton");
+  const modal = document.querySelector("#secondInstructionModal");
+  const closeButton = document.querySelector("#secondInstructionClose");
+  const content = document.querySelector("#secondInstructionContent");
+  const status = document.querySelector("#secondInstructionStatus");
+
+  if (!openButton || !modal || !content || !status) {
+    return;
+  }
+
+  const instructionUrl = "https://cutelittlegoat.github.io/Karty/Second/docs/README.md";
+  let cachedText = "";
+  let isLoading = false;
+
+  const setStatus = (message) => {
+    status.textContent = message;
+  };
+
+  const loadInstruction = async () => {
+    if (isLoading || cachedText) {
+      return;
+    }
+
+    isLoading = true;
+    setStatus("Pobieranie instrukcji...");
+
+    try {
+      const response = await fetch(instructionUrl, { cache: "default" });
+      if (!response.ok) {
+        throw new Error("Network response was not ok.");
+      }
+      cachedText = await response.text();
+      content.textContent = cachedText;
+      setStatus("Instrukcja została pobrana.");
+    } catch (error) {
+      setStatus("Nie udało się pobrać instrukcji. Zamknij i otwórz okno ponownie.");
+    } finally {
+      isLoading = false;
+    }
+  };
+
+  const openModal = () => {
+    modal.classList.add("is-visible");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    if (!cachedText) {
+      void loadInstruction();
+    }
+  };
+
+  const closeModal = () => {
+    modal.classList.remove("is-visible");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+
+  openButton.addEventListener("click", openModal);
+
+  if (closeButton) {
+    closeButton.addEventListener("click", closeModal);
+  }
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modal.classList.contains("is-visible")) {
+      closeModal();
+    }
+  });
+};
 
 const setupTabs = ({ container, buttonSelector, panelSelector, activeClass = "is-active", getTarget, isPanelMatch }) => {
   const buttons = Array.from(container.querySelectorAll(buttonSelector));
@@ -524,12 +599,11 @@ const setupUserOnlyView = () => {
 
 const bootstrap = async () => {
   const isAdminView = await resolveAdminMode();
-  if (instructionButton) {
-    instructionButton.hidden = !isAdminView;
-  }
   if (adminPasswordBypassNote) {
     adminPasswordBypassNote.hidden = !isAdminView;
   }
+
+  initInstructionModal();
 
   if (isAdminView) {
     setupAdminView();

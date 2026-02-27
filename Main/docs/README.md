@@ -1,152 +1,145 @@
-# Main — instrukcja użytkownika (UI)
+# Main — instrukcja obsługi UI
 
-## 1. Uruchomienie
-1. Otwórz `Main/index.html` w przeglądarce.
-2. Standardowo aplikacja startuje w widoku użytkownika.
-3. Aby wejść do panelu administratora, dodaj do adresu parametr `?admin=1`.
-4. Logowanie hasłem administratora jest **tymczasowo wyłączone** na czas testów — po wejściu z `?admin=1` panel otwiera się od razu.
-5. Obok przycisku **Instrukcja** pojawia się czerwony komunikat: **tymczasowo brak potrzeby wpisywania hasła admina**.
+## Sekcja użytkownika
 
-## 2. Widok użytkownika
+> Ta sekcja opisuje wyłącznie widok użytkownika (bez dostępu do zakładek administracyjnych, np. **Gracze**).
 
-### 2.1 Zakładki główne
-W widoku użytkownika dostępne są zakładki:
-- **Aktualności**
-- **Regulamin**
-- **Strefa Gracza**
+## 1. Wejście do modułu
+1. Otwórz `Main/index.html`.
+2. W prawym górnym rogu kliknij **Instrukcja**, aby otworzyć tę instrukcję w oknie modalnym.
+3. Domyślnie otwiera się widok użytkownika.
 
-### 2.2 Aktualności
-1. Wejdź w **Aktualności**.
-2. Odczytaj najnowszą wiadomość od administratora.
+## 2. Zakładki użytkownika
 
-### 2.3 Regulamin
-1. Wejdź w **Regulamin**.
-2. Odczytaj aktualne zasady.
+### 2.1 Aktualności
+- Cel: odczyt najnowszej wiadomości od administratora.
+- Elementy:
+  - pole tylko do odczytu **Najnowsze**,
+  - status ładowania pod polem.
+- Pola ręczne/obliczalne:
+  - użytkownik nic nie wpisuje,
+  - cała treść jest uzupełniana automatycznie.
 
-### 2.4 Strefa Gracza
-1. Wejdź w **Strefa Gracza**.
-2. Wpisz 5-cyfrowy PIN i kliknij **Otwórz**.
-3. Po poprawnej autoryzacji używaj sekcji dostępnych dla danego gracza:
-   - **Najbliższa gra**
-   - **Czat**
-   - **Gry do potwierdzenia**
-   - **Gry użytkowników**
-   - **Statystyki**
+### 2.2 Regulamin
+- Cel: odczyt aktualnego regulaminu gry.
+- Elementy:
+  - pole tylko do odczytu **Obowiązujące zasady**,
+  - status ładowania.
+- Pola ręczne/obliczalne:
+  - użytkownik nic nie wpisuje,
+  - zawartość pobiera się automatycznie.
 
-## 3. Co można zrobić w sekcjach Strefy Gracza
+### 2.3 Strefa gracza
+1. Wejdź do zakładki **Strefa Gracza**.
+2. Wpisz PIN (5 cyfr) w polu logowania.
+3. Kliknij **Otwórz**.
+4. Po poprawnym PIN-ie odblokują się sekcje zgodne z uprawnieniami gracza.
 
-### 3.1 Najbliższa gra
-- Podgląd tabeli najbliższej gry.
-- Jeśli szerokość okna jest zbyt mała, tabela przewija się poziomo wewnątrz sekcji (na desktopie i mobile), dzięki czemu nic nie wychodzi poza panel.
+#### Dostępne sekcje w Strefie gracza
 
-### 3.2 Czat
-- Przegląd wiadomości od wszystkich użytkowników czatu (wspólny strumień rozmowy).
-- Wiadomości są sortowane jak w panelu admina: od najstarszej do najnowszej, a najnowsze wpisy znajdują się na dole listy.
-- Po wejściu do sekcji Czat po autoryzacji PIN-em Strefy Gracza lista ładuje się automatycznie (bez dodatkowego PIN-u czatu).
-- Po wejściu do sekcji i po każdym odświeżeniu listy przewijanie ustawia się domyślnie na dół, aby od razu widzieć najnowsze wiadomości (suwak startuje na samym dole).
-- Pole wiadomości ma stałą wysokość również na mobile, a przy dłuższej historii pojawia się pionowy suwak.
-- Wysłanie nowej wiadomości przyciskiem **Wyślij**.
+#### A) Najbliższa gra
+- Podgląd tabeli z planowaną rozgrywką.
+- Brak ręcznej edycji danych przez użytkownika.
+- Dane są automatyczne (odczyt).
 
-### 3.3 Gry do potwierdzenia
-- Potwierdzenie lub anulowanie udziału.
-- Otwieranie szczegółów gry.
-- Otwieranie notatek do gry (tylko odczyt).
+#### B) Czat
+- Przyciski:
+  - **Wyślij** — wysyła wpis z pola wiadomości.
+- Pola:
+  - **Twoja wiadomość** — pole ręczne (wpis użytkownika),
+  - lista wiadomości — automatyczna.
 
-### 3.4 Gry użytkowników
-- Wybór roku w panelu bocznym.
-- Dodawanie gry (**Dodaj**).
-- Otwieranie szczegółów gry (**Szczegóły**).
-- Otwieranie notatek do gry z edycją i kolorowaniem tekstu.
+#### C) Gry do potwierdzenia
+- Przyciski zależne od rekordu:
+  - **Potwierdź** / **Anuluj** udział,
+  - **Szczegóły**,
+  - **Notatki** (odczyt).
+- Pola ręczne/obliczalne:
+  - status potwierdzenia ustawiasz ręcznie przyciskami,
+  - dane gry i statusy pozostałych graczy są automatyczne.
 
-### 3.5 Statystyki
-- Wybór roku.
-- Podgląd tabel statystyk i rankingu.
-- Eksport przez przycisk **Eksportuj**.
+#### D) Gry użytkowników
+- Przyciski:
+  - wybór roku (lista po lewej),
+  - **Dodaj** (nowa gra),
+  - **Szczegóły**,
+  - **Notatki**.
+- Pola ręczne:
+  - pola formularzy i notatek w otwartych widokach.
+- Pola automatyczne:
+  - część podsumowań i list budowana jest automatycznie na podstawie danych gry.
 
-## 4. Panel administratora
+#### E) Statystyki
+- Przyciski:
+  - wybór roku,
+  - **Eksportuj**.
+- Pola ręczne/obliczalne:
+  - użytkownik nie wpisuje danych bezpośrednio do tabel statystyk,
+  - wartości w tabelach/rankingu są obliczalne i prezentowane automatycznie.
 
-### 4.1 Dostępne zakładki
-- **Aktualności**
-- **Czat**
-- **Regulamin**
-- **Notatki**
-- **Gracze**
-- **Gry admina**
-- **Gry użytkowników**
-- **Najbliższa gra**
-- **Statystyki**
-- **Gry do potwierdzenia**
-- **Kalkulator**
+---
 
-### 4.2 Aktualności
-1. Wpisz treść wiadomości.
-2. Kliknij **Wyślij**.
+## Sekcja administratora
 
-### 4.3 Czat
-- Podgląd rozmowy.
-- Wiadomości są wyświetlane od najstarszej do najnowszej (najnowsze na dole).
-- Po wejściu do zakładki i po każdej aktualizacji listy przewijanie ustawia się na dół, aby od razu widzieć najnowsze wpisy (suwak startuje na samym dole).
-- Lista ma stałą minimalną wysokość i pionowy suwak, więc historia wiadomości jest zawsze dostępna również na urządzeniach mobilnych.
-- Usunięcie wiadomości starszych niż 30 dni przyciskiem **Usuń starsze niż 30 dni**.
+> Do panelu administratora wejdziesz przez URL z parametrem `?admin=1`.
 
-### 4.4 Regulamin
-1. Edytuj treść zasad.
-2. Kliknij **Zapisz**.
+## 3. Pasek górny
+- **Instrukcja** — otwiera modal z instrukcją modułu Main.
+- Czerwony komunikat o haśle admina — element informacyjny (bez akcji).
 
-### 4.5 Notatki
-1. Wejdź w zakładkę **Notatki**.
-2. Wpisz lub zmodyfikuj treść w dużym polu tekstowym.
-3. Kliknij **Zapisz** na dole sekcji.
+## 4. Zakładki administratora
 
-### 4.6 Gracze
-- Dodawanie gracza (**Dodaj**).
-- Edycja nazwy i PIN.
-- Zarządzanie uprawnieniami do sekcji Strefy Gracza.
-- Zarządzanie listą lat dla statystyk konkretnego gracza.
+### 4.1 Aktualności
+- Pole ręczne: **Treść wiadomości**.
+- Przycisk: **Wyślij**.
+- Pole obliczalne/automatyczne: status operacji.
 
-### 4.7 Gry admina
-- Wybór roku.
-- Dodawanie gry i edycja danych w tabeli.
-- Otwieranie **Szczegóły** gry i edycja wierszy graczy.
-- Usuwanie gry przyciskiem **Usuń** (wraz z jej detalami).
-- Jeżeli próbujesz usunąć ostatni rekord z kolekcji głównej, pojawi się komunikat blokujący usunięcie.
-- Podgląd sekcji **Statystyki** i **Ranking** dla wybranego roku.
+### 4.2 Czat
+- Przycisk: **Usuń starsze niż 30 dni**.
+- Lista wiadomości jest automatyczna.
+
+### 4.3 Regulamin
+- Pole ręczne: **Treść regulaminu**.
+- Przycisk: **Zapisz**.
+
+### 4.4 Notatki
+- Pole ręczne: **Treść notatek**.
+- Przycisk: **Zapisz**.
+
+### 4.5 Gracze
+- Przyciski: **Dodaj**, przyciski akcji w wierszach (np. usuwanie/edycja).
+- Pola ręczne: nazwa gracza, PIN, uprawnienia, konfiguracje lat.
+- Pola automatyczne: listy i statusy po zapisach.
+
+### 4.6 Gry admina
+- Przyciski: wybór roku, **Dodaj**, **Szczegóły**, **Usuń**.
+- Pola ręczne: dane gry i dane w szczegółach.
+- Pola automatyczne: zestawienia i rankingi zależne od danych.
+
+### 4.7 Statystyki
+- Przyciski: wybór roku, **Eksportuj**.
+- Pola ręczne: wybrane pola korekt/statystyk ręcznych.
+- Pola automatyczne: ranking i większość metryk statystycznych.
 
 ### 4.8 Gry użytkowników
-- Wybór roku.
-- Dodawanie gry.
-- Otwieranie szczegółów i notatek.
+- Przyciski: wybór roku, **Dodaj**, **Szczegóły**, **Notatki**.
+- Pola ręczne: dane edytowane w formularzach.
+- Pola automatyczne: listy i agregacje.
 
 ### 4.9 Najbliższa gra
-- Podgląd i edycja danych tabeli najbliższej gry.
+- Pola ręczne: dane tabeli najbliższej gry.
+- Pola automatyczne: elementy pomocnicze/statusy.
 
-### 4.10 Statystyki
-- Wybór roku (lista **Lata** po lewej stronie).
-- Podgląd statystyk (środkowa kolumna).
-- Podgląd rankingu (sekcja **Ranking** po prawej stronie, jak w zakładce **Gry admina**): panel **Lata** jest węższy (ok. 20 znaków), panel **Ranking** szerszy, a każdy wiersz rankingu ma zwiększoną wysokość i wyrównania kolumn pod czytelność (Miejsce i Gracz do lewej, Punkty na środku).
-- W głównej tabeli statystyk (kolumny m.in. **Gracz**, **Mistrzostwo**, **Ilość spotkań**) co drugi wiersz ma delikatnie inne tło (zebra striping), co ułatwia śledzenie danych w szerokich tabelach.
-- Eksport przez **Eksportuj**.
+### 4.10 Gry do potwierdzenia
+- Przyciski: odświeżanie widoku, wejście w **Szczegóły**.
+- Pola automatyczne: statusy potwierdzeń i podsumowania.
 
-### 4.11 Gry do potwierdzenia
-- Podgląd statusów potwierdzeń.
-- Otwieranie szczegółów gry.
-
-### 4.12 Kalkulator
-- Przełączanie trybu: **Tournament1** / **Tournament2** / **Cash**.
-- Praca na zestawach tabel kalkulatora.
-- Obsługa modala rebuy gracza.
-- W trybach **Tournament1** i **Tournament2** w **Tabela5** (kolumna **Podział puli**) każdą wartość możesz edytować ręcznie: kliknij pole procentowe, wpisz nową wartość i kliknij poza polem, aby ponownie zobaczyć znak `%`.
-- **Tournament1** i **Tournament2** mają identyczny układ i obliczenia, ale każdy tryb zapisuje dane niezależnie (zmiana wartości w jednym trybie nie nadpisuje drugiego).
-- Wprowadzone wartości procentowe w **Tabela5** zapisują się automatycznie i wracają po restarcie aplikacji.
-- Jeżeli suma procentów w kolumnie **Podział puli** jest inna niż 100, pod tabelą pojawia się czerwony komunikat: **Nie sumuje się do 100%**.
-
-## 5. Okna modalne używane w module Main
-- Logowanie administratora (funkcja tymczasowo wyłączona na czas testów).
-- Instrukcja.
-- Uprawnienia gracza.
-- Lata statystyk gracza.
-- Szczegóły gry admina.
-- Szczegóły gry użytkownika (admin i gracz).
-- Szczegóły potwierdzeń.
-- Notatki do gry.
-- Rebuy gracza (kalkulator).
+### 4.11 Kalkulator
+- Przyciski:
+  - wybór trybu (**Tournament1**, **Tournament2**, **Cash**),
+  - akcje per tabela (zgodnie z widocznymi przyciskami),
+  - przyciski modali (np. potwierdzenie/zamknięcie).
+- Pola ręczne:
+  - stawki, wartości wejściowe, pola edytowalne w tabelach.
+- Pola obliczalne:
+  - wyniki kalkulacji, podsumowania, wartości pochodne.
