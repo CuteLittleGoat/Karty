@@ -677,6 +677,9 @@ const getAdminMode = () => {
   return params.get("admin") === "1";
 };
 
+// Funkcja tymczasowo wyłączona: na czas testów pomijamy wymaganie hasła administratora.
+const TEMPORARILY_DISABLE_ADMIN_PASSWORD = true;
+
 const getAdminPasswordHash = async () => {
   const firebaseApp = getFirebaseApp();
   if (!firebaseApp?.firestore) {
@@ -835,6 +838,10 @@ const requestAdminPassword = ({ errorMessage = "" } = {}) => new Promise((resolv
 const resolveAdminMode = async () => {
   if (!getAdminMode()) {
     return false;
+  }
+
+  if (TEMPORARILY_DISABLE_ADMIN_PASSWORD) {
+    return true;
   }
 
   const getFallbackCredential = () => {

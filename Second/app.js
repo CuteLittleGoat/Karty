@@ -160,6 +160,9 @@ const ADMIN_SECURITY_PASSWORD_FIELD = "passwordHash";
 
 const shouldRequestAdminAccess = () => new URLSearchParams(window.location.search).get("admin") === "1";
 
+// Funkcja tymczasowo wyłączona: na czas testów pomijamy wymaganie hasła administratora.
+const TEMPORARILY_DISABLE_ADMIN_PASSWORD = true;
+
 const getAdminPasswordHash = async () => {
   const firebaseApp = getFirebaseApp();
   if (!firebaseApp?.firestore) {
@@ -319,6 +322,10 @@ const resolveAdminMode = async () => {
     return false;
   }
 
+  if (TEMPORARILY_DISABLE_ADMIN_PASSWORD) {
+    return true;
+  }
+
   const getFallbackCredential = () => {
     const fallbackCredential = typeof window.firebaseConfig?.adminPasswordHash === "string"
       ? window.firebaseConfig.adminPasswordHash.trim()
@@ -365,6 +372,7 @@ const resolveAdminMode = async () => {
 
 const appRoot = document.querySelector("#appRoot");
 const instructionButton = document.querySelector("#secondInstructionButton");
+const adminPasswordBypassNote = document.querySelector("#secondAdminPasswordBypassNote");
 
 const setupTabs = ({ container, buttonSelector, panelSelector, activeClass = "is-active", getTarget, isPanelMatch }) => {
   const buttons = Array.from(container.querySelectorAll(buttonSelector));
@@ -454,6 +462,9 @@ const bootstrap = async () => {
   const isAdminView = await resolveAdminMode();
   if (instructionButton) {
     instructionButton.hidden = !isAdminView;
+  }
+  if (adminPasswordBypassNote) {
+    adminPasswordBypassNote.hidden = !isAdminView;
   }
 
   if (isAdminView) {
