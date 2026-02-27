@@ -124,11 +124,9 @@ W obu modułach stosowane są media query, które:
 
 ## 6) Różnice między modułami
 
-Większość stylów `Main/styles.css` i `Second/styles.css` jest taka sama. Aktualnie kluczowa różnica układowa dotyczy panelu `#adminGamesTab .admin-games-layout`:
-- **Main**: `grid-template-columns: 190px minmax(0, 1fr) 300px`.
-- **Second**: `grid-template-columns: 220px minmax(0, 1fr) 260px`.
-
-To oznacza, że w **Second** lewy panel lat jest szerszy, a prawa kolumna rankingu węższa.
+Większość stylów `Main/styles.css` i `Second/styles.css` jest taka sama. Aktualnie kluczowa różnica układowa dotyczy paneli z rankingiem (`#adminGamesTab .admin-games-layout`, `#adminStatisticsTab .admin-games-layout`):
+- **Main**: `grid-template-columns: 190px minmax(0, 1fr) 300px` (węższa kolumna **Lata** i szersza kolumna **Ranking** po prawej stronie).
+- **Second**: `grid-template-columns: 220px minmax(0, 1fr) 260px` (szersza kolumna **Lata** i węższa kolumna **Ranking**).
 
 ### 6.1 Wspólny komunikat testowy przy przycisku Instrukcja
 W obu modułach (`Main`, `Second`) obok przycisku **Instrukcja** w pasku `.admin-toolbar` wyświetlany jest czerwony napis:

@@ -108,6 +108,7 @@ Strefa Gracza zawiera sekcje:
 - Układ kart i tabel oparty o grid/flex.
 - Główna tabela statystyk graczy w zakładce administratora **Gry admina → Statystyki** (`.admin-games-players-stats-table`) używa zebra striping: parzyste wiersze (`tbody tr:nth-child(even)`) mają subtelne jaśniejsze tło `rgba(237, 235, 230, 0.04)`, zachowując kontrast i spójność z ciemnym motywem.
 - Kontenery `.admin-games-content`, `.admin-games-section` i `.player-zone-panel` używają `min-width: 0`, aby prawidłowo się zwężać w układzie grid.
+- Zakładka administratora **Statystyki** (`#adminStatisticsTab .admin-games-layout`) ma taki sam 3-kolumnowy układ jak **Gry admina**: `190px` (Lata), `minmax(0, 1fr)` (główna sekcja) i `300px` (Ranking po prawej stronie).
 - W Strefie Gracza `.admin-table-scroll` ma wymuszone `max-width: 100%` i `overflow-x: auto`, a `.admin-data-table` ma `width: max-content` + `min-width: 100%`, dzięki czemu poziomy pasek przewijania pojawia się wewnątrz sekcji, gdy jest za mało miejsca.
 - Responsywność dla mniejszych szerokości ekranu jest realizowana przez media queries.
 - Wspólny język wizualny: ciemne tło, złoto-zielone akcenty, kontrastowe komunikaty statusu.

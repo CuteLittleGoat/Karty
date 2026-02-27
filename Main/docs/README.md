@@ -121,8 +121,9 @@ W widoku użytkownika dostępne są zakładki:
 - Podgląd i edycja danych tabeli najbliższej gry.
 
 ### 4.10 Statystyki
-- Wybór roku.
-- Podgląd statystyk i rankingu.
+- Wybór roku (lista **Lata** po lewej stronie).
+- Podgląd statystyk (środkowa kolumna).
+- Podgląd rankingu (sekcja **Ranking** po prawej stronie, jak w zakładce **Gry admina**).
 - W głównej tabeli statystyk (kolumny m.in. **Gracz**, **Mistrzostwo**, **Ilość spotkań**) co drugi wiersz ma delikatnie inne tło (zebra striping), co ułatwia śledzenie danych w szerokich tabelach.
 - Eksport przez **Eksportuj**.
 

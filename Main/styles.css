@@ -697,6 +697,10 @@ select:disabled,
   grid-template-columns: 190px minmax(0, 1fr) 300px;
 }
 
+#adminStatisticsTab .admin-games-layout {
+  grid-template-columns: 190px minmax(0, 1fr) 300px;
+}
+
 .admin-games-sidebar,
 .admin-games-content {
   display: grid;
@@ -1760,6 +1764,10 @@ body.modal-open {
   }
 
   #adminGamesTab .admin-games-layout {
+    grid-template-columns: 1fr;
+  }
+
+  #adminStatisticsTab .admin-games-layout {
     grid-template-columns: 1fr;
   }
 
