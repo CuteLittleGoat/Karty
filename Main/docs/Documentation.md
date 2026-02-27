@@ -96,6 +96,9 @@ Strefa Gracza zawiera sekcje:
 - Każdy tryb renderuje dedykowane tabele.
 - Modal rebuy pozwala dynamicznie dodawać i usuwać kolumny rebuy.
 - Tabele kalkulatora aktualizują wartości podsumowań na podstawie danych wejściowych.
+- W trybie `Tournament` konfiguracja procentów z `Tabela5` (`table5SplitPercents`) jest synchronizowana z liczbą wierszy `Tabela2`; domyślne wartości startowe to `50`, `30`, `20`, a kolejne pola są puste.
+- Wszystkie wartości kolumny `Podział puli` są edytowalne i zapisywane w dokumencie Firestore `calculators/tournament` przez `persistCalculatorModeState` (z użyciem `serializeCalculatorModeState`), dzięki czemu odtwarzają się po ponownym uruchomieniu aplikacji.
+- Po renderze `Tabela5` obliczana jest suma procentów; jeżeli wynik jest różny od `100`, UI wyświetla czerwone ostrzeżenie `Nie sumuje się do 100%` (`status-text status-text-danger`).
 
 ## 7. Styl i responsywność
 - Motyw oparty o zmienne CSS (`:root`) dla kolorów, fontów, odstępów i promieni.
