@@ -422,6 +422,15 @@ W zależności od trybu dostępne są przyciski w wierszach:
 Przycisk:
 - **Zamknij** — zamyka okno zarządzania rebuy.
 
+### 15.4. Cash — sposób liczenia Rake w Tabela8
+- W trybie **Cash** kolumna **Rake** w **Tabela8** jest liczona ze wzoru:
+  - `Rake = (Suma Buy-In z Tabela9 + Suma Rebuy z Tabela9) × % z Tabela8`.
+- Przykład:
+  - Buy-In = 80,
+  - Rebuy = 20,
+  - % = 10,
+  - Rake = `(80 + 20) × 10% = 10`.
+
 ---
 
 ## 16. Opis wszystkich typów przycisków i ich znaczenia

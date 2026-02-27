@@ -4056,10 +4056,11 @@ const initAdminCalculator = () => {
     const totalRebuy = cashState.table9Rows.reduce((sum, row) => sum + getRowRebuySum(row), 0);
     const rakePercent = parseInteger(cashState.table8Row.rake);
     const rakeDecimal = rakePercent / 100;
+    const totalBeforeRake = totalBuyIn + totalRebuy;
+    const rakeValue = totalBeforeRake * rakeDecimal;
     const buyInAfterPercent = totalBuyIn * (1 - rakeDecimal);
     const rebuyAfterPercent = totalRebuy * (1 - rakeDecimal);
     const totalAfterPercent = buyInAfterPercent + rebuyAfterPercent;
-    const rakeValue = totalAfterPercent;
     const pot = totalAfterPercent;
 
     return {
