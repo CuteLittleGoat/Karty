@@ -10,6 +10,8 @@ service cloud.firestore {
       return isSignedIn() && request.auth.token.role == "admin";
     }
 
+    // ===== MAIN MODULE =====
+
     match /admin_security/{docId} {
       allow read, write: if true;
     }
@@ -28,9 +30,11 @@ service cloud.firestore {
 
     match /Tables/{tableId} {
       allow read, write: if true;
+
       match /rows/{rowId} {
         allow read, write: if true;
       }
+
       match /confirmations/{playerId} {
         allow read, write: if true;
       }
@@ -38,9 +42,11 @@ service cloud.firestore {
 
     match /UserGames/{gameId} {
       allow read, write: if true;
+
       match /rows/{rowId} {
         allow read, write: if true;
       }
+
       match /confirmations/{playerId} {
         allow read, write: if true;
       }
@@ -98,6 +104,8 @@ service cloud.firestore {
       }
     }
 
+    // ===== NEKROLOG =====
+
     match /Nekrolog_config/{docId} {
       allow read, write: if true;
     }
@@ -110,5 +118,88 @@ service cloud.firestore {
       allow read: if true;
       allow write: if docId == "latest";
     }
+
+    // ===== SECOND MODULE =====
+
+    match /second_admin_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    match /second_app_settings/{docId} {
+      allow read, write: if true;
+    }
+
+    match /second_chat_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    match /second_players/{docId} {
+      allow read, write: if true;
+    }
+
+    match /second_admin_games_stats/{year} {
+      allow read, write: if true;
+    }
+
+    match /second_tables/{tableId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /second_user_games/{gameId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /second_calculators/{type} {
+      allow read, write: if true;
+
+      match /definitions/{versionId} {
+        allow read, write: if true;
+      }
+
+      match /placeholders/{placeholderId} {
+        allow read, write: if true;
+      }
+
+      match /sessions/{sessionId} {
+        allow read, write: if true;
+
+        match /variables/{varDocId} {
+          allow read, write: if true;
+        }
+
+        match /calculationFlags/{flagDocId} {
+          allow read, write: if true;
+        }
+
+        match /tables/{tableId} {
+          allow read, write: if true;
+
+          match /rows/{rowId} {
+            allow read, write: if true;
+          }
+        }
+
+        match /snapshots/{snapshotId} {
+          allow read, write: if true;
+        }
+      }
+    }
+
   }
 }
