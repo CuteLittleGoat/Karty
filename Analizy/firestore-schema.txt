@@ -1,0 +1,953 @@
+FIRESTORE SCHEMA EXPORT (NO VALUES)
+2026-02-28T17:22:51.967Z
+
+Key file: karty-turniej-firebase-adminsdk-fbsvc-0462e6af5d.json
+Max docs/collection (sampling): 200
+Doc IDs: sample (3)
+
+├─ admin_games_stats
+│  ├─ schema
+│  │  ├─ rows (array) -> array<map|unknown>
+│  │  │  ├─ [] (map)
+│  │  │  │  ├─ playerName (string)
+│  │  │  │  ├─ weight1 (string)
+│  │  │  │  ├─ weight2 (string)
+│  │  │  │  ├─ points (string)
+│  │  │  │  ├─ weight3 (string)
+│  │  │  │  ├─ weight4 (string)
+│  │  │  │  ├─ weight5 (string)
+│  │  │  │  ├─ weight6 (string)
+│  │  │  │  └─ weight7 (string)
+│  │  └─ visibleColumns (array) -> array<string>
+│  ├─ docs (sample 3)
+│  │  ├─ 2025
+│  │  ├─ 2026
+│  │  └─ 2027
+├─ admin_messages
+│  ├─ schema
+│  │  ├─ createdAt (timestamp)
+│  │  ├─ message (string)
+│  │  └─ source (string)
+│  ├─ docs (sample 1)
+│  │  └─ admin_messages
+├─ admin_notes
+│  ├─ schema
+│  │  ├─ module (string)
+│  │  ├─ text (string)
+│  │  ├─ updatedAt (timestamp)
+│  │  └─ updatedBy (string)
+│  ├─ docs (sample 2)
+│  │  ├─ main
+│  │  └─ second
+├─ admin_security
+│  ├─ schema
+│  │  └─ passwordHash (string)
+│  ├─ docs (sample 1)
+│  │  └─ credentials
+├─ app_settings
+│  ├─ schema
+│  │  ├─ html (string)
+│  │  ├─ pin (string)
+│  │  ├─ players (array) -> array<map>
+│  │  │  ├─ [] (map)
+│  │  │  │  ├─ id (string)
+│  │  │  │  ├─ name (string)
+│  │  │  │  ├─ pin (string)
+│  │  │  │  ├─ appEnabled (boolean)
+│  │  │  │  ├─ permissions (array) -> array<string|unknown>
+│  │  │  │  └─ statsYearsAccess (array) -> array<integer|unknown>
+│  │  ├─ source (string)
+│  │  ├─ text (string)
+│  │  └─ updatedAt (timestamp)
+│  ├─ docs (sample 3)
+│  │  ├─ evening_plan
+│  │  ├─ next_game
+│  │  └─ player_access
+├─ calculators
+│  ├─ schema
+│  │  ├─ createdAt (timestamp)
+│  │  ├─ eliminatedOrder (array) -> array<unknown>
+│  │  ├─ isActive (boolean)
+│  │  ├─ name (string)
+│  │  ├─ table1Row (map)
+│  │  │  ├─ rebuy (string)
+│  │  │  └─ buyIn (string)
+│  │  ├─ table2Rows (array) -> array<map>
+│  │  │  ├─ [] (map)
+│  │  │  │  ├─ id (string)
+│  │  │  │  ├─ playerName (string)
+│  │  │  │  ├─ eliminated (boolean)
+│  │  │  │  └─ rebuys (array) -> array<string|unknown>
+│  │  ├─ table3Row (map)
+│  │  │  └─ percent (string)
+│  │  ├─ table5Mods (array) -> array<string>
+│  │  ├─ table5SplitPercents (array) -> array<string>
+│  │  ├─ table8Row (map)
+│  │  │  ├─ rakeValue (string)
+│  │  │  └─ rake (string)
+│  │  ├─ table9Rows (array) -> array<map>
+│  │  │  ├─ [] (map)
+│  │  │  │  ├─ id (string)
+│  │  │  │  ├─ playerName (string)
+│  │  │  │  ├─ buyIn (string)
+│  │  │  │  ├─ payout (string)
+│  │  │  │  └─ rebuys (array) -> array<string|unknown>
+│  │  ├─ type (string)
+│  │  └─ updatedAt (timestamp)
+│  ├─ docs (sample 2)
+│  │  ├─ cash
+│  │  └─ tournament
+│  ├─ definitions
+│  │  ├─ schema
+│  │  │  ├─ appliesTo (array) -> array<string>
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ createdBy (string)
+│  │  │  ├─ globalVariablesSchema (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ key (string)
+│  │  │  │  │  ├─ type (string)
+│  │  │  │  │  └─ default (integer)
+│  │  │  ├─ status (string)
+│  │  │  ├─ tables (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ tableId (string)
+│  │  │  │  │  ├─ name (string)
+│  │  │  │  │  ├─ rowsPath (string)
+│  │  │  │  │  └─ columns (array) -> array<string>
+│  │  │  ├─ updatedAt (timestamp)
+│  │  │  └─ version (integer)
+│  │  ├─ docs (sample 1)
+│  │  │  └─ v1
+│  ├─ definitions
+│  │  ├─ schema
+│  │  │  ├─ appliesTo (array) -> array<string>
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ createdBy (string)
+│  │  │  ├─ globalVariablesSchema (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ key (string)
+│  │  │  │  │  ├─ type (string)
+│  │  │  │  │  └─ default (integer)
+│  │  │  ├─ status (string)
+│  │  │  ├─ tables (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ tableId (string)
+│  │  │  │  │  ├─ name (string)
+│  │  │  │  │  ├─ rowsPath (string)
+│  │  │  │  │  └─ columns (array) -> array<string>
+│  │  │  ├─ updatedAt (timestamp)
+│  │  │  └─ version (integer)
+│  │  ├─ docs (sample 1)
+│  │  │  └─ v1
+│  ├─ placeholders
+│  │  ├─ schema
+│  │  │  ├─ payoutModel (string)
+│  │  │  ├─ rankingFormula (string)
+│  │  │  ├─ rebuyColumnsMode (string)
+│  │  │  └─ updatedAt (timestamp)
+│  │  ├─ docs (sample 1)
+│  │  │  └─ defaults
+│  ├─ placeholders
+│  │  ├─ schema
+│  │  │  ├─ payoutModel (string)
+│  │  │  ├─ rankingFormula (string)
+│  │  │  ├─ rebuyColumnsMode (string)
+│  │  │  └─ updatedAt (timestamp)
+│  │  ├─ docs (sample 1)
+│  │  │  └─ defaults
+│  ├─ sessions
+│  │  ├─ schema
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ createdBy (string)
+│  │  │  ├─ definitionVersionId (string)
+│  │  │  ├─ finalizedAt (null)
+│  │  │  ├─ name (string)
+│  │  │  ├─ playersSourcePath (string)
+│  │  │  ├─ sourceGameId (null)
+│  │  │  ├─ status (string)
+│  │  │  ├─ updatedAt (timestamp)
+│  │  │  └─ updatedBy (string)
+│  │  ├─ docs (sample 1)
+│  │  │  └─ default_session
+│  │  ├─ calculationFlags
+│  │  │  ├─ schema
+│  │  │  │  ├─ allowManualOverride (boolean)
+│  │  │  │  ├─ freezeComputedValues (boolean)
+│  │  │  │  ├─ updatedAt (timestamp)
+│  │  │  │  └─ updatedBy (string)
+│  │  │  ├─ docs (sample 1)
+│  │  │  │  └─ current
+│  │  ├─ tables
+│  │  │  ├─ (no fields found in sampled docs)
+│  │  └─ variables
+│  │     ├─ schema
+│  │     │  ├─ defaultWinPercent (integer)
+│  │     │  ├─ rakePercent (integer)
+│  │     │  ├─ rebuyColumnsCount (integer)
+│  │     │  ├─ updatedAt (timestamp)
+│  │     │  └─ updatedBy (string)
+│  │     ├─ docs (sample 1)
+│  │     │  └─ current
+│  └─ sessions
+│     ├─ schema
+│     │  ├─ createdAt (timestamp)
+│     │  ├─ createdBy (string)
+│     │  ├─ definitionVersionId (string)
+│     │  ├─ finalizedAt (null)
+│     │  ├─ name (string)
+│     │  ├─ playersSourcePath (string)
+│     │  ├─ sourceGameId (null)
+│     │  ├─ status (string)
+│     │  ├─ updatedAt (timestamp)
+│     │  └─ updatedBy (string)
+│     ├─ docs (sample 1)
+│     │  └─ default_session
+│     ├─ calculationFlags
+│     │  ├─ schema
+│     │  │  ├─ allowManualOverride (boolean)
+│     │  │  ├─ freezeComputedValues (boolean)
+│     │  │  ├─ updatedAt (timestamp)
+│     │  │  └─ updatedBy (string)
+│     │  ├─ docs (sample 1)
+│     │  │  └─ current
+│     ├─ tables
+│     │  ├─ (no fields found in sampled docs)
+│     └─ variables
+│        ├─ schema
+│        │  ├─ defaultWinPercent (integer)
+│        │  ├─ rakePercent (integer)
+│        │  ├─ rebuyColumnsCount (integer)
+│        │  ├─ updatedAt (timestamp)
+│        │  └─ updatedBy (string)
+│        ├─ docs (sample 1)
+│        │  └─ current
+├─ chat_messages
+│  ├─ schema
+│  │  ├─ authorId (string)
+│  │  ├─ authorName (string)
+│  │  ├─ createdAt (timestamp)
+│  │  ├─ expireAt (timestamp)
+│  │  ├─ source (string)
+│  │  └─ text (string)
+│  ├─ docs (sample 3)
+│  │  ├─ oTCurlLmPyWeCsQGUq7j
+│  │  ├─ qM3F6VYUDVIWhM9nyI8k
+│  │  └─ vScChNb9lO7Qe6BAVJJ9
+├─ modules_config
+│  ├─ schema
+│  │  ├─ main (map)
+│  │  │  ├─ appSettings (string)
+│  │  │  ├─ tables (string)
+│  │  │  ├─ adminGamesStats (string)
+│  │  │  ├─ chatMessages (string)
+│  │  │  ├─ userGames (string)
+│  │  │  ├─ calculators (string)
+│  │  │  ├─ adminMessages (string)
+│  │  │  └─ users (string)
+│  │  ├─ second (map)
+│  │  │  ├─ appSettings (string)
+│  │  │  ├─ tables (string)
+│  │  │  ├─ adminGamesStats (string)
+│  │  │  ├─ chatMessages (string)
+│  │  │  ├─ userGames (string)
+│  │  │  ├─ calculators (string)
+│  │  │  ├─ adminMessages (string)
+│  │  │  └─ users (string)
+│  │  └─ updatedAt (timestamp)
+│  ├─ docs (sample 1)
+│  │  └─ collections
+├─ Nekrolog_config
+│  ├─ schema
+│  │  ├─ enabled (boolean)
+│  │  ├─ sources (array) -> array<map>
+│  │  │  ├─ [] (map)
+│  │  │  │  ├─ distance_km (double|integer)
+│  │  │  │  ├─ type (string)
+│  │  │  │  ├─ enabled (boolean)
+│  │  │  │  ├─ name (string)
+│  │  │  │  ├─ url (string)
+│  │  │  │  └─ id (string)
+│  │  └─ updated_at (string)
+│  ├─ docs (sample 1)
+│  │  └─ sources
+├─ Nekrolog_refresh_jobs
+│  ├─ schema
+│  │  ├─ error_message (string)
+│  │  ├─ finished_at (string)
+│  │  ├─ ok (boolean)
+│  │  ├─ requested_at (timestamp)
+│  │  ├─ source_errors (array) -> array<map>
+│  │  │  ├─ [] (map)
+│  │  │  │  ├─ source_id (string)
+│  │  │  │  ├─ source_name (string)
+│  │  │  │  ├─ url (string)
+│  │  │  │  └─ error (string)
+│  │  ├─ started_at (string)
+│  │  ├─ status (string)
+│  │  ├─ trigger (string)
+│  │  ├─ updated_at (string)
+│  │  ├─ writer_name (string)
+│  │  └─ writer_version (string)
+│  ├─ docs (sample 1)
+│  │  └─ latest
+├─ Nekrolog_snapshots
+│  ├─ schema
+│  │  ├─ data (map)
+│  │  │  ├─ generated_at (string)
+│  │  │  ├─ updated_at (string)
+│  │  │  ├─ deaths (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ kind (string)
+│  │  │  │  │  ├─ name (string)
+│  │  │  │  │  ├─ date_death (string)
+│  │  │  │  │  ├─ date_funeral (string)
+│  │  │  │  │  ├─ time_funeral (string)
+│  │  │  │  │  ├─ place (string)
+│  │  │  │  │  ├─ source_id (string)
+│  │  │  │  │  ├─ source_name (string)
+│  │  │  │  │  ├─ url (string)
+│  │  │  │  │  ├─ source_url (string)
+│  │  │  │  │  ├─ note (string)
+│  │  │  │  │  └─ priority_hit (boolean)
+│  │  │  ├─ funerals (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ kind (string)
+│  │  │  │  │  ├─ name (string)
+│  │  │  │  │  ├─ date_funeral (null|string)
+│  │  │  │  │  ├─ time_funeral (string)
+│  │  │  │  │  ├─ place (string)
+│  │  │  │  │  ├─ source_id (string)
+│  │  │  │  │  ├─ source_name (string)
+│  │  │  │  │  ├─ url (string)
+│  │  │  │  │  ├─ note (null|string)
+│  │  │  │  │  ├─ priority_hit (boolean)
+│  │  │  │  │  ├─ date_death (string)
+│  │  │  │  │  └─ source_url (string)
+│  │  │  ├─ recent_deaths (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ kind (string)
+│  │  │  │  │  ├─ name (string)
+│  │  │  │  │  ├─ date_death (string)
+│  │  │  │  │  ├─ date_funeral (string)
+│  │  │  │  │  ├─ time_funeral (string)
+│  │  │  │  │  ├─ place (string)
+│  │  │  │  │  ├─ source_id (string)
+│  │  │  │  │  ├─ source_name (string)
+│  │  │  │  │  ├─ url (string)
+│  │  │  │  │  ├─ source_url (string)
+│  │  │  │  │  ├─ note (string)
+│  │  │  │  │  └─ priority_hit (boolean)
+│  │  │  ├─ upcoming_funerals (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ kind (string)
+│  │  │  │  │  ├─ name (string)
+│  │  │  │  │  ├─ date_death (string)
+│  │  │  │  │  ├─ date_funeral (string)
+│  │  │  │  │  ├─ time_funeral (string)
+│  │  │  │  │  ├─ place (string)
+│  │  │  │  │  ├─ source_id (string)
+│  │  │  │  │  ├─ source_name (string)
+│  │  │  │  │  ├─ url (string)
+│  │  │  │  │  ├─ source_url (string)
+│  │  │  │  │  ├─ note (string)
+│  │  │  │  │  └─ priority_hit (boolean)
+│  │  │  ├─ fallback_summary (map)
+│  │  │  │  ├─ text (string)
+│  │  │  │  ├─ date_death (null)
+│  │  │  │  ├─ date_funeral (null)
+│  │  │  │  └─ urls (array) -> array<unknown>
+│  │  │  ├─ sources (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ id (string)
+│  │  │  │  │  ├─ name (string)
+│  │  │  │  │  ├─ url (string)
+│  │  │  │  │  ├─ distance_km (double|integer)
+│  │  │  │  │  └─ enabled (boolean)
+│  │  │  ├─ target_phrases (array) -> array<string>
+│  │  │  ├─ source_errors (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ source_id (string)
+│  │  │  │  │  ├─ source_name (string)
+│  │  │  │  │  ├─ url (string)
+│  │  │  │  │  └─ error (string)
+│  │  │  ├─ refresh_error (string)
+│  │  │  ├─ writer_name (string)
+│  │  │  └─ writer_version (string)
+│  │  ├─ deaths (array) -> array<map>
+│  │  │  ├─ [] (map)
+│  │  │  │  ├─ kind (string)
+│  │  │  │  ├─ name (string)
+│  │  │  │  ├─ date_death (string)
+│  │  │  │  ├─ date_funeral (string)
+│  │  │  │  ├─ time_funeral (string)
+│  │  │  │  ├─ place (string)
+│  │  │  │  ├─ source_id (string)
+│  │  │  │  ├─ source_name (string)
+│  │  │  │  ├─ url (string)
+│  │  │  │  ├─ source_url (string)
+│  │  │  │  ├─ note (string)
+│  │  │  │  └─ priority_hit (boolean)
+│  │  ├─ fallback_summary (map)
+│  │  │  ├─ text (string)
+│  │  │  ├─ date_death (null)
+│  │  │  ├─ date_funeral (null)
+│  │  │  └─ urls (array) -> array<unknown>
+│  │  ├─ funerals (array) -> array<map>
+│  │  │  ├─ [] (map)
+│  │  │  │  ├─ kind (string)
+│  │  │  │  ├─ name (string)
+│  │  │  │  ├─ date_funeral (null|string)
+│  │  │  │  ├─ time_funeral (string)
+│  │  │  │  ├─ place (string)
+│  │  │  │  ├─ source_id (string)
+│  │  │  │  ├─ source_name (string)
+│  │  │  │  ├─ url (string)
+│  │  │  │  ├─ note (null|string)
+│  │  │  │  ├─ priority_hit (boolean)
+│  │  │  │  ├─ date_death (string)
+│  │  │  │  └─ source_url (string)
+│  │  ├─ generated_at (string)
+│  │  ├─ payload (map)
+│  │  │  ├─ generated_at (string)
+│  │  │  ├─ updated_at (string)
+│  │  │  ├─ deaths (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ kind (string)
+│  │  │  │  │  ├─ name (string)
+│  │  │  │  │  ├─ date_death (string)
+│  │  │  │  │  ├─ date_funeral (string)
+│  │  │  │  │  ├─ time_funeral (string)
+│  │  │  │  │  ├─ place (string)
+│  │  │  │  │  ├─ source_id (string)
+│  │  │  │  │  ├─ source_name (string)
+│  │  │  │  │  ├─ url (string)
+│  │  │  │  │  ├─ source_url (string)
+│  │  │  │  │  ├─ note (string)
+│  │  │  │  │  └─ priority_hit (boolean)
+│  │  │  ├─ funerals (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ kind (string)
+│  │  │  │  │  ├─ name (string)
+│  │  │  │  │  ├─ date_funeral (null|string)
+│  │  │  │  │  ├─ time_funeral (string)
+│  │  │  │  │  ├─ place (string)
+│  │  │  │  │  ├─ source_id (string)
+│  │  │  │  │  ├─ source_name (string)
+│  │  │  │  │  ├─ url (string)
+│  │  │  │  │  ├─ note (null|string)
+│  │  │  │  │  ├─ priority_hit (boolean)
+│  │  │  │  │  ├─ date_death (string)
+│  │  │  │  │  └─ source_url (string)
+│  │  │  ├─ recent_deaths (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ kind (string)
+│  │  │  │  │  ├─ name (string)
+│  │  │  │  │  ├─ date_death (string)
+│  │  │  │  │  ├─ date_funeral (string)
+│  │  │  │  │  ├─ time_funeral (string)
+│  │  │  │  │  ├─ place (string)
+│  │  │  │  │  ├─ source_id (string)
+│  │  │  │  │  ├─ source_name (string)
+│  │  │  │  │  ├─ url (string)
+│  │  │  │  │  ├─ source_url (string)
+│  │  │  │  │  ├─ note (string)
+│  │  │  │  │  └─ priority_hit (boolean)
+│  │  │  ├─ upcoming_funerals (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ kind (string)
+│  │  │  │  │  ├─ name (string)
+│  │  │  │  │  ├─ date_death (string)
+│  │  │  │  │  ├─ date_funeral (string)
+│  │  │  │  │  ├─ time_funeral (string)
+│  │  │  │  │  ├─ place (string)
+│  │  │  │  │  ├─ source_id (string)
+│  │  │  │  │  ├─ source_name (string)
+│  │  │  │  │  ├─ url (string)
+│  │  │  │  │  ├─ source_url (string)
+│  │  │  │  │  ├─ note (string)
+│  │  │  │  │  └─ priority_hit (boolean)
+│  │  │  ├─ fallback_summary (map)
+│  │  │  │  ├─ text (string)
+│  │  │  │  ├─ date_death (null)
+│  │  │  │  ├─ date_funeral (null)
+│  │  │  │  └─ urls (array) -> array<unknown>
+│  │  │  ├─ sources (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ id (string)
+│  │  │  │  │  ├─ name (string)
+│  │  │  │  │  ├─ url (string)
+│  │  │  │  │  ├─ distance_km (double|integer)
+│  │  │  │  │  └─ enabled (boolean)
+│  │  │  ├─ target_phrases (array) -> array<string>
+│  │  │  ├─ source_errors (array) -> array<map>
+│  │  │  │  ├─ [] (map)
+│  │  │  │  │  ├─ source_id (string)
+│  │  │  │  │  ├─ source_name (string)
+│  │  │  │  │  ├─ url (string)
+│  │  │  │  │  └─ error (string)
+│  │  │  ├─ refresh_error (string)
+│  │  │  ├─ writer_name (string)
+│  │  │  └─ writer_version (string)
+│  │  ├─ recent_deaths (array) -> array<map>
+│  │  │  ├─ [] (map)
+│  │  │  │  ├─ kind (string)
+│  │  │  │  ├─ name (string)
+│  │  │  │  ├─ date_death (string)
+│  │  │  │  ├─ date_funeral (string)
+│  │  │  │  ├─ time_funeral (string)
+│  │  │  │  ├─ place (string)
+│  │  │  │  ├─ source_id (string)
+│  │  │  │  ├─ source_name (string)
+│  │  │  │  ├─ url (string)
+│  │  │  │  ├─ source_url (string)
+│  │  │  │  ├─ note (string)
+│  │  │  │  └─ priority_hit (boolean)
+│  │  ├─ refresh_error (string)
+│  │  ├─ source_errors (array) -> array<map>
+│  │  │  ├─ [] (map)
+│  │  │  │  ├─ source_id (string)
+│  │  │  │  ├─ source_name (string)
+│  │  │  │  ├─ url (string)
+│  │  │  │  └─ error (string)
+│  │  ├─ sources (array) -> array<map>
+│  │  │  ├─ [] (map)
+│  │  │  │  ├─ id (string)
+│  │  │  │  ├─ name (string)
+│  │  │  │  ├─ url (string)
+│  │  │  │  ├─ distance_km (double|integer)
+│  │  │  │  └─ enabled (boolean)
+│  │  ├─ target_phrases (array) -> array<string>
+│  │  ├─ upcoming_funerals (array) -> array<map>
+│  │  │  ├─ [] (map)
+│  │  │  │  ├─ kind (string)
+│  │  │  │  ├─ name (string)
+│  │  │  │  ├─ date_death (string)
+│  │  │  │  ├─ date_funeral (string)
+│  │  │  │  ├─ time_funeral (string)
+│  │  │  │  ├─ place (string)
+│  │  │  │  ├─ source_id (string)
+│  │  │  │  ├─ source_name (string)
+│  │  │  │  ├─ url (string)
+│  │  │  │  ├─ source_url (string)
+│  │  │  │  ├─ note (string)
+│  │  │  │  └─ priority_hit (boolean)
+│  │  ├─ updated_at (string)
+│  │  ├─ writer_name (string)
+│  │  └─ writer_version (string)
+│  ├─ docs (sample 1)
+│  │  └─ latest
+├─ players
+│  ├─ schema
+│  │  ├─ Cash (string)
+│  │  ├─ GamesPlayed (string)
+│  │  ├─ GamesWon (string)
+│  │  ├─ MoneySpend (string)
+│  │  ├─ MoneyWon (string)
+│  │  ├─ Name (string)
+│  │  ├─ Placeholder1 (string)
+│  │  ├─ Placeholder2 (string)
+│  │  ├─ Placeholder3 (string)
+│  │  ├─ Placeholder4 (string)
+│  │  ├─ Placeholder5 (string)
+│  │  ├─ Placeholder6 (string)
+│  │  ├─ Placeholder7 (string)
+│  │  ├─ Placeholder8 (string)
+│  │  └─ Placeholder9 (string)
+│  ├─ docs (sample 1)
+│  │  └─ players
+├─ second_admin_games_stats
+│  ├─ schema
+│  │  ├─ rows (array) -> array<unknown>
+│  │  └─ visibleColumns (array) -> array<unknown>
+│  ├─ docs (sample 1)
+│  │  └─ 2026
+├─ second_admin_messages
+│  ├─ schema
+│  │  ├─ createdAt (timestamp)
+│  │  ├─ message (string)
+│  │  └─ source (string)
+│  ├─ docs (sample 1)
+│  │  └─ main
+├─ second_app_settings
+│  ├─ schema
+│  │  ├─ html (string)
+│  │  ├─ pin (string)
+│  │  ├─ players (array) -> array<unknown>
+│  │  ├─ source (string)
+│  │  ├─ text (string)
+│  │  └─ updatedAt (timestamp)
+│  ├─ docs (sample 3)
+│  │  ├─ evening_plan
+│  │  ├─ next_game
+│  │  └─ player_access
+├─ second_calculators
+│  ├─ schema
+│  │  ├─ createdAt (timestamp)
+│  │  ├─ isActive (boolean)
+│  │  ├─ name (string)
+│  │  ├─ source (string)
+│  │  ├─ type (string)
+│  │  └─ updatedAt (timestamp)
+│  ├─ docs (sample 1)
+│  │  └─ tournament
+│  ├─ definitions
+│  │  ├─ schema
+│  │  │  ├─ appliesTo (array) -> array<string>
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ createdBy (string)
+│  │  │  ├─ globalVariablesSchema (array) -> array<unknown>
+│  │  │  ├─ status (string)
+│  │  │  ├─ tables (array) -> array<unknown>
+│  │  │  ├─ updatedAt (timestamp)
+│  │  │  └─ version (integer)
+│  │  ├─ docs (sample 1)
+│  │  │  └─ v1
+│  ├─ placeholders
+│  │  ├─ schema
+│  │  │  ├─ payoutModel (string)
+│  │  │  ├─ rankingFormula (string)
+│  │  │  ├─ rebuyColumnsMode (string)
+│  │  │  └─ updatedAt (timestamp)
+│  │  ├─ docs (sample 1)
+│  │  │  └─ defaults
+│  └─ sessions
+│     ├─ schema
+│     │  ├─ createdAt (timestamp)
+│     │  ├─ status (string)
+│     │  └─ updatedAt (timestamp)
+│     ├─ docs (sample 1)
+│     │  └─ default
+│     ├─ calculationFlags
+│     │  ├─ schema
+│     │  │  └─ updatedAt (timestamp)
+│     │  ├─ docs (sample 1)
+│     │  │  └─ default
+│     ├─ snapshots
+│     │  ├─ schema
+│     │  │  ├─ createdAt (timestamp)
+│     │  │  └─ source (string)
+│     │  ├─ docs (sample 1)
+│     │  │  └─ initial
+│     ├─ tables
+│     │  ├─ schema
+│     │  │  └─ updatedAt (timestamp)
+│     │  ├─ docs (sample 1)
+│     │  │  └─ table11
+│     │  └─ rows
+│     │     ├─ schema
+│     │     │  └─ createdAt (timestamp)
+│     │     ├─ docs (sample 1)
+│     │     │  └─ bootstrap
+│     └─ variables
+│        ├─ schema
+│        │  └─ updatedAt (timestamp)
+│        ├─ docs (sample 1)
+│        │  └─ default
+├─ second_chat_messages
+│  ├─ schema
+│  │  ├─ createdAt (timestamp)
+│  │  ├─ playerName (string)
+│  │  ├─ source (string)
+│  │  └─ text (string)
+│  ├─ docs (sample 1)
+│  │  └─ bootstrap
+├─ second_players
+│  ├─ schema
+│  │  ├─ appEnabled (boolean)
+│  │  ├─ name (string)
+│  │  ├─ permissions (array) -> array<unknown>
+│  │  ├─ pin (string)
+│  │  ├─ source (string)
+│  │  ├─ statsYearsAccess (array) -> array<unknown>
+│  │  └─ updatedAt (timestamp)
+│  ├─ docs (sample 1)
+│  │  └─ bootstrap
+├─ second_tables
+│  ├─ schema
+│  │  ├─ createdAt (timestamp)
+│  │  ├─ gameDate (string)
+│  │  ├─ gameType (string)
+│  │  ├─ isClosed (boolean)
+│  │  ├─ name (string)
+│  │  └─ source (string)
+│  ├─ docs (sample 1)
+│  │  └─ bootstrap
+│  ├─ confirmations
+│  │  ├─ schema
+│  │  │  ├─ confirmedAt (timestamp)
+│  │  │  ├─ playerId (string)
+│  │  │  └─ playerName (string)
+│  │  ├─ docs (sample 1)
+│  │  │  └─ bootstrap
+│  └─ rows
+│     ├─ schema
+│     │  ├─ championship (boolean)
+│     │  ├─ createdAt (timestamp)
+│     │  ├─ entryFee (string)
+│     │  ├─ payout (string)
+│     │  ├─ playerName (string)
+│     │  ├─ points (string)
+│     │  └─ rebuy (string)
+│     ├─ docs (sample 1)
+│     │  └─ bootstrap
+├─ second_user_games
+│  ├─ schema
+│  │  ├─ createdAt (timestamp)
+│  │  ├─ gameDate (string)
+│  │  ├─ gameType (string)
+│  │  ├─ isClosed (boolean)
+│  │  ├─ name (string)
+│  │  ├─ postGameNotes (string)
+│  │  ├─ preGameNotes (string)
+│  │  └─ source (string)
+│  ├─ docs (sample 1)
+│  │  └─ bootstrap
+│  ├─ confirmations
+│  │  ├─ schema
+│  │  │  ├─ confirmedAt (timestamp)
+│  │  │  ├─ playerId (string)
+│  │  │  └─ playerName (string)
+│  │  ├─ docs (sample 1)
+│  │  │  └─ bootstrap
+│  └─ rows
+│     ├─ schema
+│     │  ├─ championship (boolean)
+│     │  ├─ createdAt (timestamp)
+│     │  ├─ entryFee (string)
+│     │  ├─ payout (string)
+│     │  ├─ playerName (string)
+│     │  ├─ points (string)
+│     │  └─ rebuy (string)
+│     ├─ docs (sample 1)
+│     │  └─ bootstrap
+├─ Tables
+│  ├─ schema
+│  │  ├─ createdAt (timestamp)
+│  │  ├─ gameDate (string)
+│  │  ├─ gameType (string)
+│  │  ├─ isClosed (boolean)
+│  │  ├─ name (string)
+│  │  ├─ postGameNotes (string)
+│  │  └─ preGameNotes (string)
+│  ├─ docs (sample 3)
+│  │  ├─ 3RAPSXbOk5Z7aChy94AN
+│  │  ├─ 4LEbMfHAjCQjxROE8INf
+│  │  └─ BD2KzUxHvnGbRC7ehMim
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ N6NpKE7Ey6Yc3nw5Nq9O
+│  │  │  ├─ NMrYnTq2AnTBXw01hp9u
+│  │  │  └─ Vr296AIHHDGgyuFQUCdA
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ 0qWNzn8lN2YqS4RHXzQ2
+│  │  │  ├─ IRxCUFndy5UoT1IyqUEu
+│  │  │  └─ JZEr0PPO9XUGfa7vgARu
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ 8Zfc9ILqxwjJfU11dQlT
+│  │  │  ├─ FYnUuJkSoVoueA3dZ2K6
+│  │  │  └─ FjejI0yISFCqdpRn44Hg
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ 3QVbhlOeMkspn8wrpwNg
+│  │  │  ├─ 5WiokuzQRrqhLUPJziPM
+│  │  │  └─ GelP9bz1gL6K9TGLFs9s
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ 1ItvMRMcpK8nrVQeHXdr
+│  │  │  ├─ NoFq3zxvJEppDkuKeR6S
+│  │  │  └─ RAt7qy7NcelSf5Sl7C86
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ 3GkvUaXYej44meaj28U6
+│  │  │  ├─ 5lNyZikBmKFkr27YvkiG
+│  │  │  └─ 705eaqlIU9l9nVorByQs
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ deposits (string)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ meetings (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ payouts (string)
+│  │  │  ├─ percentAllGames (string)
+│  │  │  ├─ percentPlayedGames (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  ├─ rebuy (string)
+│  │  │  ├─ rebuyTotal (string)
+│  │  │  ├─ summary (string)
+│  │  │  └─ totalGames (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ 3bN1ehiXF9Ra4I7zU052
+│  │  │  ├─ 409hkp9lKUFp61qAH0wK
+│  │  │  └─ 9Yytudhlk6qWuvbOUlAc
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ 7j8GMY4ERmh41ta5oR8v
+│  │  │  ├─ HPQhddytzEXVLGWMJH2U
+│  │  │  └─ IwmOQ6FJTa2lrhlEssuY
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ 3FRuzhVs05tIBemWjJ7O
+│  │  │  ├─ EMsrtDiYfI4bORYcpXcf
+│  │  │  └─ U5y1UF3eF6WKR8I5o3li
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ 5LDO1Ysi2mTrHqqUo8fa
+│  │  │  ├─ Eayh1cN7TPfQMijhpNHS
+│  │  │  └─ GGzP63CFQj4FoJGgf7xI
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ 3jPuV8OsatsTAg5YXLYm
+│  │  │  ├─ 65iZGCNiTAm5V4kEgERo
+│  │  │  └─ 7wKuMwvz3sgB3Snj1w6W
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ 8qoSNt2kArwqtV8Hb2t0
+│  │  │  ├─ AO4SvcLDaFvX6yjCCRLj
+│  │  │  └─ Eg5E8e1yJtHYbMF2fQ1Z
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ DlTTsdDLyqLUY53YaIPA
+│  │  │  ├─ G4tbOS9Hgv4EIphWycvP
+│  │  │  └─ J8MB7tJ6SMgk8jbH5Rd5
+│  └─ rows
+│     ├─ schema
+│     │  ├─ championship (boolean)
+│     │  ├─ createdAt (timestamp)
+│     │  ├─ entryFee (string)
+│     │  ├─ payout (string)
+│     │  ├─ playerName (string)
+│     │  ├─ points (string)
+│     │  └─ rebuy (string)
+│     ├─ docs (sample 3)
+│     │  ├─ 17HNAnf3IfVASK8sOt2E
+│     │  ├─ BkfyC33b5i0iZ7ZP30Qw
+│     │  └─ EjvAx49XEO24BZ3Xv50B
+└─ UserGames
+   ├─ schema
+   │  ├─ createdAt (timestamp)
+   │  ├─ createdByPlayerId (string)
+   │  ├─ createdByPlayerName (string)
+   │  ├─ createdByPlayerPin (string)
+   │  ├─ gameDate (string)
+   │  ├─ gameType (string)
+   │  ├─ isClosed (boolean)
+   │  ├─ name (string)
+   │  ├─ postGameNotes (string)
+   │  └─ preGameNotes (string)
+   ├─ docs (sample 2)
+   │  ├─ 20jIN0MxVoeCkmEFK4hp
+   │  └─ nFV8Sc9WnsvwW6Hp28UT
+   └─ rows
+      ├─ schema
+      │  ├─ championship (boolean)
+      │  ├─ createdAt (timestamp)
+      │  ├─ entryFee (string)
+      │  ├─ payout (string)
+      │  ├─ playerName (string)
+      │  ├─ points (string)
+      │  └─ rebuy (string)
+      ├─ docs (sample 3)
+      │  ├─ EiLLMeBjnZ8boTh2YTxh
+      │  ├─ IdGjeovNZFuX8zUyq4s8
+      │  └─ WmHGHSImyIzPplYJ7jIm
