@@ -1,55 +1,109 @@
 # Second — dokumentacja techniczna
 
-## 1. Struktura modułu
-- `Second/index.html` — nagłówek, szablon widoku użytkownika/admina oraz modal instrukcji.
-- `Second/styles.css` — wspólny motyw wizualny, layout kart, tabele i style modali.
-- `Second/app.js` — logika zakładek, autoryzacji admina, notatek i obsługi instrukcji.
+## 1. Architektura modułu
+- `Second/index.html` zawiera komplet widoków admin/user w template'ach, modal instrukcji i wszystkie kontrolki UI.
+- `Second/app.js` odpowiada za:
+  - inicjalizację Firebase,
+  - obsługę zakładek,
+  - synchronizację z Firestore,
+  - komunikaty statusów dla operacji Firebase,
+  - obsługę odświeżania aktywnej zakładki admina.
+- `Second/styles.css` definiuje motyw, layout i style komponentów.
 
-## 2. Obsługa paska narzędzi administratora
-- Przycisk odświeżania ma identyfikator `#adminPanelRefresh`.
-- Komunikaty statusu odświeżania są wypisywane do `#adminPanelRefreshStatus`.
-- Logika odświeżania opiera się o mapę `adminRefreshHandlers` oraz funkcję `registerAdminRefreshHandler(tabId, handler)`.
-- `initAdminPanelRefresh`:
-  - sprawdza, która zakładka `.admin-panel-content` jest aktywna,
-  - uruchamia przypisany handler odświeżania,
-  - używa komunikatów zgodnych z modułem Main:
-    - `Odświeżanie danych...`,
-    - `Dane zostały odświeżone.`,
-    - `Nie udało się odświeżyć danych.`,
-    - `Ta zakładka nie ma danych do odświeżenia.`,
-    - `Nie udało się rozpoznać aktywnej zakładki.`.
+## 2. Integracje Firestore (moduł Second)
 
-## 3. Obsługa modala instrukcji (`initInstructionModal`)
-- Pierwsze otwarcie pobiera markdown przez `fetch`.
-- Treść jest cachowana lokalnie (`cachedText`) i nie jest pobierana ponownie przy kolejnym otwarciu.
-- Modal zamyka się przez:
-  - przycisk `✕`,
-  - kliknięcie w tło,
-  - klawisz `Escape`.
-- `body.modal-open` blokuje przewijanie strony podczas otwartego modala.
+### 2.1 Aktualności
+- Kolekcja: `second_admin_messages`.
+- Dokument: `admin_messages`.
+- Pola zapisu:
+  - `message` (string),
+  - `createdAt` (serverTimestamp),
+  - `source` (string).
+- Admin:
+  - zapis przez przycisk `#adminMessageSend`,
+  - statusy w `#adminMessageStatus`.
+- User:
+  - podgląd przez `#latestMessageOutput`,
+  - statusy w `#newsOutputStatus`.
 
-## 4. Widoki i role
-- Parametr `?admin=1` uruchamia panel administratora.
-- Notka o pominięciu hasła admina (`#secondAdminPasswordBypassNote`) widoczna tylko w trybie admin.
-- Sam przycisk instrukcji pozostaje aktywny i widoczny zawsze.
+### 2.2 Czat
+- Kolekcja: `second_chat_messages`.
+- Pola wiadomości:
+  - `text` (string),
+  - `authorName` (string),
+  - `createdAt` (serverTimestamp),
+  - `expireAt` (timestamp +30 dni).
+- User:
+  - wysyłka przez `#chatSendButton`,
+  - komunikaty w `#chatStatus`,
+  - render historii w `#chatMessages`.
+- Admin:
+  - podgląd i kasowanie pojedynczych wiadomości (`Usuń`),
+  - kasowanie zbiorcze wiadomości starszych niż 30 dni (`#adminChatCleanup`),
+  - statusy w `#adminChatStatus`.
 
-## 5. Integracja Firebase
-- Firebase inicjalizowany warunkowo przez `getFirebaseApp()`.
-- Zaimplementowana ochrona usuwania ostatniego dokumentu top-level collection.
-- Zakładka notatek admina zapisuje dane do `admin_notes/second`.
-- Dla zakładki notatek zarejestrowano handler odświeżania `registerAdminRefreshHandler("adminNotesTab", refreshNotesData)`.
-- `refreshNotesData` pobiera dokument notatek z serwera (`get({ source: "server" })`), aktualizuje pole tekstowe i status sekcji notatek.
+### 2.3 Regulamin
+- Kolekcja: `second_app_settings`.
+- Dokument: `rules`.
+- Pole główne: `text`.
+- Admin:
+  - edycja przez `#adminRulesInput`,
+  - zapis przez `#adminRulesSave`,
+  - statusy w `#adminRulesStatus`.
+- User:
+  - odczyt w `#rulesOutput`,
+  - statusy w `#rulesStatus`.
 
-## 6. Aktualny stan wspólnych danych Firestore (Main + Second)
+### 2.4 Gracze
+- Kolekcja: `second_app_settings`.
+- Dokument: `player_access`.
+- Odczytywane pole: `players[]`.
+- Render tabel:
+  - admin: `#adminPlayersTableBody` + licznik `#adminPlayersCount`,
+  - user: `#playersTableBody`.
+- Statusy:
+  - admin: `#adminPlayersStatus`.
 
-### 6.1. Firestore Rules
-- Aktualne reguły Firestore udostępniają odczyt i zapis (`allow read, write: if true;`) dla kolekcji aplikacyjnych.
-- Obejmuje to m.in. `admin_messages`, `admin_notes`, `app_settings`, `players`, `chat_messages`, `admin_games_stats`, `Tables`, `UserGames`, `calculators`, `Nekrolog_config` i `Nekrolog_snapshots`.
-- Wyjątek: `Nekrolog_refresh_jobs` ma zapis ograniczony do dokumentu `latest`.
+### 2.5 Notatki
+- Kolekcja: `admin_notes`.
+- Dokument: `second`.
+- Pola zapisu:
+  - `text`,
+  - `updatedAt`,
+  - `updatedBy`,
+  - `module`.
+- Logika zabezpiecza aktywną edycję (lokalne zmiany nie są nadpisywane snapshotem do czasu zapisu/wyjścia z pola).
 
-### 6.2. Najważniejsze kolekcje i pola
-- `admin_notes`: dokumenty `main` i `second` z polami `module`, `text`, `updatedAt`, `updatedBy`.
-- `app_settings`: m.in. dokument `player_access` z listą `players[]` i uprawnieniami (`appEnabled`, `permissions`, `statsYearsAccess`).
-- `Tables` oraz `UserGames`: dokument gry + subkolekcje `rows` (wiersze wyników) i `confirmations` (potwierdzenia graczy).
-- `calculators/{type}`: dane kalkulatorów oraz subkolekcje `definitions`, `placeholders`, `sessions` (w tym `variables`, `calculationFlags`, `tables/rows`, `snapshots`).
-- `Nekrolog_*`: konfiguracja, snapshoty i kolejka odświeżania modułu nekrologu.
+## 3. Rejestr handlerów odświeżania
+- `adminRefreshHandlers` to mapa `tabId -> async handler`.
+- Rejestracja przez `registerAdminRefreshHandler`.
+- Przycisk `#adminPanelRefresh` uruchamia handler aktywnej zakładki i aktualizuje `#adminPanelRefreshStatus`.
+- Obsługiwane zakładki: `adminNewsTab`, `adminChatTab`, `adminRulesTab`, `adminNotesTab`, `adminPlayersTab`.
+
+## 4. Komunikaty statusu operacji Firebase
+W każdej sekcji podpiętej do Firebase występują komunikaty stanu:
+- ładowanie danych,
+- zapisywanie/wysyłanie,
+- sukces,
+- błąd.
+
+Dotyczy to sekcji:
+- Aktualności (admin + user),
+- Czat (admin + user),
+- Regulamin (admin + user),
+- Gracze (admin + user),
+- Notatki (admin).
+
+## 5. Zmiany tekstowe i nazewnicze w UI
+- Nagłówek modułu:
+  - „Drugi moduł”,
+  - „Najdroższa Służbo Celno-Skarbowa - tu nic nie ma!”.
+- Usunięto opis pod nagłówkiem.
+- Zakładka „Turniej” zmieniona na „TOURNAMENT OF POKER” (admin i user).
+- W panelu bocznym turnieju zaktualizowano listę przycisków zgodnie z wymaganiami.
+- W opisie notatek usunięto dopisek „(zapis w Firebase)”.
+
+## 6. Uwagi implementacyjne
+- Kod używa Firebase compat SDK (`firebase-app-compat`, `firebase-firestore-compat`).
+- Inicjalizacja jest warunkowa i wyłącza akcje, jeśli konfiguracja Firebase jest niedostępna.
+- Pozostaje aktywna globalna ochrona przed usunięciem ostatniego dokumentu kolekcji top-level.

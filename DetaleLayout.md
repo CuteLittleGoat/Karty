@@ -144,3 +144,18 @@ Parametry stylu komunikatu w module `Second` (`.admin-password-bypass-note`):
 ## 7) Zasada aktualizacji
 
 Każda zmiana wizualna (font, kolor, cień, spacing, układ, modal, tabela, formularz) w `Main` lub `Second` powinna być od razu odzwierciedlona w tym pliku, tak aby dokument pozostawał kompletnym i aktualnym opisem layoutu.
+
+### 6.2 Aktualne nazewnictwo w module Second
+- Nagłówek sekcji intro:
+  - eyebrow: `Drugi moduł`,
+  - tytuł: `Najdroższa Służbo Celno-Skarbowa - tu nic nie ma!`.
+- Usunięto linię pomocniczą pod nagłówkiem (subtitle).
+- Nazwa zakładki turniejowej (admin i user): `TOURNAMENT OF POKER`.
+- Aktualne etykiety panelu bocznego turnieju:
+  - `Lista graczy`,
+  - `Losowanie stołów`,
+  - `Wypłaty`,
+  - `Podział puli`,
+  - `Faza grupowa`,
+  - `Półfinał`,
+  - `Wypłaty`.

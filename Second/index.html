@@ -16,9 +16,8 @@
     <div class="page">
       <header class="page-header">
         <div class="header-intro">
-          <p class="eyebrow">Karty — Moduł Second</p>
-          <h1>Panel turniejowy</h1>
-          <p class="subtitle">Szkielet UI odwzorowujący kluczowe zakładki modułu Main.</p>
+          <p class="eyebrow">Drugi moduł</p>
+          <h1>Najdroższa Służbo Celno-Skarbowa - tu nic nie ma!</h1>
         </div>
         <div class="header-controls">
           <div class="admin-toolbar">
@@ -47,7 +46,7 @@
           <button class="admin-panel-tab" type="button" data-target="adminRulesTab">Regulamin</button>
           <button class="admin-panel-tab" type="button" data-target="adminNotesTab">Notatki</button>
           <button class="admin-panel-tab" type="button" data-target="adminPlayersTab">Gracze</button>
-          <button class="admin-panel-tab" type="button" data-target="adminTournamentTab">Turniej</button>
+          <button class="admin-panel-tab" type="button" data-target="adminTournamentTab">TOURNAMENT OF POKER</button>
         </div>
 
         <div id="adminNewsTab" class="admin-panel-content is-active" role="tabpanel">
@@ -68,7 +67,7 @@
               ></textarea>
               <div class="admin-message-actions">
                 <button id="adminMessageSend" class="primary" type="button">Wyślij</button>
-                <span id="adminMessageStatus" class="status-text" aria-live="polite">Szkielet UI — brak integracji z Firebase.</span>
+                <span id="adminMessageStatus" class="status-text" aria-live="polite">Gotowe do wysłania wiadomości.</span>
               </div>
             </div>
           </div>
@@ -81,17 +80,10 @@
               <p>Moderuj wiadomości i usuwaj wpisy starsze niż 30 dni.</p>
             </div>
             <div class="admin-chat-actions">
-              <button class="danger" type="button">Usuń starsze niż 30 dni</button>
-              <span class="status-text" aria-live="polite">Szkielet UI — brak integracji z Firebase.</span>
+              <button id="adminChatCleanup" class="danger" type="button">Usuń starsze niż 30 dni</button>
+              <span id="adminChatStatus" class="status-text" aria-live="polite">Ładowanie wiadomości czatu...</span>
             </div>
-            <div class="admin-chat-list">
-              <article class="admin-chat-item">
-                <div class="admin-chat-meta">
-                  <strong>System</strong>
-                </div>
-                <p class="admin-chat-text">Tu pojawią się wiadomości czatu.</p>
-              </article>
-            </div>
+            <div id="adminChatList" class="admin-chat-list"></div>
           </section>
         </div>
 
@@ -104,8 +96,8 @@
             <label for="adminRulesInput">Treść regulaminu</label>
             <textarea id="adminRulesInput" rows="50" placeholder="Np. 1. Wpisowe jest bezzwrotne..."></textarea>
             <div class="admin-rules-actions">
-              <button class="primary" type="button">Zapisz</button>
-              <span class="status-text" aria-live="polite">Szkielet UI — brak integracji z Firebase.</span>
+              <button id="adminRulesSave" class="primary" type="button">Zapisz</button>
+              <span id="adminRulesStatus" class="status-text" aria-live="polite">Ładowanie regulaminu...</span>
             </div>
           </div>
         </div>
@@ -114,7 +106,7 @@
           <div class="admin-rules">
             <div class="card-header">
               <h3>Notatki</h3>
-              <p>Notatki administracyjne modułu Second (zapis w Firebase).</p>
+              <p>Notatki administracyjne modułu Second.</p>
             </div>
             <label for="adminNotesInput">Treść notatek</label>
             <textarea
@@ -138,8 +130,8 @@
               <h3>Gracze</h3>
               <p>Zarządzaj PIN-ami graczy i uprawnieniami do zakładek aplikacji.</p>
             </div>
-            <span class="status-text" aria-live="polite">Szkielet UI — brak integracji z Firebase.</span>
-            <p class="status-text">Liczba dodanych graczy: 0</p>
+            <span id="adminPlayersStatus" class="status-text" aria-live="polite">Ładowanie listy graczy...</span>
+            <p id="adminPlayersCount" class="status-text">Liczba dodanych graczy: 0</p>
             <div class="admin-table-scroll">
               <table class="admin-data-table players-table">
                 <thead>
@@ -151,16 +143,13 @@
                     <th></th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <td colspan="5">Brak graczy. Dodaj</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="admin-table-actions">
-              <button class="secondary" type="button">Dodaj</button>
-            </div>
+                  <tbody id="adminPlayersTableBody">
+                    <tr>
+                      <td colspan="5">Brak graczy. Dodaj</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
           </div>
         </div>
 
@@ -171,8 +160,13 @@
                 <h3>Panel</h3>
               </div>
               <div class="admin-games-years-list player-zone-sections-list">
-                <button class="admin-games-year-button is-active" type="button" data-tournament-target>Strona1</button>
-                <button class="admin-games-year-button" type="button" data-tournament-target>Strona2</button>
+                <button class="admin-games-year-button is-active" type="button" data-tournament-target>Lista graczy</button>
+                <button class="admin-games-year-button" type="button" data-tournament-target>Losowanie stołów</button>
+                <button class="admin-games-year-button" type="button" data-tournament-target>Wypłaty</button>
+                <button class="admin-games-year-button" type="button" data-tournament-target>Podział puli</button>
+                <button class="admin-games-year-button" type="button" data-tournament-target>Faza grupowa</button>
+                <button class="admin-games-year-button" type="button" data-tournament-target>Półfinał</button>
+                <button class="admin-games-year-button" type="button" data-tournament-target>Wypłaty</button>
               </div>
             </aside>
             <section class="admin-games-content">
@@ -197,7 +191,7 @@
             <button class="tab-button" type="button" data-target="chatTab">Czat</button>
             <button class="tab-button" type="button" data-target="rulesTab">Regulamin</button>
             <button class="tab-button" type="button" data-target="playersTab">Gracze</button>
-            <button class="tab-button" type="button" data-target="tournamentTab">Turniej</button>
+            <button class="tab-button" type="button" data-target="tournamentTab">TOURNAMENT OF POKER</button>
           </div>
         </div>
         <div class="user-tab-content">
@@ -208,7 +202,7 @@
             <div class="latest-message">
               <label for="latestMessageOutput">Najnowsze</label>
               <textarea id="latestMessageOutput" rows="25" readonly placeholder="Brak wiadomości od administratora."></textarea>
-              <p class="status-text" aria-live="polite">Szkielet UI — brak integracji z Firebase.</p>
+              <p id="newsOutputStatus" class="status-text" aria-live="polite">Ładowanie aktualności...</p>
             </div>
           </div>
 
@@ -217,22 +211,22 @@
               <div class="pin-card">
                 <p class="pin-title">Wpisz PIN z uprawnieniem Czat, aby dołączyć do rozmowy.</p>
                 <div class="pin-inputs">
-                  <input type="tel" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" minlength="5" placeholder="PIN (5 cyfr)" />
-                  <button class="primary" type="button">Otwórz</button>
+                  <input id="chatPinInput" type="tel" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" minlength="5" placeholder="PIN (5 cyfr)" />
+                  <button id="chatPinOpenButton" class="primary" type="button">Otwórz</button>
                 </div>
-                <p class="status-text"></p>
+                <p id="chatPinStatus" class="status-text"></p>
               </div>
             </div>
             <div class="chat-content is-visible">
-              <div class="chat-messages">
+              <div id="chatMessages" class="chat-messages">
                 <p class="chat-empty">Brak wiadomości.</p>
               </div>
               <div class="chat-form">
                 <label for="chatMessageInput">Twoja wiadomość</label>
                 <textarea id="chatMessageInput" rows="3" maxlength="600" placeholder="Napisz wiadomość do graczy..."></textarea>
                 <div class="chat-form-actions">
-                  <button class="primary" type="button">Wyślij</button>
-                  <span class="status-text" aria-live="polite">Szkielet UI — brak integracji z Firebase.</span>
+                  <button id="chatSendButton" class="primary" type="button">Wyślij</button>
+                  <span id="chatStatus" class="status-text" aria-live="polite">Ładowanie czatu...</span>
                 </div>
               </div>
             </div>
@@ -245,7 +239,7 @@
             <div class="latest-message latest-rules">
               <label for="rulesOutput">Obowiązujące zasady</label>
               <textarea id="rulesOutput" rows="50" readonly placeholder="Administrator jeszcze nie dodał regulaminu."></textarea>
-              <p class="status-text" aria-live="polite">Szkielet UI — brak integracji z Firebase.</p>
+              <p id="rulesStatus" class="status-text" aria-live="polite">Ładowanie regulaminu...</p>
             </div>
           </div>
 
@@ -266,7 +260,7 @@
                       <th></th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody id="playersTableBody">
                     <tr>
                       <td colspan="5">Brak graczy.</td>
                     </tr>
@@ -283,8 +277,13 @@
                   <h3>Panel</h3>
                 </div>
                 <div class="admin-games-years-list player-zone-sections-list">
-                  <button class="admin-games-year-button is-active" type="button" data-tournament-target>Strona1</button>
-                  <button class="admin-games-year-button" type="button" data-tournament-target>Strona2</button>
+                  <button class="admin-games-year-button is-active" type="button" data-tournament-target>Lista graczy</button>
+                  <button class="admin-games-year-button" type="button" data-tournament-target>Losowanie stołów</button>
+                  <button class="admin-games-year-button" type="button" data-tournament-target>Wypłaty</button>
+                  <button class="admin-games-year-button" type="button" data-tournament-target>Podział puli</button>
+                  <button class="admin-games-year-button" type="button" data-tournament-target>Faza grupowa</button>
+                  <button class="admin-games-year-button" type="button" data-tournament-target>Półfinał</button>
+                  <button class="admin-games-year-button" type="button" data-tournament-target>Wypłaty</button>
                 </div>
               </aside>
               <section class="admin-games-content">
