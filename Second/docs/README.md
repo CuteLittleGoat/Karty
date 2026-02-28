@@ -3,7 +3,8 @@
 ## 1. Uruchomienie
 1. Otwórz `Second/index.html`.
 2. Aby wejść do panelu administratora, dodaj w URL parametr `?admin=1`.
-3. W prawym górnym rogu kliknij **Instrukcja**, aby otworzyć okno z instrukcją.
+3. Na górze strony sprawdź nagłówek: **"Netanjahu to ludobójca"**.
+4. W prawym górnym rogu kliknij **Instrukcja**, aby otworzyć okno z instrukcją.
 
 ## 2. Widok użytkownika
 
