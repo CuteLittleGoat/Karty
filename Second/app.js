@@ -159,6 +159,12 @@ const ADMIN_SECURITY_DOCUMENT = "credentials";
 const ADMIN_SECURITY_PASSWORD_FIELD = "passwordHash";
 const ADMIN_NOTES_COLLECTION = "admin_notes";
 const SECOND_ADMIN_NOTES_DOCUMENT = "second";
+const SECOND_ADMIN_MESSAGES_COLLECTION = "second_admin_messages";
+const SECOND_ADMIN_MESSAGES_DOCUMENT = "admin_messages";
+const SECOND_CHAT_COLLECTION = "second_chat_messages";
+const SECOND_APP_SETTINGS_COLLECTION = "second_app_settings";
+const PLAYER_ACCESS_DOCUMENT = "player_access";
+const RULES_DOCUMENT = "rules";
 
 const shouldRequestAdminAccess = () => new URLSearchParams(window.location.search).get("admin") === "1";
 
@@ -383,6 +389,60 @@ const registerAdminRefreshHandler = (tabId, handler) => {
   adminRefreshHandlers.set(tabId, handler);
 };
 
+const formatChatTimestamp = (value) => {
+  const date = value?.toDate instanceof Function ? value.toDate() : value instanceof Date ? value : null;
+  if (!date || Number.isNaN(date.getTime())) {
+    return "przed chwilą";
+  }
+  return date.toLocaleString("pl-PL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+};
+
+const renderPlayersTable = (tableBody, players) => {
+  if (!tableBody) {
+    return;
+  }
+
+  tableBody.innerHTML = "";
+
+  if (!players.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 5;
+    cell.textContent = "Brak graczy.";
+    row.appendChild(cell);
+    tableBody.appendChild(row);
+    return;
+  }
+
+  players.forEach((player) => {
+    const row = document.createElement("tr");
+    const appCell = document.createElement("td");
+    const nameCell = document.createElement("td");
+    const pinCell = document.createElement("td");
+    const permissionsCell = document.createElement("td");
+    const actionsCell = document.createElement("td");
+
+    appCell.textContent = typeof player.app === "string" ? player.app : "Second";
+    nameCell.textContent = typeof player.name === "string" && player.name.trim() ? player.name : "—";
+    pinCell.textContent = typeof player.pin === "string" && player.pin.trim() ? player.pin : "—";
+
+    const permissions = Array.isArray(player.permissions)
+      ? player.permissions.filter((entry) => typeof entry === "string" && entry.trim())
+      : [];
+    permissionsCell.textContent = permissions.length ? permissions.join(", ") : "Brak";
+    actionsCell.textContent = "";
+
+    row.append(appCell, nameCell, pinCell, permissionsCell, actionsCell);
+    tableBody.appendChild(row);
+  });
+};
+
 const initInstructionModal = () => {
   const openButton = document.querySelector("#secondInstructionButton");
   const modal = document.querySelector("#secondInstructionModal");
@@ -496,6 +556,163 @@ const setupUserView = (root) => {
   });
 
   setupTournamentButtons(root);
+
+  const firebaseApp = getFirebaseApp();
+  const newsOutput = root.querySelector("#latestMessageOutput");
+  const newsStatus = root.querySelector("#newsOutputStatus");
+  const rulesOutput = root.querySelector("#rulesOutput");
+  const rulesStatus = root.querySelector("#rulesStatus");
+  const playersBody = root.querySelector("#playersTableBody");
+  const chatMessages = root.querySelector("#chatMessages");
+  const chatInput = root.querySelector("#chatMessageInput");
+  const chatSendButton = root.querySelector("#chatSendButton");
+  const chatStatus = root.querySelector("#chatStatus");
+
+  if (!firebaseApp) {
+    if (newsStatus) {
+      newsStatus.textContent = "Uzupełnij konfigurację Firebase, aby zobaczyć aktualności.";
+    }
+    if (rulesStatus) {
+      rulesStatus.textContent = "Uzupełnij konfigurację Firebase, aby zobaczyć regulamin.";
+    }
+    if (chatStatus) {
+      chatStatus.textContent = "Uzupełnij konfigurację Firebase, aby używać czatu.";
+    }
+    if (chatInput) {
+      chatInput.disabled = true;
+    }
+    if (chatSendButton) {
+      chatSendButton.disabled = true;
+    }
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+
+  db.collection(SECOND_ADMIN_MESSAGES_COLLECTION).doc(SECOND_ADMIN_MESSAGES_DOCUMENT).onSnapshot(
+    (snapshot) => {
+      const data = snapshot.data();
+      const text = typeof data?.message === "string" ? data.message.trim() : "";
+      if (newsOutput) {
+        newsOutput.value = text || "Brak wiadomości od administratora.";
+      }
+      if (newsStatus) {
+        newsStatus.textContent = text ? "Pobrano najnowszą wiadomość." : "Brak opublikowanych wiadomości.";
+      }
+    },
+    () => {
+      if (newsStatus) {
+        newsStatus.textContent = "Nie udało się pobrać aktualności z Firebase.";
+      }
+    }
+  );
+
+  db.collection(SECOND_APP_SETTINGS_COLLECTION).doc(RULES_DOCUMENT).onSnapshot(
+    (snapshot) => {
+      const data = snapshot.data();
+      const text = typeof data?.text === "string" ? data.text.trim() : "";
+      if (rulesOutput) {
+        rulesOutput.value = text || "Administrator jeszcze nie dodał regulaminu.";
+      }
+      if (rulesStatus) {
+        rulesStatus.textContent = text ? "Regulamin został pobrany." : "Regulamin nie został jeszcze zapisany.";
+      }
+    },
+    () => {
+      if (rulesStatus) {
+        rulesStatus.textContent = "Nie udało się pobrać regulaminu z Firebase.";
+      }
+    }
+  );
+
+  db.collection(SECOND_APP_SETTINGS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot(
+    (snapshot) => {
+      const rawPlayers = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
+      renderPlayersTable(playersBody, rawPlayers);
+    }
+  );
+
+  db.collection(SECOND_CHAT_COLLECTION).orderBy("createdAt", "asc").limit(200).onSnapshot(
+    (snapshot) => {
+      if (!chatMessages) {
+        return;
+      }
+
+      const docs = snapshot.docs;
+      chatMessages.innerHTML = "";
+      if (!docs.length) {
+        const empty = document.createElement("p");
+        empty.className = "chat-empty";
+        empty.textContent = "Brak wiadomości.";
+        chatMessages.appendChild(empty);
+      } else {
+        docs.forEach((doc) => {
+          const data = doc.data();
+          const item = document.createElement("article");
+          item.className = "admin-chat-item";
+
+          const meta = document.createElement("div");
+          meta.className = "admin-chat-meta";
+          meta.textContent = `${typeof data.authorName === "string" ? data.authorName : "Gracz"} • ${formatChatTimestamp(data.createdAt)}`;
+
+          const text = document.createElement("p");
+          text.className = "admin-chat-text";
+          text.textContent = typeof data.text === "string" ? data.text : "";
+
+          item.append(meta, text);
+          chatMessages.appendChild(item);
+        });
+      }
+      if (chatStatus) {
+        chatStatus.textContent = "Czat zsynchronizowany.";
+      }
+    },
+    () => {
+      if (chatStatus) {
+        chatStatus.textContent = "Nie udało się pobrać czatu z Firebase.";
+      }
+    }
+  );
+
+  chatSendButton?.addEventListener("click", async () => {
+    const message = typeof chatInput?.value === "string" ? chatInput.value.trim() : "";
+    if (!message) {
+      if (chatStatus) {
+        chatStatus.textContent = "Wpisz wiadomość przed wysłaniem.";
+      }
+      return;
+    }
+
+    if (chatSendButton) {
+      chatSendButton.disabled = true;
+    }
+    if (chatStatus) {
+      chatStatus.textContent = "Wysyłanie wiadomości...";
+    }
+
+    try {
+      await db.collection(SECOND_CHAT_COLLECTION).add({
+        text: message,
+        authorName: "Gracz",
+        createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+        expireAt: firebaseApp.firestore.Timestamp.fromDate(new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)))
+      });
+      if (chatInput) {
+        chatInput.value = "";
+      }
+      if (chatStatus) {
+        chatStatus.textContent = "Wiadomość wysłana do czatu.";
+      }
+    } catch (error) {
+      if (chatStatus) {
+        chatStatus.textContent = "Nie udało się wysłać wiadomości do czatu.";
+      }
+    } finally {
+      if (chatSendButton) {
+        chatSendButton.disabled = false;
+      }
+    }
+  });
 };
 
 const createUserViewNode = ({ withWrapperCard = true } = {}) => {
@@ -662,6 +879,252 @@ const setupAdminView = () => {
     });
   };
 
+  const initAdminNews = () => {
+    const input = rootCard.querySelector("#adminMessageInput");
+    const sendButton = rootCard.querySelector("#adminMessageSend");
+    const status = rootCard.querySelector("#adminMessageStatus");
+    const firebaseApp = getFirebaseApp();
+
+    if (!input || !sendButton || !status) {
+      return;
+    }
+
+    if (!firebaseApp) {
+      input.disabled = true;
+      sendButton.disabled = true;
+      status.textContent = "Uzupełnij konfigurację Firebase, aby wysyłać wiadomości.";
+      return;
+    }
+
+    const db = firebaseApp.firestore();
+    const newsRef = db.collection(SECOND_ADMIN_MESSAGES_COLLECTION).doc(SECOND_ADMIN_MESSAGES_DOCUMENT);
+
+    registerAdminRefreshHandler("adminNewsTab", async () => {
+      await newsRef.get({ source: "server" });
+    });
+
+    newsRef.onSnapshot((snapshot) => {
+      const data = snapshot.data();
+      const message = typeof data?.message === "string" ? data.message : "";
+      input.value = message;
+      status.textContent = message ? "Aktualna wiadomość została pobrana." : "Brak zapisanej wiadomości.";
+    });
+
+    sendButton.addEventListener("click", async () => {
+      const message = input.value.trim();
+      if (!message) {
+        status.textContent = "Wpisz treść wiadomości przed wysłaniem.";
+        return;
+      }
+
+      sendButton.disabled = true;
+      status.textContent = "Wysyłanie wiadomości...";
+
+      try {
+        await newsRef.set({
+          message,
+          createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+          source: "web-admin"
+        }, { merge: true });
+        status.textContent = "Wiadomość wysłana do graczy.";
+      } catch (error) {
+        status.textContent = "Nie udało się wysłać wiadomości.";
+      } finally {
+        sendButton.disabled = false;
+      }
+    });
+  };
+
+  const initAdminRules = () => {
+    const input = rootCard.querySelector("#adminRulesInput");
+    const saveButton = rootCard.querySelector("#adminRulesSave");
+    const status = rootCard.querySelector("#adminRulesStatus");
+    const firebaseApp = getFirebaseApp();
+
+    if (!input || !saveButton || !status) {
+      return;
+    }
+
+    if (!firebaseApp) {
+      input.disabled = true;
+      saveButton.disabled = true;
+      status.textContent = "Uzupełnij konfigurację Firebase, aby edytować regulamin.";
+      return;
+    }
+
+    const db = firebaseApp.firestore();
+    const rulesRef = db.collection(SECOND_APP_SETTINGS_COLLECTION).doc(RULES_DOCUMENT);
+
+    registerAdminRefreshHandler("adminRulesTab", async () => {
+      await rulesRef.get({ source: "server" });
+    });
+
+    rulesRef.onSnapshot((snapshot) => {
+      const data = snapshot.data();
+      const text = typeof data?.text === "string" ? data.text : "";
+      input.value = text;
+      status.textContent = text ? "Regulamin jest aktualny." : "Brak zapisanej treści regulaminu.";
+      saveButton.disabled = false;
+    });
+
+    saveButton.addEventListener("click", async () => {
+      saveButton.disabled = true;
+      status.textContent = "Zapisywanie regulaminu...";
+      try {
+        await rulesRef.set({
+          text: input.value,
+          updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+          source: "web-admin"
+        }, { merge: true });
+      } catch (error) {
+        saveButton.disabled = false;
+        status.textContent = "Nie udało się zapisać regulaminu.";
+      }
+    });
+  };
+
+  const initAdminPlayers = () => {
+    const tableBody = rootCard.querySelector("#adminPlayersTableBody");
+    const countNode = rootCard.querySelector("#adminPlayersCount");
+    const statusNode = rootCard.querySelector("#adminPlayersStatus");
+    const firebaseApp = getFirebaseApp();
+
+    if (!tableBody || !countNode || !statusNode) {
+      return;
+    }
+
+    if (!firebaseApp) {
+      statusNode.textContent = "Uzupełnij konfigurację Firebase, aby zobaczyć graczy.";
+      return;
+    }
+
+    const db = firebaseApp.firestore();
+    const playersRef = db.collection(SECOND_APP_SETTINGS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT);
+
+    registerAdminRefreshHandler("adminPlayersTab", async () => {
+      await playersRef.get({ source: "server" });
+    });
+
+    playersRef.onSnapshot(
+      (snapshot) => {
+        const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
+        renderPlayersTable(tableBody, players);
+        countNode.textContent = `Liczba dodanych graczy: ${players.length}`;
+        statusNode.textContent = "Lista graczy zsynchronizowana z Firebase.";
+      },
+      () => {
+        statusNode.textContent = "Nie udało się pobrać listy graczy.";
+      }
+    );
+  };
+
+  const initAdminChat = () => {
+    const list = rootCard.querySelector("#adminChatList");
+    const cleanupButton = rootCard.querySelector("#adminChatCleanup");
+    const status = rootCard.querySelector("#adminChatStatus");
+    const firebaseApp = getFirebaseApp();
+
+    if (!list || !cleanupButton || !status) {
+      return;
+    }
+
+    if (!firebaseApp) {
+      cleanupButton.disabled = true;
+      status.textContent = "Uzupełnij konfigurację Firebase, aby moderować czat.";
+      return;
+    }
+
+    const db = firebaseApp.firestore();
+    const chatQuery = db.collection(SECOND_CHAT_COLLECTION).orderBy("createdAt", "asc").limit(200);
+
+    registerAdminRefreshHandler("adminChatTab", async () => {
+      await chatQuery.get({ source: "server" });
+    });
+
+    chatQuery.onSnapshot((snapshot) => {
+      list.innerHTML = "";
+      if (snapshot.empty) {
+        const empty = document.createElement("p");
+        empty.className = "chat-empty";
+        empty.textContent = "Brak wiadomości czatu do moderacji.";
+        list.appendChild(empty);
+        status.textContent = "Brak wiadomości do moderacji.";
+        return;
+      }
+
+      snapshot.docs.forEach((doc) => {
+        const data = doc.data();
+        const row = document.createElement("article");
+        row.className = "admin-chat-item";
+
+        const meta = document.createElement("div");
+        meta.className = "admin-chat-meta";
+        meta.textContent = `${typeof data.authorName === "string" ? data.authorName : "Gracz"} • ${formatChatTimestamp(data.createdAt)}`;
+
+        const text = document.createElement("p");
+        text.className = "admin-chat-text";
+        text.textContent = typeof data.text === "string" ? data.text : "";
+
+        const actions = document.createElement("div");
+        actions.className = "admin-chat-item-actions";
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "danger admin-chat-delete";
+        deleteButton.textContent = "Usuń";
+        deleteButton.addEventListener("click", async () => {
+          deleteButton.disabled = true;
+          status.textContent = "Usuwanie wiadomości...";
+          try {
+            await db.collection(SECOND_CHAT_COLLECTION).doc(doc.id).delete();
+            status.textContent = "Wiadomość usunięta.";
+          } catch (error) {
+            deleteButton.disabled = false;
+            status.textContent = "Nie udało się usunąć wiadomości.";
+          }
+        });
+
+        actions.appendChild(deleteButton);
+        row.append(meta, text, actions);
+        list.appendChild(row);
+      });
+      status.textContent = "Czat zsynchronizowany.";
+    });
+
+    cleanupButton.addEventListener("click", async () => {
+      cleanupButton.disabled = true;
+      status.textContent = "Czyszczenie wiadomości starszych niż 30 dni...";
+      let deletedCount = 0;
+
+      try {
+        const now = firebaseApp.firestore.Timestamp.now();
+        while (true) {
+          const expiredSnapshot = await db.collection(SECOND_CHAT_COLLECTION)
+            .where("expireAt", "<=", now)
+            .limit(200)
+            .get();
+          if (expiredSnapshot.empty) {
+            break;
+          }
+          const batch = db.batch();
+          expiredSnapshot.docs.forEach((doc) => {
+            batch.delete(doc.ref);
+            deletedCount += 1;
+          });
+          await batch.commit();
+        }
+        status.textContent = deletedCount ? `Usunięto wiadomości: ${deletedCount}.` : "Brak wiadomości starszych niż 30 dni.";
+      } catch (error) {
+        status.textContent = "Nie udało się wyczyścić starych wiadomości.";
+      } finally {
+        cleanupButton.disabled = false;
+      }
+    });
+  };
+
+  initAdminNews();
+  initAdminChat();
+  initAdminRules();
+  initAdminPlayers();
   initAdminNotes();
   initAdminPanelRefresh();
 };
