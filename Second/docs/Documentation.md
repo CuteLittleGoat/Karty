@@ -39,3 +39,17 @@
 - Zakładka notatek admina zapisuje dane do `admin_notes/second`.
 - Dla zakładki notatek zarejestrowano handler odświeżania `registerAdminRefreshHandler("adminNotesTab", refreshNotesData)`.
 - `refreshNotesData` pobiera dokument notatek z serwera (`get({ source: "server" })`), aktualizuje pole tekstowe i status sekcji notatek.
+
+## 6. Aktualny stan wspólnych danych Firestore (Main + Second)
+
+### 6.1. Firestore Rules
+- Aktualne reguły Firestore udostępniają odczyt i zapis (`allow read, write: if true;`) dla kolekcji aplikacyjnych.
+- Obejmuje to m.in. `admin_messages`, `admin_notes`, `app_settings`, `players`, `chat_messages`, `admin_games_stats`, `Tables`, `UserGames`, `calculators`, `Nekrolog_config` i `Nekrolog_snapshots`.
+- Wyjątek: `Nekrolog_refresh_jobs` ma zapis ograniczony do dokumentu `latest`.
+
+### 6.2. Najważniejsze kolekcje i pola
+- `admin_notes`: dokumenty `main` i `second` z polami `module`, `text`, `updatedAt`, `updatedBy`.
+- `app_settings`: m.in. dokument `player_access` z listą `players[]` i uprawnieniami (`appEnabled`, `permissions`, `statsYearsAccess`).
+- `Tables` oraz `UserGames`: dokument gry + subkolekcje `rows` (wiersze wyników) i `confirmations` (potwierdzenia graczy).
+- `calculators/{type}`: dane kalkulatorów oraz subkolekcje `definitions`, `placeholders`, `sessions` (w tym `variables`, `calculationFlags`, `tables/rows`, `snapshots`).
+- `Nekrolog_*`: konfiguracja, snapshoty i kolejka odświeżania modułu nekrologu.
