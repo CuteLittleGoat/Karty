@@ -36,7 +36,29 @@
 
 ## 5. Integracja danych
 - Firebase inicjalizowany przez `window.firebaseConfig` (z `config/firebase-config.js`).
-- Firestore używany m.in. dla: aktualności, regulaminu, notatek admina, czatu, graczy, gier i statystyk.
+- Firestore używany m.in. dla: aktualności, regulaminu, notatek admina, czatu, graczy, gier, statystyk, konfiguracji dostępu graczy oraz modułów nekrologu i kalkulatorów.
+
+### 5.1. Aktualny stan Firestore Rules
+- Obecny zestaw rules ma reguły `allow read, write: if true;` dla kolekcji aplikacyjnych, więc odczyt i zapis są globalnie otwarte na poziomie reguł Firestore.
+- Dotyczy to m.in. kolekcji:
+  - `admin_security`,
+  - `admin_messages`,
+  - `app_settings`,
+  - `admin_notes`,
+  - `Tables` (+ subkolekcje `rows`, `confirmations`),
+  - `UserGames` (+ subkolekcje `rows`, `confirmations`),
+  - `players`, `chat_messages`, `admin_games_stats`,
+  - `calculators` (+ `definitions`, `placeholders`, `sessions/variables`, `sessions/calculationFlags`, `sessions/tables/rows`, `sessions/snapshots`),
+  - `Nekrolog_config`, `Nekrolog_snapshots`, `Nekrolog_refresh_jobs` (w tej ostatniej zapis ograniczony do dokumentu `latest`).
+
+### 5.2. Aktualny przekrój schematu Firestore
+- `admin_notes` przechowuje osobne dokumenty modułowe (`main`, `second`) z polami: `module`, `text`, `updatedAt`, `updatedBy`.
+- `app_settings` zawiera m.in. dokument `player_access` i listę `players[]` z polami dostępowymi (`appEnabled`, `permissions`, `statsYearsAccess`, `pin`).
+- `Tables` i `UserGames` mają dokumenty gry oraz subkolekcje:
+  - `rows` (wiersze graczy z polami turniejowymi jak `entryFee`, `rebuy`, `payout`, `points`, `championship`),
+  - `confirmations` (potwierdzenia obecności graczy).
+- `calculators/{type}` zawiera stan kalkulatora oraz wersjonowane definicje, placeholdery i sesje robocze.
+- `Nekrolog_*` to osobny zestaw kolekcji do konfiguracji, snapshotów i zleceń odświeżania.
 
 ## 6. Kalkulator Cash — logika Tabela8
 - Funkcja `getCashMetrics` wylicza wartości dla widoku Cash na podstawie danych z `state.cash.table9Rows` i `state.cash.table8Row.rake`.
