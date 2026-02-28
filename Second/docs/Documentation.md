@@ -97,7 +97,7 @@ Dotyczy to sekcji:
 ## 5. Zmiany tekstowe i nazewnicze w UI
 - Nagłówek modułu:
   - „Drugi moduł”,
-  - „Najdroższa Służbo Celno-Skarbowa - tu nic nie ma!”.
+  - „Funkcjonariusze Służby Celno-Skarbowej ta aplikacja służy do odliczania dni Omeru między Pesach a Szawuot.”.
 - Usunięto opis pod nagłówkiem.
 - Zakładka „Turniej” zmieniona na „TOURNAMENT OF POKER” (admin i user).
 - W panelu bocznym turnieju zaktualizowano listę przycisków zgodnie z wymaganiami.
