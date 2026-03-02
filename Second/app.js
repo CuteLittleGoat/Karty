@@ -571,14 +571,58 @@ const setupUserView = (root) => {
   const userPanelRefreshStatus = root.querySelector("#userPanelRefreshStatus");
 
   if (userPanelRefreshButton) {
-    userPanelRefreshButton.addEventListener("click", () => {
+    userPanelRefreshButton.addEventListener("click", async () => {
+      const activePanel = root.querySelector(".tab-panel.is-active");
+      const activeTabId = activePanel?.id;
       userPanelRefreshButton.disabled = true;
       if (userPanelRefreshStatus) {
-        userPanelRefreshStatus.textContent = "Odświeżanie widoku...";
+        userPanelRefreshStatus.textContent = "Odświeżanie danych...";
       }
-      window.setTimeout(() => {
-        window.location.reload();
-      }, 150);
+
+      const setRefreshStatus = (message) => {
+        if (userPanelRefreshStatus) {
+          userPanelRefreshStatus.textContent = message;
+        }
+      };
+
+      try {
+        if (!firebaseApp) {
+          setRefreshStatus("Brak połączenia z Firebase.");
+          return;
+        }
+
+        const db = firebaseApp.firestore();
+
+        if (activeTabId === "updatesTab") {
+          await db.collection(SECOND_ADMIN_MESSAGES_COLLECTION).doc(SECOND_ADMIN_MESSAGES_DOCUMENT).get({ source: "server" });
+          setRefreshStatus("Aktualności zostały odświeżone.");
+          return;
+        }
+
+        if (activeTabId === "rulesTab") {
+          await db.collection(SECOND_APP_SETTINGS_COLLECTION).doc(RULES_DOCUMENT).get({ source: "server" });
+          setRefreshStatus("Regulamin został odświeżony.");
+          return;
+        }
+
+        if (activeTabId === "playersTab") {
+          await db.collection(SECOND_APP_SETTINGS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).get({ source: "server" });
+          setRefreshStatus("Lista graczy została odświeżona.");
+          return;
+        }
+
+        if (activeTabId === "chatTab") {
+          await db.collection(SECOND_CHAT_COLLECTION).orderBy("createdAt", "asc").limit(200).get({ source: "server" });
+          setRefreshStatus("Czat został odświeżony.");
+          return;
+        }
+
+        setRefreshStatus("Dane tej zakładki odświeżają się automatycznie.");
+      } catch (error) {
+        setRefreshStatus("Nie udało się odświeżyć danych.");
+      } finally {
+        userPanelRefreshButton.disabled = false;
+      }
     });
   }
 

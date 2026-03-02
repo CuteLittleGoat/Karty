@@ -25,7 +25,7 @@ Instrukcja jest podzielona na dwie części:
 
 Sekcja użytkownika składa się z trzech zakładek: **Aktualności**, **Regulamin**, **Strefa Gracza**.
 
-W nagłówku sekcji użytkownika jest też przycisk **Odśwież**. Po kliknięciu aplikacja odświeża cały widok użytkownika i ponownie pobiera aktualny stan danych.
+W nagłówku sekcji użytkownika jest też przycisk **Odśwież**. Po kliknięciu odświeżane są dane tylko aktywnej zakładki (bez resetu całej strony i bez utraty sesji PIN).
 
 ### 2.1. Zakładka „Aktualności”
 
@@ -200,7 +200,7 @@ Panel administratora zawiera pełen zestaw narzędzi do zarządzania treściami,
 
 Przyciski:
 - **Instrukcja** — otwiera instrukcję w modalu,
-- **Odśwież** (w nagłówku panelu) — ręcznie odświeża dane panelu admina.
+- **Odśwież** (w nagłówku panelu) — ręcznie odświeża dane aktywnej zakładki (w panelu admina i użytkownika, bez przeładowania strony).
 
 Statusy:
 - obok **Odśwież** wyświetla się informacja o przebiegu odświeżania,
