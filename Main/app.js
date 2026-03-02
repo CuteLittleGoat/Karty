@@ -250,6 +250,7 @@ const adminPlayersState = {
   playerByPin: new Map(),
   editingPlayerId: null
 };
+let sharedPlayerAccessUnsubscribe = null;
 const chatState = {
   unsubscribe: null,
   adminUnsubscribe: null,
@@ -3684,6 +3685,42 @@ const normalizePlayerRecord = (player, index) => ({
   statsYearsAccess: normalizeStatsYearsAccess(player.statsYearsAccess)
 });
 
+const rebuildAdminPlayersPinMap = () => {
+  const nextMap = new Map();
+  adminPlayersState.players.forEach((player) => {
+    if (isPinValid(player.pin) && !nextMap.has(player.pin)) {
+      nextMap.set(player.pin, player);
+    }
+  });
+  adminPlayersState.playerByPin = nextMap;
+};
+
+const initSharedPlayerAccess = () => {
+  if (typeof sharedPlayerAccessUnsubscribe === "function") {
+    return;
+  }
+
+  const firebaseApp = getFirebaseApp();
+  if (!firebaseApp) {
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+  sharedPlayerAccessUnsubscribe = db.collection(PLAYER_ACCESS_COLLECTION)
+    .doc(PLAYER_ACCESS_DOCUMENT)
+    .onSnapshot((snapshot) => {
+      if (isEditingSection(["players"]) || hasPendingDebounceWithPrefix("players:")) {
+        return;
+      }
+
+      const rawPlayers = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
+      adminPlayersState.players = rawPlayers.map(normalizePlayerRecord);
+      rebuildAdminPlayersPinMap();
+      synchronizeStatisticsAccessState();
+      window.dispatchEvent(new CustomEvent("statistics-access-updated"));
+    });
+};
+
 const getAllowedStatisticsYearsForPlayer = (player, availableYears) => {
   const sourceYears = normalizeYearList(availableYears);
   if (!player || !isPlayerAllowedForTab(player, "statsTab")) {
@@ -5146,16 +5183,6 @@ const initAdminPlayers = () => {
     return match ? match.id : null;
   };
 
-  const rebuildPinMap = () => {
-    const nextMap = new Map();
-    adminPlayersState.players.forEach((player) => {
-      if (isPinValid(player.pin) && !nextMap.has(player.pin)) {
-        nextMap.set(player.pin, player);
-      }
-    });
-    adminPlayersState.playerByPin = nextMap;
-  };
-
   const refreshPlayersData = async () => {
     const snapshot = await db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).get({
       source: "server"
@@ -5163,7 +5190,7 @@ const initAdminPlayers = () => {
     const data = snapshot.data();
     const rawPlayers = Array.isArray(data?.players) ? data.players : [];
     adminPlayersState.players = rawPlayers.map(normalizePlayerRecord);
-    rebuildPinMap();
+    rebuildAdminPlayersPinMap();
     renderPlayers();
     if (modal.classList.contains("is-visible")) {
       renderPermissions();
@@ -5242,7 +5269,7 @@ const initAdminPlayers = () => {
         return;
       }
       player.pin = pinValue;
-      rebuildPinMap();
+      rebuildAdminPlayersPinMap();
     } else {
       player[field] = value;
     }
@@ -5499,7 +5526,7 @@ const initAdminPlayers = () => {
       deleteButton.textContent = "Usuń";
       deleteButton.addEventListener("click", async () => {
         adminPlayersState.players = adminPlayersState.players.filter((entry) => entry.id !== player.id);
-        rebuildPinMap();
+        rebuildAdminPlayersPinMap();
         renderPlayers();
         await savePlayers();
       });
@@ -5550,7 +5577,7 @@ const initAdminPlayers = () => {
         const data = snapshot.data();
         const rawPlayers = Array.isArray(data?.players) ? data.players : [];
         adminPlayersState.players = rawPlayers.map(normalizePlayerRecord);
-        rebuildPinMap();
+        rebuildAdminPlayersPinMap();
         renderPlayers();
         synchronizeStatisticsAccessState();
         window.dispatchEvent(new CustomEvent("statistics-access-updated"));
@@ -7710,6 +7737,7 @@ const initInstructionModal = () => {
 const bootstrap = async () => {
   const isAdmin = await resolveAdminMode();
   document.body.classList.toggle("is-admin", isAdmin);
+  initSharedPlayerAccess();
   initAdminPanelTabs();
   initAdminPanelRefresh();
   initUserTabs();
