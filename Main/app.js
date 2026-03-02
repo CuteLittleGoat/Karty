@@ -3624,7 +3624,7 @@ const initUserTabs = () => {
     updateChatVisibility();
     updateConfirmationsVisibility();
     updateUserGamesVisibility();
-    updateStatisticsVisibility();
+    synchronizeStatisticsAccessState();
   };
 
   const setActiveZoneSection = (target) => {
@@ -3747,13 +3747,81 @@ const initUserTabs = () => {
 
   if (userPanelRefreshButton) {
     userPanelRefreshButton.addEventListener("click", async () => {
+      const activePanel = document.querySelector(".tab-panel.is-active");
+      const activeTabId = activePanel?.id;
+      const activeZonePanel = document.querySelector(".player-zone-panel.is-active");
+      const activeZoneTabId = activeZonePanel?.id;
       userPanelRefreshButton.disabled = true;
       if (userPanelRefreshStatus) {
-        userPanelRefreshStatus.textContent = "Odświeżanie widoku...";
+        userPanelRefreshStatus.textContent = "Odświeżanie danych...";
       }
-      window.setTimeout(() => {
-        window.location.reload();
-      }, 150);
+
+      const setUserRefreshStatus = (message) => {
+        if (userPanelRefreshStatus) {
+          userPanelRefreshStatus.textContent = message;
+        }
+      };
+
+      try {
+        if (activeTabId === "updatesTab") {
+          const firebaseApp = getFirebaseApp();
+          if (!firebaseApp) {
+            setUserRefreshStatus("Brak połączenia z Firebase.");
+            return;
+          }
+          await firebaseApp.firestore().collection(ADMIN_MESSAGES_COLLECTION).doc(ADMIN_MESSAGES_DOCUMENT).get({ source: "server" });
+          setUserRefreshStatus("Aktualności zostały odświeżone.");
+          return;
+        }
+
+        if (activeTabId === "rulesTab") {
+          const firebaseApp = getFirebaseApp();
+          if (!firebaseApp) {
+            setUserRefreshStatus("Brak połączenia z Firebase.");
+            return;
+          }
+          await firebaseApp.firestore().collection(PLAYER_ACCESS_COLLECTION).doc(RULES_DOCUMENT).get({ source: "server" });
+          setUserRefreshStatus("Regulamin został odświeżony.");
+          return;
+        }
+
+        if (activeTabId !== "playerZoneTab") {
+          setUserRefreshStatus("Ta zakładka nie ma danych do odświeżenia.");
+          return;
+        }
+
+        if (activeZoneTabId === "confirmationsTab") {
+          const confirmationsRefreshButton = document.querySelector("#confirmationsRefresh");
+          if (confirmationsRefreshButton) {
+            confirmationsRefreshButton.click();
+            setUserRefreshStatus("Odświeżanie potwierdzeń zostało uruchomione.");
+            return;
+          }
+        }
+
+        if (activeZoneTabId === "statsTab") {
+          synchronizeStatisticsAccessState();
+          setUserRefreshStatus("Statystyki zostały odświeżone.");
+          return;
+        }
+
+        if (activeZoneTabId === "chatTab") {
+          if (typeof chatState.stopPlayerSubscription === "function") {
+            chatState.stopPlayerSubscription();
+          }
+          if (typeof chatState.startPlayerSubscription === "function") {
+            chatState.startPlayerSubscription();
+          }
+          setUserRefreshStatus("Czat został odświeżony.");
+          return;
+        }
+
+        setUserRefreshStatus("Dane tej sekcji odświeżają się automatycznie.");
+      } catch (error) {
+        setUserRefreshStatus("Nie udało się odświeżyć danych.");
+      } finally {
+        userPanelRefreshButton.disabled = false;
+      }
     });
   }
 

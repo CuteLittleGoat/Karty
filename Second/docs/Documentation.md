@@ -109,4 +109,4 @@ Dotyczy to sekcji:
 - Pozostaje aktywna globalna ochrona przed usunięciem ostatniego dokumentu kolekcji top-level.
 
 
-- Widok użytkownika (`#userViewTemplate`) zawiera przycisk `#userPanelRefresh` i status `#userPanelRefreshStatus`; kliknięcie uruchamia `window.location.reload()`, co odświeża komplet danych użytkownika.
+- Widok użytkownika (`#userViewTemplate`) zawiera przycisk `#userPanelRefresh` i status `#userPanelRefreshStatus`; kliknięcie wykonuje odświeżenie danych aktywnej zakładki (Aktualności/Regulamin/Gracze/Czat) bez `window.location.reload()`.

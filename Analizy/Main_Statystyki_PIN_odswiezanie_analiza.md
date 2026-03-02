@@ -76,3 +76,62 @@ Poprawka usuwa problem inicjalizacji stanu dostępu w pierwszej sesji użytkowni
 - dane dostępu graczy są ładowane globalnie,
 - mapa PIN jest utrzymywana spójnie,
 - widok statystyk dostaje sygnał do renderu natychmiast po otrzymaniu danych dostępowych.
+
+---
+
+## Aktualizacja po ponownym zgłoszeniu (Statystyki/PIN/Odśwież)
+
+## Prompt użytkownika
+"Przeczytaj analizę Analizy/Main_Statystyki_PIN_odswiezanie_analiza.md
+
+Poprawka nie zadziałała w sposób oczekiwany.
+Obecnie wykonuję czynności:
+
+1. Wchodzę na stronę https://cutelittlegoat.github.io/Karty/Main/index.html
+2. Klikam przycisk \"Strefa Gracza\"
+3. Pojawia się bramka do wpisania PIN
+4. Wpisuję PIN użytkownika mającego odpowiednie uprawnienia
+5. Klikam na \"Statystyki\".
+6. Wyświetlają mi się puste tabele (załączam screen)
+7. Klikam przycisk \"Odśwież\" (funkcjonalność nie istniała jeszcze w momencie pisania analizy)
+8. Klikam \"Strefa Gracza\"
+9. Pojawia mi się panel boczny z sekcjami.
+10. Ponownie muszę wpisać PIN
+11. W sekcji Statystyki pojawiają się dopiero dane.
+
+Sprawdź czemu w dalszym ciągu nie pojawiają się aktualne dane w \"Statystyki\" tylko muszę odświeżyć aplikację.
+Dodatkowo sprawdź czemu po naciśnięciu przycisku \"Odśwież\" muszę ponownie wpisywać PIN. PIN miał być zapamiętany do momentu resetu aplikacji.
+Dodatkowo naciśnięci przycisku \"Odśwież\" w podglądzie widoku gracza będąc w widoku admina resetuje aplikację.
+Przycisk \"Odśwież\" w widoku gracza ma działać tak samo jak w widoku admina - czyli odświeżać dane w aktualnej zakładce a nie resetować stronę. Popraw to w modułach Main i Second.
+
+Zaktualizuj analizę Analizy/Main_Statystyki_PIN_odswiezanie_analiza.md o rozwiązania, jakie teraz wprowadzisz."
+
+## Dlaczego problem dalej występował
+1. Weryfikacja wejścia do „Strefa Gracza” ustawiała stan uprawnień sekcji (w tym Statystyki), ale nie wykonywała pełnej synchronizacji logiki statystyk (`synchronizeStatisticsAccessState`).
+2. W efekcie przy pierwszym wejściu do „Statystyki” po PIN-ie strefy dane mogły nie zostać przeliczone/rerenderowane od razu i widok pozostawał pusty.
+3. Przycisk „Odśwież” w panelu użytkownika wykonywał `window.location.reload()`, co resetowało widok i wymuszało ponowną autoryzację PIN.
+
+## Wprowadzone poprawki
+
+### Main
+1. W `syncPlayerZoneSectionAccess(...)` zamiast samego `updateStatisticsVisibility()` wywoływana jest teraz `synchronizeStatisticsAccessState()`.
+   - Skutek: po odblokowaniu Strefy Gracza stan statystyk jest od razu spójny (weryfikacja uprawnień + event odświeżenia danych).
+2. Przycisk `#userPanelRefresh` przestał robić `window.location.reload()`.
+   - Teraz odświeża tylko aktywny widok:
+     - `Aktualności` → wymuszenie pobrania dokumentu aktualności z serwera,
+     - `Regulamin` → wymuszenie pobrania regulaminu z serwera,
+     - `Strefa Gracza > Gry do Potwierdzenia` → uruchomienie lokalnego przycisku odświeżania sekcji,
+     - `Strefa Gracza > Statystyki` → ponowna synchronizacja dostępu/statystyk,
+     - `Strefa Gracza > Czat` → restart subskrypcji gracza.
+   - Skutek: brak resetu aplikacji i brak utraty sesji PIN przy odświeżaniu z panelu użytkownika.
+
+### Second
+1. Przycisk `#userPanelRefresh` również przestał używać `window.location.reload()`.
+2. Odświeżanie działa per aktywna zakładka użytkownika:
+   - `Aktualności`, `Regulamin`, `Gracze`, `Czat` → wymuszenie pobrania z `source: "server"`.
+3. Dla zakładek bez dedykowanego źródła ręcznego odświeżenia pokazywany jest komunikat, że dane aktualizują się automatycznie.
+
+## Efekt po poprawce
+1. W Main, po wejściu do Strefy Gracza i przejściu do „Statystyki”, dane powinny pojawić się bez resetu strony.
+2. Kliknięcie „Odśwież” w widoku użytkownika nie resetuje aplikacji i nie wymaga ponownego wpisania PIN (do czasu faktycznego resetu sesji aplikacji).
+3. Zachowanie przycisku „Odśwież” w widoku użytkownika jest zgodne z oczekiwaniem: odświeżenie bieżącej zakładki, a nie przeładowanie całej strony.

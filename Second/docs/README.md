@@ -8,7 +8,7 @@
 
 ## 2. Widok użytkownika
 
-W nagłówku sekcji użytkownika dostępny jest przycisk **Odśwież** — po kliknięciu odświeża cały widok użytkownika, dzięki czemu od razu pobierasz najnowsze dane dla aktywnych zakładek.
+W nagłówku sekcji użytkownika dostępny jest przycisk **Odśwież** — po kliknięciu odświeża dane aktywnej zakładki bez resetowania całej strony.
 
 ### 2.1 Zakładka „Aktualności”
 1. Kliknij zakładkę **Aktualności**.
