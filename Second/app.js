@@ -567,6 +567,20 @@ const setupUserView = (root) => {
   const chatInput = root.querySelector("#chatMessageInput");
   const chatSendButton = root.querySelector("#chatSendButton");
   const chatStatus = root.querySelector("#chatStatus");
+  const userPanelRefreshButton = root.querySelector("#userPanelRefresh");
+  const userPanelRefreshStatus = root.querySelector("#userPanelRefreshStatus");
+
+  if (userPanelRefreshButton) {
+    userPanelRefreshButton.addEventListener("click", () => {
+      userPanelRefreshButton.disabled = true;
+      if (userPanelRefreshStatus) {
+        userPanelRefreshStatus.textContent = "Odświeżanie widoku...";
+      }
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 150);
+    });
+  }
 
   if (!firebaseApp) {
     if (newsStatus) {

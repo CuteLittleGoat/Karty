@@ -107,3 +107,6 @@ Dotyczy to sekcji:
 - Kod używa Firebase compat SDK (`firebase-app-compat`, `firebase-firestore-compat`).
 - Inicjalizacja jest warunkowa i wyłącza akcje, jeśli konfiguracja Firebase jest niedostępna.
 - Pozostaje aktywna globalna ochrona przed usunięciem ostatniego dokumentu kolekcji top-level.
+
+
+- Widok użytkownika (`#userViewTemplate`) zawiera przycisk `#userPanelRefresh` i status `#userPanelRefreshStatus`; kliknięcie uruchamia `window.location.reload()`, co odświeża komplet danych użytkownika.

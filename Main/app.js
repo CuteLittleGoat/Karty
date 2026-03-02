@@ -3478,6 +3478,8 @@ const initUserTabs = () => {
   const zonePinInput = document.querySelector("#playerZonePinInput");
   const zonePinStatus = document.querySelector("#playerZonePinStatus");
   const zonePinSubmit = document.querySelector("#playerZonePinSubmit");
+  const userPanelRefreshButton = document.querySelector("#userPanelRefresh");
+  const userPanelRefreshStatus = document.querySelector("#userPanelRefreshStatus");
 
   if (!tabButtons.length) {
     return;
@@ -3630,6 +3632,18 @@ const initUserTabs = () => {
   }
 
   setActiveTab("updatesTab");
+
+  if (userPanelRefreshButton) {
+    userPanelRefreshButton.addEventListener("click", async () => {
+      userPanelRefreshButton.disabled = true;
+      if (userPanelRefreshStatus) {
+        userPanelRefreshStatus.textContent = "Odświeżanie widoku...";
+      }
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 150);
+    });
+  }
 
   tabButtons.forEach((button) => {
     button.addEventListener("click", () => {

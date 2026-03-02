@@ -1204,6 +1204,16 @@ button.danger {
   margin-left: auto;
 }
 
+.user-panel-refresh-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-2);
+}
+
+.user-panel-refresh-controls .status-text {
+  min-width: 160px;
+}
+
 .tab-button {
   border-radius: 999px;
   padding: 8px 14px;
