@@ -22,6 +22,7 @@ const ADMIN_NOTES_COLLECTION = "admin_notes";
 const MAIN_ADMIN_NOTES_DOCUMENT = "main";
 const RULES_DEFAULT_TEXT = "";
 const DEFAULT_GAME_NOTES_TEMPLATE = "Rodzaj gry:\nPrzewidywani gracze:\nStack:\nWpisowe:\nRebuy:\nAdd-on:\nBlindy:\nOrganizacja:\nPodział puli:";
+let refreshUserConfirmationsData = async () => {};
 
 const getPreGameNotes = (game) => {
   if (typeof game?.preGameNotes === "string") {
@@ -2040,7 +2041,6 @@ const initUserConfirmations = () => {
   const input = document.querySelector("#confirmationsPinInput");
   const submitButton = document.querySelector("#confirmationsPinSubmit");
   const pinStatus = document.querySelector("#confirmationsPinStatus");
-  const refreshButton = document.querySelector("#confirmationsRefresh");
   const status = document.querySelector("#confirmationsStatus");
   const body = document.querySelector("#confirmationsBody");
   const detailsModal = document.querySelector("#confirmationsDetailsModal");
@@ -2049,13 +2049,12 @@ const initUserConfirmations = () => {
   const detailsClose = document.querySelector("#confirmationsDetailsClose");
   const firebaseApp = getFirebaseApp();
 
-  if (!input || !submitButton || !pinStatus || !refreshButton || !status || !body) {
+  if (!input || !submitButton || !pinStatus || !status || !body) {
     return;
   }
 
   if (!firebaseApp) {
     submitButton.disabled = true;
-    refreshButton.disabled = true;
     status.textContent = "Uzupełnij konfigurację Firebase, aby korzystać z potwierdzeń.";
     return;
   }
@@ -2269,6 +2268,19 @@ const initUserConfirmations = () => {
     }
   };
 
+  let refreshInProgress = false;
+  refreshUserConfirmationsData = async (source = "server") => {
+    if (refreshInProgress) {
+      return;
+    }
+    refreshInProgress = true;
+    try {
+      await readData(source);
+    } finally {
+      refreshInProgress = false;
+    }
+  };
+
   const verifyPin = async () => {
     const pinValue = sanitizePin(input.value);
     if (!isPinValid(pinValue)) {
@@ -2303,12 +2315,6 @@ const initUserConfirmations = () => {
     }
   });
 
-  refreshButton.addEventListener("click", async () => {
-    refreshButton.disabled = true;
-    await readData("server");
-    refreshButton.disabled = false;
-  });
-
   if (detailsClose) {
     detailsClose.addEventListener("click", closeDetailsModal);
   }
@@ -2322,7 +2328,7 @@ const initUserConfirmations = () => {
 
   updateConfirmationsVisibility();
   if (getConfirmationsPinGateState() && getConfirmationsVerifiedPlayer()) {
-    void readData();
+    void refreshUserConfirmationsData("default");
   }
 };
 
@@ -3639,6 +3645,10 @@ const initUserTabs = () => {
     if (target === "chatTab") {
       scrollChatListsToBottom();
     }
+
+    if (target === "confirmationsTab") {
+      void refreshUserConfirmationsData("server");
+    }
   };
 
   const renderPlayerZoneSections = () => {
@@ -3791,12 +3801,9 @@ const initUserTabs = () => {
         }
 
         if (activeZoneTabId === "confirmationsTab") {
-          const confirmationsRefreshButton = document.querySelector("#confirmationsRefresh");
-          if (confirmationsRefreshButton) {
-            confirmationsRefreshButton.click();
-            setUserRefreshStatus("Odświeżanie potwierdzeń zostało uruchomione.");
-            return;
-          }
+          await refreshUserConfirmationsData("server");
+          setUserRefreshStatus("Potwierdzenia zostały odświeżone.");
+          return;
         }
 
         if (activeZoneTabId === "statsTab") {

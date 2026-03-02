@@ -97,8 +97,9 @@ Dodatkowo:
 
 1. Kliknij **Gry do Potwierdzenia**.
 2. Wpisz PIN i kliknij **Otwórz**.
-3. Kliknij **Odśwież**, aby ręcznie pobrać aktualny stan.
-4. W tabeli każda gra ma zestaw akcji.
+3. Dane ładują się automatycznie od razu po wejściu do tej sekcji.
+4. Jeśli ktoś doda nową grę, gdy masz już otwartą tę sekcję, użyj górnego przycisku **Odśwież** (w nagłówku panelu użytkownika) albo przejdź na inną sekcję i wróć do **Gry do Potwierdzenia**.
+5. W tabeli każda gra ma zestaw akcji.
 
 Przyciski i funkcje w wierszu gry:
 - **Potwierdź** — zapisuje Twoją obecność na grze.
@@ -107,8 +108,11 @@ Przyciski i funkcje w wierszu gry:
 - **Notatki do gry** — otwiera modal notatek przed grą w trybie tylko do odczytu.
 
 Przyciski globalne sekcji:
-- **Otwórz** — weryfikacja PIN,
-- **Odśwież** — wymusza ponowne pobranie danych.
+- **Otwórz** — weryfikacja PIN.
+
+Odświeżanie sekcji:
+- sekcja odświeża dane automatycznie po wejściu w **Gry do Potwierdzenia**,
+- ręczne odświeżenie wykonujesz przez górny przycisk **Odśwież** w nagłówku panelu użytkownika.
 
 ## 3.4. „Gry Użytkowników”
 
