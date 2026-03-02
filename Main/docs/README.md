@@ -162,8 +162,9 @@ W modalu:
 3. Kolumna **+/-** liczy się automatycznie.
 4. Kliknij **Usuń** w wierszu, aby usunąć konkretnego gracza z tej gry.
 5. Nagłówek **Wpisowe** (przycisk zbiorczy) pozwala nadać jedną wartość wpisowego wszystkim wierszom naraz.
-6. Nagłówek **Rebuy/Add-on** (przycisk zbiorczy) działa analogicznie i ustawia jedną wartość Rebuy/Add-on dla wszystkich wierszy.
-7. Po użyciu nagłówka **Rebuy/Add-on** wartości w wierszach nadal pozostają edytowalne ręcznie w polach tej kolumny.
+6. Kolumna **Rebuy/Add-on** ma zwykły nagłówek tekstowy (bez akcji zbiorczej).
+7. W każdym wierszu kliknij przycisk z wartością w kolumnie **Rebuy/Add-on**, aby otworzyć okno `Rebuy gracza` i dodać/usunąć kolejne wpisy rebuy (tak jak w Kalkulatorze).
+8. Suma z okna `Rebuy gracza` jest wyświetlana na przycisku w wierszu i automatycznie uwzględniana w kolumnach **+/-**, puli i podsumowaniach.
 8. Wiersz gracza z potwierdzoną obecnością jest podświetlony na złoto.
 9. Zamknięcie modalu: przycisk `×`, kliknięcie poza modalem lub klawisz `Esc`.
 
@@ -343,7 +344,7 @@ W każdym wierszu gry:
 3. **+/-** wylicza się automatycznie.
 4. Kliknij **Usuń** w wierszu, aby usunąć jednego uczestnika.
 5. Kliknij nagłówek-przycisk **Wpisowe**, by ustawić jedno wpisowe dla wszystkich wierszy.
-6. Kliknij nagłówek-przycisk **Rebuy/Add-on**, by ustawić jedną wartość rebuy/add-on dla wszystkich wierszy, a następnie w razie potrzeby doprecyzuj wartości ręcznie w poszczególnych polach kolumny.
+6. Kliknij przycisk z wartością w kolumnie **Rebuy/Add-on** dla wybranego gracza, aby otworzyć okno `Rebuy gracza` i zarządzać wieloma wpisami rebuy/add-on (przyciski **Dodaj Rebuy** i **Usuń Rebuy**).
 
 ### 10.5. „Notatki po grze”
 W podsumowaniu każdej gry użyj przycisku **Notatki po grze**:

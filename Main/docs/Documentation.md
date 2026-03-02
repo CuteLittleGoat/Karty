@@ -10,8 +10,8 @@
 - Edytor notatek (`getSummaryNotesModalController`) zapamiętuje ostatnie zaznaczenie tekstu i odtwarza je po kliknięciu przycisku koloru, dzięki czemu kolorowanie działa poprawnie również na desktopie przy kolejnych zmianach koloru.
 - Lista gier (zakładki **Gry admina** i **Gry użytkowników**) ma kolumnę `IlośćPotwierdzonych` z wartością `potwierdzeni/zapisani`, liczoną dynamicznie z wierszy gry i subkolekcji `confirmations`.
 - Modale `Szczegóły gry` (`#gameDetailsModal`, `#userGameDetailsModal`, `#playerUserGameDetailsModal`) mają:
-  - przycisk zbiorczy `Rebuy/Add-on` (bulk update wszystkich wierszy),
-  - edytowalne pole `Rebuy/Add-on` w każdym wierszu (możliwość ręcznej korekty po bulk update),
+  - nagłówek tekstowy `Rebuy/Add-on` (bez akcji zbiorczej),
+  - przycisk w każdej komórce `Rebuy/Add-on`, który pokazuje sumę rebuy danego gracza i otwiera modal `Rebuy gracza` z przyciskami `Dodaj Rebuy`/`Usuń Rebuy`,
   - złote podświetlenie wiersza gracza z potwierdzoną obecnością (`.confirmed-row`).
 - Tworzenie i filtrowanie gier użytkownika zostało rozszerzone o powiązanie także po PIN-ie twórcy (`createdByPlayerPin`) oraz kompatybilność z istniejącym powiązaniem po `createdByPlayerId`.
 - Dostęp do listy graczy jest inicjalizowany globalnie (`initSharedPlayerAccess`), dzięki czemu mapowanie PIN→gracz oraz uprawnienia statystyk są odświeżane także w widoku użytkownika i zakładka „Statystyki” pokazuje lata/dane natychmiast po poprawnym wpisaniu PIN-u.
@@ -66,3 +66,5 @@
 - Funkcja `getCashMetrics` wylicza wartości dla widoku Cash na podstawie danych z `state.cash.table9Rows` i `state.cash.table8Row.rake`.
 - Wartość **Rake** jest obliczana jako: `(suma Buy-In + suma Rebuy) × (procent / 100)`.
 - Wartość **Pot** i sumy po potrąceniu procentu pozostają liczone jako wartości po odjęciu rake (`1 - procent/100`).
+
+- W `Szczegóły gry` (admin i gry użytkowników) rebuy per gracz może być przechowywany jako tablica `rebuys` (wartości składowe) oraz pole sumaryczne `rebuy`; przy każdej zmianie modal aktualizuje oba pola, a dalsze obliczenia korzystają z pola sumarycznego `rebuy`.
