@@ -51,7 +51,7 @@
 
 ## 3) Szczegóły gry (okno szczegółów)
 
-W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego wiersza; gracze już wybrani w innych wierszach tej samej gry są ukrywani (aktualnie wybrana wartość wiersza pozostaje widoczna).
+W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego wiersza; gracze już wybrani w innych wierszach tej samej gry są ukrywani (aktualnie wybrana wartość wiersza pozostaje widoczna). Kolumna **Rebuy/Add-on** ma zwykły nagłówek, a wierszowa wartość działa jako przycisk otwierający modal szczegółów rebuy.
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Inne |
 |---|---|---|---|---|
@@ -296,3 +296,5 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 | wartość oczekiwana |  |  |  |  |
 | Spójność prezentacji liczb i tekstu | nie dotyczy | nie dotyczy | do lewej | Liczby są ułożone tak samo jak tekst dla jednolitego wyglądu. |
 | wartość oczekiwana |  |  |  |  |
+
+| Tabela rebuy w oknie szczegółów gry | stała szerokość każdej kolumny: 8 znaków | stała szerokość każdej kolumny: 8 znaków | do lewej | Układ zgodny z modalem rebuy z Kalkulatora (przyciski Dodaj/Usuń Rebuy). |

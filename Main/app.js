@@ -2472,7 +2472,6 @@ const initUserGamesManager = ({
   modalMetaSelector,
   modalBodySelector,
   modalEntryFeeBulkButtonSelector,
-  modalRebuyBulkButtonSelector,
   modalCloseSelector,
   modalAddRowButtonSelector,
   selectedYearStorageKey,
@@ -2490,7 +2489,6 @@ const initUserGamesManager = ({
   const modalMeta = document.querySelector(modalMetaSelector);
   const modalBody = document.querySelector(modalBodySelector);
   const modalEntryFeeBulkButton = modalEntryFeeBulkButtonSelector ? document.querySelector(modalEntryFeeBulkButtonSelector) : null;
-  const modalRebuyBulkButton = modalRebuyBulkButtonSelector ? document.querySelector(modalRebuyBulkButtonSelector) : null;
   const modalClose = document.querySelector(modalCloseSelector);
   const modalAddRowButton = document.querySelector(modalAddRowButtonSelector);
 
@@ -2521,8 +2519,137 @@ const initUserGamesManager = ({
   };
 
   const summaryNotesModal = getSummaryNotesModalController();
+  const detailRebuyModal = document.createElement("div");
+  detailRebuyModal.className = "modal-overlay";
+  detailRebuyModal.setAttribute("aria-hidden", "true");
+  detailRebuyModal.innerHTML = `
+    <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="gameDetailsRebuyTitle">
+      <div class="modal-card-header">
+        <h3 id="gameDetailsRebuyTitle">Rebuy gracza</h3>
+        <button type="button" class="secondary" data-game-rebuy-close>Zamknij</button>
+      </div>
+      <div class="admin-table-scroll">
+        <table class="admin-data-table game-details-rebuy-table" data-game-rebuy-table></table>
+      </div>
+      <div class="admin-table-actions" data-game-rebuy-actions></div>
+    </div>
+  `;
+  document.body.appendChild(detailRebuyModal);
+  const detailRebuyModalTable = detailRebuyModal.querySelector("[data-game-rebuy-table]");
+  const detailRebuyModalActions = detailRebuyModal.querySelector("[data-game-rebuy-actions]");
+  const detailRebuyModalClose = detailRebuyModal.querySelector("[data-game-rebuy-close]");
+  let activeRebuyDetail = null;
+
+  const closeDetailRebuyModal = () => {
+    activeRebuyDetail = null;
+    detailRebuyModal.classList.remove("is-visible");
+    detailRebuyModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+
+  const getDetailRowRebuyValues = (row) => {
+    if (!Array.isArray(row.rebuys) || row.rebuys.length === 0) {
+      const normalized = sanitizeIntegerInput(row.rebuy ?? "");
+      return normalized ? [normalized] : [];
+    }
+    return row.rebuys.map((value) => sanitizeIntegerInput(value)).filter((value) => value !== "");
+  };
+
+  const getDetailRowRebuySum = (row) => getDetailRowRebuyValues(row).reduce((sum, value) => sum + parseIntegerOrZero(value), 0);
+
+  const persistDetailRowRebuyValues = async (gameId, rowId, rebuyValues) => {
+    const sanitizedValues = rebuyValues.map((value) => sanitizeIntegerInput(value)).filter((value) => value !== "");
+    const rebuySum = sanitizedValues.reduce((sum, value) => sum + parseIntegerOrZero(value), 0);
+    await db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(rowId).update({
+      rebuys: sanitizedValues,
+      rebuy: sanitizedValues.length ? String(rebuySum) : ""
+    });
+  };
+
+  const renderDetailRebuyModal = () => {
+    if (!activeRebuyDetail || !detailRebuyModalTable || !detailRebuyModalActions) {
+      return;
+    }
+    const game = state.games.find((entry) => entry.id === activeRebuyDetail.gameId);
+    const row = (state.detailsByGame.get(activeRebuyDetail.gameId) ?? []).find((entry) => entry.id === activeRebuyDetail.rowId);
+    if (!game || !row) {
+      closeDetailRebuyModal();
+      return;
+    }
+    const writeEnabled = hasWriteAccessToGame(game);
+    const rowRebuys = getDetailRowRebuyValues(row);
+    let headerHtml = "<thead><tr>";
+    rowRebuys.forEach((_, index) => {
+      headerHtml += `<th>Rebuy${index + 1}</th>`;
+    });
+    headerHtml += "</tr></thead>";
+    detailRebuyModalTable.innerHTML = headerHtml;
+
+    const tbody = document.createElement("tbody");
+    const tr = document.createElement("tr");
+    rowRebuys.forEach((value, index) => {
+      const td = document.createElement("td");
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "admin-input";
+      input.value = value;
+      input.disabled = !writeEnabled;
+      input.addEventListener("input", () => {
+        if (!hasWriteAccessToGame(game)) {
+          return;
+        }
+        rowRebuys[index] = sanitizeIntegerInput(input.value);
+        input.value = rowRebuys[index];
+        scheduleDebouncedUpdate(`user-detail-rebuy-${activeRebuyDetail.gameId}-${row.id}`, () => (
+          persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuys)
+        ));
+      });
+      td.appendChild(input);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+    detailRebuyModalTable.appendChild(tbody);
+
+    detailRebuyModalActions.innerHTML = "";
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "secondary";
+    addButton.textContent = "Dodaj Rebuy";
+    addButton.disabled = !writeEnabled;
+    addButton.addEventListener("click", async () => {
+      if (!hasWriteAccessToGame(game)) {
+        return;
+      }
+      await persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, [...rowRebuys, ""]);
+      renderDetailRebuyModal();
+    });
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "danger";
+    removeButton.textContent = "Usuń Rebuy";
+    removeButton.disabled = !writeEnabled || rowRebuys.length === 0;
+    removeButton.addEventListener("click", async () => {
+      if (!hasWriteAccessToGame(game) || rowRebuys.length === 0) {
+        return;
+      }
+      await persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuys.slice(0, -1));
+      renderDetailRebuyModal();
+    });
+
+    detailRebuyModalActions.append(addButton, removeButton);
+  };
+
+  const openDetailRebuyModal = (gameId, rowId) => {
+    activeRebuyDetail = { gameId, rowId };
+    detailRebuyModal.classList.add("is-visible");
+    detailRebuyModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    renderDetailRebuyModal();
+  };
 
   const closeModal = () => {
+    closeDetailRebuyModal();
     state.activeGameIdInModal = null;
     modal.classList.remove("is-visible");
     modal.setAttribute("aria-hidden", "true");
@@ -2999,7 +3126,16 @@ const initUserGamesManager = ({
       };
 
       const entryFeeCell = createNumericCell("entryFee");
-      const rebuyCell = createNumericCell("rebuy");
+      const rebuyCell = document.createElement("td");
+      const rebuyButton = document.createElement("button");
+      rebuyButton.type = "button";
+      rebuyButton.className = "secondary";
+      rebuyButton.textContent = formatNumber(getDetailRowRebuySum(row));
+      rebuyButton.disabled = !writeEnabled;
+      rebuyButton.addEventListener("click", () => {
+        openDetailRebuyModal(gameId, row.id);
+      });
+      rebuyCell.appendChild(rebuyButton);
       const payoutCell = createNumericCell("payout");
 
       const profitCell = document.createElement("td");
@@ -3197,38 +3333,12 @@ const initUserGamesManager = ({
   }
 
 
-  if (modalRebuyBulkButton) {
-    modalRebuyBulkButton.addEventListener("click", async () => {
-      if (!canWrite()) {
-        return;
-      }
-      if (!state.activeGameIdInModal) {
-        status.textContent = "Otwórz szczegóły gry, aby zbiorczo ustawić Rebuy/Add-on.";
-        return;
-      }
-      const activeGame = state.games.find((game) => game.id === state.activeGameIdInModal);
-      if (!activeGame || !hasWriteAccessToGame(activeGame)) {
-        status.textContent = "Brak uprawnień do edycji tej gry.";
-        return;
-      }
-      const promptValue = window.prompt("Podaj wartość Rebuy/Add-on dla wszystkich graczy.", "");
-      if (promptValue === null) {
-        return;
-      }
-      const normalized = sanitizeIntegerInput(promptValue);
-      if (normalized === "-") {
-        status.textContent = "Podaj poprawną wartość liczbową Rebuy/Add-on.";
-        return;
-      }
-      const rows = state.detailsByGame.get(state.activeGameIdInModal) ?? [];
-      await Promise.all(rows.map((row) => db.collection(gamesCollectionName)
-        .doc(state.activeGameIdInModal)
-        .collection(gameDetailsCollectionName)
-        .doc(row.id)
-        .update({ rebuy: normalized })));
-      status.textContent = `Ustawiono Rebuy/Add-on ${normalized || "(puste)"} dla ${rows.length} wierszy.`;
-    });
-  }
+  detailRebuyModalClose?.addEventListener("click", closeDetailRebuyModal);
+  detailRebuyModal.addEventListener("click", (event) => {
+    if (event.target === detailRebuyModal) {
+      closeDetailRebuyModal();
+    }
+  });
   modalClose.addEventListener("click", closeModal);
   modal.addEventListener("click", (event) => {
     if (event.target === modal) {
@@ -3236,6 +3346,10 @@ const initUserGamesManager = ({
     }
   });
   document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && detailRebuyModal.classList.contains("is-visible")) {
+      closeDetailRebuyModal();
+      return;
+    }
     if (event.key === "Escape" && modal.classList.contains("is-visible")) {
       closeModal();
     }
@@ -3253,7 +3367,6 @@ const initAdminUserGames = () => {
     modalMetaSelector: "#userGameDetailsMeta",
     modalBodySelector: "#userGameDetailsBody",
     modalEntryFeeBulkButtonSelector: "#userGameDetailsModal .game-entry-fee-bulk-button",
-    modalRebuyBulkButtonSelector: "#userGameDetailsModal .game-rebuy-bulk-button",
     modalCloseSelector: "#userGameDetailsClose",
     modalAddRowButtonSelector: "#userGameDetailsAddRow",
     selectedYearStorageKey: ADMIN_USER_GAMES_SELECTED_YEAR_STORAGE_KEY,
@@ -3276,7 +3389,6 @@ const initPlayerUserGames = () => {
     modalMetaSelector: "#playerUserGameDetailsMeta",
     modalBodySelector: "#playerUserGameDetailsBody",
     modalEntryFeeBulkButtonSelector: "#playerUserGameDetailsModal .game-entry-fee-bulk-button",
-    modalRebuyBulkButtonSelector: "#playerUserGameDetailsModal .game-rebuy-bulk-button",
     modalCloseSelector: "#playerUserGameDetailsClose",
     modalAddRowButtonSelector: "#playerUserGameDetailsAddRow",
     selectedYearStorageKey: USER_GAMES_SELECTED_YEAR_STORAGE_KEY,
@@ -6414,7 +6526,6 @@ const initAdminGames = () => {
   const modalClose = document.querySelector("#gameDetailsClose");
   const modalAddRowButton = document.querySelector("#gameDetailsAddRow");
   const modalEntryFeeBulkButton = document.querySelector("#gameDetailsModal .game-entry-fee-bulk-button");
-  const modalRebuyBulkButton = document.querySelector("#gameDetailsModal .game-rebuy-bulk-button");
 
   if (!yearsList || !gamesTableBody || !summariesContainer || !statsBody || !playersStatsBody || !rankingBody || !status || !addGameButton) {
     return;
@@ -6449,10 +6560,130 @@ const initAdminGames = () => {
 
   const summaryNotesModal = getSummaryNotesModalController();
 
+  const detailRebuyModal = document.createElement("div");
+  detailRebuyModal.className = "modal-overlay";
+  detailRebuyModal.setAttribute("aria-hidden", "true");
+  detailRebuyModal.innerHTML = `
+    <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="gameDetailsAdminRebuyTitle">
+      <div class="modal-card-header">
+        <h3 id="gameDetailsAdminRebuyTitle">Rebuy gracza</h3>
+        <button type="button" class="secondary" data-game-rebuy-close>Zamknij</button>
+      </div>
+      <div class="admin-table-scroll">
+        <table class="admin-data-table game-details-rebuy-table" data-game-rebuy-table></table>
+      </div>
+      <div class="admin-table-actions" data-game-rebuy-actions></div>
+    </div>
+  `;
+  document.body.appendChild(detailRebuyModal);
+  const detailRebuyModalTable = detailRebuyModal.querySelector("[data-game-rebuy-table]");
+  const detailRebuyModalActions = detailRebuyModal.querySelector("[data-game-rebuy-actions]");
+  const detailRebuyModalClose = detailRebuyModal.querySelector("[data-game-rebuy-close]");
+  let activeRebuyDetail = null;
+
+  const closeDetailRebuyModal = () => {
+    activeRebuyDetail = null;
+    detailRebuyModal.classList.remove("is-visible");
+    detailRebuyModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+
+  const getDetailRowRebuyValues = (row) => {
+    if (!Array.isArray(row.rebuys) || row.rebuys.length === 0) {
+      const normalized = sanitizeIntegerInput(row.rebuy ?? "");
+      return normalized ? [normalized] : [];
+    }
+    return row.rebuys.map((value) => sanitizeIntegerInput(value)).filter((value) => value !== "");
+  };
+
+  const getDetailRowRebuySum = (row) => getDetailRowRebuyValues(row).reduce((sum, value) => sum + parseIntegerOrZero(value), 0);
+
+  const persistDetailRowRebuyValues = async (gameId, rowId, rebuyValues) => {
+    const sanitizedValues = rebuyValues.map((value) => sanitizeIntegerInput(value)).filter((value) => value !== "");
+    const rebuySum = sanitizedValues.reduce((sum, value) => sum + parseIntegerOrZero(value), 0);
+    await db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(rowId).update({
+      rebuys: sanitizedValues,
+      rebuy: sanitizedValues.length ? String(rebuySum) : ""
+    });
+  };
+
+  const renderDetailRebuyModal = () => {
+    if (!activeRebuyDetail || !detailRebuyModalTable || !detailRebuyModalActions) {
+      return;
+    }
+    const row = (state.detailsByGame.get(activeRebuyDetail.gameId) ?? []).find((entry) => entry.id === activeRebuyDetail.rowId);
+    if (!row) {
+      closeDetailRebuyModal();
+      return;
+    }
+    const rowRebuys = getDetailRowRebuyValues(row);
+    let headerHtml = "<thead><tr>";
+    rowRebuys.forEach((_, index) => {
+      headerHtml += `<th>Rebuy${index + 1}</th>`;
+    });
+    headerHtml += "</tr></thead>";
+    detailRebuyModalTable.innerHTML = headerHtml;
+
+    const tbody = document.createElement("tbody");
+    const tr = document.createElement("tr");
+    rowRebuys.forEach((value, index) => {
+      const td = document.createElement("td");
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "admin-input";
+      input.value = value;
+      input.addEventListener("input", () => {
+        rowRebuys[index] = sanitizeIntegerInput(input.value);
+        input.value = rowRebuys[index];
+        scheduleDebouncedUpdate(`admin-detail-rebuy-${activeRebuyDetail.gameId}-${row.id}`, () => (
+          persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuys)
+        ));
+      });
+      td.appendChild(input);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+    detailRebuyModalTable.appendChild(tbody);
+
+    detailRebuyModalActions.innerHTML = "";
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "secondary";
+    addButton.textContent = "Dodaj Rebuy";
+    addButton.addEventListener("click", async () => {
+      await persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, [...rowRebuys, ""]);
+      renderDetailRebuyModal();
+    });
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "danger";
+    removeButton.textContent = "Usuń Rebuy";
+    removeButton.disabled = rowRebuys.length === 0;
+    removeButton.addEventListener("click", async () => {
+      if (rowRebuys.length === 0) {
+        return;
+      }
+      await persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuys.slice(0, -1));
+      renderDetailRebuyModal();
+    });
+
+    detailRebuyModalActions.append(addButton, removeButton);
+  };
+
+  const openDetailRebuyModal = (gameId, rowId) => {
+    activeRebuyDetail = { gameId, rowId };
+    detailRebuyModal.classList.add("is-visible");
+    detailRebuyModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    renderDetailRebuyModal();
+  };
+
   const closeModal = () => {
     if (!modal) {
       return;
     }
+    closeDetailRebuyModal();
     state.activeGameIdInModal = null;
     modal.classList.remove("is-visible");
     modal.setAttribute("aria-hidden", "true");
@@ -7143,7 +7374,15 @@ const initAdminGames = () => {
       };
 
       const entryFeeCell = createNumericCell("entryFee");
-      const rebuyCell = createNumericCell("rebuy");
+      const rebuyCell = document.createElement("td");
+      const rebuyButton = document.createElement("button");
+      rebuyButton.type = "button";
+      rebuyButton.className = "secondary";
+      rebuyButton.textContent = formatNumber(getDetailRowRebuySum(row));
+      rebuyButton.addEventListener("click", () => {
+        openDetailRebuyModal(gameId, row.id);
+      });
+      rebuyCell.appendChild(rebuyButton);
       const payoutCell = createNumericCell("payout");
 
       const profitCell = document.createElement("td");
@@ -7398,30 +7637,14 @@ const initAdminGames = () => {
   }
 
 
-  if (modalRebuyBulkButton) {
-    modalRebuyBulkButton.addEventListener("click", async () => {
-      if (!state.activeGameIdInModal) {
-        status.textContent = "Otwórz szczegóły gry, aby zbiorczo ustawić Rebuy/Add-on.";
-        return;
-      }
-      const promptValue = window.prompt("Podaj wartość Rebuy/Add-on dla wszystkich graczy.", "");
-      if (promptValue === null) {
-        return;
-      }
-      const normalized = sanitizeIntegerInput(promptValue);
-      if (normalized === "-") {
-        status.textContent = "Podaj poprawną wartość liczbową Rebuy/Add-on.";
-        return;
-      }
-      const rows = state.detailsByGame.get(state.activeGameIdInModal) ?? [];
-      await Promise.all(rows.map((row) => db.collection(gamesCollectionName)
-        .doc(state.activeGameIdInModal)
-        .collection(gameDetailsCollectionName)
-        .doc(row.id)
-        .update({ rebuy: normalized })));
-      status.textContent = `Ustawiono Rebuy/Add-on ${normalized || "(puste)"} dla ${rows.length} wierszy.`;
-    });
-  }
+
+
+  detailRebuyModalClose?.addEventListener("click", closeDetailRebuyModal);
+  detailRebuyModal.addEventListener("click", (event) => {
+    if (event.target === detailRebuyModal) {
+      closeDetailRebuyModal();
+    }
+  });
 
   if (modal) {
     modal.addEventListener("click", (event) => {
@@ -7430,6 +7653,10 @@ const initAdminGames = () => {
       }
     });
     document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && detailRebuyModal.classList.contains("is-visible")) {
+        closeDetailRebuyModal();
+        return;
+      }
       if (event.key === "Escape" && modal.classList.contains("is-visible")) {
         closeModal();
       }
