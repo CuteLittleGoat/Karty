@@ -180,6 +180,7 @@ Jeśli wypłaty nie zgadzają się z pulą, pojawia się czerwone ostrzeżenie.
 1. Kliknij **Statystyki**.
 2. Wpisz PIN z uprawnieniem do statystyk i kliknij **Otwórz**.
 3. Wybierz rok z panelu **Lata**.
+   - Dane i lista lat pojawiają się automatycznie od razu po poprawnej weryfikacji PIN (bez ręcznego odświeżania strony).
 4. Przeglądaj:
    - tabelę statystyk zbiorczych,
    - tabelę statystyk graczy,
