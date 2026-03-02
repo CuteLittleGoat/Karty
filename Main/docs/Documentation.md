@@ -13,6 +13,7 @@
   - edytowalne pole `Rebuy/Add-on` w każdym wierszu (możliwość ręcznej korekty po bulk update),
   - złote podświetlenie wiersza gracza z potwierdzoną obecnością (`.confirmed-row`).
 - Tworzenie i filtrowanie gier użytkownika zostało rozszerzone o powiązanie także po PIN-ie twórcy (`createdByPlayerPin`) oraz kompatybilność z istniejącym powiązaniem po `createdByPlayerId`.
+- Dostęp do listy graczy jest inicjalizowany globalnie (`initSharedPlayerAccess`), dzięki czemu mapowanie PIN→gracz oraz uprawnienia statystyk są odświeżane także w widoku użytkownika i zakładka „Statystyki” pokazuje lata/dane natychmiast po poprawnym wpisaniu PIN-u.
 
 ## 3. Obsługa modala instrukcji (`initInstructionModal`)
 - Elementy DOM:
