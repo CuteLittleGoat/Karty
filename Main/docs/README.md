@@ -25,6 +25,8 @@ Instrukcja jest podzielona na dwie części:
 
 Sekcja użytkownika składa się z trzech zakładek: **Aktualności**, **Regulamin**, **Strefa Gracza**.
 
+W nagłówku sekcji użytkownika jest też przycisk **Odśwież**. Po kliknięciu aplikacja odświeża cały widok użytkownika i ponownie pobiera aktualny stan danych.
+
 ### 2.1. Zakładka „Aktualności”
 
 Co widzisz:

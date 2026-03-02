@@ -8,6 +8,8 @@
 
 ## 2. Widok użytkownika
 
+W nagłówku sekcji użytkownika dostępny jest przycisk **Odśwież** — po kliknięciu odświeża cały widok użytkownika, dzięki czemu od razu pobierasz najnowsze dane dla aktywnych zakładek.
+
 ### 2.1 Zakładka „Aktualności”
 1. Kliknij zakładkę **Aktualności**.
 2. Odczytaj treść w polu **Najnowsze**.
