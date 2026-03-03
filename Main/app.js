@@ -2553,21 +2553,36 @@ const initUserGamesManager = ({
     document.body.classList.remove("modal-open");
   };
 
-  const getDetailRowRebuyValues = (row) => {
-    if (!Array.isArray(row.rebuys) || row.rebuys.length === 0) {
-      const normalized = sanitizeIntegerInput(row.rebuy ?? "");
-      return normalized ? [normalized] : [];
-    }
-    return row.rebuys.map((value) => sanitizeIntegerInput(value)).filter((value) => value !== "");
+  const getDetailRowRebuyState = (row) => {
+    const legacyRebuy = sanitizeIntegerInput(row.rebuy ?? "");
+    const values = Array.isArray(row.rebuys) && row.rebuys.length > 0
+      ? row.rebuys.map((value) => sanitizeIntegerInput(value))
+      : (legacyRebuy ? [legacyRebuy] : []);
+    const indexes = Array.isArray(row.rebuyIndexes) && row.rebuyIndexes.length === values.length
+      ? row.rebuyIndexes
+        .map((value) => Number.parseInt(String(value), 10))
+        .map((value, index) => (Number.isFinite(value) && value > 0 ? value : index + 1))
+      : values.map((_, index) => index + 1);
+    const maxIndex = indexes.reduce((maxValue, value) => Math.max(maxValue, value), 0);
+    const nextIndex = maxIndex + 1;
+
+    return { values, indexes, nextIndex };
   };
 
-  const getDetailRowRebuySum = (row) => getDetailRowRebuyValues(row).reduce((sum, value) => sum + parseIntegerOrZero(value), 0);
+  const getDetailRowRebuySum = (row) => getDetailRowRebuyState(row).values.reduce((sum, value) => sum + parseIntegerOrZero(value), 0);
 
-  const persistDetailRowRebuyValues = async (gameId, rowId, rebuyValues) => {
-    const sanitizedValues = rebuyValues.map((value) => sanitizeIntegerInput(value)).filter((value) => value !== "");
+  const persistDetailRowRebuyValues = async (gameId, rowId, rebuyState) => {
+    const sanitizedValues = rebuyState.values.map((value) => sanitizeIntegerInput(value));
+    const sanitizedIndexes = rebuyState.indexes
+      .map((value) => Number.parseInt(String(value), 10))
+      .filter((value) => Number.isFinite(value) && value > 0);
+    const maxIndex = sanitizedIndexes.reduce((maxValue, value) => Math.max(maxValue, value), 0);
+    const nextIndex = maxIndex + 1;
     const rebuySum = sanitizedValues.reduce((sum, value) => sum + parseIntegerOrZero(value), 0);
     await db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(rowId).update({
       rebuys: sanitizedValues,
+      rebuyIndexes: sanitizedIndexes,
+      rebuyNextIndex: nextIndex,
       rebuy: sanitizedValues.length ? String(rebuySum) : ""
     });
   };
@@ -2583,17 +2598,17 @@ const initUserGamesManager = ({
       return;
     }
     const writeEnabled = hasWriteAccessToGame(game);
-    const rowRebuys = getDetailRowRebuyValues(row);
+    const rowRebuyState = getDetailRowRebuyState(row);
     let headerHtml = "<thead><tr>";
-    rowRebuys.forEach((_, index) => {
-      headerHtml += `<th>Rebuy${index + 1}</th>`;
+    rowRebuyState.indexes.forEach((columnIndex) => {
+      headerHtml += `<th>Rebuy${columnIndex}</th>`;
     });
     headerHtml += "</tr></thead>";
     detailRebuyModalTable.innerHTML = headerHtml;
 
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
-    rowRebuys.forEach((value, index) => {
+    rowRebuyState.values.forEach((value, index) => {
       const td = document.createElement("td");
       const input = document.createElement("input");
       input.type = "text";
@@ -2604,10 +2619,10 @@ const initUserGamesManager = ({
         if (!hasWriteAccessToGame(game)) {
           return;
         }
-        rowRebuys[index] = sanitizeIntegerInput(input.value);
-        input.value = rowRebuys[index];
+        rowRebuyState.values[index] = sanitizeIntegerInput(input.value);
+        input.value = rowRebuyState.values[index];
         scheduleDebouncedUpdate(`user-detail-rebuy-${activeRebuyDetail.gameId}-${row.id}`, () => (
-          persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuys)
+          persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuyState)
         ));
       });
       td.appendChild(input);
@@ -2626,7 +2641,10 @@ const initUserGamesManager = ({
       if (!hasWriteAccessToGame(game)) {
         return;
       }
-      await persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, [...rowRebuys, ""]);
+      rowRebuyState.values.push("");
+      rowRebuyState.indexes.push(rowRebuyState.nextIndex);
+      rowRebuyState.nextIndex += 1;
+      await persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuyState);
       renderDetailRebuyModal();
     });
 
@@ -2634,12 +2652,14 @@ const initUserGamesManager = ({
     removeButton.type = "button";
     removeButton.className = "danger";
     removeButton.textContent = "Usuń Rebuy";
-    removeButton.disabled = !writeEnabled || rowRebuys.length === 0;
+    removeButton.disabled = !writeEnabled || rowRebuyState.values.length === 0;
     removeButton.addEventListener("click", async () => {
-      if (!hasWriteAccessToGame(game) || rowRebuys.length === 0) {
+      if (!hasWriteAccessToGame(game) || rowRebuyState.values.length === 0) {
         return;
       }
-      await persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuys.slice(0, -1));
+      rowRebuyState.values = rowRebuyState.values.slice(0, -1);
+      rowRebuyState.indexes = rowRebuyState.indexes.slice(0, -1);
+      await persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuyState);
       renderDetailRebuyModal();
     });
 
@@ -6663,21 +6683,36 @@ const initAdminGames = () => {
     document.body.classList.remove("modal-open");
   };
 
-  const getDetailRowRebuyValues = (row) => {
-    if (!Array.isArray(row.rebuys) || row.rebuys.length === 0) {
-      const normalized = sanitizeIntegerInput(row.rebuy ?? "");
-      return normalized ? [normalized] : [];
-    }
-    return row.rebuys.map((value) => sanitizeIntegerInput(value)).filter((value) => value !== "");
+  const getDetailRowRebuyState = (row) => {
+    const legacyRebuy = sanitizeIntegerInput(row.rebuy ?? "");
+    const values = Array.isArray(row.rebuys) && row.rebuys.length > 0
+      ? row.rebuys.map((value) => sanitizeIntegerInput(value))
+      : (legacyRebuy ? [legacyRebuy] : []);
+    const indexes = Array.isArray(row.rebuyIndexes) && row.rebuyIndexes.length === values.length
+      ? row.rebuyIndexes
+        .map((value) => Number.parseInt(String(value), 10))
+        .map((value, index) => (Number.isFinite(value) && value > 0 ? value : index + 1))
+      : values.map((_, index) => index + 1);
+    const maxIndex = indexes.reduce((maxValue, value) => Math.max(maxValue, value), 0);
+    const nextIndex = maxIndex + 1;
+
+    return { values, indexes, nextIndex };
   };
 
-  const getDetailRowRebuySum = (row) => getDetailRowRebuyValues(row).reduce((sum, value) => sum + parseIntegerOrZero(value), 0);
+  const getDetailRowRebuySum = (row) => getDetailRowRebuyState(row).values.reduce((sum, value) => sum + parseIntegerOrZero(value), 0);
 
-  const persistDetailRowRebuyValues = async (gameId, rowId, rebuyValues) => {
-    const sanitizedValues = rebuyValues.map((value) => sanitizeIntegerInput(value)).filter((value) => value !== "");
+  const persistDetailRowRebuyValues = async (gameId, rowId, rebuyState) => {
+    const sanitizedValues = rebuyState.values.map((value) => sanitizeIntegerInput(value));
+    const sanitizedIndexes = rebuyState.indexes
+      .map((value) => Number.parseInt(String(value), 10))
+      .filter((value) => Number.isFinite(value) && value > 0);
+    const maxIndex = sanitizedIndexes.reduce((maxValue, value) => Math.max(maxValue, value), 0);
+    const nextIndex = maxIndex + 1;
     const rebuySum = sanitizedValues.reduce((sum, value) => sum + parseIntegerOrZero(value), 0);
     await db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(rowId).update({
       rebuys: sanitizedValues,
+      rebuyIndexes: sanitizedIndexes,
+      rebuyNextIndex: nextIndex,
       rebuy: sanitizedValues.length ? String(rebuySum) : ""
     });
   };
@@ -6691,27 +6726,27 @@ const initAdminGames = () => {
       closeDetailRebuyModal();
       return;
     }
-    const rowRebuys = getDetailRowRebuyValues(row);
+    const rowRebuyState = getDetailRowRebuyState(row);
     let headerHtml = "<thead><tr>";
-    rowRebuys.forEach((_, index) => {
-      headerHtml += `<th>Rebuy${index + 1}</th>`;
+    rowRebuyState.indexes.forEach((columnIndex) => {
+      headerHtml += `<th>Rebuy${columnIndex}</th>`;
     });
     headerHtml += "</tr></thead>";
     detailRebuyModalTable.innerHTML = headerHtml;
 
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
-    rowRebuys.forEach((value, index) => {
+    rowRebuyState.values.forEach((value, index) => {
       const td = document.createElement("td");
       const input = document.createElement("input");
       input.type = "text";
       input.className = "admin-input";
       input.value = value;
       input.addEventListener("input", () => {
-        rowRebuys[index] = sanitizeIntegerInput(input.value);
-        input.value = rowRebuys[index];
+        rowRebuyState.values[index] = sanitizeIntegerInput(input.value);
+        input.value = rowRebuyState.values[index];
         scheduleDebouncedUpdate(`admin-detail-rebuy-${activeRebuyDetail.gameId}-${row.id}`, () => (
-          persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuys)
+          persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuyState)
         ));
       });
       td.appendChild(input);
@@ -6726,7 +6761,10 @@ const initAdminGames = () => {
     addButton.className = "secondary";
     addButton.textContent = "Dodaj Rebuy";
     addButton.addEventListener("click", async () => {
-      await persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, [...rowRebuys, ""]);
+      rowRebuyState.values.push("");
+      rowRebuyState.indexes.push(rowRebuyState.nextIndex);
+      rowRebuyState.nextIndex += 1;
+      await persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuyState);
       renderDetailRebuyModal();
     });
 
@@ -6734,12 +6772,14 @@ const initAdminGames = () => {
     removeButton.type = "button";
     removeButton.className = "danger";
     removeButton.textContent = "Usuń Rebuy";
-    removeButton.disabled = rowRebuys.length === 0;
+    removeButton.disabled = rowRebuyState.values.length === 0;
     removeButton.addEventListener("click", async () => {
-      if (rowRebuys.length === 0) {
+      if (rowRebuyState.values.length === 0) {
         return;
       }
-      await persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuys.slice(0, -1));
+      rowRebuyState.values = rowRebuyState.values.slice(0, -1);
+      rowRebuyState.indexes = rowRebuyState.indexes.slice(0, -1);
+      await persistDetailRowRebuyValues(activeRebuyDetail.gameId, row.id, rowRebuyState);
       renderDetailRebuyModal();
     });
 

@@ -168,9 +168,10 @@ W modalu:
 5. Nagłówek **Wpisowe** (przycisk zbiorczy) pozwala nadać jedną wartość wpisowego wszystkim wierszom naraz.
 6. Kolumna **Rebuy/Add-on** ma zwykły nagłówek tekstowy (bez akcji zbiorczej).
 7. W każdym wierszu kliknij przycisk z wartością w kolumnie **Rebuy/Add-on**, aby otworzyć okno `Rebuy gracza` i dodać/usunąć kolejne wpisy rebuy (tak jak w Kalkulatorze).
-8. Suma z okna `Rebuy gracza` jest wyświetlana na przycisku w wierszu i automatycznie uwzględniana w kolumnach **+/-**, puli i podsumowaniach.
-8. Wiersz gracza z potwierdzoną obecnością jest podświetlony na złoto.
-9. Zamknięcie modalu: przycisk `×`, kliknięcie poza modalem lub klawisz `Esc`.
+8. W oknie `Rebuy gracza` nowe kolumny są numerowane per gracz (`Rebuy1`, `Rebuy2`, …); po usunięciu ostatniej kolumny kolejne dodanie przywraca numer ostatniego dostępnego rebuy.
+9. Suma z okna `Rebuy gracza` jest wyświetlana na przycisku w wierszu i automatycznie uwzględniana w kolumnach **+/-**, puli i podsumowaniach.
+10. Wiersz gracza z potwierdzoną obecnością jest podświetlony na złoto.
+11. Zamknięcie modalu: przycisk `×`, kliknięcie poza modalem lub klawisz `Esc`.
 
 ### F) Modal „Notatki do gry”
 Przyciski:
@@ -348,7 +349,7 @@ W każdym wierszu gry:
 3. **+/-** wylicza się automatycznie.
 4. Kliknij **Usuń** w wierszu, aby usunąć jednego uczestnika.
 5. Kliknij nagłówek-przycisk **Wpisowe**, by ustawić jedno wpisowe dla wszystkich wierszy.
-6. Kliknij przycisk z wartością w kolumnie **Rebuy/Add-on** dla wybranego gracza, aby otworzyć okno `Rebuy gracza` i zarządzać wieloma wpisami rebuy/add-on (przyciski **Dodaj Rebuy** i **Usuń Rebuy**).
+6. Kliknij przycisk z wartością w kolumnie **Rebuy/Add-on** dla wybranego gracza, aby otworzyć okno `Rebuy gracza` i zarządzać wieloma wpisami rebuy/add-on (przyciski **Dodaj Rebuy** i **Usuń Rebuy**). Numeracja kolumn (`Rebuy1`, `Rebuy2`, …) jest niezależna dla każdego gracza, a po usunięciu ostatniej kolumny następne dodanie przywraca ten numer.
 
 ### 10.5. „Notatki po grze”
 W podsumowaniu każdej gry użyj przycisku **Notatki po grze**:
