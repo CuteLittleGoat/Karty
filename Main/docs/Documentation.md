@@ -18,6 +18,8 @@
   - bez podświetlania potwierdzeń w samym modalu szczegółów; podświetlenie przeniesione do modala statusów z kolumny `IlośćPotwierdzonych`.
 - Tworzenie i filtrowanie gier użytkownika zostało rozszerzone o powiązanie także po PIN-ie twórcy (`createdByPlayerPin`) oraz kompatybilność z istniejącym powiązaniem po `createdByPlayerId`.
 - Dostęp do listy graczy jest inicjalizowany globalnie (`initSharedPlayerAccess`), a synchronizacja `synchronizeStatisticsAccessState()` jest wywoływana także po wejściu do Strefy Gracza; dzięki temu mapowanie PIN→gracz i uprawnienia statystyk odświeżają się od razu, a zakładka „Statystyki” pokazuje lata/dane bez ręcznego resetu strony.
+- Zakładka admina **Gry do potwierdzenia** (`initAdminConfirmations`) ma dwukolumnowy layout: lewy panel filtrów czasu (`#adminConfirmationsYearsList`, `#adminConfirmationsMonthsList`) oraz prawą listę gier; filtrowanie działa po `gameDate` (rok/miesiąc), jest zapisywane w `localStorage` pod kluczem `adminConfirmationsFilters`, a gry są renderowane malejąco po dacie (najnowsze u góry).
+- Widok gier do potwierdzenia działa w wariancie „zwiniętym domyślnie”: każda karta gry pokazuje nagłówek i licznik `Potwierdzenia X/Y`, a tabela graczy i akcje `Potwierdź`/`Anuluj` pojawiają się dopiero po kliknięciu `Rozwiń`.
 
 ## 3. Obsługa modala instrukcji (`initInstructionModal`)
 - Elementy DOM:
