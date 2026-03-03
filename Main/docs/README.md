@@ -103,8 +103,6 @@ Dodatkowo:
 
 Przyciski i funkcje w wierszu gry:
 - **Potwierdź** — zapisuje Twoją obecność na grze.
-
-- Wybór gracza w listach (Szczegóły gry, kalkulator turniejowy i cash) działa po wewnętrznym unikatowym ID gracza, dlatego dwóch graczy o tej samej nazwie może być obsługiwanych niezależnie.
 - **Anuluj** — wycofuje potwierdzenie obecności.
 - **Szczegóły** — otwiera modal ze szczegółową tabelą uczestników i wartości (wpisowe/rebuy/wypłata/punkty/mistrzostwo).
 - **Notatki do gry** — otwiera modal notatek przed grą w trybie tylko do odczytu.
