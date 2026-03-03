@@ -4999,7 +4999,7 @@ const initAdminCalculator = () => {
     tr.append(
       createReadonlyCell(formatNumber(metrics.buyInAfterPercent)),
       createReadonlyCell(formatNumber(metrics.rebuyAfterPercent)),
-      createReadonlyCell(formatNumber(metrics.totalAfterPercent))
+      createReadonlyCell(formatNumber(metrics.totalBuyIn + metrics.totalRebuy))
     );
     tbody.appendChild(tr);
     table.appendChild(tbody);

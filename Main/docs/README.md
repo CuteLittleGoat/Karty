@@ -442,10 +442,13 @@ Przycisk:
 ### 15.4. Cash — sposób liczenia Rake w Tabela8
 - W trybie **Cash** kolumna **Rake** w **Tabela8** jest liczona ze wzoru:
   - `Rake = (Suma Buy-In z Tabela9 + Suma Rebuy z Tabela9) × % z Tabela8`.
+- W trybie **Cash** kolumna **Suma** w **Tabela7** pokazuje zawsze:
+  - `Suma = Suma Buy-In z Tabela9 + Suma Rebuy z Tabela9`.
 - Przykład:
   - Buy-In = 80,
   - Rebuy = 20,
   - % = 10,
+  - Suma (Tabela7) = `80 + 20 = 100`,
   - Rake = `(80 + 20) × 10% = 10`.
 
 ---
