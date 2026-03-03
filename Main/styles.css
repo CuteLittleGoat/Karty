@@ -1870,6 +1870,16 @@ body.modal-open {
   flex-wrap: wrap;
 }
 
+.admin-confirmations-count-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-confirmations-count-control button {
+  white-space: nowrap;
+}
+
 .confirmed-row {
   background: rgba(212, 175, 55, 0.2);
   box-shadow: inset 0 0 0 1px var(--gold-line);

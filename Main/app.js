@@ -1651,6 +1651,120 @@ const getConfirmedCountLabel = (rows = [], confirmations = []) => {
   return `${confirmedCount}/${playerNames.length}`;
 };
 
+const getConfirmationStatusesForRows = (rows = [], confirmations = []) => {
+  const confirmedPlayers = getConfirmedPlayersFromConfirmations(confirmations);
+  return getUniquePlayerNamesFromRows(rows).map((playerName) => ({
+    playerName,
+    confirmed: confirmedPlayers.has(playerName)
+  }));
+};
+
+let confirmationsStatusModalController = null;
+const getConfirmationsStatusModalController = () => {
+  if (confirmationsStatusModalController) {
+    return confirmationsStatusModalController;
+  }
+
+  const modal = document.createElement("div");
+  modal.className = "modal-overlay";
+  modal.setAttribute("aria-hidden", "true");
+  modal.innerHTML = `
+    <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="confirmationsStatusModalTitle">
+      <div class="modal-header">
+        <h3 id="confirmationsStatusModalTitle">Status potwierdzeń</h3>
+        <button type="button" class="icon-button" data-confirmations-status-close aria-label="Zamknij okno">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="status-text" data-confirmations-status-meta></p>
+        <div class="admin-table-scroll">
+          <table class="admin-data-table">
+            <thead>
+              <tr>
+                <th>Gracz</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody data-confirmations-status-body></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const closeButton = modal.querySelector("[data-confirmations-status-close]");
+  const meta = modal.querySelector("[data-confirmations-status-meta]");
+  const body = modal.querySelector("[data-confirmations-status-body]");
+  let activeContextId = "";
+
+  const close = () => {
+    modal.classList.remove("is-visible");
+    modal.setAttribute("aria-hidden", "true");
+    activeContextId = "";
+    if (!document.querySelector(".modal-overlay.is-visible")) {
+      document.body.classList.remove("modal-open");
+    }
+  };
+
+  const open = ({ contextId, title, rows, confirmations }) => {
+    activeContextId = contextId || "";
+    if (meta) {
+      meta.textContent = title || "Status potwierdzeń";
+    }
+    if (body) {
+      body.innerHTML = "";
+      const statuses = getConfirmationStatusesForRows(rows, confirmations);
+      if (!statuses.length) {
+        const emptyRow = document.createElement("tr");
+        const emptyCell = document.createElement("td");
+        emptyCell.colSpan = 2;
+        emptyCell.textContent = "Brak zapisanych graczy.";
+        emptyRow.appendChild(emptyCell);
+        body.appendChild(emptyRow);
+      } else {
+        statuses.forEach((entry) => {
+          const tr = document.createElement("tr");
+          if (entry.confirmed) {
+            tr.classList.add("confirmed-row");
+          }
+
+          const nameCell = document.createElement("td");
+          nameCell.textContent = entry.playerName;
+
+          const statusCell = document.createElement("td");
+          statusCell.textContent = entry.confirmed ? "Potwierdzony" : "Niepotwierdzony";
+
+          tr.append(nameCell, statusCell);
+          body.appendChild(tr);
+        });
+      }
+    }
+
+    modal.classList.add("is-visible");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  };
+
+  closeButton?.addEventListener("click", close);
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      close();
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modal.classList.contains("is-visible")) {
+      close();
+    }
+  });
+
+  confirmationsStatusModalController = {
+    open,
+    close,
+    isOpenFor: (contextId) => Boolean(contextId) && modal.classList.contains("is-visible") && activeContextId === contextId
+  };
+  return confirmationsStatusModalController;
+};
+
 const isGameOwnedByPlayer = (game, player) => {
   if (!game || !player) {
     return false;
@@ -2073,6 +2187,22 @@ const initUserConfirmations = () => {
 
   const db = firebaseApp.firestore();
   const summaryNotesModal = getSummaryNotesModalController();
+  const confirmationsStatusModal = getConfirmationsStatusModalController();
+
+  const openConfirmationsStatusModal = (gameId) => {
+    const game = state.games.find((entry) => entry.id === gameId);
+    if (!game) {
+      return;
+    }
+    const rows = state.detailsByGame.get(gameId) ?? [];
+    const confirmations = state.confirmationsByGame.get(gameId) ?? [];
+    confirmationsStatusModal.open({
+      contextId: `${gamesCollectionName}:${gameId}`,
+      title: `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"}`,
+      rows,
+      confirmations
+    });
+  };
 
   const closeDetailsModal = () => {
     if (!detailsModal) {
@@ -3048,7 +3178,17 @@ const initUserGamesManager = ({
       const confirmationsCell = document.createElement("td");
       const detailRows = state.detailsByGame.get(game.id) ?? [];
       const confirmations = state.confirmationsByGame.get(game.id) ?? [];
-      confirmationsCell.textContent = getConfirmedCountLabel(detailRows, confirmations);
+      const confirmationsWrap = document.createElement("div");
+      confirmationsWrap.className = "admin-confirmations-count-control";
+      const confirmationsLabel = document.createElement("span");
+      confirmationsLabel.textContent = getConfirmedCountLabel(detailRows, confirmations);
+      const confirmationsButton = document.createElement("button");
+      confirmationsButton.type = "button";
+      confirmationsButton.className = "secondary";
+      confirmationsButton.textContent = "Statusy";
+      confirmationsButton.addEventListener("click", () => openConfirmationsStatusModal(game.id));
+      confirmationsWrap.append(confirmationsLabel, confirmationsButton);
+      confirmationsCell.appendChild(confirmationsWrap);
 
       const deleteCell = document.createElement("td");
       const deleteButton = document.createElement("button");
@@ -3088,17 +3228,11 @@ const initUserGamesManager = ({
 
     const rows = state.detailsByGame.get(gameId) ?? [];
     const confirmations = state.confirmationsByGame.get(gameId) ?? [];
-    const confirmedPlayers = getConfirmedPlayersFromConfirmations(confirmations);
     const gamePool = rows.reduce((sum, row) => sum + parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy), 0);
     modalMeta.textContent = `${modalMeta.textContent} | Pula: ${gamePool} | Ilość graczy: ${rows.length}`;
     rows.forEach((row, index) => { 
       const tr = document.createElement("tr");
       const writeEnabled = hasWriteAccessToGame(game);
-      const normalizedPlayerName = typeof row.playerName === "string" ? row.playerName.trim() : "";
-      if (normalizedPlayerName && confirmedPlayers.has(normalizedPlayerName)) {
-        tr.classList.add("confirmed-row");
-      }
-
       const lpCell = document.createElement("td");
       lpCell.textContent = String(index + 1);
 
@@ -3276,6 +3410,9 @@ const initUserGamesManager = ({
         state.confirmationsByGame.set(game.id, confirmationSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
         if (state.activeGameIdInModal === game.id) {
           renderModal(game.id);
+        }
+        if (confirmationsStatusModal.isOpenFor(`${gamesCollectionName}:${game.id}`)) {
+          openConfirmationsStatusModal(game.id);
         }
         renderGamesTable();
       });
@@ -6666,6 +6803,22 @@ const initAdminGames = () => {
   };
 
   const summaryNotesModal = getSummaryNotesModalController();
+  const confirmationsStatusModal = getConfirmationsStatusModalController();
+
+  const openConfirmationsStatusModal = (gameId) => {
+    const game = state.games.find((entry) => entry.id === gameId);
+    if (!game) {
+      return;
+    }
+    const rows = state.detailsByGame.get(gameId) ?? [];
+    const confirmations = state.confirmationsByGame.get(gameId) ?? [];
+    confirmationsStatusModal.open({
+      contextId: `${gamesCollectionName}:${gameId}`,
+      title: `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"}`,
+      rows,
+      confirmations
+    });
+  };
 
   const detailRebuyModal = document.createElement("div");
   detailRebuyModal.className = "modal-overlay";
@@ -7149,7 +7302,17 @@ const initAdminGames = () => {
       const confirmationsCell = document.createElement("td");
       const detailRows = state.detailsByGame.get(game.id) ?? [];
       const confirmations = state.confirmationsByGame.get(game.id) ?? [];
-      confirmationsCell.textContent = getConfirmedCountLabel(detailRows, confirmations);
+      const confirmationsWrap = document.createElement("div");
+      confirmationsWrap.className = "admin-confirmations-count-control";
+      const confirmationsLabel = document.createElement("span");
+      confirmationsLabel.textContent = getConfirmedCountLabel(detailRows, confirmations);
+      const confirmationsButton = document.createElement("button");
+      confirmationsButton.type = "button";
+      confirmationsButton.className = "secondary";
+      confirmationsButton.textContent = "Statusy";
+      confirmationsButton.addEventListener("click", () => openConfirmationsStatusModal(game.id));
+      confirmationsWrap.append(confirmationsLabel, confirmationsButton);
+      confirmationsCell.appendChild(confirmationsWrap);
 
       const deleteCell = document.createElement("td");
       const deleteButton = document.createElement("button");
@@ -7430,15 +7593,10 @@ const initAdminGames = () => {
 
     const rows = state.detailsByGame.get(gameId) ?? [];
     const confirmations = state.confirmationsByGame.get(gameId) ?? [];
-    const confirmedPlayers = getConfirmedPlayersFromConfirmations(confirmations);
     const gamePool = rows.reduce((sum, row) => sum + parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy), 0);
     modalMeta.textContent = `${modalMeta.textContent} | Pula: ${gamePool} | Ilość graczy: ${rows.length}`;
     rows.forEach((row, index) => { 
       const tr = document.createElement("tr");
-      const normalizedPlayerName = typeof row.playerName === "string" ? row.playerName.trim() : "";
-      if (normalizedPlayerName && confirmedPlayers.has(normalizedPlayerName)) {
-        tr.classList.add("confirmed-row");
-      }
 
       const lpCell = document.createElement("td");
       lpCell.textContent = String(index + 1);
@@ -7658,6 +7816,9 @@ const initAdminGames = () => {
             state.detailsByGame.set(game.id, rowSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
             if (state.activeGameIdInModal === game.id) {
               renderModal(game.id);
+            }
+            if (confirmationsStatusModal.isOpenFor(`${gamesCollectionName}:${game.id}`)) {
+              openConfirmationsStatusModal(game.id);
             }
             renderGamesTable();
             renderSummaries();
