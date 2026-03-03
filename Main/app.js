@@ -199,7 +199,10 @@ const sortRankingRowsByResult = (rows) => {
 
 const buildRankingRowsFromStatistics = (playerRows, yearMap, getDefaultManualFieldValue = getDefaultStatsManualFieldValue) => {
   return sortRankingRowsByResult(playerRows.map((statsRow) => {
-    const manualEntry = yearMap.get(statsRow.playerName) ?? {};
+    const statsIdentifier = typeof statsRow?.statsKey === "string" && statsRow.statsKey.trim()
+      ? statsRow.statsKey.trim()
+      : getRowPlayerIdentifier(statsRow);
+    const manualEntry = yearMap.get(statsIdentifier) ?? {};
     return {
       ...statsRow,
       resultValue: getComputedStatsResultValue(statsRow, manualEntry, getDefaultManualFieldValue)
@@ -3722,11 +3725,24 @@ const initAdminConfirmations = () => {
         const rowsSnapshot = await db.collection(collectionName).doc(game.id).collection(gameDetailsCollectionName).get(
           source === "default" ? undefined : { source }
         );
-        const playerNames = Array.from(new Set(rowsSnapshot.docs
-          .map((doc) => (typeof doc.data()?.playerName === "string" ? doc.data().playerName.trim() : ""))
-          .filter(Boolean)));
+        const players = Array.from(rowsSnapshot.docs
+          .reduce((map, doc) => {
+            const rowData = doc.data() ?? {};
+            const playerIdentifier = getRowPlayerIdentifier(rowData);
+            if (!playerIdentifier || map.has(playerIdentifier)) {
+              return map;
+            }
 
-        if (!playerNames.length) {
+            map.set(playerIdentifier, {
+              identifier: playerIdentifier,
+              playerId: typeof rowData.playerId === "string" ? rowData.playerId.trim() : "",
+              playerName: normalizePlayerName(rowData.playerName)
+            });
+            return map;
+          }, new Map())
+          .values());
+
+        if (!players.length) {
           const tr = document.createElement("tr");
           const td = document.createElement("td");
           td.colSpan = 3;
@@ -3737,26 +3753,25 @@ const initAdminConfirmations = () => {
           const confirmationSnapshot = await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).get(
             source === "default" ? undefined : { source }
           );
-          const confirmationsByName = new Map();
+          const confirmationsByIdentifier = new Map();
           confirmationSnapshot.docs.forEach((doc) => {
             const data = doc.data();
-            const playerName = typeof data.playerName === "string" ? data.playerName.trim() : "";
-            if (playerName) {
-              confirmationsByName.set(playerName, { ...data, id: doc.id });
+            const identifier = getRowPlayerIdentifier(data);
+            if (identifier) {
+              confirmationsByIdentifier.set(identifier, { ...data, id: doc.id });
             }
           });
 
-          playerNames.forEach((playerName) => {
+          players.forEach((player) => {
             const tr = document.createElement("tr");
-            const confirmation = confirmationsByName.get(playerName) ?? null;
-            const matchedPlayer = adminPlayersState.players.find((player) => (player.name || "").trim() === playerName);
-            const confirmationDocId = matchedPlayer?.id || confirmation?.id || playerName;
+            const confirmation = confirmationsByIdentifier.get(player.identifier) ?? null;
+            const confirmationDocId = player.playerId || confirmation?.id || player.playerName;
             if (confirmation?.confirmed) {
               tr.classList.add("confirmed-row");
             }
 
             const nameCell = document.createElement("td");
-            nameCell.textContent = playerName;
+            nameCell.textContent = player.playerName || "-";
 
             const statusCell = document.createElement("td");
             statusCell.textContent = confirmation?.confirmed ? "Potwierdzono" : "Niepotwierdzono";
@@ -3770,9 +3785,12 @@ const initAdminConfirmations = () => {
             confirmButton.className = "primary";
             confirmButton.textContent = "Potwierdź";
             confirmButton.addEventListener("click", async () => {
+              if (!confirmationDocId) {
+                return;
+              }
               await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(confirmationDocId).set({
-                playerId: confirmationDocId,
-                playerName,
+                playerId: player.playerId || "",
+                playerName: player.playerName,
                 confirmed: true,
                 updatedBy: "admin",
                 updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
@@ -3787,9 +3805,12 @@ const initAdminConfirmations = () => {
             cancelButton.className = "danger";
             cancelButton.textContent = "Anuluj";
             cancelButton.addEventListener("click", async () => {
+              if (!confirmationDocId) {
+                return;
+              }
               await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(confirmationDocId).set({
-                playerId: confirmationDocId,
-                playerName,
+                playerId: player.playerId || "",
+                playerName: player.playerName,
                 confirmed: false,
                 updatedBy: "admin",
                 updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
@@ -6771,10 +6792,7 @@ const initStatisticsView = ({
         }
         const yearMap = state.manualStatsByYear.get(yearKey);
         statistics.playerRows.forEach((row) => {
-          if (!yearMap.has(row.playerName)) {
-            yearMap.set(row.playerName, { playerName: row.playerName });
-          }
-          const playerEntry = yearMap.get(row.playerName);
+          const playerEntry = ensureYearMapEntry(yearMap, row.statsKey, row.playerName, row.playerId);
           manualStatsFields.forEach((field) => {
             if (playerEntry[field] == null) {
               playerEntry[field] = getDefaultManualFieldValue(field, "");
@@ -6807,7 +6825,7 @@ const initStatisticsView = ({
     const visibleColumns = isAdminView ? STATS_COLUMN_CONFIG.map((column) => column.key) : getVisibleColumnsForYear(state.selectedYear);
     const headers = STATS_COLUMN_CONFIG.filter((column) => visibleColumns.includes(column.key)).map((column) => column.label);
     const dataRows = statistics.playerRows.map((row) => {
-      const manualEntry = yearMap.get(row.playerName) ?? {};
+      const manualEntry = yearMap.get(row.statsKey) ?? {};
       return STATS_COLUMN_CONFIG
         .filter((column) => visibleColumns.includes(column.key))
         .map((column) => column.value(row, manualEntry, getDefaultManualFieldValue, getComputedResultValue));

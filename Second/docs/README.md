@@ -34,6 +34,12 @@ W nagłówku sekcji użytkownika dostępny jest przycisk **Odśwież** — po kl
 2. Odczytaj tabelę z kolumnami: **Aplikacja**, **Nazwa**, **PIN**, **Uprawnienia**.
 3. Lista jest tylko do odczytu i aktualizuje się automatycznie.
 
+
+
+### 2.4.1 Identyfikacja graczy przy duplikatach nazw
+- Lista graczy jest deduplikowana po identyfikatorze gracza (ID), a dopiero pomocniczo po nazwie.
+- Dzięki temu dwie osoby o tej samej nazwie nie są łączone w jeden rekord, jeśli mają różne ID.
+
 ### 2.5 Zakładka „TOURNAMENT OF POKER”
 1. Kliknij zakładkę **TOURNAMENT OF POKER**.
 2. W lewym panelu przełączaj sekcje:

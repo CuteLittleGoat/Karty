@@ -403,14 +403,34 @@ const formatChatTimestamp = (value) => {
   });
 };
 
+const getPlayerIdentifier = (player = {}) => {
+  const playerId = typeof player?.id === "string" ? player.id.trim() : "";
+  if (playerId) {
+    return `id:${playerId}`;
+  }
+  const playerName = typeof player?.name === "string" ? player.name.trim() : "";
+  return playerName ? `name:${playerName}` : "";
+};
+
 const renderPlayersTable = (tableBody, players) => {
   if (!tableBody) {
     return;
   }
 
+  const uniquePlayers = Array.isArray(players)
+    ? Array.from(players.reduce((map, player) => {
+      const identifier = getPlayerIdentifier(player);
+      if (!identifier || map.has(identifier)) {
+        return map;
+      }
+      map.set(identifier, player);
+      return map;
+    }, new Map()).values())
+    : [];
+
   tableBody.innerHTML = "";
 
-  if (!players.length) {
+  if (!uniquePlayers.length) {
     const row = document.createElement("tr");
     const cell = document.createElement("td");
     cell.colSpan = 5;
@@ -420,7 +440,7 @@ const renderPlayersTable = (tableBody, players) => {
     return;
   }
 
-  players.forEach((player) => {
+  uniquePlayers.forEach((player) => {
     const row = document.createElement("tr");
     const appCell = document.createElement("td");
     const nameCell = document.createElement("td");

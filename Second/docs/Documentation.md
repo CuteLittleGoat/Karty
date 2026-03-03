@@ -110,3 +110,8 @@ Dotyczy to sekcji:
 
 
 - Widok użytkownika (`#userViewTemplate`) zawiera przycisk `#userPanelRefresh` i status `#userPanelRefreshStatus`; kliknięcie wykonuje odświeżenie danych aktywnej zakładki (Aktualności/Regulamin/Gracze/Czat) bez `window.location.reload()`.
+
+
+## 2.4.1 Identyfikacja rekordów graczy
+- `renderPlayersTable` normalizuje listę `players[]` do unikalnych rekordów po kluczu `id:<player.id>` z fallbackiem `name:<player.name>`.
+- Render tabel admin/user korzysta z listy po deduplikacji, co zabezpiecza widok przed scaleniem różnych osób o takiej samej nazwie.
