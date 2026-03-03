@@ -97,7 +97,7 @@ Dotyczy to sekcji:
 ## 5. Zmiany tekstowe i nazewnicze w UI
 - Nagłówek modułu:
   - „Drugi moduł”,
-  - „Netanjahu to ludobójca”.
+  - „Aplikacja do liczenia Omeru od drugiej nocy Pesach do Szawuot”.
 - Usunięto opis pod nagłówkiem.
 - Zakładka „Turniej” zmieniona na „TOURNAMENT OF POKER” (admin i user).
 - W panelu bocznym turnieju zaktualizowano listę przycisków zgodnie z wymaganiami.
