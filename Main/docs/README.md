@@ -151,7 +151,8 @@ Kolumna **CzyZamknięta** (checkbox):
 
 Kolumna **IlośćPotwierdzonych**:
 - pokazuje format `potwierdzeni/zapisani` (np. `2/3`, `3/3`, `4/10`),
-- licznik aktualizuje się automatycznie po zmianach w składzie graczy i potwierdzeniach.
+- licznik aktualizuje się automatycznie po zmianach w składzie graczy i potwierdzeniach,
+- przycisk **Statusy** otwiera okno tylko do odczytu z listą graczy i statusem (`Potwierdzony` / `Niepotwierdzony`); potwierdzeni są podświetleni na złoto.
 
 ### E) Modal „Szczegóły” gry (po kliknięciu „Szczegóły”)
 W modalu:
@@ -170,7 +171,7 @@ W modalu:
 7. W każdym wierszu kliknij przycisk z wartością w kolumnie **Rebuy/Add-on**, aby otworzyć okno `Rebuy gracza` i dodać/usunąć kolejne wpisy rebuy (tak jak w Kalkulatorze).
 8. W oknie `Rebuy gracza` nowe kolumny są numerowane per gracz (`Rebuy1`, `Rebuy2`, …); po usunięciu ostatniej kolumny kolejne dodanie przywraca numer ostatniego dostępnego rebuy.
 9. Suma z okna `Rebuy gracza` jest wyświetlana na przycisku w wierszu i automatycznie uwzględniana w kolumnach **+/-**, puli i podsumowaniach.
-10. Wiersz gracza z potwierdzoną obecnością jest podświetlony na złoto.
+10. Modal szczegółów nie koloruje już wierszy po statusie potwierdzenia.
 11. Zamknięcie modalu: przycisk `×`, kliknięcie poza modalem lub klawisz `Esc`.
 
 ### F) Modal „Notatki do gry”

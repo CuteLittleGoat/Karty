@@ -110,7 +110,9 @@ Dodatkowo `body::before` nakłada subtelny świetlny overlay (`opacity: 0.25`) z
 - W sekcji Czat kontener listy wiadomości (`.chat-messages`) ma stałą minimalną wysokość (`260px`, na ekranach do 720px: `180px`), pionowy scrollbar (`overflow-y: auto`) i stylowany uchwyt suwaka dla czytelności historii rozmowy; przy otwieraniu widoku Czat suwak jest domyślnie ustawiany na sam dół listy.
 - **Modale funkcjonalne** (logowanie, instrukcja, szczegóły): wspólny layout i zachowanie wizualne.
 - **Statusy**: `.status-text` oraz wariant błędu `.status-text-danger` wykorzystują odpowiednio neutralny i „danger” kolor.
-- W tabelach szczegółów gry (`.game-details-table`) wiersz gracza z potwierdzoną obecnością ma złote podświetlenie przez klasę `.confirmed-row` (złote tło + złota linia wewnętrzna).
+- W tabelach szczegółów gry (`.game-details-table`) nie ma już podświetlania statusów potwierdzeń; statusy są prezentowane w osobnym modalu „Status potwierdzeń” uruchamianym przyciskiem `Statusy` w kolumnie `IlośćPotwierdzonych`.
+- W komórce kolumny `IlośćPotwierdzonych` użyty jest poziomy układ `.admin-confirmations-count-control` (licznik + przycisk `.secondary` `Statusy`).
+- W modalu „Status potwierdzeń” wiersze potwierdzonych graczy są wyróżnione klasą `.confirmed-row` (złote tło + złota linia wewnętrzna).
 - W nagłówku kolumny `Rebuy/Add-on` w modalach szczegółów gry jest zwykły tekst nagłówka tabeli (bez stylu przycisku zbiorczego).
 - W komórkach kolumny `Rebuy/Add-on` jest przycisk `.secondary` z aktualną sumą rebuy gracza; kliknięcie otwiera modal `Rebuy gracza` (`.modal-card.modal-card-sm`) z układem i akcjami jak w kalkulatorze.
 - W `Main` w zakładce **Kalkulator → Tournament → Tabela5** pod tabelą może pojawić się czerwony komunikat walidacyjny `Nie sumuje się do 100%` (klasy `.status-text.status-text-danger`), kiedy suma procentów w kolumnie `Podział puli` jest różna od 100.
