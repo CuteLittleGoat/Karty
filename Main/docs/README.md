@@ -158,7 +158,7 @@ Kolumna **CzyZamknięta** (checkbox):
 
 Kolumna **IlośćPotwierdzonych**:
 - pokazuje format `potwierdzeni/zapisani` (np. `2/3`, `3/3`, `4/10`),
-- licznik aktualizuje się automatycznie po zmianach w składzie graczy i potwierdzeniach,
+- licznik aktualizuje się automatycznie po wejściu do zakładki oraz po każdej zmianie składu graczy i potwierdzeń,
 - przycisk **Statusy** otwiera okno tylko do odczytu z listą graczy i statusem (`Potwierdzony` / `Niepotwierdzony`); potwierdzeni są podświetleni na złoto.
 
 ### E) Modal „Szczegóły” gry (po kliknięciu „Szczegóły”)
@@ -214,7 +214,7 @@ Panel administratora zawiera pełen zestaw narzędzi do zarządzania treściami,
 
 Przyciski:
 - **Instrukcja** — otwiera instrukcję w modalu,
-- **Odśwież** (w nagłówku panelu) — ręcznie odświeża dane aktywnej zakładki (w panelu admina i użytkownika, bez przeładowania strony).
+- **Odśwież** (w nagłówku panelu) — ręcznie odświeża dane aktywnej zakładki (w panelu admina i użytkownika, bez przeładowania strony), a w zakładkach gier od razu przelicza i odświeża kolumnę `IlośćPotwierdzonych`.
 
 Statusy:
 - obok **Odśwież** wyświetla się informacja o przebiegu odświeżania,
