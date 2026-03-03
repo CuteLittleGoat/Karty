@@ -398,6 +398,8 @@ Najważniejsze przyciski:
 
 Widok tabeli z najbliższą aktywną grą oraz statusem potwierdzeń wszystkich graczy.
 
+Zakładka automatycznie ukrywa gry starsze niż dzisiejsza data — na liście zobaczysz wyłącznie gry zaplanowane na dziś lub przyszłe terminy.
+
 Użycie:
 - przejdź do zakładki, by monitorować czy komplet graczy potwierdził udział,
 - dane są aktualizowane na podstawie aktywnych gier i potwierdzeń.

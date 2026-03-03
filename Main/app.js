@@ -1698,8 +1698,20 @@ const synchronizeNextGamesConfirmations = async () => {
 };
 
 const getCombinedOpenGames = () => {
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const isTodayOrFutureGame = (game) => {
+    const dateValue = parseDateFromInput(game?.gameDate);
+    if (!dateValue) {
+      return false;
+    }
+    dateValue.setHours(0, 0, 0, 0);
+    return dateValue.getTime() >= todayStart.getTime();
+  };
+
   return [...nextGamesState.adminGames, ...nextGamesState.userGames]
-    .filter((game) => !game.isClosed)
+    .filter((game) => !game.isClosed && isTodayOrFutureGame(game))
     .sort((a, b) => {
       const left = getDateSortValue(a.gameDate);
       const right = getDateSortValue(b.gameDate);
