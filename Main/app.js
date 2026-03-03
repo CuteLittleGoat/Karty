@@ -2724,7 +2724,7 @@ const initUserGamesManager = ({
     <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="gameDetailsRebuyTitle">
       <div class="modal-card-header">
         <h3 id="gameDetailsRebuyTitle">Rebuy gracza</h3>
-        <button type="button" class="secondary" data-game-rebuy-close>Zamknij</button>
+        <button type="button" class="icon-button" data-game-rebuy-close aria-label="Zamknij okno">×</button>
       </div>
       <div class="admin-table-scroll">
         <table class="admin-data-table game-details-rebuy-table" data-game-rebuy-table></table>
@@ -4993,7 +4993,7 @@ const initAdminCalculator = () => {
     <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="adminCalculatorRebuyTitle">
       <div class="modal-header">
         <h3 id="adminCalculatorRebuyTitle">Rebuy gracza</h3>
-        <button type="button" class="secondary" id="adminCalculatorRebuyClose">Zamknij</button>
+        <button type="button" class="icon-button" id="adminCalculatorRebuyClose" aria-label="Zamknij okno">×</button>
       </div>
       <div class="modal-body">
         <div class="admin-table-scroll">
@@ -7201,7 +7201,7 @@ const initAdminGames = () => {
     <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="gameDetailsAdminRebuyTitle">
       <div class="modal-card-header">
         <h3 id="gameDetailsAdminRebuyTitle">Rebuy gracza</h3>
-        <button type="button" class="secondary" data-game-rebuy-close>Zamknij</button>
+        <button type="button" class="icon-button" data-game-rebuy-close aria-label="Zamknij okno">×</button>
       </div>
       <div class="admin-table-scroll">
         <table class="admin-data-table game-details-rebuy-table" data-game-rebuy-table></table>
