@@ -420,23 +420,11 @@ Użycie:
 
 Widok kontrolny potwierdzeń dla gier wymagających deklaracji uczestników.
 
-### 14.1. Filtr czasu (panel po lewej)
-- W panelu **Filtr czasu** kliknij przycisk roku (np. `2026 (12)`), aby zawęzić listę gier do wybranego roku.
-- Po wybraniu roku pojawi się lista miesięcy; kliknij konkretny miesiąc (np. `03 · Marzec (4)`), aby pokazać tylko gry z danego miesiąca.
-- Przycisk **Wszystkie miesiące** czyści filtr miesiąca w aktualnie wybranym roku.
-- Przycisk **Wszystkie lata** czyści cały filtr czasu.
-- Nad listą gier widoczny jest aktualny zakres filtra.
-
-### 14.2. Lista gier (wariant zwinięty domyślnie)
-- Każda gra jest domyślnie **zwinięta**: widać nazwę, metadane i licznik `Potwierdzenia: X/Y`.
-- Kliknij **Rozwiń**, aby wyświetlić tabelę graczy i przyciski akcji.
-- Kliknij **Zwiń**, aby ponownie schować szczegóły gry.
-
-### 14.3. Akcje potwierdzeń
-- Po rozwinięciu gry użyj:
-  - **Potwierdź** — ustawia status gracza na `Potwierdzono`.
-  - **Anuluj** — ustawia status gracza na `Niepotwierdzono`.
-- Po każdej akcji lista odświeża się automatycznie i aktualizuje licznik potwierdzeń.
+Typowe akcje:
+- podgląd, którzy gracze potwierdzili,
+- wejście do **Szczegółów** gry,
+- otwarcie **Notatek do gry**,
+- odświeżanie listy (jeśli widoczne przyciski odświeżenia w sekcji).
 
 ---
 
