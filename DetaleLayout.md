@@ -113,6 +113,9 @@ Dodatkowo `body::before` nakłada subtelny świetlny overlay (`opacity: 0.25`) z
 - W tabelach szczegółów gry (`.game-details-table`) nie ma już podświetlania statusów potwierdzeń; statusy są prezentowane w osobnym modalu „Status potwierdzeń” uruchamianym przyciskiem `Statusy` w kolumnie `IlośćPotwierdzonych`.
 - W komórce kolumny `IlośćPotwierdzonych` użyty jest poziomy układ `.admin-confirmations-count-control` (licznik + przycisk `.secondary` `Statusy`).
 - W modalu „Status potwierdzeń” wiersze potwierdzonych graczy są wyróżnione klasą `.confirmed-row` (złote tło + złota linia wewnętrzna).
+- W `Main` zakładka admina `Gry do potwierdzenia` używa dwukolumnowego układu `.admin-confirmations-layout` (lewy sidebar filtrów czasu + prawa lista gier), gdzie sidebar ma panelowe tło, obramowanie i na desktopie pozycjonowanie `sticky`.
+- Karta gry potwierdzeń ma nagłówek `.admin-confirmation-game-header` z przyciskiem `Rozwiń/Zwiń`, a szczegóły graczy znajdują się w sekcji `.admin-confirmation-game-body`; domyślnie sekcja szczegółów jest ukryta (`[hidden]`).
+- W panelu filtrów czasu zastosowano bloki `.admin-confirmations-filter-block` z nagłówkami uppercase oraz helper `.admin-confirmations-filter-hint` w kolorze `var(--muted)`.
 - W nagłówku kolumny `Rebuy/Add-on` w modalach szczegółów gry jest zwykły tekst nagłówka tabeli (bez stylu przycisku zbiorczego).
 - W komórkach kolumny `Rebuy/Add-on` jest przycisk `.secondary` z aktualną sumą rebuy gracza; kliknięcie otwiera modal `Rebuy gracza` (`.modal-card.modal-card-sm`) z układem i akcjami jak w kalkulatorze.
 - W `Main` w zakładce **Kalkulator → Tournament → Tabela5** pod tabelą może pojawić się czerwony komunikat walidacyjny `Nie sumuje się do 100%` (klasy `.status-text.status-text-danger`), kiedy suma procentów w kolumnie `Podział puli` jest różna od 100.

@@ -379,7 +379,25 @@
                 <p>Lista aktywnych gier z potwierdzeniami obecności graczy.</p>
               </div>
               <span id="adminConfirmationsStatus" class="status-text" aria-live="polite"></span>
-              <div id="adminConfirmationsList" class="admin-confirmations-list"></div>
+              <div class="admin-confirmations-layout">
+                <aside class="admin-confirmations-sidebar" aria-label="Filtr czasu gier do potwierdzenia">
+                  <div class="card-header admin-games-sidebar-header">
+                    <h3>Filtr czasu</h3>
+                  </div>
+                  <div class="admin-confirmations-filter-block">
+                    <h4>Lata</h4>
+                    <div id="adminConfirmationsYearsList" class="admin-games-years-list"></div>
+                  </div>
+                  <div class="admin-confirmations-filter-block">
+                    <h4>Miesiące</h4>
+                    <div id="adminConfirmationsMonthsList" class="admin-games-years-list"></div>
+                  </div>
+                </aside>
+                <div class="admin-confirmations-content">
+                  <p id="adminConfirmationsSelectedFilter" class="status-text"></p>
+                  <div id="adminConfirmationsList" class="admin-confirmations-list"></div>
+                </div>
+              </div>
             </section>
           </div>
           <div id="adminCalculatorTab" class="admin-panel-content" role="tabpanel">
