@@ -114,6 +114,13 @@ Odświeżanie sekcji:
 - sekcja odświeża dane automatycznie po wejściu w **Gry do Potwierdzenia**,
 - ręczne odświeżenie wykonujesz przez górny przycisk **Odśwież** w nagłówku panelu użytkownika.
 
+
+### 3.3.1. Ważna zasada identyfikacji gracza (po zmianie)
+
+- Potwierdzenia i statusy obecności są rozróżniane po **ID gracza**, a nie tylko po samej nazwie widocznej na ekranie.
+- Jeśli dwie osoby mają taką samą nazwę, system traktuje je jako dwie osobne osoby (na podstawie ich ID).
+- W praktyce dla użytkownika UI wygląda tak samo (nazwa nadal jest widoczna), ale liczenie potwierdzeń nie skleja już graczy o identycznej nazwie.
+
 ## 3.4. „Gry Użytkowników”
 
 To sekcja, w której gracz (z uprawnieniem) tworzy i prowadzi własne gry.
