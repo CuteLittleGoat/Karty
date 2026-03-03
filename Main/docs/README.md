@@ -459,7 +459,7 @@ W zależności od trybu dostępne są przyciski w wierszach:
 
 ### 15.3. Modal rebuy
 Przycisk:
-- **Zamknij** — zamyka okno zarządzania rebuy.
+- **×** (prawy górny róg) — zamyka okno zarządzania rebuy.
 
 ### 15.4. Cash — sposób liczenia Rake w Tabela8
 - W trybie **Cash** kolumna **Rake** w **Tabela8** jest liczona ze wzoru:
