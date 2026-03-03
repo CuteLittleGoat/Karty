@@ -160,7 +160,7 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 | wartość oczekiwana |  |  |  |  |
 | Rebuy | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, suma Rebuy z Tabela9 pomniejszona o wartość z kolumny `%` (Tabela8). |
 | wartość oczekiwana |  |  |  |  |
-| Suma | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, suma Buy-In i Rebuy z Tabela7. |
+| Suma | automatyczna | brak stałego limitu | do lewej | Pole tylko do odczytu, suma Buy-In i Rebuy z Tabela9. |
 | wartość oczekiwana |  |  |  |  |
 
 ### 6.1 Tabela8 (Cash)
