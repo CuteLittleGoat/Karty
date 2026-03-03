@@ -2729,6 +2729,23 @@ const initUserGamesManager = ({
   };
 
   const summaryNotesModal = getSummaryNotesModalController();
+  const confirmationsStatusModal = getConfirmationsStatusModalController();
+
+  const openConfirmationsStatusModal = (gameId) => {
+    const game = state.games.find((entry) => entry.id === gameId);
+    if (!game) {
+      return;
+    }
+    const rows = state.detailsByGame.get(gameId) ?? [];
+    const confirmations = state.confirmationsByGame.get(gameId) ?? [];
+    confirmationsStatusModal.open({
+      contextId: `${gamesCollectionName}:${gameId}`,
+      title: `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"}`,
+      rows,
+      confirmations
+    });
+  };
+
   const detailRebuyModal = document.createElement("div");
   detailRebuyModal.className = "modal-overlay";
   detailRebuyModal.setAttribute("aria-hidden", "true");
@@ -3475,6 +3492,7 @@ const initUserGamesManager = ({
         if (state.activeGameIdInModal === game.id) {
           renderModal(game.id);
         }
+        renderGamesTable();
         renderSummaries();
       });
       state.detailsUnsubscribers.set(game.id, unsubscribe);
@@ -8090,7 +8108,10 @@ const initAdminGames = () => {
     renderSummaries();
     renderStatsTable();
   });
-  registerAdminRefreshHandler("adminUserGamesTab", async () => {});
+  registerAdminRefreshHandler("adminUserGamesTab", async () => {
+    renderGamesTable();
+    renderSummaries();
+  });
 };
 
 const initLatestMessage = () => {
