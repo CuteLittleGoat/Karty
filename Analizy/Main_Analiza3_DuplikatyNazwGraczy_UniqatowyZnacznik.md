@@ -67,3 +67,47 @@ Jeżeli trzeba wdrożyć to bez pełnej migracji od razu, można użyć pól prz
 
 ## Wniosek końcowy
 Ryzyko duplikatów nazw jest realne i występuje w kilku obszarach aplikacji. Technicznie obecne Firebase/Firestore w pełni pozwala przejść na unikatowy znacznik (ID gracza), a najbezpieczniejsza ścieżka to migracja etapowa z fallbackiem do `playerName` dla starych rekordów.
+
+
+## Aktualizacja po wdrożeniu i rewercie (incydent)
+
+### Prompt użytkownika (aktualizacja)
+> Przeczytaj analizę: Analizy/Main_Analiza3_DuplikatyNazwGraczy_UniqatowyZnacznik.md
+>
+> Po wdrożeniu zmian aplikacja przestała działać. Nie dało się wejść w panel admina. Aplikacja nie pytała o hasło.
+> Włączył się od razu widok użytkownika. Nie działały żadne przyciski.
+> Zrobiłem Revert tego PR w GitHubie.
+> Dodaj tę uwagę do analizy a następnie zaktualizuj plik i sprawdź czemu aplikacja po wprowadzeniu zmian w ten sposób się zachowała i co należy zrobić, żeby tego uniknąć.
+
+### Zgłoszone objawy
+- brak promptu hasła admina,
+- uruchamianie się od razu widoku użytkownika,
+- niedziałające przyciski,
+- konieczny revert PR.
+
+### Ustalenia techniczne (dlaczego aplikacja "padła")
+1. W zrevertowanym commicie `6487573` ("Main: switch player matching to unique playerId") plik `Main/app.js` zawierał **podwójną deklarację** tej samej stałej:
+   - `const initStatisticsViews = () => { ... }` występowało dwukrotnie.
+2. To generowało błąd parsera JavaScript już podczas ładowania pliku:
+   - `SyntaxError: Identifier 'initStatisticsViews' has already been declared`.
+3. Ponieważ błąd był na etapie parsowania, przeglądarka nie wykonywała dalszej części skryptu inicjalizującego:
+   - logika autoryzacji admina nie uruchamiała się,
+   - handlery przycisków nie były rejestrowane,
+   - UI pozostawał w stanie domyślnym, co dawało efekt "od razu widoku użytkownika" i martwych przycisków.
+
+### Jak tego uniknąć w kolejnych wdrożeniach
+1. **Obowiązkowy gate syntaktyczny przed mergem**
+   - dodać krok CI: `node --check Main/app.js` (i analogicznie dla innych głównych plików JS),
+   - build/test PR musi failować przy błędzie parsowania.
+2. **Krótki smoke test po wdrożeniu PR**
+   - wejście na aplikację,
+   - weryfikacja, że pojawia się panel/logika admina,
+   - kliknięcie 2–3 kluczowych przycisków (np. otwarcie modala gry, zapis).
+3. **Mniejsze PR-y i bezpieczne scalanie dużych refaktorów**
+   - duże zmiany (jak przejście na `playerId`) dzielić na etapy,
+   - unikać dublowania bloków funkcji podczas ręcznego łączenia fragmentów.
+4. **Checklista "critical boot path"**
+   - przed merge potwierdzić: brak błędów w konsoli po starcie, działa autoryzacja, działają event listenery podstawowych akcji.
+
+### Wniosek po incydencie
+Sama decyzja o przejściu z `playerName` na `playerId` była poprawna, natomiast awaria wynikała z błędu implementacyjnego (podwójna deklaracja funkcji w `Main/app.js`), który zatrzymał wykonanie całego skryptu aplikacji. Kluczowe jest dodanie automatycznej walidacji składni i prostego smoke testu uruchomieniowego jako warunku merge/deploy.
