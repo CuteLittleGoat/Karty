@@ -298,7 +298,18 @@ const getDateSortValue = (value) => {
   return Number.isFinite(parsed) ? parsed : Number.POSITIVE_INFINITY;
 };
 
-const getSelectedPlayerNamesForRows = (rows, currentRowId) => {
+const normalizePlayerName = (value) => (typeof value === "string" ? value.trim() : "");
+
+const getRowPlayerIdentifier = (row = {}) => {
+  const playerId = typeof row?.playerId === "string" ? row.playerId.trim() : "";
+  if (playerId) {
+    return `id:${playerId}`;
+  }
+  const playerName = normalizePlayerName(row?.playerName);
+  return playerName ? `name:${playerName}` : "";
+};
+
+const getSelectedPlayerIdentifiersForRows = (rows, currentRowId) => {
   const selectedPlayers = new Set();
   if (!Array.isArray(rows)) {
     return selectedPlayers;
@@ -308,18 +319,36 @@ const getSelectedPlayerNamesForRows = (rows, currentRowId) => {
     if (!row || row.id === currentRowId) {
       return;
     }
-    const playerName = typeof row.playerName === "string" ? row.playerName.trim() : "";
-    if (playerName) {
-      selectedPlayers.add(playerName);
+    const playerIdentifier = getRowPlayerIdentifier(row);
+    if (playerIdentifier) {
+      selectedPlayers.add(playerIdentifier);
     }
   });
 
   return selectedPlayers;
 };
 
+const getAvailablePlayersForRow = (rows, currentRowId, playerOptions, currentIdentifier = "") => {
+  const selectedPlayers = getSelectedPlayerIdentifiersForRows(rows, currentRowId);
+  return playerOptions.filter((player) => {
+    const playerId = typeof player?.id === "string" ? player.id.trim() : "";
+    const playerName = normalizePlayerName(player?.name);
+    const playerIdentifier = playerId ? `id:${playerId}` : (playerName ? `name:${playerName}` : "");
+    if (!playerIdentifier) {
+      return false;
+    }
+    return playerIdentifier === currentIdentifier || !selectedPlayers.has(playerIdentifier);
+  });
+};
+
 const getAvailablePlayerNamesForRow = (rows, currentRowId, playerOptions, currentPlayerName = "") => {
-  const selectedPlayers = getSelectedPlayerNamesForRows(rows, currentRowId);
-  return playerOptions.filter((playerName) => playerName === currentPlayerName || !selectedPlayers.has(playerName));
+  const normalizedOptions = Array.isArray(playerOptions)
+    ? playerOptions.map((name) => ({ id: "", name }))
+    : [];
+  const currentIdentifier = currentPlayerName ? `name:${currentPlayerName}` : "";
+  return getAvailablePlayersForRow(rows, currentRowId, normalizedOptions, currentIdentifier)
+    .map((player) => normalizePlayerName(player.name))
+    .filter(Boolean);
 };
 
 const compareByGameDateAsc = (a, b) => {
@@ -1610,53 +1639,68 @@ const getAllPlayersConfirmedForGame = async ({ db, collectionName, gameId, gameD
     gameRef.collection(GAME_CONFIRMATIONS_COLLECTION).get()
   ]);
 
-  const playerNames = Array.from(new Set(rowsSnapshot.docs
-    .map((doc) => (typeof doc.data()?.playerName === "string" ? doc.data().playerName.trim() : ""))
+  const playerIdentifiers = Array.from(new Set(rowsSnapshot.docs
+    .map((doc) => getRowPlayerIdentifier(doc.data()))
     .filter(Boolean)));
 
-  if (!playerNames.length) {
+  if (!playerIdentifiers.length) {
     return false;
   }
 
   const confirmedPlayers = new Set();
   confirmationsSnapshot.docs.forEach((doc) => {
     const confirmation = doc.data();
-    const playerName = typeof confirmation?.playerName === "string" ? confirmation.playerName.trim() : "";
-    if (playerName && confirmation?.confirmed === true) {
-      confirmedPlayers.add(playerName);
+    const playerId = typeof confirmation?.playerId === "string" ? confirmation.playerId.trim() : "";
+    const playerName = normalizePlayerName(confirmation?.playerName);
+    const identifier = playerId ? `id:${playerId}` : (playerName ? `name:${playerName}` : "");
+    if (identifier && confirmation?.confirmed === true) {
+      confirmedPlayers.add(identifier);
     }
   });
 
-  return playerNames.every((playerName) => confirmedPlayers.has(playerName));
+  return playerIdentifiers.every((identifier) => confirmedPlayers.has(identifier));
 };
 
-const getUniquePlayerNamesFromRows = (rows = []) => Array.from(new Set(rows
-  .map((row) => (typeof row?.playerName === "string" ? row.playerName.trim() : ""))
-  .filter(Boolean)));
+const getUniquePlayersFromRows = (rows = []) => {
+  const playersMap = new Map();
+  rows.forEach((row) => {
+    const identifier = getRowPlayerIdentifier(row);
+    if (!identifier || playersMap.has(identifier)) {
+      return;
+    }
+    playersMap.set(identifier, {
+      identifier,
+      playerName: normalizePlayerName(row?.playerName)
+    });
+  });
+  return Array.from(playersMap.values());
+};
 
-const getConfirmedPlayersFromConfirmations = (confirmations = []) => {
+const getConfirmedPlayerIdentifiersFromConfirmations = (confirmations = []) => {
   const confirmedPlayers = new Set();
   confirmations.forEach((confirmation) => {
-    const playerName = typeof confirmation?.playerName === "string" ? confirmation.playerName.trim() : "";
-    if (playerName && confirmation?.confirmed === true) {
-      confirmedPlayers.add(playerName);
+    const playerId = typeof confirmation?.playerId === "string" ? confirmation.playerId.trim() : "";
+    const playerName = normalizePlayerName(confirmation?.playerName);
+    const identifier = playerId ? `id:${playerId}` : (playerName ? `name:${playerName}` : "");
+    if (identifier && confirmation?.confirmed === true) {
+      confirmedPlayers.add(identifier);
     }
   });
   return confirmedPlayers;
 };
 
 const getConfirmedCountLabel = (rows = [], confirmations = []) => {
-  const playerNames = getUniquePlayerNamesFromRows(rows);
-  const confirmedPlayers = getConfirmedPlayersFromConfirmations(confirmations);
-  const confirmedCount = playerNames.reduce((count, playerName) => (confirmedPlayers.has(playerName) ? count + 1 : count), 0);
-  return `${confirmedCount}/${playerNames.length}`;
+  const players = getUniquePlayersFromRows(rows);
+  const confirmedPlayers = getConfirmedPlayerIdentifiersFromConfirmations(confirmations);
+  const confirmedCount = players.reduce((count, player) => (confirmedPlayers.has(player.identifier) ? count + 1 : count), 0);
+  return `${confirmedCount}/${players.length}`;
 };
 
 const getConfirmationStatusesForRows = (rows = [], confirmations = []) => {
-  const confirmedPlayers = getConfirmedPlayersFromConfirmations(confirmations);
-  return getUniquePlayerNamesFromRows(rows).map((playerName) => ({
-    playerName,
-    confirmed: confirmedPlayers.has(playerName)
+  const confirmedPlayers = getConfirmedPlayerIdentifiersFromConfirmations(confirmations);
+  return getUniquePlayersFromRows(rows).map((player) => ({
+    playerName: player.playerName,
+    confirmed: confirmedPlayers.has(player.identifier)
   }));
 };
 
@@ -2289,8 +2333,13 @@ const initUserConfirmations = () => {
           .get(source === "default" ? undefined : { source });
 
         const hasPlayer = rowsSnapshot.docs.some((rowDoc) => {
-          const playerName = typeof rowDoc.data()?.playerName === "string" ? rowDoc.data().playerName.trim() : "";
-          return playerName && playerName === (verifiedPlayer.name || "").trim();
+          const rowData = rowDoc.data() ?? {};
+          const rowPlayerId = typeof rowData.playerId === "string" ? rowData.playerId.trim() : "";
+          if (rowPlayerId) {
+            return rowPlayerId === verifiedPlayer.id;
+          }
+          const playerName = normalizePlayerName(rowData.playerName);
+          return playerName && playerName === normalizePlayerName(verifiedPlayer.name);
         });
 
         if (!hasPlayer) {
@@ -3244,33 +3293,39 @@ const initUserGamesManager = ({
       playerSelect.dataset.section = "games-modal";
       playerSelect.dataset.tableId = gameId;
       playerSelect.dataset.rowId = row.id;
-      playerSelect.dataset.columnKey = "playerName";
-      const currentPlayerName = typeof row.playerName === "string" ? row.playerName : "";
+      playerSelect.dataset.columnKey = "playerId";
+      const currentPlayerName = normalizePlayerName(row.playerName);
+      const currentPlayerId = typeof row.playerId === "string" ? row.playerId.trim() : "";
+      const currentIdentifier = currentPlayerId ? `id:${currentPlayerId}` : (currentPlayerName ? `name:${currentPlayerName}` : "");
       const options = [...state.playerOptions];
-      const availableOptions = getAvailablePlayerNamesForRow(rows, row.id, options, currentPlayerName);
+      const availableOptions = getAvailablePlayersForRow(rows, row.id, options, currentIdentifier);
       const emptyOption = document.createElement("option");
       emptyOption.value = "";
       emptyOption.textContent = "Wybierz gracza";
       playerSelect.appendChild(emptyOption);
-      if (currentPlayerName && !options.includes(currentPlayerName)) {
+      if (currentIdentifier && !availableOptions.some((option) => `id:${option.id}` === currentIdentifier)) {
         const legacyOption = document.createElement("option");
-        legacyOption.value = currentPlayerName;
+        legacyOption.value = currentPlayerId;
         legacyOption.textContent = `${currentPlayerName} (usunięty)`;
         legacyOption.disabled = true;
         legacyOption.selected = true;
         playerSelect.appendChild(legacyOption);
       }
-      availableOptions.forEach((name) => {
+      availableOptions.forEach((player) => {
         const option = document.createElement("option");
-        option.value = name;
-        option.textContent = name;
+        option.value = player.id;
+        option.textContent = player.name;
         playerSelect.appendChild(option);
       });
-      playerSelect.value = currentPlayerName;
+      playerSelect.value = currentPlayerId;
       playerSelect.disabled = !writeEnabled;
       playerSelect.addEventListener("change", () => {
         if (!hasWriteAccessToGame(game)) return;
-        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ playerName: playerSelect.value });
+        const selectedPlayer = options.find((option) => option.id === playerSelect.value) ?? null;
+        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({
+          playerId: selectedPlayer?.id ?? "",
+          playerName: selectedPlayer?.name ?? ""
+        });
       });
       playerCell.appendChild(playerSelect);
 
@@ -3366,7 +3421,12 @@ const initUserGamesManager = ({
 
   db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
     const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
-    state.playerOptions = players.map((player) => (typeof player.name === "string" ? player.name.trim() : "")).filter(Boolean);
+    state.playerOptions = players
+      .map((player, index) => ({
+        id: typeof player?.id === "string" && player.id.trim() ? player.id.trim() : `player-${index + 1}`,
+        name: normalizePlayerName(player?.name)
+      }))
+      .filter((player) => player.id && player.name);
     if (state.activeGameIdInModal) {
       renderModal(state.activeGameIdInModal);
     }
@@ -3848,27 +3908,40 @@ const initAdminConfirmations = () => {
       summary.className = "admin-confirmation-game-summary";
 
       const rowsSnapshot = await db.collection(collectionName).doc(game.id).collection(gameDetailsCollectionName).get();
-      const playerNames = Array.from(new Set(rowsSnapshot.docs
-        .map((doc) => (typeof doc.data()?.playerName === "string" ? doc.data().playerName.trim() : ""))
-        .filter(Boolean)));
+      const players = Array.from(rowsSnapshot.docs.reduce((acc, doc) => {
+        const row = doc.data() ?? {};
+        const identifier = getRowPlayerIdentifier(row);
+        if (!identifier || acc.has(identifier)) {
+          return acc;
+        }
+        const rowPlayerId = typeof row.playerId === "string" ? row.playerId.trim() : "";
+        acc.set(identifier, {
+          identifier,
+          playerName: normalizePlayerName(row.playerName),
+          playerId: rowPlayerId
+        });
+        return acc;
+      }, new Map()).values());
 
       let confirmedCount = 0;
-      if (playerNames.length) {
+      if (players.length) {
         const confirmationSnapshot = await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).get();
-        const confirmationsByName = new Map();
+        const confirmationsByIdentifier = new Map();
         confirmationSnapshot.docs.forEach((doc) => {
           const data = doc.data();
-          const playerName = typeof data.playerName === "string" ? data.playerName.trim() : "";
-          if (playerName) {
-            confirmationsByName.set(playerName, { ...data, id: doc.id });
+          const playerId = typeof data?.playerId === "string" ? data.playerId.trim() : "";
+          const playerName = normalizePlayerName(data?.playerName);
+          const identifier = playerId ? `id:${playerId}` : (playerName ? `name:${playerName}` : "");
+          if (identifier) {
+            confirmationsByIdentifier.set(identifier, { ...data, id: doc.id });
           }
         });
-        confirmedCount = playerNames.reduce((acc, playerName) => {
-          const confirmation = confirmationsByName.get(playerName);
+        confirmedCount = players.reduce((acc, player) => {
+          const confirmation = confirmationsByIdentifier.get(player.identifier);
           return confirmation?.confirmed ? acc + 1 : acc;
         }, 0);
       }
-      summary.textContent = `Potwierdzenia: ${confirmedCount}/${playerNames.length}`;
+      summary.textContent = `Potwierdzenia: ${confirmedCount}/${players.length}`;
 
       heading.append(title, meta, summary);
 
@@ -3920,7 +3993,7 @@ const initAdminConfirmations = () => {
       `;
       const tbody = document.createElement("tbody");
 
-      if (!playerNames.length) {
+      if (!players.length) {
         const tr = document.createElement("tr");
         const td = document.createElement("td");
         td.colSpan = 3;
@@ -3929,26 +4002,27 @@ const initAdminConfirmations = () => {
         tbody.appendChild(tr);
       } else {
         const confirmationSnapshot = await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).get();
-        const confirmationsByName = new Map();
+        const confirmationsByIdentifier = new Map();
         confirmationSnapshot.docs.forEach((doc) => {
           const data = doc.data();
-          const playerName = typeof data.playerName === "string" ? data.playerName.trim() : "";
-          if (playerName) {
-            confirmationsByName.set(playerName, { ...data, id: doc.id });
+          const playerId = typeof data?.playerId === "string" ? data.playerId.trim() : "";
+          const playerName = normalizePlayerName(data?.playerName);
+          const identifier = playerId ? `id:${playerId}` : (playerName ? `name:${playerName}` : "");
+          if (identifier) {
+            confirmationsByIdentifier.set(identifier, { ...data, id: doc.id });
           }
         });
 
-        playerNames.forEach((playerName) => {
+        players.forEach((player) => {
           const tr = document.createElement("tr");
-          const confirmation = confirmationsByName.get(playerName) ?? null;
-          const matchedPlayer = adminPlayersState.players.find((player) => (player.name || "").trim() === playerName);
-          const confirmationDocId = matchedPlayer?.id || confirmation?.id || playerName;
+          const confirmation = confirmationsByIdentifier.get(player.identifier) ?? null;
+          const confirmationDocId = player.playerId || confirmation?.playerId || confirmation?.id || player.identifier;
           if (confirmation?.confirmed) {
             tr.classList.add("confirmed-row");
           }
 
           const nameCell = document.createElement("td");
-          nameCell.textContent = playerName;
+          nameCell.textContent = player.playerName || "-";
 
           const statusCell = document.createElement("td");
           statusCell.textContent = confirmation?.confirmed ? "Potwierdzono" : "Niepotwierdzono";
@@ -3964,7 +4038,7 @@ const initAdminConfirmations = () => {
           confirmButton.addEventListener("click", async () => {
             await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(confirmationDocId).set({
               playerId: confirmationDocId,
-              playerName,
+              playerName: player.playerName,
               confirmed: true,
               updatedBy: "admin",
               updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
@@ -3980,7 +4054,7 @@ const initAdminConfirmations = () => {
           cancelButton.addEventListener("click", async () => {
             await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(confirmationDocId).set({
               playerId: confirmationDocId,
-              playerName,
+              playerName: player.playerName,
               confirmed: false,
               updatedBy: "admin",
               updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
@@ -4437,7 +4511,7 @@ const initAdminCalculator = () => {
 
   const createInitialState = () => ({
     table1Row: { id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" },
-    table2Rows: [{ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [] }],
+    table2Rows: [{ id: `table2-${Date.now()}-0`, playerId: "", playerName: "", eliminated: false, rebuys: [] }],
     table3Row: { percent: "" },
     table5SplitPercents: [],
     table5Mods: [],
@@ -4446,7 +4520,7 @@ const initAdminCalculator = () => {
 
   const createInitialCashState = () => ({
     table8Row: { rake: "" },
-    table9Rows: [{ id: `table9-${Date.now()}-0`, playerName: "", buyIn: "0", payout: "0", rebuys: [] }]
+    table9Rows: [{ id: `table9-${Date.now()}-0`, playerId: "", playerName: "", buyIn: "0", payout: "0", rebuys: [] }]
   });
 
   const state = {
@@ -4513,6 +4587,7 @@ const initAdminCalculator = () => {
               id: typeof rowSource.id === "string" && rowSource.id.trim()
                 ? rowSource.id.trim()
                 : `table9-${Date.now()}-${index}`,
+              playerId: typeof rowSource.playerId === "string" ? rowSource.playerId : "",
               playerName: typeof rowSource.playerName === "string" ? rowSource.playerName : "",
               buyIn: sanitizeInteger(rowSource.buyIn),
               payout: sanitizeInteger(rowSource.payout),
@@ -4546,6 +4621,7 @@ const initAdminCalculator = () => {
             id: typeof rowSource.id === "string" && rowSource.id.trim()
               ? rowSource.id.trim()
               : `table2-${Date.now()}-${index}`,
+            playerId: typeof rowSource.playerId === "string" ? rowSource.playerId : "",
             playerName: typeof rowSource.playerName === "string" ? rowSource.playerName : "",
             eliminated: Boolean(rowSource.eliminated),
             rebuys: normalizedRebuys
@@ -4588,6 +4664,7 @@ const initAdminCalculator = () => {
         table9Rows: Array.isArray(modeState.table9Rows)
           ? modeState.table9Rows.map((row, index) => ({
             id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `table9-${Date.now()}-${index}`,
+            playerId: typeof row.playerId === "string" ? row.playerId : "",
             playerName: typeof row.playerName === "string" ? row.playerName : "",
             buyIn: sanitizeInteger(row.buyIn),
             payout: sanitizeInteger(row.payout),
@@ -4604,6 +4681,7 @@ const initAdminCalculator = () => {
       },
       table2Rows: modeState.table2Rows.map((row, index) => ({
         id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `table2-${Date.now()}-${index}`,
+        playerId: typeof row.playerId === "string" ? row.playerId : "",
         playerName: typeof row.playerName === "string" ? row.playerName : "",
         eliminated: Boolean(row.eliminated),
         rebuys: Array.isArray(row.rebuys) ? row.rebuys.map((value) => sanitizeInteger(value)) : []
@@ -5127,21 +5205,24 @@ const initAdminCalculator = () => {
       defaultOption.value = "";
       defaultOption.textContent = "Wybierz gracza";
       playerSelect.appendChild(defaultOption);
-      const availablePlayers = getAvailablePlayerNamesForRow(modeState.table2Rows, row.id, state.playerOptions, row.playerName);
-      availablePlayers.forEach((playerName) => {
+      const currentIdentifier = row.playerId ? `id:${row.playerId}` : (row.playerName ? `name:${row.playerName}` : "");
+      const availablePlayers = getAvailablePlayersForRow(modeState.table2Rows, row.id, state.playerOptions, currentIdentifier);
+      availablePlayers.forEach((player) => {
         const option = document.createElement("option");
-        option.value = playerName;
-        option.textContent = playerName;
+        option.value = player.id;
+        option.textContent = player.name;
         playerSelect.appendChild(option);
       });
-      playerSelect.value = row.playerName;
+      playerSelect.value = row.playerId;
       playerSelect.dataset.focusTarget = "admin-calculator";
       playerSelect.dataset.section = "table2";
       playerSelect.dataset.tableId = state.mode;
       playerSelect.dataset.rowId = row.id;
-      playerSelect.dataset.columnKey = "playerName";
+      playerSelect.dataset.columnKey = "playerId";
       playerSelect.addEventListener("change", () => {
-        row.playerName = playerSelect.value;
+        const selectedPlayer = state.playerOptions.find((player) => player.id === playerSelect.value) ?? null;
+        row.playerId = selectedPlayer?.id ?? "";
+        row.playerName = selectedPlayer?.name ?? "";
         render();
         schedulePersistCalculatorModeState(state.mode);
       });
@@ -5184,6 +5265,7 @@ const initAdminCalculator = () => {
         addButton.addEventListener("click", () => {
           modeState.table2Rows.push({
             id: `table2-${Date.now()}-${modeState.table2Rows.length}`,
+            playerId: "",
             playerName: "",
             eliminated: false,
             rebuys: []
@@ -5203,7 +5285,7 @@ const initAdminCalculator = () => {
         modeState.table2Rows = modeState.table2Rows.filter((entry) => entry.id !== row.id);
         modeState.eliminatedOrder = modeState.eliminatedOrder.filter((id) => id !== row.id);
         if (!modeState.table2Rows.length) {
-          modeState.table2Rows.push({ id: `table2-${Date.now()}-0`, playerName: "", eliminated: false, rebuys: [] });
+          modeState.table2Rows.push({ id: `table2-${Date.now()}-0`, playerId: "", playerName: "", eliminated: false, rebuys: [] });
         }
         render();
         schedulePersistCalculatorModeState(state.mode);
@@ -5507,21 +5589,24 @@ const initAdminCalculator = () => {
       defaultOption.value = "";
       defaultOption.textContent = "Wybierz gracza";
       playerSelect.appendChild(defaultOption);
-      const availablePlayers = getAvailablePlayerNamesForRow(state.cash.table9Rows, row.id, state.playerOptions, row.playerName);
-      availablePlayers.forEach((playerName) => {
+      const currentIdentifier = row.playerId ? `id:${row.playerId}` : (row.playerName ? `name:${row.playerName}` : "");
+      const availablePlayers = getAvailablePlayersForRow(state.cash.table9Rows, row.id, state.playerOptions, currentIdentifier);
+      availablePlayers.forEach((player) => {
         const option = document.createElement("option");
-        option.value = playerName;
-        option.textContent = playerName;
+        option.value = player.id;
+        option.textContent = player.name;
         playerSelect.appendChild(option);
       });
-      playerSelect.value = row.playerName;
+      playerSelect.value = row.playerId;
       playerSelect.dataset.focusTarget = "admin-calculator";
       playerSelect.dataset.section = "table9";
       playerSelect.dataset.tableId = "cash";
       playerSelect.dataset.rowId = row.id;
-      playerSelect.dataset.columnKey = "playerName";
+      playerSelect.dataset.columnKey = "playerId";
       playerSelect.addEventListener("change", () => {
-        row.playerName = playerSelect.value;
+        const selectedPlayer = state.playerOptions.find((player) => player.id === playerSelect.value) ?? null;
+        row.playerId = selectedPlayer?.id ?? "";
+        row.playerName = selectedPlayer?.name ?? "";
         render();
         schedulePersistCalculatorModeState("cash");
       });
@@ -5588,6 +5673,7 @@ const initAdminCalculator = () => {
         addButton.addEventListener("click", () => {
           state.cash.table9Rows.push({
             id: `table9-${Date.now()}-${state.cash.table9Rows.length}`,
+            playerId: "",
             playerName: "",
             buyIn: "0",
             payout: "0",
@@ -5607,7 +5693,7 @@ const initAdminCalculator = () => {
       deleteButton.addEventListener("click", () => {
         state.cash.table9Rows = state.cash.table9Rows.filter((entry) => entry.id !== row.id);
         if (!state.cash.table9Rows.length) {
-          state.cash.table9Rows.push({ id: `table9-${Date.now()}-0`, playerName: "", buyIn: "0", payout: "0", rebuys: [] });
+          state.cash.table9Rows.push({ id: `table9-${Date.now()}-0`, playerId: "", playerName: "", buyIn: "0", payout: "0", rebuys: [] });
         }
         render();
         schedulePersistCalculatorModeState("cash");
@@ -5730,8 +5816,11 @@ const initAdminCalculator = () => {
   firebaseApp.firestore().collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
     const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
     state.playerOptions = players
-      .map((player) => (typeof player?.name === "string" ? player.name.trim() : ""))
-      .filter(Boolean);
+      .map((player, index) => ({
+        id: typeof player?.id === "string" && player.id.trim() ? player.id.trim() : `player-${index + 1}`,
+        name: normalizePlayerName(player?.name)
+      }))
+      .filter((player) => player.id && player.name);
     if (status) {
       status.textContent = `Załadowano ${state.playerOptions.length} graczy do list wyboru.`;
     }
@@ -6476,6 +6565,14 @@ const initStatisticsView = ({
   const adminColumnVisibilityCheckboxes = new Map();
 
   const getDefaultManualFieldValue = (field, value) => getDefaultStatsManualFieldValue(field, value);
+  const getStatsKey = (entry = {}) => {
+    const playerId = typeof entry?.playerId === "string" ? entry.playerId.trim() : "";
+    if (playerId) {
+      return `id:${playerId}`;
+    }
+    const playerName = normalizePlayerName(entry?.playerName);
+    return playerName ? `name:${playerName}` : "";
+  };
 
   const getVisibleColumnsForYear = (year) => {
     const yearKey = String(year ?? "");
@@ -6496,6 +6593,7 @@ const initStatisticsView = ({
     const rows = Array.from((state.manualStatsByYear.get(yearKey) ?? new Map()).values());
     const serializedRows = rows
       .map((entry) => ({
+        playerId: entry.playerId ?? "",
         playerName: entry.playerName,
         weight1: getDefaultManualFieldValue("weight1", entry.weight1),
         weight2: getDefaultManualFieldValue("weight2", entry.weight2),
@@ -6566,15 +6664,19 @@ const initStatisticsView = ({
       const counted = new Set();
 
       rows.forEach((row) => {
-        const playerName = typeof row.playerName === "string" ? row.playerName.trim() : "";
-        if (!playerName || !hasIncludedSummaryOrStatsData(row)) {
+        const playerName = normalizePlayerName(row.playerName);
+        const playerId = typeof row.playerId === "string" ? row.playerId.trim() : "";
+        const statsKey = getStatsKey({ playerId, playerName });
+        if (!statsKey || !hasIncludedSummaryOrStatsData(row)) {
           return;
         }
 
         const hasCompletedEntryFee = row.hasCompletedEntryFee === true;
 
-        if (!playersMap.has(playerName)) {
-          playersMap.set(playerName, {
+        if (!playersMap.has(statsKey)) {
+          playersMap.set(statsKey, {
+            statsKey,
+            playerId,
             playerName,
             championshipCount: 0,
             meetingsCount: 0,
@@ -6586,7 +6688,7 @@ const initStatisticsView = ({
           });
         }
 
-        const item = playersMap.get(playerName);
+        const item = playersMap.get(statsKey);
         if (hasCompletedEntryFee) {
           item.meetingsCount += 1;
         }
@@ -6596,9 +6698,9 @@ const initStatisticsView = ({
         item.payoutSum += row.payout;
         item.depositsSum += row.entryFee + row.rebuy;
 
-        if (hasCompletedEntryFee && !counted.has(playerName)) {
+        if (hasCompletedEntryFee && !counted.has(statsKey)) {
           item.playedGamesPoolSum += gamePool;
-          counted.add(playerName);
+          counted.add(statsKey);
         }
       });
     });
@@ -6757,7 +6859,7 @@ const initStatisticsView = ({
 
     statistics.playerRows.forEach((row) => {
       const tr = document.createElement("tr");
-      const manualEntry = yearMap.get(row.playerName) ?? {};
+      const manualEntry = yearMap.get(row.statsKey) ?? {};
 
       STATS_COLUMN_CONFIG.forEach((column) => {
         if (!visibleColumns.includes(column.key)) {
@@ -6772,17 +6874,17 @@ const initStatisticsView = ({
           input.value = String(column.value(row, manualEntry, getDefaultManualFieldValue, getComputedResultValue));
           input.addEventListener("input", () => {
             input.value = sanitizeIntegerInput(input.value);
-            if (!yearMap.has(row.playerName)) {
-              yearMap.set(row.playerName, { playerName: row.playerName });
+            if (!yearMap.has(row.statsKey)) {
+              yearMap.set(row.statsKey, { playerId: row.playerId ?? "", playerName: row.playerName });
             }
-            const playerEntry = yearMap.get(row.playerName);
+            const playerEntry = yearMap.get(row.statsKey);
             manualStatsFields.forEach((field) => {
               if (playerEntry[field] == null) {
                 playerEntry[field] = getDefaultManualFieldValue(field, "");
               }
             });
             playerEntry[column.key] = input.value;
-            scheduleDebouncedUpdate(`stats-shared-${yearKey}-${row.playerName}-${column.key}`, () => persistYearConfig(state.selectedYear));
+            scheduleDebouncedUpdate(`stats-shared-${yearKey}-${row.statsKey}-${column.key}`, () => persistYearConfig(state.selectedYear));
             renderStats();
           });
           td.appendChild(input);
@@ -6827,15 +6929,17 @@ const initStatisticsView = ({
       state.visibleColumnsByYear.set(yearKey, visibleColumns);
       const yearMap = new Map();
       rows.forEach((entry) => {
-        const playerName = typeof entry?.playerName === "string" ? entry.playerName.trim() : "";
-        if (!playerName) {
+        const playerName = normalizePlayerName(entry?.playerName);
+        const playerId = typeof entry?.playerId === "string" ? entry.playerId.trim() : "";
+        const statsKey = getStatsKey({ playerId, playerName });
+        if (!statsKey) {
           return;
         }
-        const parsed = { playerName };
+        const parsed = { playerId, playerName };
         manualStatsFields.forEach((field) => {
           parsed[field] = getDefaultManualFieldValue(field, entry[field]);
         });
-        yearMap.set(playerName, parsed);
+        yearMap.set(statsKey, parsed);
       });
       state.manualStatsByYear.set(yearKey, yearMap);
     });
@@ -7315,6 +7419,7 @@ const initAdminGames = () => {
     const yearStats = getManualStatsForYear(year);
     return Array.from(yearStats.values())
       .map((entry) => ({
+        playerId: entry.playerId ?? "",
         playerName: entry.playerName,
         weight1: getDefaultManualFieldValue("weight1", entry.weight1),
         weight2: getDefaultManualFieldValue("weight2", entry.weight2),
@@ -7327,15 +7432,15 @@ const initAdminGames = () => {
       .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"));
   };
 
-  const ensureYearMapEntry = (yearMap, playerName) => {
-    if (!yearMap.has(playerName)) {
-      const emptyRow = { playerName };
+  const ensureYearMapEntry = (yearMap, playerKey, playerName, playerId = "") => {
+    if (!yearMap.has(playerKey)) {
+      const emptyRow = { playerId, playerName };
       manualStatsFields.forEach((field) => {
         emptyRow[field] = getDefaultManualFieldValue(field, "");
       });
-      yearMap.set(playerName, emptyRow);
+      yearMap.set(playerKey, emptyRow);
     }
-    return yearMap.get(playerName);
+    return yearMap.get(playerKey);
   };
 
   const applyBulkWeightValue = async (weightKey, nextValue) => {
@@ -7356,7 +7461,7 @@ const initAdminGames = () => {
     }
     const yearMap = state.manualStatsByYear.get(yearKey);
     statistics.playerRows.forEach((row) => {
-      const playerEntry = ensureYearMapEntry(yearMap, row.playerName);
+      const playerEntry = ensureYearMapEntry(yearMap, row.statsKey, row.playerName, row.playerId);
       playerEntry[weightKey] = nextValue;
     });
 
@@ -7384,15 +7489,19 @@ const initAdminGames = () => {
       const playersCountedInGame = new Set();
 
       rows.forEach((row) => {
-        const playerName = typeof row.playerName === "string" ? row.playerName.trim() : "";
-        if (!playerName || !hasIncludedSummaryOrStatsData(row)) {
+        const playerName = normalizePlayerName(row.playerName);
+        const playerId = typeof row.playerId === "string" ? row.playerId.trim() : "";
+        const statsKey = getStatsKey({ playerId, playerName });
+        if (!statsKey || !hasIncludedSummaryOrStatsData(row)) {
           return;
         }
 
         const hasCompletedEntryFee = row.hasCompletedEntryFee === true;
 
-        if (!playersMap.has(playerName)) {
-          playersMap.set(playerName, {
+        if (!playersMap.has(statsKey)) {
+          playersMap.set(statsKey, {
+            statsKey,
+            playerId,
             playerName,
             championshipCount: 0,
             meetingsCount: 0,
@@ -7404,7 +7513,7 @@ const initAdminGames = () => {
           });
         }
 
-        const playerStats = playersMap.get(playerName);
+        const playerStats = playersMap.get(statsKey);
         if (hasCompletedEntryFee) {
           playerStats.meetingsCount += 1;
         }
@@ -7414,9 +7523,9 @@ const initAdminGames = () => {
         playerStats.payoutSum += row.payout;
         playerStats.depositsSum += row.entryFee + row.rebuy;
 
-        if (hasCompletedEntryFee && !playersCountedInGame.has(playerName)) {
+        if (hasCompletedEntryFee && !playersCountedInGame.has(statsKey)) {
           playerStats.playedGamesPoolSum += gamePool;
-          playersCountedInGame.add(playerName);
+          playersCountedInGame.add(statsKey);
         }
       });
     });
@@ -7764,7 +7873,7 @@ const initAdminGames = () => {
     const updateResultsAndRanking = (statisticsRows, yearMap) => {
       const rankingRows = buildRankingRowsFromStatistics(statisticsRows, yearMap, getDefaultManualFieldValue);
       rankingRows.forEach((rankingRow) => {
-        const resultCell = playersStatsBody.querySelector(`[data-result-player="${window.CSS.escape(rankingRow.playerName)}"]`);
+        const resultCell = playersStatsBody.querySelector(`[data-result-player="${window.CSS.escape(rankingRow.statsKey)}"]`);
         if (resultCell) {
           resultCell.textContent = String(rankingRow.resultValue);
         }
@@ -7772,7 +7881,7 @@ const initAdminGames = () => {
       renderRankingTable(rankingBody, rankingRows);
     };
 
-    const createEditableCell = (playerName, key) => {
+    const createEditableCell = (playerRow, key) => {
       const td = document.createElement("td");
       const input = document.createElement("input");
       input.type = "text";
@@ -7780,9 +7889,9 @@ const initAdminGames = () => {
       input.dataset.focusTarget = "admin-games-stats";
       input.dataset.section = "games-stats";
       input.dataset.tableId = String(state.selectedYear ?? "");
-      input.dataset.rowId = playerName;
+      input.dataset.rowId = playerRow.statsKey;
       input.dataset.columnKey = key;
-      const stored = currentYearStats.get(playerName);
+      const stored = currentYearStats.get(playerRow.statsKey);
       input.value = getDefaultManualFieldValue(key, stored?.[key]);
       input.addEventListener("input", () => {
         input.value = sanitizeIntegerInput(input.value);
@@ -7793,10 +7902,10 @@ const initAdminGames = () => {
           state.manualStatsByYear.set(String(state.selectedYear), new Map());
         }
         const yearMap = state.manualStatsByYear.get(String(state.selectedYear));
-        const playerEntry = ensureYearMapEntry(yearMap, playerName);
+        const playerEntry = ensureYearMapEntry(yearMap, playerRow.statsKey, playerRow.playerName, playerRow.playerId);
         playerEntry[key] = input.value;
 
-        scheduleDebouncedUpdate(`admin-games-stats-${state.selectedYear}-${playerName}-${key}`, () => persistManualStats(state.selectedYear));
+        scheduleDebouncedUpdate(`admin-games-stats-${state.selectedYear}-${playerRow.statsKey}-${key}`, () => persistManualStats(state.selectedYear));
         updateResultsAndRanking(statistics.playerRows, yearMap);
       });
       td.appendChild(input);
@@ -7816,27 +7925,27 @@ const initAdminGames = () => {
 
     statistics.playerRows.forEach((row) => {
       const tr = document.createElement("tr");
-      const manualEntry = currentYearStats.get(row.playerName) ?? {};
+      const manualEntry = currentYearStats.get(row.statsKey) ?? {};
       const resultValue = getComputedResultValue(row, manualEntry);
 
       const resultCell = createReadOnlyCell(resultValue);
-      resultCell.dataset.resultPlayer = row.playerName;
+      resultCell.dataset.resultPlayer = row.statsKey;
 
       tr.append(
         createReadOnlyCell(row.playerName),
         createReadOnlyCell(row.championshipCount),
-        createEditableCell(row.playerName, "weight1"),
+        createEditableCell(row, "weight1"),
         createReadOnlyCell(row.meetingsCount),
-        createEditableCell(row.playerName, "weight2"),
+        createEditableCell(row, "weight2"),
         createReadOnlyCell(`${row.participationPercent}%`),
         createReadOnlyCell(row.pointsSum),
-        createEditableCell(row.playerName, "weight3"),
+        createEditableCell(row, "weight3"),
         createReadOnlyCell(row.plusMinusSum),
-        createEditableCell(row.playerName, "weight4"),
+        createEditableCell(row, "weight4"),
         createReadOnlyCell(row.payoutSum),
-        createEditableCell(row.playerName, "weight5"),
+        createEditableCell(row, "weight5"),
         createReadOnlyCell(row.depositsSum),
-        createEditableCell(row.playerName, "weight6"),
+        createEditableCell(row, "weight6"),
         createReadOnlyCell(row.playedGamesPoolSum),
         createReadOnlyCell(`${row.percentAllGames}%`),
         createReadOnlyCell(`${row.percentPlayedGames}%`),
@@ -7878,31 +7987,37 @@ const initAdminGames = () => {
       playerSelect.dataset.section = "games-modal";
       playerSelect.dataset.tableId = gameId;
       playerSelect.dataset.rowId = row.id;
-      playerSelect.dataset.columnKey = "playerName";
-      const currentPlayerName = typeof row.playerName === "string" ? row.playerName : "";
+      playerSelect.dataset.columnKey = "playerId";
+      const currentPlayerName = normalizePlayerName(row.playerName);
+      const currentPlayerId = typeof row.playerId === "string" ? row.playerId.trim() : "";
+      const currentIdentifier = currentPlayerId ? `id:${currentPlayerId}` : (currentPlayerName ? `name:${currentPlayerName}` : "");
       const options = [...state.playerOptions];
-      const availableOptions = getAvailablePlayerNamesForRow(rows, row.id, options, currentPlayerName);
+      const availableOptions = getAvailablePlayersForRow(rows, row.id, options, currentIdentifier);
       const emptyOption = document.createElement("option");
       emptyOption.value = "";
       emptyOption.textContent = "Wybierz gracza";
       playerSelect.appendChild(emptyOption);
-      if (currentPlayerName && !options.includes(currentPlayerName)) {
+      if (currentIdentifier && !availableOptions.some((option) => `id:${option.id}` === currentIdentifier)) {
         const legacyOption = document.createElement("option");
-        legacyOption.value = currentPlayerName;
+        legacyOption.value = currentPlayerId;
         legacyOption.textContent = `${currentPlayerName} (usunięty)`;
         legacyOption.disabled = true;
         legacyOption.selected = true;
         playerSelect.appendChild(legacyOption);
       }
-      availableOptions.forEach((name) => {
+      availableOptions.forEach((player) => {
         const option = document.createElement("option");
-        option.value = name;
-        option.textContent = name;
+        option.value = player.id;
+        option.textContent = player.name;
         playerSelect.appendChild(option);
       });
-      playerSelect.value = currentPlayerName;
+      playerSelect.value = currentPlayerId;
       playerSelect.addEventListener("change", () => {
-        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({ playerName: playerSelect.value });
+        const selectedPlayer = options.find((option) => option.id === playerSelect.value) ?? null;
+        void db.collection(gamesCollectionName).doc(gameId).collection(gameDetailsCollectionName).doc(row.id).update({
+          playerId: selectedPlayer?.id ?? "",
+          playerName: selectedPlayer?.name ?? ""
+        });
       });
       playerCell.appendChild(playerSelect);
 
@@ -8012,15 +8127,17 @@ const initAdminGames = () => {
       const rows = Array.isArray(doc.data()?.rows) ? doc.data().rows : [];
       const yearMap = new Map();
       rows.forEach((entry) => {
-        const playerName = typeof entry?.playerName === "string" ? entry.playerName.trim() : "";
-        if (!playerName) {
+        const playerName = normalizePlayerName(entry?.playerName);
+        const playerId = typeof entry?.playerId === "string" ? entry.playerId.trim() : "";
+        const statsKey = getStatsKey({ playerId, playerName });
+        if (!statsKey) {
           return;
         }
-        const parsedEntry = { playerName };
+        const parsedEntry = { playerId, playerName };
         manualStatsFields.forEach((field) => {
           parsedEntry[field] = getDefaultManualFieldValue(field, entry[field]);
         });
-        yearMap.set(playerName, parsedEntry);
+        yearMap.set(statsKey, parsedEntry);
       });
       state.manualStatsByYear.set(yearKey, yearMap);
     });
@@ -8049,8 +8166,11 @@ const initAdminGames = () => {
   db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
     const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
     state.playerOptions = players
-      .map((player) => (typeof player.name === "string" ? player.name.trim() : ""))
-      .filter((name) => Boolean(name));
+      .map((player, index) => ({
+        id: typeof player?.id === "string" && player.id.trim() ? player.id.trim() : `player-${index + 1}`,
+        name: normalizePlayerName(player?.name)
+      }))
+      .filter((player) => player.id && player.name);
     if (state.activeGameIdInModal) {
       renderModal(state.activeGameIdInModal);
     }

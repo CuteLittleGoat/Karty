@@ -20,6 +20,10 @@
 - Dostęp do listy graczy jest inicjalizowany globalnie (`initSharedPlayerAccess`), a synchronizacja `synchronizeStatisticsAccessState()` jest wywoływana także po wejściu do Strefy Gracza; dzięki temu mapowanie PIN→gracz i uprawnienia statystyk odświeżają się od razu, a zakładka „Statystyki” pokazuje lata/dane bez ręcznego resetu strony.
 - Zakładka admina **Gry do potwierdzenia** (`initAdminConfirmations`) ma dwukolumnowy layout: lewy panel filtrów czasu (`#adminConfirmationsYearsList`, `#adminConfirmationsMonthsList`) oraz prawą listę gier; filtrowanie działa po `gameDate` (rok/miesiąc), jest zapisywane w `localStorage` pod kluczem `adminConfirmationsFilters`, a gry są renderowane malejąco po dacie (najnowsze u góry).
 - Widok gier do potwierdzenia działa w wariancie „zwiniętym domyślnie”: każda karta gry pokazuje nagłówek i licznik `Potwierdzenia X/Y`, a tabela graczy i akcje `Potwierdź`/`Anuluj` pojawiają się dopiero po kliknięciu `Rozwiń`.
+- Potwierdzenia obecności i liczniki `potwierdzeni/zapisani` zostały przepięte na klucz logiczny gracza oparty o `playerId` (z fallbackiem do `playerName` dla starszych rekordów), co eliminuje konflikt przy duplikatach nazw.
+- Wiersze gier (`rows`) oraz wybór gracza w modalach szczegółów zapisują teraz jednocześnie `playerId` i `playerName`, dzięki czemu prezentacja pozostaje czytelna, a logika opiera się o identyfikator unikatowy.
+- Statystyki roczne i konfiguracja ręcznych wag (`admin_games_stats`) używają klucza gracza wyliczanego z `playerId` (fallback: `playerName`) oraz serializują `playerId` w rekordach manualnych.
+- Kalkulator (tabele 2 i 9) przechowuje i serializuje `playerId` wraz z `playerName`; wybory na listach graczy działają po ID, co zabezpiecza scenariusz duplikatów nazw.
 
 ## 3. Obsługa modala instrukcji (`initInstructionModal`)
 - Elementy DOM:
