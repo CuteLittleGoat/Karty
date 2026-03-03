@@ -1147,6 +1147,16 @@ const getFormattedCurrentDate = () => {
   return `${year}-${month}-${day}`;
 };
 
+const applyIntegerInputHints = (input) => {
+  if (!(input instanceof HTMLInputElement)) {
+    return;
+  }
+  input.type = "text";
+  input.inputMode = "numeric";
+  input.pattern = "[0-9]*";
+  input.autocomplete = "off";
+};
+
 const sanitizeIntegerInput = (value) => {
   if (typeof value !== "string") {
     return "";
@@ -2803,7 +2813,7 @@ const initUserGamesManager = ({
     rowRebuyState.values.forEach((value, index) => {
       const td = document.createElement("td");
       const input = document.createElement("input");
-      input.type = "text";
+      applyIntegerInputHints(input);
       input.className = "admin-input";
       input.value = value;
       input.disabled = !writeEnabled;
@@ -3332,7 +3342,7 @@ const initUserGamesManager = ({
       const createNumericCell = (key) => {
         const td = document.createElement("td");
         const input = document.createElement("input");
-        input.type = "text";
+        applyIntegerInputHints(input);
         input.className = "admin-input";
         input.dataset.focusTarget = "game-details-row";
         input.dataset.section = "games-modal";
@@ -7278,7 +7288,7 @@ const initAdminGames = () => {
     rowRebuyState.values.forEach((value, index) => {
       const td = document.createElement("td");
       const input = document.createElement("input");
-      input.type = "text";
+      applyIntegerInputHints(input);
       input.className = "admin-input";
       input.value = value;
       input.addEventListener("input", () => {
@@ -8024,7 +8034,7 @@ const initAdminGames = () => {
       const createNumericCell = (key) => {
         const td = document.createElement("td");
         const input = document.createElement("input");
-        input.type = "text";
+        applyIntegerInputHints(input);
         input.className = "admin-input";
         input.dataset.focusTarget = "game-details-row";
         input.dataset.section = "games-modal";
