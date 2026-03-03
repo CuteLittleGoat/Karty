@@ -523,3 +523,10 @@ Dla wygody, skrót semantyczny:
 ---
 
 To jest kompletna instrukcja obsługi UI modułu Main dla pierwszego uruchomienia i codziennej pracy użytkownika oraz administratora.
+
+
+### 3.3.2. Potwierdzenia administratora a ID gracza
+
+- Potwierdzenie z zakładki administratora **Gry do Potwierdzenia** jest zapisywane po **ID gracza** (jeżeli gracz ma przypisane ID w rekordzie gry).
+- Dzięki temu licznik **IlośćPotwierdzonych** i okno **Statusy** pokazują spójne wartości także przy duplikatach tych samych nazw.
+- Nazwa gracza pozostaje etykietą widoczną w tabelach, ale logika dopasowania działa po identyfikatorze.

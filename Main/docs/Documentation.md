@@ -77,3 +77,10 @@
 - Wartość **Pot** i sumy po potrąceniu procentu pozostają liczone jako wartości po odjęciu rake (`1 - procent/100`).
 
 - W `Szczegóły gry` (admin i gry użytkowników) rebuy per gracz może być przechowywany jako tablica `rebuys` (wartości składowe) oraz pole sumaryczne `rebuy`; przy każdej zmianie modal aktualizuje oba pola, a dalsze obliczenia korzystają z pola sumarycznego `rebuy`.
+
+
+## Identyfikacja gracza w potwierdzeniach i statystykach
+- Adminowe „Gry do potwierdzenia” budują listę uczestników z rekordów detali gry jako unikalne wpisy po kluczu `id:<playerId>` z fallbackiem `name:<playerName>`.
+- Odczyt istniejących potwierdzeń także używa tego samego klucza identyfikacyjnego, co eliminuje rozjazdy między dokumentami potwierdzeń i listą graczy.
+- Zapis potwierdzenia przez administratora ustawia `playerId` na rzeczywiste ID gracza z rekordu gry (jeżeli istnieje), zamiast przepisywać nazwę do pola `playerId`.
+- Ranking statystyk, masowe ustawianie wag i eksport XLSX odczytują wpisy ręczne z mapy rocznej po `statsKey` (`id:<playerId>` z fallbackiem nazwy), a nie po samym `playerName`.
