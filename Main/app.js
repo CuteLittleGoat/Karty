@@ -300,6 +300,41 @@ const getDateSortValue = (value) => {
   return Number.isFinite(parsed) ? parsed : Number.POSITIVE_INFINITY;
 };
 
+const parseDateFromInput = (value) => {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const isoMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    const parsedDate = new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]));
+    return Number.isFinite(parsedDate.getTime()) ? parsedDate : null;
+  }
+
+  const dotOrDashMatch = trimmed.match(/^(\d{2})[.-](\d{2})[.-](\d{4})$/);
+  if (dotOrDashMatch) {
+    const parsedDate = new Date(Number(dotOrDashMatch[3]), Number(dotOrDashMatch[2]) - 1, Number(dotOrDashMatch[1]));
+    return Number.isFinite(parsedDate.getTime()) ? parsedDate : null;
+  }
+
+  const parsed = new Date(trimmed);
+  return Number.isFinite(parsed.getTime()) ? parsed : null;
+};
+
+const getStatsKey = (entry = {}) => {
+  const playerId = typeof entry?.playerId === "string" ? entry.playerId.trim() : "";
+  if (playerId) {
+    return `id:${playerId}`;
+  }
+  const playerName = normalizePlayerName(entry?.playerName);
+  return playerName ? `name:${playerName}` : "";
+};
+
 const normalizePlayerName = (value) => (typeof value === "string" ? value.trim() : "");
 
 const getRowPlayerIdentifier = (row = {}) => {
@@ -1895,7 +1930,7 @@ const getCombinedOpenGames = () => {
       if (!Number.isFinite(right)) {
         return -1;
       }
-      return right - left;
+      return left - right;
     });
 };
 
@@ -2570,6 +2605,7 @@ const initUserGamesTab = () => {
       setUserGamesVerifiedPlayerId(player.id);
       pinStatus.textContent = `PIN poprawny. Witaj ${player.name || "graczu"}.`;
       updateUserGamesVisibility();
+      window.dispatchEvent(new CustomEvent("user-games-access-updated"));
       return;
     }
 
@@ -2595,6 +2631,7 @@ const initUserGamesTab = () => {
       setUserGamesPinGateState(false);
       setUserGamesVerifiedPlayerId("");
       updateUserGamesVisibility();
+      window.dispatchEvent(new CustomEvent("user-games-access-updated"));
     }
   }
 };
@@ -3448,6 +3485,10 @@ const initUserGamesManager = ({
     renderSummaries();
   };
 
+  window.addEventListener("user-games-access-updated", () => {
+    synchronizeYearsFromGames();
+  });
+
   db.collection(PLAYER_ACCESS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot((snapshot) => {
     const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
     state.playerOptions = players
@@ -3908,6 +3949,7 @@ const initUserTabs = () => {
     updateChatVisibility();
     updateConfirmationsVisibility();
     updateUserGamesVisibility();
+    window.dispatchEvent(new CustomEvent("user-games-access-updated"));
     synchronizeStatisticsAccessState();
   };
 

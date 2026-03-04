@@ -129,6 +129,7 @@ To sekcja, w której gracz (z uprawnieniem) tworzy i prowadzi własne gry.
 1. Kliknij **Gry Użytkowników**.
 2. Wpisz PIN z uprawnieniem „Gry użytkowników”.
 3. Kliknij **Otwórz**.
+4. Lista lat i zapisane gry użytkownika wczytują się od razu po poprawnym PIN (bez potrzeby klikania „Dodaj” ani ręcznego odświeżania).
 
 ### B) Wybór roku
 1. Po lewej stronie jest panel **Lata**.
@@ -374,7 +375,8 @@ W tabeli statystyk graczy są przyciski kolumn:
 
 Działanie:
 - po kliknięciu danej „Wagi” wpisujesz jedną wartość,
-- wartość jest ustawiana zbiorczo dla całej kolumny.
+- wartość jest ustawiana zbiorczo dla całej kolumny,
+- tabela i ranking w „Gry admina” korzystają z tej samej logiki liczenia co zakładka „Statystyki”, więc wyniki są spójne między tymi widokami.
 
 ---
 
@@ -409,6 +411,8 @@ Najważniejsze przyciski:
 Widok tabeli z najbliższą aktywną grą oraz statusem potwierdzeń wszystkich graczy.
 
 Zakładka automatycznie ukrywa gry starsze niż dzisiejsza data — na liście zobaczysz wyłącznie gry zaplanowane na dziś lub przyszłe terminy.
+
+Obsługiwane są daty zapisane jako `RRRR-MM-DD` oraz `DD.MM.RRRR` (i `DD-MM-RRRR`), a lista jest sortowana rosnąco po dacie, więc na górze pojawia się najbliższa nadchodząca gra.
 
 Użycie:
 - przejdź do zakładki, by monitorować czy komplet graczy potwierdził udział,

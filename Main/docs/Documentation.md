@@ -13,7 +13,7 @@
 - Inicjalizacja zarządzania grami użytkowników (`initUserGamesManager`) posiada własny kontroler modala statusów potwierdzeń; usuwa to błąd referencji przy snapshotach i pozwala poprawnie działać przyciskom `Statusy` i `Szczegóły` bez czekania na dodanie/usunięcie gry.
 - Snapshoty detali gier użytkowników odświeżają teraz również widok tabeli gier, więc licznik `IlośćPotwierdzonych` aktualizuje się natychmiast po wejściu do zakładki oraz po zmianach składu graczy.
 - Handler przycisku odświeżania dla zakładki `Gry użytkowników` renderuje ponownie tabelę i podsumowania aktywnego roku.
-- Widok **Najbliższa gra** wyświetla tylko gry otwarte z datą równą bieżącemu dniowi lub późniejszą; rekordy starsze niż dzisiejsza data są automatycznie ukrywane.
+- Widok **Najbliższa gra** wyświetla tylko gry otwarte z datą równą bieżącemu dniowi lub późniejszą; rekordy starsze niż dzisiejsza data są automatycznie ukrywane. Parser dat obsługuje formaty `YYYY-MM-DD`, `DD.MM.YYYY` i `DD-MM-YYYY`, a sortowanie jest rosnące po dacie (najbliższa gra na górze).
 - Modale `Szczegóły gry` (`#gameDetailsModal`, `#userGameDetailsModal`, `#playerUserGameDetailsModal`) mają:
   - nagłówek tekstowy `Rebuy/Add-on` (bez akcji zbiorczej),
   - przycisk w każdej komórce `Rebuy/Add-on`, który pokazuje sumę rebuy danego gracza i otwiera modal `Rebuy gracza` z przyciskami `Dodaj Rebuy`/`Usuń Rebuy` oraz zamknięciem przez ikonę `×` w prawym górnym rogu,
@@ -21,10 +21,11 @@
   - modal rebuy przechowuje osobno wartości i indeksy kolumn (`rebuyIndexes`, `rebuyNextIndex`), dzięki czemu kolumny `RebuyN` są numerowane niezależnie dla każdego gracza; po usunięciu ostatniej kolumny następne dodanie wraca do najbliższego wolnego numeru,
   - bez podświetlania potwierdzeń w samym modalu szczegółów; podświetlenie przeniesione do modala statusów z kolumny `IlośćPotwierdzonych`.
 - Tworzenie i filtrowanie gier użytkownika zostało rozszerzone o powiązanie także po PIN-ie twórcy (`createdByPlayerPin`) oraz kompatybilność z istniejącym powiązaniem po `createdByPlayerId`.
+- Po pozytywnej weryfikacji PIN dla sekcji „Gry użytkowników” emitowane jest zdarzenie `user-games-access-updated`, które natychmiast przelicza dostępne lata i renderuje dane bez potrzeby dodawania nowej gry.
 - Dostęp do listy graczy jest inicjalizowany globalnie (`initSharedPlayerAccess`), a synchronizacja `synchronizeStatisticsAccessState()` jest wywoływana także po wejściu do Strefy Gracza; dzięki temu mapowanie PIN→gracz i uprawnienia statystyk odświeżają się od razu, a zakładka „Statystyki” pokazuje lata/dane bez ręcznego resetu strony.
 - Potwierdzenia obecności i liczniki `potwierdzeni/zapisani` zostały przepięte na klucz logiczny gracza oparty o `playerId` (z fallbackiem do `playerName` dla starszych rekordów), co eliminuje konflikt przy duplikatach nazw.
 - Wiersze gier (`rows`) oraz wybór gracza w modalach szczegółów zapisują teraz jednocześnie `playerId` i `playerName`, dzięki czemu prezentacja pozostaje czytelna, a logika opiera się o identyfikator unikatowy.
-- Statystyki roczne i konfiguracja ręcznych wag (`admin_games_stats`) używają klucza gracza wyliczanego z `playerId` (fallback: `playerName`) oraz serializują `playerId` w rekordach manualnych.
+- Statystyki roczne i konfiguracja ręcznych wag (`admin_games_stats`) używają klucza gracza wyliczanego z `playerId` (fallback: `playerName`) oraz serializują `playerId` w rekordach manualnych; ten sam klucz jest używany zarówno w zakładce „Statystyki”, jak i w sekcji statystyk zakładki „Gry admina”.
 - Kalkulator (tabele 2 i 9) przechowuje i serializuje `playerId` wraz z `playerName`; wybory na listach graczy działają po ID, co zabezpiecza scenariusz duplikatów nazw.
 
 ## 3. Obsługa modala instrukcji (`initInstructionModal`)
