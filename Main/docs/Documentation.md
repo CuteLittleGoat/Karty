@@ -88,8 +88,3 @@
 - Odczyt istniejących potwierdzeń także używa tego samego klucza identyfikacyjnego, co eliminuje rozjazdy między dokumentami potwierdzeń i listą graczy.
 - Zapis potwierdzenia przez administratora ustawia `playerId` na rzeczywiste ID gracza z rekordu gry (jeżeli istnieje), zamiast przepisywać nazwę do pola `playerId`.
 - Ranking statystyk, masowe ustawianie wag i eksport XLSX odczytują wpisy ręczne z mapy rocznej po `statsKey` (`id:<playerId>` z fallbackiem nazwy), a nie po samym `playerName`.
-## 11. Zmiany layoutu kolumn (Main)
-
-- `Main/styles.css` zawiera jawne reguły `min-width` i `max-width` dla tabel: graczy, list gier, szczegółów gry, gier do potwierdzenia, rozbudowanych statystyk graczy, rankingu oraz tabel kalkulatora (Cash/Tournament).
-- Tabele list gier używają klasy `.games-list-table`, a tabele `Opis/Wartość` używają klasy `.stats-summary-table`, co upraszcza spójne sterowanie szerokością kolumn.
-- W nagłówku `Main/index.html` dodano obraz `../Pliki/Ikona.png` z klasą `.header-icon`; styl jest zdefiniowany w `Main/styles.css` (`width: 80px`, `height: auto`).
