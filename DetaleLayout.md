@@ -116,6 +116,8 @@ Dodatkowo `body::before` nakłada subtelny świetlny overlay (`opacity: 0.25`) z
 - W nagłówku kolumny `Rebuy/Add-on` w modalach szczegółów gry jest zwykły tekst nagłówka tabeli (bez stylu przycisku zbiorczego).
 - W komórkach kolumny `Rebuy/Add-on` jest przycisk `.secondary` z aktualną sumą rebuy gracza; kliknięcie otwiera modal `Rebuy gracza` (`.modal-card.modal-card-sm`) z układem i akcjami jak w kalkulatorze oraz przyciskiem zamknięcia `.icon-button` (`×`) w prawym górnym rogu nagłówka.
 - W `Main` w zakładce **Kalkulator → Tournament → Tabela5** pod tabelą może pojawić się czerwony komunikat walidacyjny `Nie sumuje się do 100%` (klasy `.status-text.status-text-danger`), kiedy suma procentów w kolumnie `Podział puli` jest różna od 100.
+- W nagłówku modułu `Main`, bezpośrednio pod napisem `TO NIE JEST nielegalne kasyno`, wyświetlana jest grafika `../Pliki/Ikona.png` (`img.header-icon`, szerokość `80px`, proporcjonalna wysokość).
+- W `Main` doprecyzowano minimalne i maksymalne szerokości wybranych kolumn tabel (listy gier, szczegóły gry, statystyki, ranking, kalkulator, gry do potwierdzenia) zgodnie z aktualną specyfikacją w `Kolumny.md`.
 
 ---
 
