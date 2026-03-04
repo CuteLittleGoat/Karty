@@ -40,7 +40,9 @@
 | wartość oczekiwana |  |  |  |  |  |
 | Data | 170 px | brak stałego limitu | do lewej | tekst | Pole daty. |
 | wartość oczekiwana |  |  |  |  |  |
-| Nazwa | 360 px | brak stałego limitu | do lewej | tekst | Pole tekstowe. |
+| Nazwa (Gry admina / Najbliższa gra) | 360 px | brak stałego limitu | do lewej | tekst | Pole tekstowe i przycisk „Szczegóły”. |
+| wartość oczekiwana |  |  |  |  |  |
+| Nazwa (Gry użytkowników) | 440 px | brak stałego limitu | do lewej | tekst | Szersza kolumna dla pola nazwy oraz przycisków „Szczegóły” i „Notatki do gry”. |
 | wartość oczekiwana |  |  |  |  |  |
 | Status zamknięcia / potwierdzeń | 150 px | brak stałego limitu | do lewej | tekst | Pole wyboru tak/nie. |
 | wartość oczekiwana |  |  |  |  |  |

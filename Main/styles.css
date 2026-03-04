@@ -813,6 +813,15 @@ select:disabled,
   min-width: 360px;
 }
 
+.admin-user-games-table {
+  min-width: 1340px;
+}
+
+.admin-user-games-table th:nth-child(3),
+.admin-user-games-table td:nth-child(3) {
+  min-width: 440px;
+}
+
 .admin-games-table th:nth-child(4),
 .admin-games-table td:nth-child(4) {
   min-width: 150px;
