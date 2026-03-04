@@ -537,6 +537,7 @@ To jest kompletna instrukcja obsługi UI modułu Main dla pierwszego uruchomieni
 
 ## 18. Aktualny wygląd nagłówka i tabel (szerokości kolumn)
 - W nagłówku panelu administratora, bezpośrednio pod napisem **„TO NIE JEST nielegalne kasyno”**, wyświetla się grafika `Pliki/Ikona.png`.
+- W zakładkach admina **Gry admina** i **Statystyki** tabele w sekcji środkowej zachowują się responsywnie tak samo jak w widoku gracza: tabela ma szerokość `max-content` z minimalną szerokością `100%` kontenera, więc kolumny (w tym `Opis` i `Wartość`) zwężają się razem z oknem i nie utrzymują sztucznej, stałej szerokości.
 - W tabelach zostały ustawione stałe zakresy szerokości (min/max) dla kluczowych kolumn, m.in.:
   - **Gracze**: `Nazwa`, `PIN`,
   - **Listy gier**: `Rodzaj gry`, `Nazwa`,

@@ -4,7 +4,7 @@
 
 | Obszar | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| Główne tabele w panelach | 860 px | brak stałego limitu | do lewej | tekst | Tabela zajmuje całą dostępną szerokość sekcji, a przy zbyt małym oknie przewija się poziomo wewnątrz kontenera. |
+| Główne tabele w panelach | 860 px (wyjątek: sekcja środkowa w Main `Gry admina` i `Statystyki` ma min. `100%`) | brak stałego limitu | do lewej | tekst | Tabela zajmuje całą dostępną szerokość sekcji, a przy zbyt małym oknie przewija się poziomo wewnątrz kontenera. |
 | wartość oczekiwana |  |  |  |  |  |
 | Tabela graczy | 700 px | brak stałego limitu | do lewej (kolumna z polem wyboru wizualnie na środku) | tekst | Kolumna z polem wyboru ma około 88 px. |
 | wartość oczekiwana |  |  |  |  |  |
@@ -93,9 +93,9 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| Opis | automatyczna | brak stałego limitu | do lewej | tekst | Nazwa wskaźnika. |
+| Opis | 1fr (elastyczna w ramach min. 100% tabeli) | brak stałego limitu | do lewej | tekst | Nazwa wskaźnika; kolumna zwęża się dynamicznie razem z oknem w widokach gracza, Gry admina i Statystyki. |
 | wartość oczekiwana |  |  |  |  |  |
-| Wartość | automatyczna | brak stałego limitu | do lewej | tekstowe i liczbowe | Wartość liczbowa lub tekstowa. |
+| Wartość | 1fr (elastyczna w ramach min. 100% tabeli) | brak stałego limitu | do lewej | tekstowe i liczbowe | Wartość liczbowa lub tekstowa; kolumna zwęża się dynamicznie razem z oknem w widokach gracza, Gry admina i Statystyki. |
 | wartość oczekiwana |  |  |  |  |  |
 
 ### 5.2 Rozbudowana tabela statystyk graczy

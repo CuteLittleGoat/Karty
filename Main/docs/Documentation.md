@@ -26,6 +26,7 @@
 - Potwierdzenia obecności i liczniki `potwierdzeni/zapisani` zostały przepięte na klucz logiczny gracza oparty o `playerId` (z fallbackiem do `playerName` dla starszych rekordów), co eliminuje konflikt przy duplikatach nazw.
 - Wiersze gier (`rows`) oraz wybór gracza w modalach szczegółów zapisują teraz jednocześnie `playerId` i `playerName`, dzięki czemu prezentacja pozostaje czytelna, a logika opiera się o identyfikator unikatowy.
 - Statystyki roczne i konfiguracja ręcznych wag (`admin_games_stats`) używają klucza gracza wyliczanego z `playerId` (fallback: `playerName`) oraz serializują `playerId` w rekordach manualnych; ten sam klucz jest używany zarówno w zakładce „Statystyki”, jak i w sekcji statystyk zakładki „Gry admina”.
+- Układ tabel w środkowej sekcji zakładek `#adminGamesTab` i `#adminStatisticsTab` korzysta z tej samej reguły responsywnej co widok gracza (`width: max-content; min-width: 100%` w obrębie `overflow-x: auto`), więc kolumny `Opis` i `Wartość` skalują się dynamicznie przy zwężaniu i rozszerzaniu okna.
 - Kalkulator (tabele 2 i 9) przechowuje i serializuje `playerId` wraz z `playerName`; wybory na listach graczy działają po ID, co zabezpiecza scenariusz duplikatów nazw.
 
 ## 3. Obsługa modala instrukcji (`initInstructionModal`)
