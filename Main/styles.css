@@ -1624,237 +1624,25 @@ body.modal-open {
 }
 
 
-.players-table th:nth-child(2),
-.players-table td:nth-child(2) {
-  min-width: 7ch;
-  max-width: 20ch;
-}
-
-.players-table th:nth-child(3),
-.players-table td:nth-child(3) {
-  min-width: 5ch;
-  max-width: 6ch;
-}
-
-#adminGamesTab .admin-games-section .admin-data-table th:nth-child(1),
-#adminGamesTab .admin-games-section .admin-data-table td:nth-child(1),
-#adminUserGamesTab .admin-games-section .admin-data-table th:nth-child(1),
-#adminUserGamesTab .admin-games-section .admin-data-table td:nth-child(1),
-#adminNextGameTab .admin-games-section .admin-data-table th:nth-child(1),
-#adminNextGameTab .admin-games-section .admin-data-table td:nth-child(1),
-#userGamesTab .admin-games-section .admin-data-table th:nth-child(1),
-#userGamesTab .admin-games-section .admin-data-table td:nth-child(1) {
-  min-width: 5ch;
-  max-width: 8ch;
-}
-
-#adminGamesTab .admin-games-section .admin-data-table th:nth-child(3),
-#adminGamesTab .admin-games-section .admin-data-table td:nth-child(3),
-#adminUserGamesTab .admin-games-section .admin-data-table th:nth-child(3),
-#adminUserGamesTab .admin-games-section .admin-data-table td:nth-child(3),
-#adminNextGameTab .admin-games-section .admin-data-table th:nth-child(3),
-#adminNextGameTab .admin-games-section .admin-data-table td:nth-child(3),
-#userGamesTab .admin-games-section .admin-data-table th:nth-child(3),
-#userGamesTab .admin-games-section .admin-data-table td:nth-child(3) {
-  min-width: 5ch;
-  max-width: 15ch;
-}
-
-.game-details-table th:nth-child(1),
-.game-details-table td:nth-child(1) {
-  min-width: 2ch;
-  max-width: 3ch;
-}
-
-.game-details-table th:nth-child(2),
-.game-details-table td:nth-child(2) {
-  min-width: 7ch;
-  max-width: 20ch;
-}
-
-.game-details-table th:nth-child(3),
-.game-details-table td:nth-child(3),
-.game-details-table th:nth-child(4),
-.game-details-table td:nth-child(4),
-.game-details-table th:nth-child(5),
-.game-details-table td:nth-child(5),
-.game-details-table th:nth-child(6),
-.game-details-table td:nth-child(6) {
-  min-width: 4ch;
-  max-width: 6ch;
-}
-
-.game-details-table th:nth-child(7),
-.game-details-table td:nth-child(7) {
-  min-width: 2ch;
-  max-width: 3ch;
-}
-
-.confirmations-table th:nth-child(3),
-.confirmations-table td:nth-child(3) {
-  min-width: 7ch;
-  max-width: 20ch;
-}
-
-.admin-games-players-stats-table th:nth-child(1),
-.admin-games-players-stats-table td:nth-child(1) { min-width: 7ch; max-width: 20ch; }
-.admin-games-players-stats-table th:nth-child(2),
-.admin-games-players-stats-table td:nth-child(2) { min-width: 3ch; }
-.admin-games-players-stats-table th:nth-child(3),
-.admin-games-players-stats-table td:nth-child(3),
-.admin-games-players-stats-table th:nth-child(4),
-.admin-games-players-stats-table td:nth-child(4),
-.admin-games-players-stats-table th:nth-child(5),
-.admin-games-players-stats-table td:nth-child(5),
-.admin-games-players-stats-table th:nth-child(7),
-.admin-games-players-stats-table td:nth-child(7),
-.admin-games-players-stats-table th:nth-child(8),
-.admin-games-players-stats-table td:nth-child(8),
-.admin-games-players-stats-table th:nth-child(10),
-.admin-games-players-stats-table td:nth-child(10),
-.admin-games-players-stats-table th:nth-child(12),
-.admin-games-players-stats-table td:nth-child(12),
-.admin-games-players-stats-table th:nth-child(14),
-.admin-games-players-stats-table td:nth-child(14) { min-width: 3ch; max-width: 4ch; }
-.admin-games-players-stats-table th:nth-child(6),
-.admin-games-players-stats-table td:nth-child(6),
-.admin-games-players-stats-table th:nth-child(16),
-.admin-games-players-stats-table td:nth-child(16),
-.admin-games-players-stats-table th:nth-child(17),
-.admin-games-players-stats-table td:nth-child(17) { min-width: 3ch; max-width: 4ch; }
-.admin-games-players-stats-table th:nth-child(9),
-.admin-games-players-stats-table td:nth-child(9),
-.admin-games-players-stats-table th:nth-child(11),
-.admin-games-players-stats-table td:nth-child(11),
-.admin-games-players-stats-table th:nth-child(13),
-.admin-games-players-stats-table td:nth-child(13),
-.admin-games-players-stats-table th:nth-child(15),
-.admin-games-players-stats-table td:nth-child(15),
-.admin-games-players-stats-table th:nth-child(18),
-.admin-games-players-stats-table td:nth-child(18) { min-width: 3ch; max-width: 4ch; }
-
-.admin-games-players-stats-table th:nth-child(3),
-.admin-games-players-stats-table td:nth-child(3),
-.admin-games-players-stats-table th:nth-child(5),
-.admin-games-players-stats-table td:nth-child(5),
-.admin-games-players-stats-table th:nth-child(8),
-.admin-games-players-stats-table td:nth-child(8),
-.admin-games-players-stats-table th:nth-child(10),
-.admin-games-players-stats-table td:nth-child(10),
-.admin-games-players-stats-table th:nth-child(12),
-.admin-games-players-stats-table td:nth-child(12),
-.admin-games-players-stats-table th:nth-child(14),
-.admin-games-players-stats-table td:nth-child(14),
-.admin-games-players-stats-table th:nth-child(16),
-.admin-games-players-stats-table td:nth-child(16),
-.admin-games-players-stats-table th:nth-child(17),
-.admin-games-players-stats-table td:nth-child(17),
-.admin-games-players-stats-table th:nth-child(18),
-.admin-games-players-stats-table td:nth-child(18) { min-width: 3ch; max-width: 4ch; }
-
-.admin-games-players-stats-table th:nth-child(4),
-.admin-games-players-stats-table td:nth-child(4),
-.admin-games-players-stats-table th:nth-child(7),
-.admin-games-players-stats-table td:nth-child(7),
-.admin-games-players-stats-table th:nth-child(6),
-.admin-games-players-stats-table td:nth-child(6),
-.admin-games-players-stats-table th:nth-child(9),
-.admin-games-players-stats-table td:nth-child(9),
-.admin-games-players-stats-table th:nth-child(11),
-.admin-games-players-stats-table td:nth-child(11),
-.admin-games-players-stats-table th:nth-child(13),
-.admin-games-players-stats-table td:nth-child(13) { min-width: 2ch; max-width: 4ch; }
-
-.admin-games-players-stats-table th:nth-child(15),
-.admin-games-players-stats-table td:nth-child(15) { min-width: 5ch; max-width: 7ch; }
-
+/* Kolumny tabel zgodnie z aktualnym układem Main */
 .admin-games-ranking-table th:nth-child(1),
-.admin-games-ranking-table td:nth-child(1) { min-width: 2ch; max-width: 3ch; }
+.admin-games-ranking-table td:nth-child(1) {
+  min-width: 3ch;
+}
+
 .admin-games-ranking-table th:nth-child(2),
-.admin-games-ranking-table td:nth-child(2) { min-width: 7ch; max-width: 20ch; }
+.admin-games-ranking-table td:nth-child(2) {
+  min-width: 16ch;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
 .admin-games-ranking-table th:nth-child(3),
-.admin-games-ranking-table td:nth-child(3) { min-width: 5ch; max-width: 8ch; }
-
-.admin-calculator-table1 th:nth-child(1),
-.admin-calculator-table1 td:nth-child(1),
-.admin-calculator-table3 th:nth-child(5),
-.admin-calculator-table3 td:nth-child(5),
-.admin-calculator-cash-table7 th:nth-child(1),
-.admin-calculator-cash-table7 td:nth-child(1),
-.admin-calculator-cash-table7 th:nth-child(2),
-.admin-calculator-cash-table7 td:nth-child(2),
-.admin-calculator-cash-table7 th:nth-child(3),
-.admin-calculator-cash-table7 td:nth-child(3),
-.admin-calculator-cash-table8 th:nth-child(2),
-.admin-calculator-cash-table8 td:nth-child(2),
-.admin-calculator-cash-table8 th:nth-child(3),
-.admin-calculator-cash-table8 td:nth-child(3),
-.admin-calculator-cash-table9 th:nth-child(2),
-.admin-calculator-cash-table9 td:nth-child(2),
-.admin-calculator-cash-table9 th:nth-child(3),
-.admin-calculator-cash-table9 td:nth-child(3),
-.admin-calculator-cash-table9 th:nth-child(4),
-.admin-calculator-cash-table9 td:nth-child(4),
-.admin-calculator-cash-table9 th:nth-child(5),
-.admin-calculator-cash-table9 td:nth-child(5),
-.admin-calculator-cash-table10 th:nth-child(3),
-.admin-calculator-cash-table10 td:nth-child(3),
-.admin-calculator-cash-table10 th:nth-child(4),
-.admin-calculator-cash-table10 td:nth-child(4),
-.admin-calculator-table1 th:nth-child(2),
-.admin-calculator-table1 td:nth-child(2),
-.admin-calculator-table1 th:nth-child(3),
-.admin-calculator-table1 td:nth-child(3),
-.admin-calculator-table4 th:nth-child(2),
-.admin-calculator-table4 td:nth-child(2),
-.admin-calculator-table4 th:nth-child(3),
-.admin-calculator-table4 td:nth-child(3),
-.admin-calculator-table5 th:nth-child(3),
-.admin-calculator-table5 td:nth-child(3),
-.admin-calculator-table5 th[data-rebuy-column],
-.admin-calculator-table5 td[data-rebuy-column] { min-width: 4ch; max-width: 6ch; }
-
-.admin-calculator-table2 th:nth-child(3),
-.admin-calculator-table2 td:nth-child(3),
-.admin-calculator-table3 th:nth-child(2),
-.admin-calculator-table3 td:nth-child(2),
-.admin-calculator-table3 th:nth-child(3),
-.admin-calculator-table3 td:nth-child(3),
-.admin-calculator-table3 th:nth-child(4),
-.admin-calculator-table3 td:nth-child(4),
-.admin-calculator-cash-table8 th:nth-child(1),
-.admin-calculator-cash-table8 td:nth-child(1),
-.admin-calculator-cash-table10 th:nth-child(5),
-.admin-calculator-cash-table10 td:nth-child(5),
-.admin-calculator-table5 th:nth-child(2),
-.admin-calculator-table5 td:nth-child(2),
-.admin-calculator-table5 th:nth-last-child(2),
-.admin-calculator-table5 td:nth-last-child(2) { min-width: 3ch; max-width: 5ch; }
-
-.admin-calculator-table1 th:nth-child(4),
-.admin-calculator-table1 td:nth-child(4),
-.admin-calculator-table2 th:nth-child(4),
-.admin-calculator-table2 td:nth-child(4),
-.admin-calculator-table3 th:nth-child(1),
-.admin-calculator-table3 td:nth-child(1),
-.admin-calculator-table4 th:nth-child(1),
-.admin-calculator-table4 td:nth-child(1),
-.admin-calculator-cash-table10 th:nth-child(1),
-.admin-calculator-cash-table10 td:nth-child(1),
-.admin-calculator-table5 th:nth-child(1),
-.admin-calculator-table5 td:nth-child(1) { min-width: 2ch; max-width: 4ch; }
-
-.admin-calculator-table2 th:nth-child(1),
-.admin-calculator-table2 td:nth-child(1),
-.admin-calculator-table4 th:nth-child(2),
-.admin-calculator-table4 td:nth-child(2),
-.admin-calculator-cash-table9 th:nth-child(1),
-.admin-calculator-cash-table9 td:nth-child(1),
-.admin-calculator-cash-table10 th:nth-child(2),
-.admin-calculator-cash-table10 td:nth-child(2) { min-width: 7ch; max-width: 20ch; }
-
-.admin-calculator-table5 th:last-child,
-.admin-calculator-table5 td:last-child { min-width: 4ch; max-width: 7ch; }
+.admin-games-ranking-table td:nth-child(3) {
+  min-width: 8ch;
+  text-align: center;
+}
 
 @media (max-width: 720px) {
   .page {

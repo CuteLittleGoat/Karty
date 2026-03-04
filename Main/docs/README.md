@@ -538,11 +538,6 @@ To jest kompletna instrukcja obsługi UI modułu Main dla pierwszego uruchomieni
 ## 18. Aktualny wygląd nagłówka i tabel (szerokości kolumn)
 - W nagłówku panelu administratora, bezpośrednio pod napisem **„TO NIE JEST nielegalne kasyno”**, wyświetla się grafika `Pliki/Ikona.png`; ta sama grafika jest też w prawym górnym rogu widoku użytkownika.
 - W zakładkach admina **Gry admina** i **Statystyki** tabele w sekcji środkowej zachowują się responsywnie tak samo jak w widoku gracza: tabela ma szerokość `max-content` z minimalną szerokością `100%` kontenera, więc kolumny (w tym `Opis` i `Wartość`) zwężają się razem z oknem i nie utrzymują sztucznej, stałej szerokości.
-- W tabelach zostały ustawione stałe zakresy szerokości (min/max) dla kluczowych kolumn, m.in.:
-  - **Gracze**: `Nazwa`, `PIN`,
-  - **Listy gier**: `Rodzaj gry`, `Nazwa`,
-  - **Szczegóły gry**: `LP`, `Gracz`, `Wpisowe`, `Rebuy / Add-on`, `Wypłata`, `+/-`, `Punkty`,
-  - **Gry do potwierdzenia**: `Nazwa`,
-  - **Statystyki rozszerzone i Ranking**,
-  - **Kalkulator Cash/Tournament**: Tabela7, Tabela8, Tabela9, Tabela10 oraz Tabela1–Tabela5.
-- Zmiana dotyczy tylko zakresów szerokości wskazanych kolumn; logika działania widoków pozostaje bez zmian.
+- Szerokości większości kolumn są automatyczne (bez stałych limitów min/max), dzięki czemu układ wraca do stanu sprzed ostatnich zmian i lepiej dopasowuje się do danych.
+- Wyjątki, które pozostały stałe: minimalna szerokość tabel (`860 px`), tabela graczy (`700 px`), szeroka tabela statystyk (`2300 px`), kolumny rebuy (`8 znaków`) oraz ranking (`Miejsce: 3 znaki`, `Gracz: 16 znaków`, `Wynik: 8 znaków`).
+- Logika działania widoków nie zmienia się; przywrócony został wyłącznie układ szerokości kolumn.
