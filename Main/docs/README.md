@@ -12,7 +12,7 @@ Instrukcja jest podzielona na dwie części:
 ## 1. Start aplikacji i orientacja na ekranie
 
 1. Otwórz plik `Main/index.html` w przeglądarce.
-2. Na górze ekranu zobaczysz nagłówek oraz przycisk **Instrukcja** (prawy górny róg).
+2. Na górze ekranu zobaczysz nagłówek oraz sekcję z ikoną `Pliki/Ikona.png` i przyciskiem **Instrukcja** (prawy górny róg, ikona po lewej stronie przycisku w tej samej linii).
 3. Jeśli otworzysz moduł z parametrem `?admin=1`, najpierw pojawi się okno logowania administratora z polem hasła.
 4. Po poprawnym wpisaniu hasła zobaczysz dwa główne obszary:
    - **Panel Administratora** (duża karta z wieloma zakładkami),
@@ -536,7 +536,7 @@ To jest kompletna instrukcja obsługi UI modułu Main dla pierwszego uruchomieni
 - Nazwa gracza pozostaje etykietą widoczną w tabelach, ale logika dopasowania działa po identyfikatorze.
 
 ## 18. Aktualny wygląd nagłówka i tabel (szerokości kolumn)
-- W nagłówku panelu administratora, bezpośrednio pod napisem **„TO NIE JEST nielegalne kasyno”**, wyświetla się grafika `Pliki/Ikona.png`; ta sama grafika jest też w prawym górnym rogu widoku użytkownika.
+- W prawym górnym rogu nagłówka (zarówno w widoku administratora, jak i użytkownika) grafika `Pliki/Ikona.png` jest wyświetlana po lewej stronie przycisku **Instrukcja** w jednej linii.
 - W zakładkach admina **Gry admina** i **Statystyki** tabele w sekcji środkowej zachowują się responsywnie tak samo jak w widoku gracza: tabela ma szerokość `max-content` z minimalną szerokością `100%` kontenera, więc kolumny (w tym `Opis` i `Wartość`) zwężają się razem z oknem i nie utrzymują sztucznej, stałej szerokości.
 - Szerokości większości kolumn są automatyczne (bez stałych limitów min/max), dzięki czemu układ wraca do stanu sprzed ostatnich zmian i lepiej dopasowuje się do danych.
 - Wyjątki, które pozostały stałe: minimalna szerokość tabel (`860 px`), tabela graczy (`1320 px`), tabela list gier (`1260 px`), szeroka tabela statystyk (`2300 px`), kolumny rebuy (`8 znaków`) oraz ranking (`Miejsce: 3 znaki`, `Gracz: 16 znaków`, `Wynik: 8 znaków`).

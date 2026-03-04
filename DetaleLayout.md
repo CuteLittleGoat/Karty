@@ -167,5 +167,5 @@ Każda zmiana wizualna (font, kolor, cień, spacing, układ, modal, tabela, form
   - `Wypłaty`.
 
 ## 8) Aktualne detale nagłówka i tabel (Main)
-- W nagłówku modułu Main (`.header-intro`) pod tytułem `TO NIE JEST nielegalne kasyno` wyświetlana jest grafika `Pliki/Ikona.png` stylowana klasą `.header-icon` (szerokość responsywna do `min(140px, 100%)`), a w widoku użytkownika ta sama grafika pojawia się w prawym górnym rogu jako `.header-icon.user-header-icon.user-only` (szerokość `min(110px, 100%)`).
+- W nagłówku modułu Main grafika `Pliki/Ikona.png` (`.header-icon`, szerokość responsywna `min(110px, 100%)`) znajduje się w kontenerze `.header-controls` po lewej stronie przycisku **Instrukcja**; układ jest taki sam dla widoku administratora i użytkownika (jedna linia, wyrównanie do prawej strony nagłówka).
 - Tabele list gier (`.admin-games-table`) mają stałe minima kolumn (150/170/360/150/230/140 px), a tabela graczy (`.players-table`) minima 100/280/180/620/130 px, co eliminuje nachodzenie nagłówków i kontrolek na desktopie.
