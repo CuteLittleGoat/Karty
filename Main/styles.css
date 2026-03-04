@@ -1299,6 +1299,19 @@ button.danger {
   min-width: 100%;
 }
 
+#adminGamesTab .admin-games-section .admin-table-scroll,
+#adminStatisticsTab .admin-games-section .admin-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+#adminGamesTab .admin-games-section .admin-data-table,
+#adminStatisticsTab .admin-games-section .admin-data-table {
+  width: max-content;
+  min-width: 100%;
+}
+
 
 .user-construction {
   margin: 0;
