@@ -342,8 +342,9 @@ h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  width: 8ch;
   min-width: 8ch;
+  max-width: 8ch;
   min-height: 34px;
   padding: 6px 10px;
   border: 1px solid rgba(43, 227, 139, 0.45);
@@ -839,9 +840,36 @@ select:disabled,
   min-width: 140px;
 }
 
+
+.admin-games-players-stats-table th:nth-child(3),
+.admin-games-players-stats-table td:nth-child(3),
+.admin-games-players-stats-table th:nth-child(5),
+.admin-games-players-stats-table td:nth-child(5),
+.admin-games-players-stats-table th:nth-child(8),
+.admin-games-players-stats-table td:nth-child(8),
+.admin-games-players-stats-table th:nth-child(10),
+.admin-games-players-stats-table td:nth-child(10),
+.admin-games-players-stats-table th:nth-child(12),
+.admin-games-players-stats-table td:nth-child(12),
+.admin-games-players-stats-table th:nth-child(14),
+.admin-games-players-stats-table td:nth-child(14) {
+  width: 8ch;
+  min-width: 8ch;
+  max-width: 8ch;
+}
+
 .admin-games-players-stats-table input.admin-input {
   min-width: 84px;
 }
+.admin-games-players-stats-table td:nth-child(3) input.admin-input,
+.admin-games-players-stats-table td:nth-child(5) input.admin-input,
+.admin-games-players-stats-table td:nth-child(8) input.admin-input,
+.admin-games-players-stats-table td:nth-child(10) input.admin-input,
+.admin-games-players-stats-table td:nth-child(12) input.admin-input,
+.admin-games-players-stats-table td:nth-child(14) input.admin-input {
+  min-width: 0;
+}
+
 
 .stats-column-header {
   display: flex;

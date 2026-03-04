@@ -371,7 +371,7 @@ W podsumowaniu każdej gry użyj przycisku **Notatki po grze**:
 
 ### 10.6. Statystyki i wagi w tej zakładce
 W tabeli statystyk graczy są przyciski kolumn:
-- **Waga1**, **Waga2**, **Waga3**, **Waga4**, **Waga5**, **Waga6** (każdy przycisk ma szerokość co najmniej `8ch`, żeby etykieta była w pełni czytelna).
+- **Waga1**, **Waga2**, **Waga3**, **Waga4**, **Waga5**, **Waga6** (każdy przycisk ma stałą szerokość `8ch`, żeby nagłówki wag nie rozciągały kolumn).
 
 Działanie:
 - po kliknięciu danej „Wagi” wpisujesz jedną wartość,
@@ -385,7 +385,7 @@ Działanie:
 1. Wybierz rok z panelu **Lata**.
 2. Analizuj tabelę statystyk i ranking.
 3. Kliknij **Eksportuj**, aby pobrać statystyki.
-4. W tabeli graczy możesz używać przycisków **Waga1–Waga6** do zbiorczego ustawiania wag kolumn (analogicznie jak wyżej); przyciski mają minimalną szerokość `8ch`.
+4. W tabeli graczy możesz używać przycisków **Waga1–Waga6** do zbiorczego ustawiania wag kolumn (analogicznie jak wyżej); przyciski mają stałą szerokość `8ch`.
 
 ---
 

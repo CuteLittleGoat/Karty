@@ -108,29 +108,29 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 | wartość oczekiwana |  |  |  |  |  |
 | Mistrzostwo | automatyczna | brak stałego limitu | do lewej | numeric | Liczba zwycięstw. |
 | wartość oczekiwana |  |  |  |  |  |
-| Waga 1 | automatyczna | brak stałego limitu | do lewej | numeric | Pole edytowalne (liczba całkowita). |
+| Waga 1 | 8 ch | 8 ch | do lewej | numeric | Pole edytowalne (liczba całkowita), szerokość stała zgodna z przyciskiem nagłówka. |
 | wartość oczekiwana |  |  |  |  |  |
 | Ilość spotkań | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Waga 2 | automatyczna | brak stałego limitu | do lewej | numeric | Pole edytowalne (liczba całkowita). |
+| Waga 2 | 8 ch | 8 ch | do lewej | numeric | Pole edytowalne (liczba całkowita), szerokość stała zgodna z przyciskiem nagłówka. |
 | wartość oczekiwana |  |  |  |  |  |
 | Udział procentowy | automatyczna | brak stałego limitu | do lewej | numeric | Znak % dodawany automatycznie. |
 | wartość oczekiwana |  |  |  |  |  |
 | Punkty | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Waga 3 | automatyczna | brak stałego limitu | do lewej | numeric | Pole edytowalne (liczba całkowita). |
+| Waga 3 | 8 ch | 8 ch | do lewej | numeric | Pole edytowalne (liczba całkowita), szerokość stała zgodna z przyciskiem nagłówka. |
 | wartość oczekiwana |  |  |  |  |  |
 | Bilans (+/-) | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Waga 4 | automatyczna | brak stałego limitu | do lewej | numeric | Pole edytowalne (liczba całkowita). |
+| Waga 4 | 8 ch | 8 ch | do lewej | numeric | Pole edytowalne (liczba całkowita), szerokość stała zgodna z przyciskiem nagłówka. |
 | wartość oczekiwana |  |  |  |  |  |
 | Wypłata | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Waga 5 | automatyczna | brak stałego limitu | do lewej | numeric | Pole edytowalne (liczba całkowita). |
+| Waga 5 | 8 ch | 8 ch | do lewej | numeric | Pole edytowalne (liczba całkowita), szerokość stała zgodna z przyciskiem nagłówka. |
 | wartość oczekiwana |  |  |  |  |  |
 | Wpłaty | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Waga 6 | automatyczna | brak stałego limitu | do lewej | numeric | Pole edytowalne (liczba całkowita). |
+| Waga 6 | 8 ch | 8 ch | do lewej | numeric | Pole edytowalne (liczba całkowita), szerokość stała zgodna z przyciskiem nagłówka. |
 | wartość oczekiwana |  |  |  |  |  |
 | Suma z rozegranych gier | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
