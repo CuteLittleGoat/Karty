@@ -94,4 +94,4 @@
 ## 7. Aktualizacja techniczna układu kolumn (Main)
 - W `Main/styles.css` przywrócono układ kolumn zgodny z bieżącą specyfikacją: większość kolumn działa na szerokościach automatycznych (`auto`) bez wymuszonych zakresów `min-width/max-width`.
 - Zachowano docelowe wyjątki: minimalna szerokość tabel (`860px` globalnie, `700px` dla tabeli graczy, `2300px` dla szerokiej tabeli statystyk), stałe kolumny `8ch` w tabelach rebuy oraz dedykowane szerokości rankingu (`3/16/8` znaków).
-- W `Main/index.html` nagłówek zawiera grafikę `Pliki/Ikona.png` w panelu administratora i użytkownika; style ikon pozostają bez zmian (`.header-icon`, `.user-header-icon`).
+- W `Main/index.html` nagłówek ma jedną wspólną sekcję sterowania (`.header-controls`) dla widoku administratora i użytkownika: grafika `Pliki/Ikona.png` (`.header-icon`) jest umieszczona po lewej stronie przycisku `Instrukcja` w tej samej linii.
