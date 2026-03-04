@@ -99,5 +99,5 @@
   - `.admin-games-players-stats-table`, `.admin-games-ranking-table`,
   - `.admin-calculator-cash-table7`, `.admin-calculator-cash-table8`, `.admin-calculator-cash-table9`, `.admin-calculator-cash-table10`,
   - `.admin-calculator-table1` … `.admin-calculator-table5`.
-- W `Main/index.html` dodano element `<img class="header-icon" src="Pliki/Ikona.png" alt="Ikona">` pod nagłówkiem `TO NIE JEST nielegalne kasyno`.
-- W `Main/styles.css` dodano styl `.header-icon` (`display: block; width: min(140px, 100%); height: auto;`).
+- W `Main/index.html` dodano element `<img class="header-icon" src="../Pliki/Ikona.png" alt="Ikona">` pod nagłówkiem `TO NIE JEST nielegalne kasyno` w widoku administratora oraz drugi obraz `class="header-icon user-header-icon user-only"` w prawym górnym rogu widoku użytkownika.
+- W `Main/styles.css` nagłówek korzysta ze styli `.header-icon` (`display: block; width: min(140px, 100%); height: auto;`) oraz `.user-header-icon` (`width: min(110px, 100%); margin-left: auto;`) dla ikony w widoku użytkownika.
