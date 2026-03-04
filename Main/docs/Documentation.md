@@ -29,6 +29,7 @@
 - W `Main/styles.css` kontener `.admin-table-scroll` ma poziome przewijanie z widocznym stylowaniem suwaka (`overflow-x: auto`, dedykowane style paska), dzięki czemu szerokie tabele można przesuwać lewo/prawo bez nakładania treści.
 - Kalkulator (tabele 2 i 9) przechowuje i serializuje `playerId` wraz z `playerName`; wybory na listach graczy działają po ID, co zabezpiecza scenariusz duplikatów nazw.
 - Tabele `Gracze` (`.players-table`) i listy gier (`.admin-games-table`) mają podniesione minimalne szerokości i minima dla kluczowych kolumn, aby nagłówki, pola i przyciski nie nachodziły na siebie w desktopie; na mniejszych ekranach działają przez przewijanie poziome.
+- Tabele list `Gry użytkowników` używają teraz tych samych bazowych klas szerokości co `Gry admina` (`.admin-games-table`) oraz dodatkowej klasy `.admin-user-games-table`, która poszerza kolumnę `Nazwa` (z przyciskiem `Notatki do gry`) do `440px` i podnosi minimalną szerokość całej tabeli do `1340px`, dzięki czemu pole `Rodzaj Gry` nie zwęża się nadmiernie w mobile.
 
 ## 3. Obsługa modala instrukcji (`initInstructionModal`)
 - Elementy DOM:

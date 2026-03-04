@@ -400,6 +400,7 @@ Najważniejsze przyciski:
 - **Szczegóły** — edycja składu i wartości,
 - **Notatki do gry** — notatki przed grą,
 - **Usuń** — usunięcie gry,
+- Szerokości kolumn są zgodne z zakładką **Gry admina**; wyjątek to szersza kolumna **Nazwa** (dla przycisku **Notatki do gry**), żeby treść pól i przycisków nie ucinała się na mobilnych szerokościach.
 - **Wpisowe** (w nagłówku modalu szczegółów) — zbiorcze wpisowe,
 - **Dodaj** (w modalu szczegółów) — dodanie uczestnika,
 - **Usuń** (w wierszu modalu) — usunięcie uczestnika.
