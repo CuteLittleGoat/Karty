@@ -115,27 +115,6 @@ const DEFAULT_TABLE_META = {
   gameDate: "data"
 };
 const DEFAULT_GAME_TYPE = "Cashout";
-const normalizeGameType = (value) => {
-  if (typeof value !== "string") {
-    return DEFAULT_GAME_TYPE;
-  }
-  const normalized = value.trim().toLowerCase();
-  if (normalized.startsWith("turn")) {
-    return "Turniej";
-  }
-  if (normalized.startsWith("cash")) {
-    return "Cashout";
-  }
-  return DEFAULT_GAME_TYPE;
-};
-
-const getGameTypeLabel = (value, fallback = "-") => {
-  if (typeof value !== "string" || !value.trim()) {
-    return fallback;
-  }
-  return normalizeGameType(value);
-};
-
 const TABLE_COLUMNS = [
   { key: "playerName", label: "nazwa gracza" },
   { key: "percentAllGames", label: "% z wszystkich gier" },
@@ -1672,7 +1651,7 @@ const renderNextGamesTable = (tableBody, games, emptyMessage, options = {}) => {
 
   games.forEach((game) => {
     const row = document.createElement("tr");
-    row.appendChild(createCell(getGameTypeLabel(game.gameType, "")));
+    row.appendChild(createCell(game.gameType || ""));
     row.appendChild(createCell(game.gameDate || ""));
     row.appendChild(createCell(game.name || ""));
     row.appendChild(createCell(game.allConfirmed ? "Tak" : "Nie"));
@@ -2311,7 +2290,7 @@ const initUserConfirmations = () => {
     const confirmations = state.confirmationsByGame.get(gameId) ?? [];
     confirmationsStatusModal.open({
       contextId: `${gamesCollectionName}:${gameId}`,
-      title: `Nazwa: ${game.name || "-"} | Rodzaj gry: ${getGameTypeLabel(game.gameType)} | Data: ${game.gameDate || "-"}`,
+      title: `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"}`,
       rows,
       confirmations
     });
@@ -2335,7 +2314,7 @@ const initUserConfirmations = () => {
     const rowsSnapshot = await db.collection(collectionName).doc(game.id).collection(gameDetailsCollectionName).orderBy("createdAt", "asc").get();
     const rows = rowsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     const gamePool = rows.reduce((sum, row) => sum + parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy), 0);
-    detailsMeta.textContent = `Nazwa: ${game.name || "-"} | Rodzaj gry: ${getGameTypeLabel(game.gameType)} | Data: ${game.gameDate || "-"} | Pula: ${gamePool}`;
+    detailsMeta.textContent = `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"} | Pula: ${gamePool}`;
 
     if (!rows.length) {
       const emptyRow = document.createElement("tr");
@@ -2445,7 +2424,7 @@ const initUserConfirmations = () => {
         }
 
         const gameTypeCell = document.createElement("td");
-        gameTypeCell.textContent = getGameTypeLabel(game.gameType);
+        gameTypeCell.textContent = game.gameType || "-";
 
         const dateCell = document.createElement("td");
         dateCell.textContent = game.gameDate || "-";
@@ -2798,7 +2777,7 @@ const initUserGamesManager = ({
     const confirmations = state.confirmationsByGame.get(gameId) ?? [];
     confirmationsStatusModal.open({
       contextId: `${gamesCollectionName}:${gameId}`,
-      title: `Nazwa: ${game.name || "-"} | Rodzaj gry: ${getGameTypeLabel(game.gameType)} | Data: ${game.gameDate || "-"}`,
+      title: `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"}`,
       rows,
       confirmations
     });
@@ -3109,7 +3088,7 @@ const initUserGamesManager = ({
 
       const gameTypeInfo = document.createElement("p");
       gameTypeInfo.className = "status-text";
-      gameTypeInfo.textContent = `Rodzaj gry: ${getGameTypeLabel(game.gameType)}`;
+      gameTypeInfo.textContent = `Rodzaj gry: ${game.gameType || "-"}`;
 
       const tableScroll = document.createElement("div");
       tableScroll.className = "admin-table-scroll";
@@ -3208,7 +3187,7 @@ const initUserGamesManager = ({
         option.textContent = label;
         gameTypeSelect.appendChild(option);
       });
-      gameTypeSelect.value = normalizeGameType(game.gameType);
+      gameTypeSelect.value = game.gameType === "Turniej" ? "Turniej" : "Cashout";
       gameTypeSelect.disabled = !writeEnabled;
       gameTypeSelect.addEventListener("change", () => {
         if (!hasWriteAccessToGame(game)) return;
@@ -3360,7 +3339,7 @@ const initUserGamesManager = ({
     }
 
     const focusState = getFocusedAdminInputState(modalBody);
-    modalMeta.textContent = `Nazwa: ${game.name || "-"} | Rodzaj gry: ${getGameTypeLabel(game.gameType)} | Data: ${game.gameDate || "-"}`;
+    modalMeta.textContent = `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"}`;
     modalBody.innerHTML = "";
 
     const rows = state.detailsByGame.get(gameId) ?? [];
@@ -3785,7 +3764,7 @@ const initAdminConfirmations = () => {
 
         const meta = document.createElement("p");
         meta.className = "admin-confirmation-game-meta";
-        meta.textContent = `Rodzaj gry: ${getGameTypeLabel(game.gameType)} | Data: ${game.gameDate || "-"}`;
+        meta.textContent = `Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"}`;
 
         const tableScroll = document.createElement("div");
         tableScroll.className = "admin-table-scroll";
@@ -6000,9 +5979,7 @@ const initAdminPlayers = () => {
       pinInput.dataset.rowId = player.id;
       pinInput.dataset.columnKey = "pin";
       pinInput.inputMode = "numeric";
-      pinInput.minLength = PIN_LENGTH;
       pinInput.maxLength = PIN_LENGTH;
-      pinInput.size = PIN_LENGTH;
       pinInput.placeholder = "5 cyfr";
       pinInput.value = player.pin;
       pinInput.addEventListener("input", () => {
@@ -7015,7 +6992,7 @@ const initAdminGames = () => {
     const confirmations = state.confirmationsByGame.get(gameId) ?? [];
     confirmationsStatusModal.open({
       contextId: `${gamesCollectionName}:${gameId}`,
-      title: `Nazwa: ${game.name || "-"} | Rodzaj gry: ${getGameTypeLabel(game.gameType)} | Data: ${game.gameDate || "-"}`,
+      title: `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"}`,
       rows,
       confirmations
     });
@@ -7442,7 +7419,7 @@ const initAdminGames = () => {
         option.textContent = label;
         gameTypeSelect.appendChild(option);
       });
-      gameTypeSelect.value = normalizeGameType(game.gameType);
+      gameTypeSelect.value = game.gameType === "Turniej" ? "Turniej" : "Cashout";
       gameTypeSelect.addEventListener("change", () => {
         void db.collection(gamesCollectionName).doc(game.id).update({ gameType: gameTypeSelect.value });
       });
@@ -7606,7 +7583,7 @@ const initAdminGames = () => {
 
       const gameTypeInfo = document.createElement("p");
       gameTypeInfo.className = "status-text";
-      gameTypeInfo.textContent = `Rodzaj gry: ${getGameTypeLabel(game.gameType)}`;
+      gameTypeInfo.textContent = `Rodzaj gry: ${game.gameType || "-"}`;
 
       const tableScroll = document.createElement("div");
       tableScroll.className = "admin-table-scroll";
@@ -7794,7 +7771,7 @@ const initAdminGames = () => {
     }
 
     const focusState = getFocusedAdminInputState(modalBody);
-    modalMeta.textContent = `Nazwa: ${game.name || "-"} | Rodzaj gry: ${getGameTypeLabel(game.gameType)} | Data: ${game.gameDate || "-"}`;
+    modalMeta.textContent = `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"}`;
     modalBody.innerHTML = "";
 
     const rows = state.detailsByGame.get(gameId) ?? [];
