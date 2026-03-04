@@ -115,8 +115,12 @@ h1 {
 }
 
 .user-header-icon {
-  width: min(110px, 100%);
-  margin-left: auto;
+  width: 84px;
+  position: fixed;
+  top: 40px;
+  left: 24px;
+  margin: 0;
+  z-index: 6;
 }
 
 .subtitle {
@@ -1041,10 +1045,16 @@ select:disabled,
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: nowrap;
 }
 
 .pin-control .admin-input {
   min-width: 5ch;
+  width: 7ch;
+  max-width: 7ch;
+  text-align: center;
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
 }
 
 .admin-pin-random {
@@ -1999,4 +2009,137 @@ body.modal-open {
 .admin-confirmation-game-meta {
   color: var(--muted);
   font-size: var(--fs-small);
+}
+
+
+/* Global table readability overrides */
+.admin-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-gutter: stable both-edges;
+}
+
+.admin-data-table {
+  width: max-content;
+  min-width: 100%;
+  table-layout: auto;
+}
+
+.admin-data-table th,
+.admin-data-table td {
+  min-width: 110px;
+  max-width: none;
+  white-space: nowrap;
+}
+
+.admin-data-table th:last-child,
+.admin-data-table td:last-child {
+  min-width: 96px;
+}
+
+.admin-data-table .admin-input,
+.admin-data-table select,
+.admin-data-table button {
+  min-width: 100%;
+}
+
+.players-table th:nth-child(1),
+.players-table td:nth-child(1) {
+  min-width: 90px;
+}
+
+.players-table th:nth-child(2),
+.players-table td:nth-child(2) {
+  min-width: 260px;
+}
+
+.players-table th:nth-child(3),
+.players-table td:nth-child(3) {
+  min-width: 200px;
+}
+
+.players-table th:nth-child(4),
+.players-table td:nth-child(4) {
+  min-width: 280px;
+}
+
+#adminGamesTab .admin-games-section .admin-data-table th:nth-child(1),
+#adminGamesTab .admin-games-section .admin-data-table td:nth-child(1),
+#adminUserGamesTab .admin-games-section .admin-data-table th:nth-child(1),
+#adminUserGamesTab .admin-games-section .admin-data-table td:nth-child(1),
+#adminNextGameTab .admin-games-section .admin-data-table th:nth-child(1),
+#adminNextGameTab .admin-games-section .admin-data-table td:nth-child(1),
+#userGamesTab .admin-games-section .admin-data-table th:nth-child(1),
+#userGamesTab .admin-games-section .admin-data-table td:nth-child(1) {
+  min-width: 150px;
+}
+
+#adminGamesTab .admin-games-section .admin-data-table th:nth-child(2),
+#adminGamesTab .admin-games-section .admin-data-table td:nth-child(2),
+#adminUserGamesTab .admin-games-section .admin-data-table th:nth-child(2),
+#adminUserGamesTab .admin-games-section .admin-data-table td:nth-child(2),
+#adminNextGameTab .admin-games-section .admin-data-table th:nth-child(2),
+#adminNextGameTab .admin-games-section .admin-data-table td:nth-child(2),
+#userGamesTab .admin-games-section .admin-data-table th:nth-child(2),
+#userGamesTab .admin-games-section .admin-data-table td:nth-child(2) {
+  min-width: 170px;
+}
+
+#adminGamesTab .admin-games-section .admin-data-table th:nth-child(3),
+#adminGamesTab .admin-games-section .admin-data-table td:nth-child(3),
+#adminUserGamesTab .admin-games-section .admin-data-table th:nth-child(3),
+#adminUserGamesTab .admin-games-section .admin-data-table td:nth-child(3),
+#adminNextGameTab .admin-games-section .admin-data-table th:nth-child(3),
+#adminNextGameTab .admin-games-section .admin-data-table td:nth-child(3),
+#userGamesTab .admin-games-section .admin-data-table th:nth-child(3),
+#userGamesTab .admin-games-section .admin-data-table td:nth-child(3) {
+  min-width: 240px;
+}
+
+#adminGamesTab .admin-games-section .admin-data-table th:nth-child(4),
+#adminGamesTab .admin-games-section .admin-data-table td:nth-child(4),
+#adminUserGamesTab .admin-games-section .admin-data-table th:nth-child(4),
+#adminUserGamesTab .admin-games-section .admin-data-table td:nth-child(4),
+#adminNextGameTab .admin-games-section .admin-data-table th:nth-child(4),
+#adminNextGameTab .admin-games-section .admin-data-table td:nth-child(4),
+#userGamesTab .admin-games-section .admin-data-table th:nth-child(4),
+#userGamesTab .admin-games-section .admin-data-table td:nth-child(4) {
+  min-width: 160px;
+}
+
+#adminGamesTab .admin-games-section .admin-data-table th:nth-child(5),
+#adminGamesTab .admin-games-section .admin-data-table td:nth-child(5),
+#adminUserGamesTab .admin-games-section .admin-data-table th:nth-child(5),
+#adminUserGamesTab .admin-games-section .admin-data-table td:nth-child(5),
+#adminNextGameTab .admin-games-section .admin-data-table th:nth-child(5),
+#adminNextGameTab .admin-games-section .admin-data-table td:nth-child(5),
+#userGamesTab .admin-games-section .admin-data-table th:nth-child(5),
+#userGamesTab .admin-games-section .admin-data-table td:nth-child(5) {
+  min-width: 220px;
+}
+
+.admin-games-players-stats-table th,
+.admin-games-players-stats-table td {
+  min-width: 120px;
+}
+
+.admin-games-players-stats-table th:nth-child(1),
+.admin-games-players-stats-table td:nth-child(1) {
+  min-width: 220px;
+}
+
+.admin-games-ranking-table th:nth-child(2),
+.admin-games-ranking-table td:nth-child(2) {
+  min-width: 220px;
+}
+
+#adminCalculatorRebuyTable th,
+#adminCalculatorRebuyTable td,
+.game-details-rebuy-table th,
+.game-details-rebuy-table td {
+  min-width: 8ch;
+  width: 8ch;
+  max-width: 8ch;
 }
