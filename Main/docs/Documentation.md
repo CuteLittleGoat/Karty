@@ -99,5 +99,22 @@
   - `.admin-games-players-stats-table`, `.admin-games-ranking-table`,
   - `.admin-calculator-cash-table7`, `.admin-calculator-cash-table8`, `.admin-calculator-cash-table9`, `.admin-calculator-cash-table10`,
   - `.admin-calculator-table1` … `.admin-calculator-table5`.
-- W `Main/index.html` dodano element `<img class="header-icon" src="../Pliki/Ikona.png" alt="Ikona">` pod nagłówkiem `TO NIE JEST nielegalne kasyno` w widoku administratora oraz drugi obraz `class="header-icon user-header-icon user-only"` w prawym górnym rogu widoku użytkownika.
-- W `Main/styles.css` nagłówek korzysta ze styli `.header-icon` (`display: block; width: min(140px, 100%); height: auto;`) oraz `.user-header-icon` (`width: min(110px, 100%); margin-left: auto;`) dla ikony w widoku użytkownika.
+- W `Main/index.html` dodano element `<img class="header-icon" src="../Pliki/Ikona.png" alt="Ikona">` pod nagłówkiem `TO NIE JEST nielegalne kasyno` w widoku administratora oraz drugi obraz `class="header-icon user-header-icon user-only"` w lewym górnym rogu widoku użytkownika.
+- W `Main/styles.css` nagłówek korzysta ze styli `.header-icon` (`display: block; width: min(140px, 100%); height: auto;`) oraz `.user-header-icon` (`width: 84px; position: fixed; top: 40px; left: 24px;`) dla ikony w widoku użytkownika.
+
+## Aktualna specyfikacja techniczna tabel i typu gry
+
+- Dodano normalizację typu gry przez funkcje `normalizeGameType()` oraz `getGameTypeLabel()`.
+  - We wszystkich miejscach renderowania typu gry UI używa teraz pełnych etykiet `Cashout` / `Turniej`.
+  - Dotyczy to zarówno komórek tabel, selectów, jak i metadanych/modali.
+- Ujednolicono renderowanie tabel:
+  - `.admin-data-table` działa w trybie `width: max-content` + `min-width: 100%`.
+  - `.admin-table-scroll` ma wymuszone przewijanie poziome i stabilne miejsce na scrollbar.
+  - Komórki nagłówków i danych mają większe minimalne szerokości, brak sztywnego zawijania oraz brak restrykcyjnych `max-width`.
+- W tabeli graczy kontrolka PIN:
+  - Pole ma `minLength`, `maxLength` i `size` ustawione na 5,
+  - CSS wymusza szerokość pod 5 cyfr (`7ch` z odstępami cyfr),
+  - Układ `.pin-control` ma `flex-wrap: nowrap`, dzięki czemu przyciski pozostają obok pola.
+- Ikona użytkownika (`.user-header-icon`) została ustawiona jako element stały w lewym górnym rogu (`position: fixed`, `top: 40px`, `left: 24px`).
+- Wyjątek rebuy zachowany:
+  - `#adminCalculatorRebuyTable` i `.game-details-rebuy-table` pozostają ze stałą szerokością kolumn `8ch` (min/width/max).

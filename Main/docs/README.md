@@ -536,7 +536,7 @@ To jest kompletna instrukcja obsługi UI modułu Main dla pierwszego uruchomieni
 - Nazwa gracza pozostaje etykietą widoczną w tabelach, ale logika dopasowania działa po identyfikatorze.
 
 ## 18. Aktualny wygląd nagłówka i tabel (szerokości kolumn)
-- W nagłówku panelu administratora, bezpośrednio pod napisem **„TO NIE JEST nielegalne kasyno”**, wyświetla się grafika `Pliki/Ikona.png`; ta sama grafika jest też w prawym górnym rogu widoku użytkownika.
+- W nagłówku panelu administratora, bezpośrednio pod napisem **„TO NIE JEST nielegalne kasyno”**, wyświetla się grafika `Pliki/Ikona.png`; ta sama grafika jest też w lewym górnym rogu widoku użytkownika (na wysokości przycisku Instrukcja).
 - W zakładkach admina **Gry admina** i **Statystyki** tabele w sekcji środkowej zachowują się responsywnie tak samo jak w widoku gracza: tabela ma szerokość `max-content` z minimalną szerokością `100%` kontenera, więc kolumny (w tym `Opis` i `Wartość`) zwężają się razem z oknem i nie utrzymują sztucznej, stałej szerokości.
 - W tabelach zostały ustawione stałe zakresy szerokości (min/max) dla kluczowych kolumn, m.in.:
   - **Gracze**: `Nazwa`, `PIN`,
@@ -546,3 +546,11 @@ To jest kompletna instrukcja obsługi UI modułu Main dla pierwszego uruchomieni
   - **Statystyki rozszerzone i Ranking**,
   - **Kalkulator Cash/Tournament**: Tabela7, Tabela8, Tabela9, Tabela10 oraz Tabela1–Tabela5.
 - Zmiana dotyczy tylko zakresów szerokości wskazanych kolumn; logika działania widoków pozostaje bez zmian.
+
+## Aktualne zasady widoku tabel i nagłówka (UI)
+
+- Wszystkie tabele mają aktywny poziomy pasek przewijania (lewo/prawo), jeżeli zawartość nie mieści się na ekranie.
+- W polach wyboru typu gry zawsze wyświetla się pełna nazwa: **Cashout** albo **Turniej**.
+- W zakładce **Gracze** pole PIN ma stałą szerokość dokładnie pod 5 cyfr, a przyciski akcji PIN są obok pola w tej samej kolumnie.
+- Ikona użytkownika jest ustawiona w lewym górnym rogu ekranu, na wysokości przycisku **Instrukcja**.
+- Wyjątek dla szerokości: okno **Rebuy gracza** oraz kolumny **Rebuy1, Rebuy2, ...** mają stałą szerokość 8 znaków.

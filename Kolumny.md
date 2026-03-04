@@ -298,3 +298,28 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 | wartość oczekiwana |  |  |  |  |  |
 
 | Tabela rebuy w oknie szczegółów gry | stała szerokość każdej kolumny: 8 znaków | stała szerokość każdej kolumny: 8 znaków | do lewej | numeric | Układ zgodny z modalem rebuy z Kalkulatora (przyciski Dodaj/Usuń Rebuy). |
+
+## Aktualna konfiguracja szerokości kolumn (Main)
+
+- Globalnie dla tabel administracyjnych:
+  - minimalna szerokość komórki `110px`,
+  - ostatnia kolumna akcji minimum `96px`,
+  - tabela renderowana jako `max-content` z `min-width: 100%`.
+- Tabele gier (`adminGames`, `adminUserGames`, `adminNextGame`, `userGames`):
+  - kol. 1 (Rodzaj gry): min `150px`,
+  - kol. 2 (Data): min `170px`,
+  - kol. 3 (Nazwa): min `240px`,
+  - kol. 4 (CzyZamknięta): min `160px`,
+  - kol. 5 (IlośćPotwierdzonych): min `220px`.
+- Tabela Gracze:
+  - kol. 1: min `90px`,
+  - kol. 2 (nazwa): min `260px`,
+  - kol. 3 (PIN): min `200px`,
+  - kol. 4 (uprawnienia): min `280px`.
+- Tabela statystyk graczy:
+  - domyślnie min `120px`,
+  - kolumna gracza min `220px`.
+- Ranking:
+  - kolumna gracza min `220px`.
+- Wyjątek rebuy:
+  - kolumny rebuy w kalkulatorze i modalu szczegółów: stałe `8ch` (`min/width/max`).
