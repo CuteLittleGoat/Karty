@@ -117,6 +117,7 @@ Dodatkowo `body::before` nakłada subtelny świetlny overlay (`opacity: 0.25`) z
 - W nagłówku kolumny `Rebuy/Add-on` w modalach szczegółów gry jest zwykły tekst nagłówka tabeli (bez stylu przycisku zbiorczego).
 - W komórkach kolumny `Rebuy/Add-on` jest przycisk `.secondary` z aktualną sumą rebuy gracza; kliknięcie otwiera modal `Rebuy gracza` (`.modal-card.modal-card-sm`) z układem i akcjami jak w kalkulatorze oraz przyciskiem zamknięcia `.icon-button` (`×`) w prawym górnym rogu nagłówka.
 - W `Main` w zakładce **Kalkulator → Tournament → Tabela5** pod tabelą może pojawić się czerwony komunikat walidacyjny `Nie sumuje się do 100%` (klasy `.status-text.status-text-danger`), kiedy suma procentów w kolumnie `Podział puli` jest różna od 100.
+- Kontener `.admin-table-scroll` ma stylowany poziomy suwak (Firefox + WebKit), więc przy szerokich tabelach od razu widać możliwość przewijania lewo/prawo.
 
 ---
 
@@ -132,7 +133,7 @@ W obu modułach stosowane są media query, które:
 ## 6) Różnice między modułami
 
 Większość stylów `Main/styles.css` i `Second/styles.css` jest taka sama. Aktualnie kluczowa różnica układowa dotyczy paneli z rankingiem (`#adminGamesTab .admin-games-layout`, `#adminStatisticsTab .admin-games-layout`):
-- **Main**: `grid-template-columns: 20ch minmax(0, 1fr) 42ch` (panel **Lata** zwężony do ok. 20 znaków, a panel **Ranking** poszerzony, aby cała sekcja była widoczna bez przewijania).
+- **Main**: `grid-template-columns: 20ch minmax(0, 1fr) 42ch` (panel **Lata** po lewej, szeroka sekcja centralna i panel **Ranking** po prawej; szerokie tabele w centrum są czytelne dzięki poziomemu suwakowi w `.admin-table-scroll`).
 - **Second**: `grid-template-columns: 220px minmax(0, 1fr) 260px` (szersza kolumna **Lata** i węższa kolumna **Ranking**).
 
 ### 6.1 Komunikat testowy przy przycisku Instrukcja
@@ -167,4 +168,4 @@ Każda zmiana wizualna (font, kolor, cień, spacing, układ, modal, tabela, form
 
 ## 8) Aktualne detale nagłówka i tabel (Main)
 - W nagłówku modułu Main (`.header-intro`) pod tytułem `TO NIE JEST nielegalne kasyno` wyświetlana jest grafika `Pliki/Ikona.png` stylowana klasą `.header-icon` (szerokość responsywna do `min(140px, 100%)`), a w widoku użytkownika ta sama grafika pojawia się w prawym górnym rogu jako `.header-icon.user-header-icon.user-only` (szerokość `min(110px, 100%)`).
-- W Main przywrócono szerokości automatyczne dla większości kolumn tabel (bez wymuszonych zakresów `min-width`/`max-width`), pozostawiając jedynie uzgodnione wyjątki: minimalne szerokości całych tabel, ranking (3/16/8 znaków) oraz stałe kolumny rebuy (`8ch`).
+- Tabele list gier (`.admin-games-table`) mają stałe minima kolumn (150/170/360/150/230/140 px), a tabela graczy (`.players-table`) minima 100/280/180/620/130 px, co eliminuje nachodzenie nagłówków i kontrolek na desktopie.

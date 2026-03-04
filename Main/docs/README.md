@@ -539,5 +539,6 @@ To jest kompletna instrukcja obsługi UI modułu Main dla pierwszego uruchomieni
 - W nagłówku panelu administratora, bezpośrednio pod napisem **„TO NIE JEST nielegalne kasyno”**, wyświetla się grafika `Pliki/Ikona.png`; ta sama grafika jest też w prawym górnym rogu widoku użytkownika.
 - W zakładkach admina **Gry admina** i **Statystyki** tabele w sekcji środkowej zachowują się responsywnie tak samo jak w widoku gracza: tabela ma szerokość `max-content` z minimalną szerokością `100%` kontenera, więc kolumny (w tym `Opis` i `Wartość`) zwężają się razem z oknem i nie utrzymują sztucznej, stałej szerokości.
 - Szerokości większości kolumn są automatyczne (bez stałych limitów min/max), dzięki czemu układ wraca do stanu sprzed ostatnich zmian i lepiej dopasowuje się do danych.
-- Wyjątki, które pozostały stałe: minimalna szerokość tabel (`860 px`), tabela graczy (`700 px`), szeroka tabela statystyk (`2300 px`), kolumny rebuy (`8 znaków`) oraz ranking (`Miejsce: 3 znaki`, `Gracz: 16 znaków`, `Wynik: 8 znaków`).
-- Logika działania widoków nie zmienia się; przywrócony został wyłącznie układ szerokości kolumn.
+- Wyjątki, które pozostały stałe: minimalna szerokość tabel (`860 px`), tabela graczy (`1320 px`), tabela list gier (`1260 px`), szeroka tabela statystyk (`2300 px`), kolumny rebuy (`8 znaków`) oraz ranking (`Miejsce: 3 znaki`, `Gracz: 16 znaków`, `Wynik: 8 znaków`).
+- Logika działania widoków nie zmienia się; zmieniony został wyłącznie układ szerokości kolumn i zachowanie przewijania poziomego.
+- Jeżeli tabela ma więcej danych niż miejsce na ekranie, pod tabelą pojawia się poziomy suwak (scrollbar) i całą zawartość można bezpiecznie przesuwać lewo/prawo, bez nachodzenia nagłówków i pól edycji.

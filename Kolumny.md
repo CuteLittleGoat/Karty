@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|
 | Główne tabele w panelach | 860 px | brak stałego limitu | do lewej | tekst | Tabela zajmuje całą dostępną szerokość sekcji, a przy zbyt małym oknie przewija się poziomo wewnątrz kontenera. |
 | wartość oczekiwana |  |  |  |  |  |
-| Tabela graczy | 700 px | brak stałego limitu | do lewej (kolumna z polem wyboru wizualnie na środku) | tekst | Kolumna z polem wyboru ma około 88 px. |
+| Tabela graczy | 1320 px | brak stałego limitu | do lewej (kolumna z polem wyboru wizualnie na środku) | tekst | Kolumna z polem wyboru ma około 88 px. |
 | wartość oczekiwana |  |  |  |  |  |
 | Szeroka tabela statystyk graczy | 2300 px | brak stałego limitu | do lewej | tekst | Na mniejszych ekranach wymaga przesuwania poziomego. |
 | wartość oczekiwana |  |  |  |  |  |
@@ -21,32 +21,32 @@
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| Aplikacja | automatyczna (wizualnie ok. 88 px) | brak stałego limitu | środek | tekst | Pole wyboru ma rozmiar około 18 x 18 px. |
+| Aplikacja | 100 px | brak stałego limitu | środek | tekst | Pole wyboru ma rozmiar około 18 x 18 px. |
 | wartość oczekiwana |  |  |  |  |  |
-| Nazwa | automatyczna | brak stałego limitu | do lewej | tekst | Pole tekstowe. |
+| Nazwa | 280 px | brak stałego limitu | do lewej | tekst | Pole tekstowe. |
 | wartość oczekiwana |  |  |  |  |  |
-| PIN | automatyczna | brak stałego limitu | do lewej | numeric | Przyjmuje wyłącznie cyfry, maksymalnie 5 cyfr. |
+| PIN | 180 px | brak stałego limitu | do lewej | numeric | Przyjmuje wyłącznie cyfry, maksymalnie 5 cyfr. |
 | wartość oczekiwana |  |  |  |  |  |
-| Uprawnienia | automatyczna | brak stałego limitu | do lewej | tekst | Lista uprawnień i przycisk edycji. |
+| Uprawnienia | 620 px | brak stałego limitu | do lewej | tekst | Lista uprawnień i przycisk edycji. |
 | wartość oczekiwana |  |  |  |  |  |
-| Akcje | automatyczna | brak stałego limitu | do lewej | tekst | Przyciski działań (np. usuwanie). |
+| Akcje | 130 px | brak stałego limitu | do lewej | tekst | Przyciski działań (np. usuwanie). |
 | wartość oczekiwana |  |  |  |  |  |
 
 ## 2) Listy gier (administrator, użytkownik, najbliższa gra)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| Rodzaj gry | automatyczna | brak stałego limitu | do lewej | tekst | Lista wyboru typu gry. |
+| Rodzaj gry | 150 px | brak stałego limitu | do lewej | tekst | Lista wyboru typu gry. |
 | wartość oczekiwana |  |  |  |  |  |
-| Data | automatyczna | brak stałego limitu | do lewej | tekst | Pole daty. |
+| Data | 170 px | brak stałego limitu | do lewej | tekst | Pole daty. |
 | wartość oczekiwana |  |  |  |  |  |
-| Nazwa | automatyczna | brak stałego limitu | do lewej | tekst | Pole tekstowe. |
+| Nazwa | 360 px | brak stałego limitu | do lewej | tekst | Pole tekstowe. |
 | wartość oczekiwana |  |  |  |  |  |
-| Status zamknięcia / potwierdzeń | automatyczna | brak stałego limitu | do lewej | tekst | Pole wyboru tak/nie. |
+| Status zamknięcia / potwierdzeń | 150 px | brak stałego limitu | do lewej | tekst | Pole wyboru tak/nie. |
 | wartość oczekiwana |  |  |  |  |  |
-| IlośćPotwierdzonych | automatyczna | brak stałego limitu | do lewej | numeric | Format `potwierdzeni/zapisani`, np. `3/5`. |
+| IlośćPotwierdzonych | 230 px | brak stałego limitu | do lewej | numeric | Format `potwierdzeni/zapisani`, np. `3/5`. |
 | wartość oczekiwana |  |  |  |  |  |
-| Akcje | automatyczna | brak stałego limitu | do lewej | tekst | Przyciski (np. szczegóły, usuwanie). |
+| Akcje | 140 px | brak stałego limitu | do lewej | tekst | Przyciski (np. szczegóły, usuwanie). |
 | wartość oczekiwana |  |  |  |  |  |
 
 ## 3) Szczegóły gry (okno szczegółów)
@@ -78,11 +78,11 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| Rodzaj gry | automatyczna | brak stałego limitu | do lewej | tekst | Wartość informacyjna. |
+| Rodzaj gry | 150 px | brak stałego limitu | do lewej | tekst | Wartość informacyjna. |
 | wartość oczekiwana |  |  |  |  |  |
-| Data | automatyczna | brak stałego limitu | do lewej | tekst | Data gry. |
+| Data | 170 px | brak stałego limitu | do lewej | tekst | Data gry. |
 | wartość oczekiwana |  |  |  |  |  |
-| Nazwa | automatyczna | brak stałego limitu | do lewej | tekst | Nazwa gry. |
+| Nazwa | 360 px | brak stałego limitu | do lewej | tekst | Nazwa gry. |
 | wartość oczekiwana |  |  |  |  |  |
 | Potwierdzenie | automatyczna | brak stałego limitu | do lewej | tekst | Status i działanie potwierdzające. |
 | wartość oczekiwana |  |  |  |  |  |

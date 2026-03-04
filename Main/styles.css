@@ -258,13 +258,30 @@ h1 {
 
 .admin-table-scroll {
   overflow-x: auto;
+  overflow-y: hidden;
   border-radius: var(--radius-sm);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(237, 235, 230, 0.4) rgba(0, 0, 0, 0.2);
+}
+
+.admin-table-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+.admin-table-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(237, 235, 230, 0.35);
+}
+
+.admin-table-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .admin-data-table {
   width: 100%;
   border-collapse: collapse;
   min-width: 860px;
+  table-layout: auto;
 }
 
 .admin-data-table th,
@@ -778,6 +795,46 @@ select:disabled,
   min-width: 2300px;
 }
 
+.admin-games-table {
+  min-width: 1260px;
+}
+
+.admin-games-table th,
+.admin-games-table td {
+  white-space: nowrap;
+}
+
+.admin-games-table th:nth-child(1),
+.admin-games-table td:nth-child(1) {
+  min-width: 150px;
+}
+
+.admin-games-table th:nth-child(2),
+.admin-games-table td:nth-child(2) {
+  min-width: 170px;
+}
+
+.admin-games-table th:nth-child(3),
+.admin-games-table td:nth-child(3) {
+  min-width: 360px;
+}
+
+.admin-games-table th:nth-child(4),
+.admin-games-table td:nth-child(4) {
+  min-width: 150px;
+  text-align: center;
+}
+
+.admin-games-table th:nth-child(5),
+.admin-games-table td:nth-child(5) {
+  min-width: 230px;
+}
+
+.admin-games-table th:nth-child(6),
+.admin-games-table td:nth-child(6) {
+  min-width: 140px;
+}
+
 .admin-games-players-stats-table input.admin-input {
   min-width: 84px;
 }
@@ -1022,7 +1079,37 @@ select:disabled,
 }
 
 .players-table {
-  min-width: 700px;
+  min-width: 1320px;
+}
+
+.players-table th,
+.players-table td {
+  white-space: nowrap;
+}
+
+.players-table th:nth-child(1),
+.players-table td:nth-child(1) {
+  min-width: 100px;
+}
+
+.players-table th:nth-child(2),
+.players-table td:nth-child(2) {
+  min-width: 280px;
+}
+
+.players-table th:nth-child(3),
+.players-table td:nth-child(3) {
+  min-width: 180px;
+}
+
+.players-table th:nth-child(4),
+.players-table td:nth-child(4) {
+  min-width: 620px;
+}
+
+.players-table th:nth-child(5),
+.players-table td:nth-child(5) {
+  min-width: 130px;
 }
 
 .players-app-cell {
@@ -1744,6 +1831,7 @@ body.modal-open {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .admin-confirmations-count-control button {
