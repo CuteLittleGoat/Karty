@@ -88,3 +88,15 @@
 - Odczyt istniejących potwierdzeń także używa tego samego klucza identyfikacyjnego, co eliminuje rozjazdy między dokumentami potwierdzeń i listą graczy.
 - Zapis potwierdzenia przez administratora ustawia `playerId` na rzeczywiste ID gracza z rekordu gry (jeżeli istnieje), zamiast przepisywać nazwę do pola `playerId`.
 - Ranking statystyk, masowe ustawianie wag i eksport XLSX odczytują wpisy ręczne z mapy rocznej po `statsKey` (`id:<playerId>` z fallbackiem nazwy), a nie po samym `playerName`.
+
+## 7. Aktualizacja techniczna układu kolumn (Main)
+- W `Main/styles.css` doprecyzowano zakresy `min-width` i `max-width` dla wskazanych tabel:
+  - `.players-table` (kolumny `Nazwa`, `PIN`),
+  - listy gier w `#adminGamesTab`, `#adminUserGamesTab`, `#adminNextGameTab`, `#userGamesTab` (kolumny `Rodzaj gry`, `Nazwa`),
+  - `.game-details-table` (kolumny `LP`, `Gracz`, `Wpisowe`, `Rebuy / Add-on`, `Wypłata`, `+/-`, `Punkty`),
+  - `.confirmations-table` (kolumna `Nazwa`),
+  - `.admin-games-players-stats-table`, `.admin-games-ranking-table`,
+  - `.admin-calculator-cash-table7`, `.admin-calculator-cash-table8`, `.admin-calculator-cash-table9`, `.admin-calculator-cash-table10`,
+  - `.admin-calculator-table1` … `.admin-calculator-table5`.
+- W `Main/index.html` dodano element `<img class="header-icon" src="Pliki/Ikona.png" alt="Ikona">` pod nagłówkiem `TO NIE JEST nielegalne kasyno`.
+- W `Main/styles.css` dodano styl `.header-icon` (`display: block; width: min(140px, 100%); height: auto;`).
