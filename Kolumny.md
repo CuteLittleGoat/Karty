@@ -23,9 +23,9 @@
 |---|---|---|---|---|---|
 | Aplikacja | automatyczna (wizualnie ok. 88 px) | brak stałego limitu | środek | tekst | Pole wyboru ma rozmiar około 18 x 18 px. |
 | wartość oczekiwana |  |  |  |  |  |
-| Nazwa | automatyczna | brak stałego limitu | do lewej | tekst | Pole tekstowe. |
+| Nazwa | 7 ch | 20 ch | do lewej | tekst | Pole tekstowe. |
 | wartość oczekiwana |  |  |  |  |  |
-| PIN | automatyczna | brak stałego limitu | do lewej | numeric | Przyjmuje wyłącznie cyfry, maksymalnie 5 cyfr. |
+| PIN | 5 ch | 6 ch | do lewej | numeric | Przyjmuje wyłącznie cyfry, maksymalnie 5 cyfr. |
 | wartość oczekiwana |  |  |  |  |  |
 | Uprawnienia | automatyczna | brak stałego limitu | do lewej | tekst | Lista uprawnień i przycisk edycji. |
 | wartość oczekiwana |  |  |  |  |  |
@@ -36,11 +36,11 @@
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| Rodzaj gry | automatyczna | brak stałego limitu | do lewej | tekst | Lista wyboru typu gry. |
+| Rodzaj gry | 5 ch | 8 ch | do lewej | tekst | Lista wyboru typu gry. |
 | wartość oczekiwana |  |  |  |  |  |
 | Data | automatyczna | brak stałego limitu | do lewej | tekst | Pole daty. |
 | wartość oczekiwana |  |  |  |  |  |
-| Nazwa | automatyczna | brak stałego limitu | do lewej | tekst | Pole tekstowe. |
+| Nazwa | 5 ch | 15 ch | do lewej | tekst | Pole tekstowe. |
 | wartość oczekiwana |  |  |  |  |  |
 | Status zamknięcia / potwierdzeń | automatyczna | brak stałego limitu | do lewej | tekst | Pole wyboru tak/nie. |
 | wartość oczekiwana |  |  |  |  |  |
@@ -55,19 +55,19 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| LP | automatyczna | brak stałego limitu | do lewej | numeric | Numer porządkowy. |
+| LP | 2 ch | 3 ch | do lewej | numeric | Numer porządkowy. |
 | wartość oczekiwana |  |  |  |  |  |
-| Gracz | automatyczna | brak stałego limitu | do lewej | tekst | Lista wyboru gracza. |
+| Gracz | 7 ch | 20 ch | do lewej | tekst | Lista wyboru gracza. |
 | wartość oczekiwana |  |  |  |  |  |
-| Wpisowe | automatyczna | brak stałego limitu | do lewej | numeric | Pole liczbowe. |
+| Wpisowe | 4 ch | 6 ch | do lewej | numeric | Pole liczbowe. |
 | wartość oczekiwana |  |  |  |  |  |
-| Rebuy / Add-on | automatyczna | brak stałego limitu | do lewej | numeric | Przycisk otwierający okno wpisania wartości (analogicznie do Wpisowego). |
+| Rebuy / Add-on | 4 ch | 6 ch | do lewej | numeric | Przycisk otwierający okno wpisania wartości (analogicznie do Wpisowego). |
 | wartość oczekiwana |  |  |  |  |  |
-| Wypłata | automatyczna | brak stałego limitu | do lewej | numeric | Pole liczbowe. |
+| Wypłata | 4 ch | 6 ch | do lewej | numeric | Pole liczbowe. |
 | wartość oczekiwana |  |  |  |  |  |
-| +/- | automatyczna | brak stałego limitu | do lewej | numeric | Pole wyliczane automatycznie. |
+| +/- | 4 ch | 6 ch | do lewej | numeric | Pole wyliczane automatycznie. |
 | wartość oczekiwana |  |  |  |  |  |
-| Punkty | automatyczna | brak stałego limitu | do lewej | numeric | Pole liczbowe. |
+| Punkty | 2 ch | 3 ch | do lewej | numeric | Pole liczbowe. |
 | wartość oczekiwana |  |  |  |  |  |
 | Mistrzostwo | automatyczna | brak stałego limitu | do lewej | tekst | Pole wyboru tak/nie. |
 | wartość oczekiwana |  |  |  |  |  |
@@ -82,7 +82,7 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 | wartość oczekiwana |  |  |  |  |  |
 | Data | automatyczna | brak stałego limitu | do lewej | tekst | Data gry. |
 | wartość oczekiwana |  |  |  |  |  |
-| Nazwa | automatyczna | brak stałego limitu | do lewej | tekst | Nazwa gry. |
+| Nazwa | 7 ch | 20 ch | do lewej | tekst | Nazwa gry. |
 | wartość oczekiwana |  |  |  |  |  |
 | Potwierdzenie | automatyczna | brak stałego limitu | do lewej | tekst | Status i działanie potwierdzające. |
 | wartość oczekiwana |  |  |  |  |  |
@@ -102,52 +102,52 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| Gracz | automatyczna | brak stałego limitu | do lewej | tekst | Nazwa gracza. |
+| Gracz | 7 ch | 20 ch | do lewej | tekst | Nazwa gracza. |
 | wartość oczekiwana |  |  |  |  |  |
 | Mistrzostwo | automatyczna | brak stałego limitu | do lewej | numeric | Liczba zwycięstw. |
 | wartość oczekiwana |  |  |  |  |  |
-| Waga 1 | automatyczna | brak stałego limitu | do lewej | numeric | Pole edytowalne (liczba całkowita). |
+| Waga 1 | 3 ch | 4 ch | do lewej | numeric | Pole edytowalne (liczba całkowita). |
 | wartość oczekiwana |  |  |  |  |  |
-| Ilość spotkań | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Ilość spotkań | 2 ch | 3 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Waga 2 | automatyczna | brak stałego limitu | do lewej | numeric | Pole edytowalne (liczba całkowita). |
+| Waga 2 | 3 ch | 4 ch | do lewej | numeric | Pole edytowalne (liczba całkowita). |
 | wartość oczekiwana |  |  |  |  |  |
-| Udział procentowy | automatyczna | brak stałego limitu | do lewej | numeric | Znak % dodawany automatycznie. |
+| Udział procentowy | 3 ch | 4 ch | do lewej | numeric | Znak % dodawany automatycznie. |
 | wartość oczekiwana |  |  |  |  |  |
-| Punkty | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Punkty | 2 ch | 4 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Waga 3 | automatyczna | brak stałego limitu | do lewej | numeric | Pole edytowalne (liczba całkowita). |
+| Waga 3 | 3 ch | 4 ch | do lewej | numeric | Pole edytowalne (liczba całkowita). |
 | wartość oczekiwana |  |  |  |  |  |
-| Bilans (+/-) | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Bilans (+/-) | 3 ch | 4 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Waga 4 | automatyczna | brak stałego limitu | do lewej | numeric | Pole edytowalne (liczba całkowita). |
+| Waga 4 | 3 ch | 4 ch | do lewej | numeric | Pole edytowalne (liczba całkowita). |
 | wartość oczekiwana |  |  |  |  |  |
-| Wypłata | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Wypłata | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Waga 5 | automatyczna | brak stałego limitu | do lewej | numeric | Pole edytowalne (liczba całkowita). |
+| Waga 5 | 3 ch | 4 ch | do lewej | numeric | Pole edytowalne (liczba całkowita). |
 | wartość oczekiwana |  |  |  |  |  |
-| Wpłaty | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Wpłaty | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Waga 6 | automatyczna | brak stałego limitu | do lewej | numeric | Pole edytowalne (liczba całkowita). |
+| Waga 6 | 3 ch | 4 ch | do lewej | numeric | Pole edytowalne (liczba całkowita). |
 | wartość oczekiwana |  |  |  |  |  |
-| Suma z rozegranych gier | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Suma z rozegranych gier | 5 ch | 7 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Procent rozegranych gier | automatyczna | brak stałego limitu | do lewej | numeric | Znak % dodawany automatycznie. |
+| Procent rozegranych gier | 3 ch | 4 ch | do lewej | numeric | Znak % dodawany automatycznie. |
 | wartość oczekiwana |  |  |  |  |  |
-| Procent wszystkich gier | automatyczna | brak stałego limitu | do lewej | numeric | Znak % dodawany automatycznie. |
+| Procent wszystkich gier | 3 ch | 4 ch | do lewej | numeric | Znak % dodawany automatycznie. |
 | wartość oczekiwana |  |  |  |  |  |
-| Wynik końcowy | automatyczna | brak stałego limitu | do lewej | numeric | Wartość końcowa rankingu. |
+| Wynik końcowy | 5 ch | 8 ch | do lewej | numeric | Wartość końcowa rankingu. |
 | wartość oczekiwana |  |  |  |  |  |
 
 ### 5.3 Ranking
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| Miejsce | 3 znaki | brak stałego limitu | pionowo środek, poziomo do lewej | numeric | Wiersze rankingu mają podwójną wysokość względem poprzedniego układu. |
+| Miejsce | 2 ch | 3 ch | do lewej | numeric | Wiersze rankingu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Gracz | 16 znaków | brak stałego limitu | pionowo środek, poziomo do lewej | tekst | Kolumna zwężona; nazwy zawijają się tylko między słowami (bez łamania słów). |
+| Gracz | 7 ch | 20 ch | do lewej | tekst | Nazwa gracza. |
 | wartość oczekiwana |  |  |  |  |  |
-| Wynik | 8 znaków | brak stałego limitu | środek (pion i poziom) | numeric | Wynik punktowy. |
+| Wynik | 5 ch | 8 ch | do lewej | numeric | Wynik punktowy. |
 | wartość oczekiwana |  |  |  |  |  |
 
 ## 6) Kalkulator
@@ -156,37 +156,37 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| Buy-In | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu, suma Buy-In z Tabela9 pomniejszona o wartość z kolumny `%` (Tabela8). |
+| Buy-In | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu, suma Buy-In z Tabela9 pomniejszona o wartość z kolumny `%` (Tabela8). |
 | wartość oczekiwana |  |  |  |  |  |
-| Rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu, suma Rebuy z Tabela9 pomniejszona o wartość z kolumny `%` (Tabela8). |
+| Rebuy | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu, suma Rebuy z Tabela9 pomniejszona o wartość z kolumny `%` (Tabela8). |
 | wartość oczekiwana |  |  |  |  |  |
-| Suma | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu, suma Buy-In i Rebuy z Tabela9. |
+| Suma | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu, suma Buy-In i Rebuy z Tabela9. |
 | wartość oczekiwana |  |  |  |  |  |
 
 ### 6.1 Tabela8 (Cash)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| % | automatyczna | brak stałego limitu | do lewej | numeric | Wpis liczbowy, znak `%` dodawany automatycznie po opuszczeniu pola. |
+| % | 3 ch | 4 ch | do lewej | numeric | Wpis liczbowy, znak `%` dodawany automatycznie po opuszczeniu pola. |
 | wartość oczekiwana |  |  |  |  |  |
-| Rake | automatyczna | brak stałego limitu | do lewej | numeric | Wpis liczbowy kwoty rake. |
+| Rake | 4 ch | 6 ch | do lewej | numeric | Wpis liczbowy kwoty rake. |
 | wartość oczekiwana |  |  |  |  |  |
-| Pot | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu, wynik `Suma z Tabela7 - Rake z Tabela8`. |
+| Pot | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu, wynik `Suma z Tabela7 - Rake z Tabela8`. |
 | wartość oczekiwana |  |  |  |  |  |
 
 ### 6.2 Tabela9 (Cash)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| Gracz | automatyczna | brak stałego limitu | do lewej | tekst | Lista wyboru pokazuje tylko dostępnych graczy; osoby już wskazane w innych wierszach Cash są ukryte. |
+| Gracz | 7 ch | 20 ch | do lewej | tekst | Lista wyboru pokazuje tylko dostępnych graczy; osoby już wskazane w innych wierszach Cash są ukryte. |
 | wartość oczekiwana |  |  |  |  |  |
-| Buy-In | automatyczna | brak stałego limitu | do lewej | numeric | W nagłówku znajduje się przycisk do zbiorczego ustawienia wartości Buy-In dla wszystkich wierszy; każde pole można potem edytować ręcznie, domyślnie 0. |
+| Buy-In | 4 ch | 6 ch | do lewej | numeric | W nagłówku znajduje się przycisk do zbiorczego ustawienia wartości Buy-In dla wszystkich wierszy; każde pole można potem edytować ręcznie, domyślnie 0. |
 | wartość oczekiwana |  |  |  |  |  |
-| Rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Przycisk z sumą rebuy, otwiera modal. |
+| Rebuy | 4 ch | 6 ch | do lewej | numeric | Przycisk z sumą rebuy, otwiera modal. |
 | wartość oczekiwana |  |  |  |  |  |
-| Wypłata | automatyczna | brak stałego limitu | do lewej | numeric | Pole liczbowe, domyślnie 0. |
+| Wypłata | 4 ch | 6 ch | do lewej | numeric | Pole liczbowe, domyślnie 0. |
 | wartość oczekiwana |  |  |  |  |  |
-| +/- | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu, wynik Wypłata-(Buy-In+Rebuy). |
+| +/- | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu, wynik Wypłata-(Buy-In+Rebuy). |
 | wartość oczekiwana |  |  |  |  |  |
 | Akcje | automatyczna | brak stałego limitu | do lewej | tekst | Przyciski Dodaj i Usuń wiersz. |
 | wartość oczekiwana |  |  |  |  |  |
@@ -195,41 +195,41 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| Lp | automatyczna | brak stałego limitu | do lewej | numeric | Autonumeracja po sortowaniu. |
+| Lp | 2 ch | 3 ch | do lewej | numeric | Autonumeracja po sortowaniu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Gracz | automatyczna | brak stałego limitu | do lewej | tekst | Dane z Tabela9. |
+| Gracz | 7 ch | 20 ch | do lewej | tekst | Dane z Tabela9. |
 | wartość oczekiwana |  |  |  |  |  |
-| Wypłata | automatyczna | brak stałego limitu | do lewej | numeric | Dane z Tabela9. |
+| Wypłata | 4 ch | 6 ch | do lewej | numeric | Dane z Tabela9. |
 | wartość oczekiwana |  |  |  |  |  |
-| +/- | automatyczna | brak stałego limitu | do lewej | numeric | Dane z Tabela9, sortowanie malejące. |
+| +/- | 4 ch | 6 ch | do lewej | numeric | Dane z Tabela9, sortowanie malejące. |
 | wartość oczekiwana |  |  |  |  |  |
-| % Puli | automatyczna | brak stałego limitu | do lewej | numeric | Wypłata z Tabela9 / Suma z Tabela7. |
+| % Puli | 3 ch | 4 ch | do lewej | numeric | Wypłata z Tabela9 / Suma z Tabela7. |
 | wartość oczekiwana |  |  |  |  |  |
 
 ### 6.4 Tabela podsumowania wejść (Tournament)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| Suma | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Suma | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Buy-In | automatyczna | brak stałego limitu | do lewej | numeric | Pole liczbowe. |
+| Buy-In | 4 ch | 6 ch | do lewej | numeric | Pole liczbowe. |
 | wartość oczekiwana |  |  |  |  |  |
-| Rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Pole liczbowe. |
+| Rebuy | 4 ch | 6 ch | do lewej | numeric | Pole liczbowe. |
 | wartość oczekiwana |  |  |  |  |  |
-| Liczba Rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Liczba Rebuy | 2 ch | 4 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
 
 ### 6.5 Tabela uczestników (Tournament)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| LP | automatyczna | brak stałego limitu | do lewej | numeric | Numer porządkowy. |
+| LP | 2 ch | 3 ch | do lewej | numeric | Numer porządkowy. |
 | wartość oczekiwana |  |  |  |  |  |
-| Gracz | automatyczna | brak stałego limitu | do lewej | tekst | Lista wyboru pokazuje tylko dostępnych graczy; osoba wybrana w innym wierszu Tournament jest ukryta. |
+| Gracz | 7 ch | 20 ch | do lewej | tekst | Lista wyboru pokazuje tylko dostępnych graczy; osoba wybrana w innym wierszu Tournament jest ukryta. |
 | wartość oczekiwana |  |  |  |  |  |
-| Buy-In | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Buy-In | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Przycisk otwierający okno rebuy. |
+| Rebuy | 2 ch | 4 ch | do lewej | numeric | Przycisk otwierający okno rebuy. |
 | wartość oczekiwana |  |  |  |  |  |
 | Eliminacja | automatyczna | brak stałego limitu | do lewej | tekst | Pole wyboru tak/nie. |
 | wartość oczekiwana |  |  |  |  |  |
@@ -240,43 +240,43 @@ W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego w
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| Procent | automatyczna | brak stałego limitu | do lewej | numeric | Wpisujesz liczbę, znak % dodaje się automatycznie. |
+| Procent | 3 ch | 4 ch | do lewej | numeric | Wpisujesz liczbę, znak % dodaje się automatycznie. |
 | wartość oczekiwana |  |  |  |  |  |
-| Rake | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Rake | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Wpisowe | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Wpisowe | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Rebuy | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Pot | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Pot | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
 
 ### 6.7 Tabela wygranych (Tournament)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| LP | automatyczna | brak stałego limitu | do lewej | numeric | Numer miejsca. |
+| LP | 2 ch | 3 ch | do lewej | numeric | Numer miejsca. |
 | wartość oczekiwana |  |  |  |  |  |
-| Gracz | automatyczna | brak stałego limitu | do lewej | tekst | Pole tylko do odczytu. |
+| Gracz | 7 ch | 20 ch | do lewej | tekst | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Wygrana | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Wygrana | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
 
 ### 6.8 Tabela podziału puli (Tournament)
 
 | Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
 |---|---|---|---|---|---|
-| LP | automatyczna | brak stałego limitu | do lewej | numeric | Numer porządkowy. |
+| LP | 2 ch | 3 ch | do lewej | numeric | Numer porządkowy. |
 | wartość oczekiwana |  |  |  |  |  |
-| Podział puli | automatyczna | brak stałego limitu | do lewej | numeric | Wpisujesz liczbę, znak % dodaje się automatycznie. |
+| Podział puli | 3 ch | 5 ch | do lewej | numeric | Wpisujesz liczbę, znak % dodaje się automatycznie. |
 | wartość oczekiwana |  |  |  |  |  |
-| Kwota | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Kwota | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
-| Kolumny kolejnych rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Pojawiają się tylko, gdy są potrzebne. |
+| Kolumny kolejnych rebuy | 4 ch | 6 ch | do lewej | numeric | Pojawiają się tylko, gdy są potrzebne. |
 | wartość oczekiwana |  |  |  |  |  |
-| Mod | automatyczna | brak stałego limitu | do lewej | tekst | Pole pomocnicze do obliczeń. |
+| Mod | 3 ch | 5 ch | do lewej | tekst | Pole pomocnicze do obliczeń. |
 | wartość oczekiwana |  |  |  |  |  |
-| Suma | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
+| Suma | 4 ch | 6 ch | do lewej | numeric | Pole tylko do odczytu. |
 | wartość oczekiwana |  |  |  |  |  |
 
 ### 6.9 Tabela rebuy w osobnym oknie (Tournament)

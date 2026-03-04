@@ -163,3 +163,7 @@ Każda zmiana wizualna (font, kolor, cień, spacing, układ, modal, tabela, form
   - `Faza grupowa`,
   - `Półfinał`,
   - `Wypłaty`.
+
+## 8) Aktualne detale nagłówka i tabel (Main)
+- W nagłówku modułu Main (`.header-intro`) pod tytułem `TO NIE JEST nielegalne kasyno` wyświetlana jest grafika `Pliki/Ikona.png` stylowana klasą `.header-icon` (szerokość responsywna do `min(140px, 100%)`).
+- W Main zaktualizowano docelowe zakresy `min-width`/`max-width` dla wskazanych kolumn tabel graczy, list gier, szczegółów gry, tabel potwierdzeń, statystyk, rankingu oraz tabel kalkulatora Cash/Tournament.

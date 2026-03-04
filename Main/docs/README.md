@@ -534,3 +534,14 @@ To jest kompletna instrukcja obsługi UI modułu Main dla pierwszego uruchomieni
 - Potwierdzenie z zakładki administratora **Gry do Potwierdzenia** jest zapisywane po **ID gracza** (jeżeli gracz ma przypisane ID w rekordzie gry).
 - Dzięki temu licznik **IlośćPotwierdzonych** i okno **Statusy** pokazują spójne wartości także przy duplikatach tych samych nazw.
 - Nazwa gracza pozostaje etykietą widoczną w tabelach, ale logika dopasowania działa po identyfikatorze.
+
+## 18. Aktualny wygląd nagłówka i tabel (szerokości kolumn)
+- W nagłówku panelu administratora, bezpośrednio pod napisem **„TO NIE JEST nielegalne kasyno”**, wyświetla się grafika `Pliki/Ikona.png`.
+- W tabelach zostały ustawione stałe zakresy szerokości (min/max) dla kluczowych kolumn, m.in.:
+  - **Gracze**: `Nazwa`, `PIN`,
+  - **Listy gier**: `Rodzaj gry`, `Nazwa`,
+  - **Szczegóły gry**: `LP`, `Gracz`, `Wpisowe`, `Rebuy / Add-on`, `Wypłata`, `+/-`, `Punkty`,
+  - **Gry do potwierdzenia**: `Nazwa`,
+  - **Statystyki rozszerzone i Ranking**,
+  - **Kalkulator Cash/Tournament**: Tabela7, Tabela8, Tabela9, Tabela10 oraz Tabela1–Tabela5.
+- Zmiana dotyczy tylko zakresów szerokości wskazanych kolumn; logika działania widoków pozostaje bez zmian.
