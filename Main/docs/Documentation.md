@@ -91,13 +91,6 @@
 - Ranking statystyk, masowe ustawianie wag i eksport XLSX odczytują wpisy ręczne z mapy rocznej po `statsKey` (`id:<playerId>` z fallbackiem nazwy), a nie po samym `playerName`.
 
 ## 7. Aktualizacja techniczna układu kolumn (Main)
-- W `Main/styles.css` doprecyzowano zakresy `min-width` i `max-width` dla wskazanych tabel:
-  - `.players-table` (kolumny `Nazwa`, `PIN`),
-  - listy gier w `#adminGamesTab`, `#adminUserGamesTab`, `#adminNextGameTab`, `#userGamesTab` (kolumny `Rodzaj gry`, `Nazwa`),
-  - `.game-details-table` (kolumny `LP`, `Gracz`, `Wpisowe`, `Rebuy / Add-on`, `Wypłata`, `+/-`, `Punkty`),
-  - `.confirmations-table` (kolumna `Nazwa`),
-  - `.admin-games-players-stats-table`, `.admin-games-ranking-table`,
-  - `.admin-calculator-cash-table7`, `.admin-calculator-cash-table8`, `.admin-calculator-cash-table9`, `.admin-calculator-cash-table10`,
-  - `.admin-calculator-table1` … `.admin-calculator-table5`.
-- W `Main/index.html` dodano element `<img class="header-icon" src="../Pliki/Ikona.png" alt="Ikona">` pod nagłówkiem `TO NIE JEST nielegalne kasyno` w widoku administratora oraz drugi obraz `class="header-icon user-header-icon user-only"` w prawym górnym rogu widoku użytkownika.
-- W `Main/styles.css` nagłówek korzysta ze styli `.header-icon` (`display: block; width: min(140px, 100%); height: auto;`) oraz `.user-header-icon` (`width: min(110px, 100%); margin-left: auto;`) dla ikony w widoku użytkownika.
+- W `Main/styles.css` przywrócono układ kolumn zgodny z bieżącą specyfikacją: większość kolumn działa na szerokościach automatycznych (`auto`) bez wymuszonych zakresów `min-width/max-width`.
+- Zachowano docelowe wyjątki: minimalna szerokość tabel (`860px` globalnie, `700px` dla tabeli graczy, `2300px` dla szerokiej tabeli statystyk), stałe kolumny `8ch` w tabelach rebuy oraz dedykowane szerokości rankingu (`3/16/8` znaków).
+- W `Main/index.html` nagłówek zawiera grafikę `Pliki/Ikona.png` w panelu administratora i użytkownika; style ikon pozostają bez zmian (`.header-icon`, `.user-header-icon`).
