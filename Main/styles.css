@@ -343,6 +343,7 @@ h1 {
   align-items: center;
   justify-content: center;
   width: 100%;
+  min-width: 8ch;
   min-height: 34px;
   padding: 6px 10px;
   border: 1px solid rgba(43, 227, 139, 0.45);
