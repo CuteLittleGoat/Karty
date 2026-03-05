@@ -45,3 +45,13 @@ Dodatkowo dla każdego stołu:
 
 ### Wypłaty
 - Tabela24: MIEJSCE, GRACZ, POCZĄTKOWA WYGRANA, KOŃCOWA WYGRANA
+
+
+### Szerokości kolumn (Losowanie graczy)
+- Kolumna `Nazwa` (2): `min-width: 30ch`.
+- Kolumna `PIN` (3): `min-width: 14ch` (zwiększona szerokość dla 5-cyfrowego PIN).
+- Kolumna `Uprawnienia` (4): `min-width: 28ch`.
+- Kolumna `Akcje` (5): `min-width: 8ch`, wyrównanie do prawej.
+
+### Losowanie stołów — kolumna Status
+- Kolumna `Status` zawiera etykietę statusu płatności oraz przycisk `Zmień status` (układ pionowo/elastyczny w `.payment-status-cell`).

@@ -31,7 +31,7 @@
 - Tabela `players-table` ma kolumny:
   1. `Status` (checkbox w stylu `.status-radio`),
   2. `Nazwa` (input tekstowy),
-  3. `PIN` (input 5-cyfrowy + przycisk `Losuj`),
+  3. `PIN` (input 5-cyfrowy o poszerzonej szerokości + przycisk `Losuj`),
   4. `Uprawnienia` (badge + przycisk `Edytuj`),
   5. `Akcje` (przycisk `Usuń`).
 
@@ -46,6 +46,14 @@
 
 ### Usuwanie gracza
 - `delete-player` usuwa rekord gracza z `players` oraz czyści powiązane dane (`assignments`, `tableEntries`, `group`, `semi`).
+
+### Losowanie stołów — status i wybór stołu
+- Sekcja `draw` (`Losowanie stołów`) renderuje status gracza jako tekst + przycisk `Zmień status` (`data-role="assign-status-toggle"`).
+- Domyślny status pozostaje `Do zapłaty`; kliknięcie przycisku przełącza wartość cyklicznie `Do zapłaty` ↔ `Opłacone`.
+- Styl statusu:
+  - `Do zapłaty` ma klasę `.payment-status-label.is-unpaid` (czerwony wygląd),
+  - `Opłacone` ma klasę `.payment-status-label.is-paid` (złoty wygląd jak aktywna zakładka).
+- Wybór stołu (`assign-table`) i status w półfinale (`semi-assign-status`, `semi-assign-table`) zapisują się na zdarzeniu `change`, bez wymuszonego zapisu na `input`, co eliminuje znikanie rozwijanych list podczas wyboru.
 
 ### Stabilność UI przy błędach Firebase
 - Dla błędów odczytu `onSnapshot` renderuje się informacja ostrzegawcza, a nie pusty ekran sekcji.
