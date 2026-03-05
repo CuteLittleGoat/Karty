@@ -165,6 +165,8 @@ const SECOND_CHAT_COLLECTION = "second_chat_messages";
 const SECOND_APP_SETTINGS_COLLECTION = "second_app_settings";
 const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
+const SECOND_TOURNAMENT_COLLECTION = "second_tournament";
+const SECOND_TOURNAMENT_DOCUMENT = "state";
 
 const shouldRequestAdminAccess = () => new URLSearchParams(window.location.search).get("admin") === "1";
 
@@ -563,6 +565,198 @@ const setupTournamentButtons = (container) => {
         buttons.forEach((item) => item.classList.toggle("is-active", item === button));
       });
     });
+  });
+};
+
+const createTournamentDefaultState = () => ({
+  organizer: "",
+  buyIn: "",
+  rebuyAddOn: "",
+  rake: "",
+  stack: "",
+  rebuyStack: "",
+  players: [],
+  tables: [],
+  assignments: {},
+  tableEntries: {},
+  semiTables: [],
+  semiAssignments: {},
+  finalPlayers: []
+});
+
+const normalizeTournamentState = (value) => ({
+  ...createTournamentDefaultState(),
+  ...(value && typeof value === "object" ? value : {})
+});
+
+const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");
+
+const setupAdminTournament = (rootCard) => {
+  const container = rootCard.querySelector("#adminTournamentTab");
+  const mount = rootCard.querySelector("#adminTournamentRoot");
+  if (!container || !mount) {
+    return;
+  }
+
+  const firebaseApp = getFirebaseApp();
+  if (!firebaseApp) {
+    mount.innerHTML = '<p class="builder-info">Brak konfiguracji Firebase.</p>';
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+  const docRef = db.collection(SECOND_TOURNAMENT_COLLECTION).doc(SECOND_TOURNAMENT_DOCUMENT);
+  let tournamentState = createTournamentDefaultState();
+  let activeSection = "players";
+
+  const saveState = async () => {
+    await docRef.set({ ...tournamentState, updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  };
+
+  const renderPlayersSection = () => {
+    const playersRows = tournamentState.players.map((player, index) => `
+      <tr>
+        <td>Second</td>
+        <td><input class="admin-input" data-role="player-status" data-player-id="${player.id}" type="checkbox" ${player.status ? "checked" : ""}></td>
+        <td><input class="admin-input" data-role="player-name" data-player-id="${player.id}" value="${player.name ?? ""}" type="text"></td>
+        <td><input class="admin-input" data-role="player-pin" data-player-id="${player.id}" value="${player.pin ?? ""}" type="tel" inputmode="numeric" pattern="[0-9]*"></td>
+        <td><input class="admin-input" data-role="player-perm" data-player-id="${player.id}" value="${player.permissions ?? ""}" type="text"></td>
+      </tr>
+    `).join("");
+
+    mount.innerHTML = `
+      <div class="t-section-grid">
+        <label>ORGANIZATOR <input class="admin-input" data-role="meta-organizer" type="text" value="${tournamentState.organizer}"></label>
+        <label>BUY-IN <input class="admin-input" data-role="meta-buyin" type="tel" inputmode="numeric" pattern="[0-9]*" value="${tournamentState.buyIn}"></label>
+        <label>REBUY/ADD-ON <input class="admin-input" data-role="meta-rebuy" type="tel" inputmode="numeric" pattern="[0-9]*" value="${tournamentState.rebuyAddOn}"></label>
+        <label>RAKE <input class="admin-input" data-role="meta-rake" type="tel" inputmode="numeric" pattern="[0-9]*" value="${tournamentState.rake}"></label>
+        <label>STACK <input class="admin-input" data-role="meta-stack" type="tel" inputmode="numeric" pattern="[0-9]*" value="${tournamentState.stack}"></label>
+        <label>REBUY/ADD-ON STACK <input class="admin-input" data-role="meta-rebuystack" type="tel" inputmode="numeric" pattern="[0-9]*" value="${tournamentState.rebuyStack}"></label>
+      </div>
+      <div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Aplikacja</th><th>Status</th><th>Nazwa</th><th>PIN</th><th>Uprawnienia</th></tr></thead><tbody>${playersRows || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div>
+      <button type="button" class="secondary" data-role="add-player">Dodaj gracza</button>
+    `;
+  };
+
+  const buildGroupedRows = () => {
+    const all = [];
+    let lp = 1;
+    tournamentState.tables.forEach((table) => {
+      tournamentState.players.forEach((player) => {
+        if ((tournamentState.assignments[player.id]?.tableId || "") === table.id) {
+          all.push({ tableName: table.name || "Bez nazwy", lp: lp++, playerName: player.name || "", playerId: player.id });
+        }
+      });
+    });
+    return all;
+  };
+
+  const render = () => {
+    if (activeSection === "players") {
+      renderPlayersSection();
+    } else if (activeSection === "draw") {
+      const rows = tournamentState.players.map((player) => {
+        const assignment = tournamentState.assignments[player.id] || {};
+        return `<tr><td>${player.name || ""}</td><td><select class="admin-input" data-role="assign-status" data-player-id="${player.id}"><option ${assignment.status !== "Opłacone" ? "selected" : ""}>Do zapłaty</option><option ${assignment.status === "Opłacone" ? "selected" : ""}>Opłacone</option></select></td><td><select class="admin-input" data-role="assign-table" data-player-id="${player.id}"><option value="">-</option>${tournamentState.tables.map((table) => `<option value="${table.id}" ${assignment.tableId === table.id ? "selected" : ""}>${table.name}</option>`).join("")}</select></td></tr>`;
+      }).join("");
+      const tableList = tournamentState.tables.map((table) => `<li>${table.name} <button type="button" class="danger" data-role="delete-table" data-table-id="${table.id}">Usuń</button></li>`).join("");
+      mount.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Status</th><th>Stół</th></tr></thead><tbody>${rows || '<tr><td colspan="3">Brak graczy.</td></tr>'}</tbody></table></div><ul>${tableList || "<li>Brak stołów.</li>"}</ul><button type="button" class="secondary" data-role="add-table">Dodaj stół</button>`;
+    } else if (activeSection === "payments") {
+      const grouped = buildGroupedRows();
+      mount.innerHTML = `<h3>Tabela10</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Buy-in</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>licz. REBUY/ADD-ON</th></tr></thead><tbody><tr><td></td><td></td><td></td><td></td></tr></tbody></table></div><h3>Tabela11</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>Rake</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody></table></div><h3>Tabela12</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Stół</th><th>LP</th><th>Gracz</th><th>BUY-IN</th><th>REBUY/add-on</th><th>REBUY</th></tr></thead><tbody>${grouped.map((row) => `<tr><td>${row.tableName}</td><td>${row.lp}</td><td>${row.playerName}</td><td></td><td></td><td></td></tr>`).join("") || '<tr><td colspan="6">Brak danych.</td></tr>'}</tbody></table></div>`;
+    } else if (activeSection === "pool") {
+      mount.innerHTML = `<h3>Tabela13</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZBA REBUY</th></tr></thead><tbody><tr><td></td><td></td><td></td><td></td></tr></tbody></table></div><h3>Tabela14</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>Rake</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody></table></div><h3>Tabela15</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>PODZIAŁ</th><th></th></tr></thead><tbody><tr><td></td><td></td><td><button type="button" class="danger">Usuń</button></td></tr></tbody></table></div><button class="secondary" type="button">Dodaj</button><h3>Tabela16</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>Podział Puli</th><th>Kwota</th><th>Rebuy</th><th>Mod</th><th>Suma</th></tr></thead><tbody><tr><td>1</td><td></td><td></td><td></td><td><input class="admin-input" type="tel" inputmode="numeric" pattern="[0-9]*"></td><td></td></tr></tbody></table></div>`;
+    } else if (activeSection === "group") {
+      const grouped = buildGroupedRows();
+      mount.innerHTML = `<h3>Tabela17</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>STACK GRACZA</th><th>REBUY/ADD-on(w żetonach na os)</th></tr></thead><tbody>${tournamentState.players.map((p) => `<tr><td>${p.name}</td><td><input class="admin-input" type="tel" inputmode="numeric" pattern="[0-9]*"></td><td></td></tr>`).join("")}</tbody></table></div><h3>Tabela18</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr>${tournamentState.tables.map((t) => `<th>${t.name}</th>`).join("")}<th>ŁĄCZNY STACK</th></tr></thead><tbody><tr>${tournamentState.tables.map(() => "<td></td>").join("")}<td></td></tr></tbody></table></div><h3>Tabela19</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Stół</th><th>LP</th><th>Gracz</th><th>ELIMINATED</th><th>Stack</th><th>REBUY/add-on</th><th>REBUY</th></tr></thead><tbody>${grouped.map((r)=>`<tr><td>${r.tableName}</td><td>${r.lp}</td><td>${r.playerName}</td><td><input type="checkbox"></td><td></td><td></td><td></td></tr>`).join("")}</tbody></table></div>`;
+    } else if (activeSection === "semi") {
+      mount.innerHTML = `<h3>Tabela20</h3><p>Losowanie stołów jak w sekcji Losowanie stołów (niezależne dane).</p><h3>Tabela21</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>Gracz</th><th>STACK</th><th>%</th><th>Stół</th></tr></thead><tbody><tr><td>1</td><td></td><td></td><td></td><td></td></tr></tbody></table></div><h3>Tabela22</h3><label>Nazwa <input class="admin-input" type="text"></label><label>Łączny stack <input class="admin-input" readonly></label><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>Gracz</th><th>Eliminated</th><th>%</th></tr></thead><tbody><tr><td>1</td><td></td><td><input type="checkbox"></td><td></td></tr></tbody></table></div><button type="button" class="secondary" data-role="add-semi-table">Dodaj nowy stół</button><div class="semi-tables">${tournamentState.semiTables.map((_, index)=>`<article class="admin-table-card"><h4>Stół Półfinałowy numer ${index + 1} <button type="button" class="danger" data-role="remove-semi-table" data-index="${index}">Usuń stół</button></h4></article>`).join("")}</div><h3>Tabela Finałowa</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>STÓŁ</th><th>%</th></tr></thead><tbody><tr><td>1</td><td></td><td></td><td></td><td></td></tr></tbody></table></div>`;
+    } else if (activeSection === "final") {
+      const finalPlayers = tournamentState.finalPlayers;
+      const width = 700;
+      const height = 360;
+      const cx = width / 2;
+      const cy = height / 2;
+      const rx = 270;
+      const ry = 130;
+      const labels = finalPlayers.map((player, index) => {
+        const angle = (Math.PI * 2 * index) / Math.max(finalPlayers.length, 1) - Math.PI / 2;
+        const x = cx + Math.cos(angle) * (rx + 90);
+        const y = cy + Math.sin(angle) * (ry + 55);
+        return `<text x="${x}" y="${y}" fill="#ededdf" text-anchor="middle" font-size="13">${player.name || "Gracz"} (${player.stack || 0})</text>`;
+      }).join("");
+      mount.innerHTML = `<h3>Tabela23</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>Eliminated</th></tr></thead><tbody>${finalPlayers.map((p, i)=>`<tr><td>${i + 1}</td><td>${p.name || ""}</td><td><input class="admin-input" data-role="final-stack" data-index="${i}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${p.stack || ""}"></td><td></td><td><input type="checkbox"></td></tr>`).join("")}</tbody></table></div><div class="test-buttons"><button class="danger" type="button" data-role="add-final-player">Dodaj gracza (test)</button><button class="danger" type="button" data-role="remove-final-player">Usuń gracza (test)</button></div><svg viewBox="0 0 ${width} ${height}" class="poker-table-svg"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0d5f3f" stroke="#d4af37" stroke-width="6"></ellipse>${labels}</svg>`;
+    } else {
+      mount.innerHTML = `<h3>Tabela24</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>MIEJSCE</th><th>GRACZ</th><th>POCZĄTKOWA WYGRANA <input type="checkbox"></th><th>KOŃCOWA WYGRANA <input type="checkbox"></th></tr></thead><tbody><tr><td>1</td><td></td><td></td><td></td></tr></tbody></table></div>`;
+    }
+  };
+
+  container.addEventListener("input", async (event) => {
+    const target = event.target;
+    const role = target?.dataset?.role;
+    if (!role) return;
+    if (["meta-buyin", "meta-rebuy", "meta-rake", "meta-stack", "meta-rebuystack", "player-pin", "final-stack"].includes(role)) {
+      target.value = digitsOnly(target.value);
+    }
+    if (role === "meta-organizer") tournamentState.organizer = target.value;
+    if (role === "meta-buyin") tournamentState.buyIn = target.value;
+    if (role === "meta-rebuy") tournamentState.rebuyAddOn = target.value;
+    if (role === "meta-rake") tournamentState.rake = target.value;
+    if (role === "meta-stack") tournamentState.stack = target.value;
+    if (role === "meta-rebuystack") tournamentState.rebuyStack = target.value;
+    if (role === "player-name") tournamentState.players = tournamentState.players.map((p) => p.id === target.dataset.playerId ? { ...p, name: target.value } : p);
+    if (role === "player-pin") tournamentState.players = tournamentState.players.map((p) => p.id === target.dataset.playerId ? { ...p, pin: target.value } : p);
+    if (role === "player-perm") tournamentState.players = tournamentState.players.map((p) => p.id === target.dataset.playerId ? { ...p, permissions: target.value } : p);
+    if (role === "assign-status") tournamentState.assignments[target.dataset.playerId] = { ...(tournamentState.assignments[target.dataset.playerId] || {}), status: target.value, tableId: tournamentState.assignments[target.dataset.playerId]?.tableId || "" };
+    if (role === "assign-table") tournamentState.assignments[target.dataset.playerId] = { ...(tournamentState.assignments[target.dataset.playerId] || {}), tableId: target.value, status: tournamentState.assignments[target.dataset.playerId]?.status || "Do zapłaty" };
+    if (role === "final-stack") tournamentState.finalPlayers[target.dataset.index].stack = target.value;
+    await saveState();
+  });
+
+  container.addEventListener("change", async (event) => {
+    const target = event.target;
+    if (target?.dataset?.role === "player-status") {
+      tournamentState.players = tournamentState.players.map((p) => p.id === target.dataset.playerId ? { ...p, status: target.checked } : p);
+      await saveState();
+    }
+  });
+
+  container.addEventListener("click", async (event) => {
+    const target = event.target;
+    const role = target?.dataset?.role;
+    if (!role) return;
+    if (role === "add-player") {
+      tournamentState.players.push({ id: crypto.randomUUID(), name: "", pin: "", permissions: "", status: false });
+    }
+    if (role === "add-table") tournamentState.tables.push({ id: crypto.randomUUID(), name: `Tabela${10 + tournamentState.tables.length}` });
+    if (role === "delete-table") {
+      const tableId = target.dataset.tableId;
+      tournamentState.tables = tournamentState.tables.filter((table) => table.id !== tableId);
+      Object.keys(tournamentState.assignments).forEach((key) => {
+        if (tournamentState.assignments[key]?.tableId === tableId) tournamentState.assignments[key].tableId = "";
+      });
+    }
+    if (role === "add-semi-table") tournamentState.semiTables.push({ id: crypto.randomUUID() });
+    if (role === "remove-semi-table") tournamentState.semiTables.splice(Number(target.dataset.index), 1);
+    if (role === "add-final-player") tournamentState.finalPlayers.push({ id: crypto.randomUUID(), name: `Gracz ${tournamentState.finalPlayers.length + 1}`, stack: "" });
+    if (role === "remove-final-player") tournamentState.finalPlayers.pop();
+    await saveState();
+    render();
+  });
+
+  const sectionButtons = Array.from(container.querySelectorAll("[data-tournament-target]"));
+  sectionButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      activeSection = button.dataset.tournamentTarget;
+      render();
+    });
+  });
+
+  docRef.onSnapshot((snapshot) => {
+    tournamentState = normalizeTournamentState(snapshot.data());
+    render();
+  }, () => {
+    mount.innerHTML = '<p class="builder-info">Nie udało się pobrać danych turnieju.</p>';
   });
 };
 
@@ -1204,6 +1398,7 @@ const setupAdminView = () => {
   initAdminRules();
   initAdminPlayers();
   initAdminNotes();
+  setupAdminTournament(rootCard);
   initAdminPanelRefresh();
 };
 

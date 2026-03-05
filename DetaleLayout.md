@@ -1,27 +1,9 @@
-# Detale layoutu — aktualny stan (Main)
+# Detale layoutu — aktualny stan
 
-## Tabele
-- Wszystkie tabele korzystają z klasy `.admin-data-table` i są osadzone w kontenerze `.admin-table-scroll`.
-- Kontener tabel ma:
-  - `overflow: auto` (jednoczesne przewijanie poziome i pionowe),
-  - `max-height: min(72vh, 760px)`,
-  - cienkie paski przewijania.
-- Tabele mają:
-  - `width: max-content`,
-  - `min-width: 100%`,
-  - osobno zdefiniowane szerokości kolumn per typ tabeli (opisane w `Kolumny.md`).
-- Kolumny w tabelach operacyjnych są ustawione na `white-space: nowrap`, żeby wartości liczbowe i przyciski nie łamały się przypadkowo.
-
-## Responsywność tabel
-- Na desktopie: pełna szerokość sekcji + przewijanie tylko gdy zawartość przekracza dostępne miejsce.
-- Na mobile: zachowana czytelność przez stałe, przewidywalne szerokości kolumn i przewijanie wewnątrz sekcji tabeli.
-- Nie zmieniano szerokości paneli bocznych (`Lata`, `Ranking`).
-
-## Spójność wizualna
-- Nagłówki tabel: kapitaliki, panelowy krój pisma, kontrastowe tło.
-- Wiersze: hover i naprzemienne tło w tabeli statystyk graczy.
-- Kontrolki (input/select/button) zachowują istniejący styl neon/gold.
-
-## Fonty i motyw
-- Fonty pozostają bez zmian: `Inter`, `Rajdhani`, `Cinzel`, `Cormorant Garamond`.
-- Paleta kolorów i efekty (`--gold`, `--border2`, glow) pozostają bez zmian.
+## Moduł Second — Tournament of Poker
+- Sekcja turniejowa admina renderowana dynamicznie do `#adminTournamentRoot`.
+- Utrzymany ciemny motyw (`admin-data-table`, `admin-input`, styl przycisków primary/secondary/danger).
+- Dodano siatkę pól metadata turnieju: `.t-section-grid` (responsywna, `auto-fit`, min. 210px).
+- Dodano czerwone przyciski testowe w sekcji Finał: `.test-buttons .danger`.
+- Dodano wizualizację stołu pokerowego SVG: `.poker-table-svg` (pełna szerokość, max 760px, tło i zaokrąglenia).
+- Tytuły tabel turniejowych wyświetlane jako kolejne: Tabela10, Tabela11, ... (wyjątki: „Stół Półfinałowy numer”, „Tabela Finałowa”).

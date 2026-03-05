@@ -1,111 +1,41 @@
-# Kolumny — aktualny układ (Main)
+# Kolumny — aktualny układ
 
-Wartości poniżej opisują docelowe szerokości kolumn ustawione na stałe dla modułu **Main**.
-Każda tabela działa w kontenerze `.admin-table-scroll` z poziomym i pionowym przewijaniem przy nadmiarze danych.
+## Moduł Second — Tournament of Poker
+Wszystkie nowe tabele sekcji turniejowych używają klasy `.admin-data-table` i kontenera `.admin-table-scroll`.
 
-## Gracze (`.players-table`)
-1. Aplikacja: 5.5rem
-2. Nazwa: 16rem
-3. PIN: 10rem
-4. Uprawnienia: 22rem
-5. Akcje: 7.5rem
+### Lista graczy
+1. Aplikacja
+2. Status
+3. Nazwa
+4. PIN
+5. Uprawnienia
 
-## Tabele gier (`.admin-games-table` / `.admin-user-games-table`)
-1. Rodzaj gry: 8.5rem
-2. Data: 8.5rem
-3. Nazwa: 20rem
-4. CzyZamknięta: 7rem
-5. Ilość potwierdzonych: 11rem
-6. Akcje: 12rem
+### Losowanie stołów
+1. Gracz
+2. Status
+3. Stół
 
-## Statystyki graczy (`.admin-games-players-stats-table`)
-1. Gracz: 12rem
-2. Mistrzostwo: 8rem
-3. Waga1: 6.5rem
-4. Ilość spotkań: 8rem
-5. Waga2: 6.5rem
-6. % udział: 8rem
-7. Punkty: 8rem
-8. Waga3: 6.5rem
-9. (+/-): 8rem
-10. Waga4: 6.5rem
-11. Wypłata: 8rem
-12. Waga5: 6.5rem
-13. Wpłaty: 8rem
-14. Waga6: 6.5rem
-15. Suma z rozegranych gier: 8rem
-16. % rozegranych gier: 8rem
-17. % wszystkich gier: 8rem
-18. Wyniki: 8rem
+### Wpłaty
+- Tabela10: Buy-in, REBUY/ADD-ON, SUMA, licz. REBUY/ADD-ON
+- Tabela11: %, Rake, BUY-IN, REBUY/ADD-ON, POT
+- Tabela12: Stół, LP, Gracz, BUY-IN, REBUY/add-on, REBUY
 
-## Ranking (`.admin-games-ranking-table`)
-1. LP: 3.5rem
-2. Gracz: 16rem
-3. Wynik: 7rem
+### Podział puli
+- Tabela13: BUY-IN, REBUY/ADD-ON, SUMA, LICZBA REBUY
+- Tabela14: %, Rake, BUY-IN, REBUY/ADD-ON, POT
+- Tabela15: BUY-IN, PODZIAŁ
+- Tabela16: LP, Podział Puli, Kwota, Rebuy, Mod, Suma
 
-## Gry do potwierdzenia (`.confirmations-table`)
-1. Rodzaj gry: 8rem
-2. Data: 8.5rem
-3. Nazwa: 16rem
-4. Potwierdzenia: 10rem
-5. Akcje: 16rem
+### Faza grupowa
+- Tabela17: Gracz, STACK GRACZA, REBUY/ADD-on(w żetonach na os)
+- Tabela18: Stoły dynamiczne + ŁĄCZNY STACK
+- Tabela19: Stół, LP, Gracz, ELIMINATED, Stack, REBUY/add-on, REBUY
 
-## Szczegóły gry (`.game-details-table`, `.confirmations-details-table`)
-1. LP: 3.5rem
-2. Gracz: 13rem
-3. Wpisowe: 8rem
-4. Rebuy/Add-on: 8rem
-5. Wypłata: 8rem
-6. +/-: 8rem
-7. Punkty: 8rem
-8. Mistrzostwo: 8rem
-9. Akcje (tylko `.game-details-table`): 10rem
+### Półfinał
+- Tabela20, Tabela21, Tabela22 + dynamiczne „Stół Półfinałowy numer X” + „Tabela Finałowa”
 
-## Kalkulator — Tournament
+### Finał
+- Tabela23: LP, GRACZ, STACK, %, Eliminated
 
-### Tabela1 (`.admin-calculator-table1`)
-- Suma, Buy-In, Rebuy, Liczba rebuy: po 8rem
-
-### Tabela2 (`.admin-calculator-table2`)
-1. LP: 4rem
-2. Gracz: 14rem
-3. Buy-In: 8rem
-4. Eliminacja: 7rem
-5. Akcje: 9rem
-
-### Tabela3 (`.admin-calculator-table3`)
-- Wszystkie kolumny: 8rem
-
-### Tabela4 (`.admin-calculator-table4`)
-- Wszystkie kolumny: 8rem
-
-### Tabela5 (`.admin-calculator-table5`)
-1. LP: 4rem
-2. Podział puli: 9rem
-3. Kwota: 8rem
-4. Kolumny rebuy: szerokość naturalna (zachowane na jednej linii)
-5. Mod: szerokość naturalna
-6. Suma: 8rem
-
-## Kalkulator — Cash
-
-### Tabela7 (`.admin-calculator-cash-table7`)
-- Wszystkie kolumny: 8rem
-
-### Tabela8 (`.admin-calculator-cash-table8`)
-- Wszystkie kolumny: 8rem
-
-### Tabela9 (`.admin-calculator-cash-table9`)
-1. Gracz: 13rem
-2. Buy-In: 8rem
-3. Rebuy: 8rem
-4. Wypłata: 8rem
-5. +/-: 8rem
-6. Akcje: 10rem
-
-### Tabela10 (`.admin-calculator-cash-table10`)
-1. LP: 4rem
-2. Gracz: 13rem
-3. Wypłata: 8rem
-4. +/-: 8rem
-5. % Puli: 8rem
+### Wypłaty
+- Tabela24: MIEJSCE, GRACZ, POCZĄTKOWA WYGRANA, KOŃCOWA WYGRANA

@@ -1,89 +1,55 @@
 ## Instrukcja użytkownika — moduł Second
 
-## 1. Uruchomienie
-1. Otwórz `Second/index.html`.
-2. Aby wejść do panelu administratora, dodaj w URL parametr `?admin=1`.
-3. Na górze strony sprawdź nagłówek: **"Aplikacja do liczenia Omeru od drugiej nocy Pesach do Szawuot"**.
-4. W prawym górnym rogu kliknij **Instrukcja**, aby otworzyć okno z instrukcją.
+### TOURNAMENT OF POKER (panel administratora)
+1. Wejdź na `Second/index.html?admin=1`.
+2. Kliknij zakładkę **TOURNAMENT OF POKER**.
+3. W panelu bocznym używaj sekcji: **Lista graczy**, **Losowanie stołów**, **Wpłaty**, **Podział puli**, **Faza grupowa**, **Półfinał**, **Finał**, **Wypłaty**.
 
-## 2. Widok użytkownika
+### 1) Lista graczy
+1. Uzupełnij pola: ORGANIZATOR, BUY-IN, REBUY/ADD-ON, RAKE, STACK, REBUY/ADD-ON STACK.
+2. Kliknij **Dodaj gracza**.
+3. W tabeli ustaw:
+   - **Status** (checkbox-kółko),
+   - **Nazwa**,
+   - **PIN**,
+   - **Uprawnienia**.
+4. Wszystkie dane zapisują się automatycznie do Firebase.
 
-W nagłówku sekcji użytkownika dostępny jest przycisk **Odśwież** — po kliknięciu odświeża dane aktywnej zakładki bez resetowania całej strony.
+### 2) Losowanie stołów
+1. W tabeli przypisz dla każdego gracza:
+   - status (**Do zapłaty** / **Opłacone**),
+   - stół.
+2. Kliknij **Dodaj stół**, aby dodać kolejny stół.
+3. Użyj **Usuń** przy stole, aby go usunąć.
 
-### 2.1 Zakładka „Aktualności”
-1. Kliknij zakładkę **Aktualności**.
-2. Odczytaj treść w polu **Najnowsze**.
-3. Pod polem sprawdź status synchronizacji (np. czy wiadomość została pobrana).
+### 3) Wpłaty
+- Widoczne są tabele szkieletowe: **Tabela10**, **Tabela11**, **Tabela12**.
+- Tabela12 grupuje graczy wg przypisanych stołów.
 
-### 2.2 Zakładka „Czat”
-1. Kliknij zakładkę **Czat**.
-2. Wpisz PIN w polu **PIN (5 cyfr)** (pole przygotowane pod dalszą walidację).
-3. Kliknij **Otwórz**.
-4. Wpisz wiadomość w polu **Twoja wiadomość**.
-5. Kliknij **Wyślij**.
-6. Sprawdź status pod przyciskiem (np. „Wysyłanie wiadomości...”, „Wiadomość wysłana do czatu.”).
-7. Przeglądaj historię wiadomości na liście czatu.
+### 4) Podział puli
+- Widoczne są tabele: **Tabela13**, **Tabela14**, **Tabela15**, **Tabela16**.
+- W Tabela15 dostępne przyciski **Dodaj** i **Usuń** (szkielet UI).
 
-### 2.3 Zakładka „Regulamin”
-1. Kliknij zakładkę **Regulamin**.
-2. Odczytaj treść z pola **Obowiązujące zasady**.
-3. Sprawdź status pod polem (czy regulamin został pobrany).
+### 5) Faza grupowa
+- Widoczne są tabele: **Tabela17**, **Tabela18**, **Tabela19**.
+- Tabela19 pokazuje grupowanie po stołach oraz checkbox **ELIMINATED**.
 
-### 2.4 Zakładka „Gracze”
-1. Kliknij zakładkę **Gracze**.
-2. Odczytaj tabelę z kolumnami: **Aplikacja**, **Nazwa**, **PIN**, **Uprawnienia**.
-3. Lista jest tylko do odczytu i aktualizuje się automatycznie.
+### 6) Półfinał
+- Widoczne są tabele: **Tabela20**, **Tabela21**, **Tabela22**, oraz **Tabela Finałowa**.
+- Przycisk **Dodaj nowy stół** tworzy kolejne stoły półfinałowe.
+- Przycisk **Usuń stół** usuwa stół i przelicza numerację.
 
+### 7) Finał
+1. Używaj **Tabela23**.
+2. Przyciskami testowymi (czerwone):
+   - **Dodaj gracza (test)**,
+   - **Usuń gracza (test)**
+   sprawdzisz rysowanie stołu.
+3. Pod tabelą jest wizualizacja stołu pokerowego w SVG z rozmieszczeniem graczy wokół owalu.
 
-
-### 2.4.1 Identyfikacja graczy przy duplikatach nazw
-- Lista graczy jest deduplikowana po identyfikatorze gracza (ID), a dopiero pomocniczo po nazwie.
-- Dzięki temu dwie osoby o tej samej nazwie nie są łączone w jeden rekord, jeśli mają różne ID.
-
-### 2.5 Zakładka „TOURNAMENT OF POKER”
-1. Kliknij zakładkę **TOURNAMENT OF POKER**.
-2. W lewym panelu przełączaj sekcje:
-   - **Lista graczy**,
-   - **Losowanie stołów**,
-   - **Wypłaty**,
-   - **Podział puli**,
-   - **Faza grupowa**,
-   - **Półfinał**,
-   - **Wypłaty**.
-
-## 3. Widok administratora
-
-### 3.1 Pasek górny
-1. Kliknij **Odśwież**, aby ręcznie odświeżyć aktywną zakładkę administratora.
-2. Obserwuj komunikat obok przycisku (status odświeżania).
-
-### 3.2 Zakładka „Aktualności”
-1. Wpisz treść w polu **Treść wiadomości**.
-2. Kliknij **Wyślij**.
-3. Obserwuj komunikaty statusu (wysyłanie/sukces/błąd).
-
-### 3.3 Zakładka „Czat”
-1. Otwórz zakładkę **Czat**.
-2. Przeglądaj listę wiadomości.
-3. Użyj przycisku **Usuń** przy konkretnej wiadomości, jeśli chcesz ją usunąć.
-4. Użyj przycisku **Usuń starsze niż 30 dni**, aby wykonać czyszczenie zbiorcze.
-5. Sprawdź status operacji pod przyciskami akcji.
-
-### 3.4 Zakładka „Regulamin”
-1. Wpisz treść w polu **Treść regulaminu**.
-2. Kliknij **Zapisz**.
-3. Obserwuj status (zapisywanie/sukces/błąd).
-
-### 3.5 Zakładka „Notatki”
-1. Wpisz treść w polu **Treść notatek**.
-2. Kliknij **Zapisz**.
-3. Obserwuj status (zapisywanie/sukces/błąd).
-
-### 3.6 Zakładka „Gracze”
-1. Otwórz zakładkę **Gracze**.
-2. Sprawdź status synchronizacji i licznik graczy.
-3. Odczytuj tabelę graczy zsynchronizowaną z danymi modułu Second.
-
-### 3.7 Zakładka „TOURNAMENT OF POKER”
-1. Otwórz zakładkę **TOURNAMENT OF POKER**.
-2. Klikaj przyciski w panelu bocznym, aby przełączać aktywną sekcję.
+### 8) Wypłaty
+- W sekcji jest tabela **Tabela24** z kolumnami:
+  - MIEJSCE,
+  - GRACZ,
+  - POCZĄTKOWA WYGRANA (z checkboxem widoczności),
+  - KOŃCOWA WYGRANA (z checkboxem widoczności).
