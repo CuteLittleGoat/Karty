@@ -50,3 +50,18 @@
 ### Stabilność UI przy błędach Firebase
 - Dla błędów odczytu `onSnapshot` renderuje się informacja ostrzegawcza, a nie pusty ekran sekcji.
 - Dla błędów zapisu render nie jest blokowany; użytkownik widzi aktualny stan lokalny i komunikat o synchronizacji.
+
+
+### Ochrona fokusu i edycji podczas autozapisu
+- Dodano mechanizm przechwytywania i odtwarzania fokusu (`getTournamentEditableFocusState`, `restoreTournamentEditableFocusState`) oparty o `data-role` oraz identyfikatory (`data-player-id`, `data-table-id`, `data-id`).
+- Funkcja `render()` odtwarza fokus po każdym przebudowaniu `#adminTournamentRoot`, dzięki czemu wpisywanie nie przerywa się przy lokalnym re-renderze.
+- Dodano lokalną blokadę synchronizacji snapshotów podczas aktywnej edycji:
+  - `hasActiveEdit` — flaga aktywnego pola,
+  - `pendingLocalWrites` — licznik zapisów w trakcie,
+  - `deferredSnapshotState` — odroczony stan z `onSnapshot`.
+- `onSnapshot` nie nadpisuje stanu lokalnego w trakcie edycji/zapisu; aktualizacja jest nakładana dopiero po zakończeniu edycji i spadku licznika zapisów do zera.
+
+### Przyciski dodawania — zmiana layoutu
+- Dodano klasę `t-inline-add-button` dla przycisków `Dodaj gracza`, `Dodaj stół`, `Dodaj` (Podział puli) i `Dodaj nowy stół`.
+- Styl `#adminTournamentRoot .t-inline-add-button` ustawia `justify-self: flex-start` oraz `width: auto`, co eliminuje rozciąganie przycisku na pełną szerokość kontenera grid.
+- Czerwone przyciski testowe w sekcji `Finał` pozostały bez zmian.
