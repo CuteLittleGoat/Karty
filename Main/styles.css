@@ -1676,6 +1676,7 @@ button.danger {
 
 .game-details-modal-card {
   width: min(1320px, 100%);
+  height: min(92dvh, 900px);
 }
 
 .modal-card::before {
@@ -1718,7 +1719,21 @@ button.danger {
 }
 
 .game-details-modal-card .modal-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.game-details-modal-card .admin-table-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .modal-content {
