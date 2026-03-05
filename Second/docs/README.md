@@ -12,6 +12,7 @@
    - Pod polem pojawi się podgląd wartości jako `10%`.
 3. Sprawdź licznik nad tabelą: **Liczba dodanych graczy: X**.
 4. Kliknij **Dodaj gracza**, aby utworzyć nowy wiersz.
+   - Przycisk ma teraz krótki format i jest wyrównany do lewej strony (jak w module Main).
 5. W kolumnie **Status** zaznacz kółko, jeśli gracz jest aktywny.
 6. W kolumnie **Nazwa** wpisz nazwę gracza.
 7. W kolumnie **PIN**:
@@ -27,6 +28,7 @@
    - **Status** (Do zapłaty / Opłacone),
    - **Stół**.
 2. Kliknij **Dodaj stół**.
+   - Przycisk ma krótki format i nie rozciąga się już na pełną szerokość sekcji.
 3. Dla każdego stołu niżej wpisz:
    - **Nazwa**,
    - **Wpisowe** przypisanych graczy.
@@ -40,6 +42,7 @@
 ### Podział puli
 - **Tabela13**, **Tabela14**, **Tabela15**, **Tabela16**.
 - W **Tabela15** działa **Dodaj** i **Usuń** (dla ostatniego wiersza).
+- Przycisk **Dodaj** jest krótki i wyrównany do lewej, spójnie z pozostałymi przyciskami dodawania.
 
 ### Faza grupowa
 - **Tabela17**: stack gracza.
@@ -50,6 +53,7 @@
 - **Tabela20**: status i stół dla gracza.
 - **Tabela21**: gracze bez ELIMINATED z fazy grupowej.
 - **Tabela22**: dynamiczne stoły półfinałowe.
+- Przycisk **Dodaj nowy stół** jest krótki i wyrównany do lewej strony.
 
 ### Finał
 - **Tabela23**: LP, GRACZ, STACK, %, Eliminated.
@@ -57,3 +61,9 @@
 
 ### Wypłaty
 - **Tabela24**: MIEJSCE, GRACZ, POCZĄTKOWA WYGRANA, KOŃCOWA WYGRANA.
+
+
+### Stabilność wpisywania danych (autozapis)
+- Wszystkie pola edytowalne w panelu turniejowym mają zabezpieczenie przed utratą fokusu podczas automatycznego zapisu i odświeżeń z Firebase.
+- Podczas pisania (również przy przytrzymaniu Backspace) aplikacja nie nadpisuje aktywnie edytowanego pola starszym snapshotem.
+- Synchronizacja z serwerem jest stosowana po zakończeniu edycji pola.

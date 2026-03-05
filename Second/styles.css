@@ -1853,6 +1853,11 @@ body.modal-open {
   margin: 18px 0 10px;
 }
 
+#adminTournamentRoot .t-inline-add-button {
+  justify-self: flex-start;
+  width: auto;
+}
+
 .test-buttons {
   margin: 12px 0;
   display: flex;
