@@ -1049,8 +1049,51 @@ const setupUserView = (root) => {
   const chatInput = root.querySelector("#chatMessageInput");
   const chatSendButton = root.querySelector("#chatSendButton");
   const chatStatus = root.querySelector("#chatStatus");
+  const tournamentSection = root.querySelector("#tournamentTab .admin-games-section");
   const userPanelRefreshButton = root.querySelector("#userPanelRefresh");
   const userPanelRefreshStatus = root.querySelector("#userPanelRefreshStatus");
+  const tournamentButtons = Array.from(root.querySelectorAll("#tournamentTab [data-tournament-target]"));
+
+  let userTournamentState = createTournamentDefaultState();
+  let userTournamentSection = "players";
+
+  const renderUserTournament = () => {
+    if (!tournamentSection) {
+      return;
+    }
+
+    if (userTournamentSection === "players") {
+      tournamentSection.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table players-table"><thead><tr><th>Status</th><th>Gracz</th><th>PIN</th><th>Uprawnienia</th></tr></thead><tbody>${userTournamentState.players.map((player) => `<tr><td>${player.status ? "Aktywny" : "Nieaktywny"}</td><td>${player.name || "-"}</td><td>${digitsOnly(player.pin).slice(0, 5) || "-"}</td><td>${normalizeTournamentPermissions(player.permissions).join(", ") || "-"}</td></tr>`).join("") || '<tr><td colspan="4">Brak graczy.</td></tr>'}</tbody></table></div>`;
+      return;
+    }
+
+    if (userTournamentSection === "draw") {
+      tournamentSection.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Status wpłaty</th><th>Stół</th></tr></thead><tbody>${userTournamentState.players.map((player) => {
+        const assignment = userTournamentState.assignments[player.id] || { status: "Do zapłaty", tableId: "" };
+        const tableName = userTournamentState.tables.find((table) => table.id === assignment.tableId)?.name || "-";
+        return `<tr><td>${player.name || "-"}</td><td>${assignment.status || "Do zapłaty"}</td><td>${tableName}</td></tr>`;
+      }).join("") || '<tr><td colspan="3">Brak przypisań.</td></tr>'}</tbody></table></div>`;
+      return;
+    }
+
+    if (userTournamentSection === "payments") {
+      const t10 = userTournamentState.payments?.table10 || {};
+      const t11 = userTournamentState.payments?.table11 || {};
+      tournamentSection.innerHTML = `<div class="t-section-grid"><label>Stół 10 — Buy-In <input class="admin-input" readonly value="${t10.buyIn || ""}"></label><label>Stół 10 — Rebuy/Add-On <input class="admin-input" readonly value="${t10.rebuyAddOn || ""}"></label><label>Stół 10 — Suma <input class="admin-input" readonly value="${t10.sum || ""}"></label><label>Stół 10 — Liczba Rebuy <input class="admin-input" readonly value="${t10.rebuyCount || ""}"></label><label>Stół 11 — Procent <input class="admin-input" readonly value="${t11.percent || ""}"></label><label>Stół 11 — Rake <input class="admin-input" readonly value="${t11.rake || ""}"></label><label>Stół 11 — Buy-In <input class="admin-input" readonly value="${t11.buyIn || ""}"></label><label>Stół 11 — Rebuy/Add-On <input class="admin-input" readonly value="${t11.rebuyAddOn || ""}"></label><label>Stół 11 — Pula <input class="admin-input" readonly value="${t11.pot || ""}"></label></div>`;
+      return;
+    }
+
+    tournamentSection.innerHTML = '<p class="builder-info">Dane tej sekcji są zapisywane do Firebase i dostępne w panelu administratora.</p>';
+  };
+
+  tournamentButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      userTournamentSection = button.dataset.tournamentTarget || "players";
+      renderUserTournament();
+    });
+  });
+
+  renderUserTournament();
 
   if (userPanelRefreshButton) {
     userPanelRefreshButton.addEventListener("click", async () => {
@@ -1090,6 +1133,12 @@ const setupUserView = (root) => {
         if (activeTabId === "chatTab") {
           await db.collection(SECOND_CHAT_COLLECTION).orderBy("createdAt", "asc").limit(200).get({ source: "server" });
           setRefreshStatus("Czat został odświeżony.");
+          return;
+        }
+
+        if (activeTabId === "tournamentTab") {
+          await db.collection(SECOND_TOURNAMENT_COLLECTION).doc(SECOND_TOURNAMENT_DOCUMENT).get({ source: "server" });
+          setRefreshStatus("Turniej został odświeżony.");
           return;
         }
 
@@ -1197,6 +1246,18 @@ const setupUserView = (root) => {
     () => {
       if (chatStatus) {
         chatStatus.textContent = "Nie udało się pobrać czatu z Firebase.";
+      }
+    }
+  );
+
+  db.collection(SECOND_TOURNAMENT_COLLECTION).doc(SECOND_TOURNAMENT_DOCUMENT).onSnapshot(
+    (snapshot) => {
+      userTournamentState = normalizeTournamentState(snapshot.data());
+      renderUserTournament();
+    },
+    () => {
+      if (tournamentSection) {
+        tournamentSection.innerHTML = '<p class="builder-info">Nie udało się pobrać danych turnieju z Firebase.</p>';
       }
     }
   );

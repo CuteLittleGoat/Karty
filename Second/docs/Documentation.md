@@ -73,3 +73,21 @@
 - Dodano klasę `t-inline-add-button` dla przycisków `Dodaj gracza`, `Dodaj stół`, `Dodaj` (Podział puli) i `Dodaj nowy stół`.
 - Styl `#adminTournamentRoot .t-inline-add-button` ustawia `justify-self: flex-start` oraz `width: auto`, co eliminuje rozciąganie przycisku na pełną szerokość kontenera grid.
 - Czerwone przyciski testowe w sekcji `Finał` pozostały bez zmian.
+
+## Tournament of Poker (user)
+
+### Synchronizacja z Firebase
+- Funkcja: `setupUserView(root)` w `Second/app.js`.
+- Dane sekcji turniejowej użytkownika są pobierane z `second_tournament/state` przez `onSnapshot`.
+- Stan lokalny użytkownika jest normalizowany przez `normalizeTournamentState`, dzięki czemu brakujące pola nie psują renderu UI.
+
+### Render sekcji użytkownika
+- Użytkownik może przełączać sekcje przez przyciski `data-tournament-target`.
+- Sekcje z aktywną prezentacją danych:
+  - `players`: tabela status/nazwa/PIN/uprawnienia,
+  - `draw`: tabela gracz/status/stół,
+  - `payments`: podgląd pól `payments.table10` i `payments.table11`.
+- Dla pozostałych sekcji renderowany jest komunikat informacyjny o zapisie danych w panelu administratora.
+
+### Ręczne odświeżanie
+- Przycisk `#userPanelRefresh` dla aktywnej zakładki `tournamentTab` wykonuje `get({ source: "server" })` dla `second_tournament/state`, co wymusza pobranie najnowszych danych z Firestore.
