@@ -13,10 +13,10 @@
 3. Sprawdź licznik nad tabelą: **Liczba dodanych graczy: X**.
 4. Kliknij **Dodaj gracza**, aby utworzyć nowy wiersz.
    - Przycisk ma teraz krótki format i jest wyrównany do lewej strony (jak w module Main).
-5. W kolumnie **Status** zaznacz kółko, jeśli gracz jest aktywny.
+5. W kolumnie **Status** kliknij kółko, aby oznaczyć gracza jako aktywnego.
 6. W kolumnie **Nazwa** wpisz nazwę gracza.
 7. W kolumnie **PIN**:
-   - pole ma szerokość na 5 znaków,
+   - pole ma szerokość pozwalającą wygodnie wpisać pełne 5 cyfr PIN,
    - wpisuj cyfry ręcznie lub kliknij **Losuj** obok pola.
 8. W kolumnie **Uprawnienia**:
    - widzisz aktualne uprawnienia jako badge,
@@ -25,8 +25,10 @@
 
 ### Losowanie stołów
 1. W tabeli przypisz każdemu graczowi:
-   - **Status** (Do zapłaty / Opłacone),
-   - **Stół**.
+   - **Status**: widoczny jako kolorowy tekst + przycisk **Zmień status**.
+     - Domyślnie status to **Do zapłaty** (czerwony napis).
+     - Po kliknięciu **Zmień status** status przełącza się cyklicznie na **Opłacone** (złoty napis), a kolejne kliknięcie wraca do **Do zapłaty**.
+   - **Stół**: wybierany z listy rozwijanej.
 2. Kliknij **Dodaj stół**.
    - Przycisk ma krótki format i nie rozciąga się już na pełną szerokość sekcji.
 3. Dla każdego stołu niżej wpisz:
@@ -50,7 +52,7 @@
 - **Tabela19**: gracze wg stołów + checkbox **ELIMINATED**.
 
 ### Półfinał
-- **Tabela20**: status i stół dla gracza.
+- **Tabela20**: status i stół dla gracza (status wybierany z listy rozwijanej).
 - **Tabela21**: gracze bez ELIMINATED z fazy grupowej.
 - **Tabela22**: dynamiczne stoły półfinałowe.
 - Przycisk **Dodaj nowy stół** jest krótki i wyrównany do lewej strony.

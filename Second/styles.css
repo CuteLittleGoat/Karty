@@ -976,9 +976,9 @@ select:disabled,
 }
 
 .pin-control .admin-input {
-  width: 5ch;
-  min-width: 5ch;
-  max-width: 5ch;
+  width: 8ch;
+  min-width: 8ch;
+  max-width: 9ch;
 }
 
 .admin-pin-random {
@@ -1529,7 +1529,7 @@ body.modal-open {
 
 .players-table th:nth-child(3),
 .players-table td:nth-child(3) {
-  min-width: 10ch;
+  min-width: 14ch;
 }
 
 .players-table th:nth-child(4),
@@ -1879,14 +1879,23 @@ body.modal-open {
 }
 
 .status-radio {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
 }
 
 .status-radio input {
   position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   opacity: 0;
+  cursor: pointer;
 }
 
 .status-radio span {
@@ -1904,6 +1913,28 @@ body.modal-open {
 
 #adminTournamentRoot select.admin-input {
   background-color: rgba(0, 0, 0, 0.35);
+}
+
+
+.payment-status-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.payment-status-label {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.payment-status-label.is-unpaid {
+  color: rgba(237, 179, 179, 0.95);
+}
+
+.payment-status-label.is-paid {
+  color: var(--gold);
+  text-shadow: var(--glow-gold);
 }
 
 .test-controls-note {
