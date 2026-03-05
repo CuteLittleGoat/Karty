@@ -163,7 +163,6 @@ const SECOND_ADMIN_MESSAGES_COLLECTION = "second_admin_messages";
 const SECOND_ADMIN_MESSAGES_DOCUMENT = "admin_messages";
 const SECOND_CHAT_COLLECTION = "second_chat_messages";
 const SECOND_APP_SETTINGS_COLLECTION = "second_app_settings";
-const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
 const SECOND_TOURNAMENT_COLLECTION = "second_tournament";
 const SECOND_TOURNAMENT_DOCUMENT = "state";
@@ -402,66 +401,6 @@ const formatChatTimestamp = (value) => {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit"
-  });
-};
-
-const getPlayerIdentifier = (player = {}) => {
-  const playerId = typeof player?.id === "string" ? player.id.trim() : "";
-  if (playerId) {
-    return `id:${playerId}`;
-  }
-  const playerName = typeof player?.name === "string" ? player.name.trim() : "";
-  return playerName ? `name:${playerName}` : "";
-};
-
-const renderPlayersTable = (tableBody, players) => {
-  if (!tableBody) {
-    return;
-  }
-
-  const uniquePlayers = Array.isArray(players)
-    ? Array.from(players.reduce((map, player) => {
-      const identifier = getPlayerIdentifier(player);
-      if (!identifier || map.has(identifier)) {
-        return map;
-      }
-      map.set(identifier, player);
-      return map;
-    }, new Map()).values())
-    : [];
-
-  tableBody.innerHTML = "";
-
-  if (!uniquePlayers.length) {
-    const row = document.createElement("tr");
-    const cell = document.createElement("td");
-    cell.colSpan = 5;
-    cell.textContent = "Brak graczy.";
-    row.appendChild(cell);
-    tableBody.appendChild(row);
-    return;
-  }
-
-  uniquePlayers.forEach((player) => {
-    const row = document.createElement("tr");
-    const appCell = document.createElement("td");
-    const nameCell = document.createElement("td");
-    const pinCell = document.createElement("td");
-    const permissionsCell = document.createElement("td");
-    const actionsCell = document.createElement("td");
-
-    appCell.textContent = typeof player.app === "string" ? player.app : "Second";
-    nameCell.textContent = typeof player.name === "string" && player.name.trim() ? player.name : "—";
-    pinCell.textContent = typeof player.pin === "string" && player.pin.trim() ? player.pin : "—";
-
-    const permissions = Array.isArray(player.permissions)
-      ? player.permissions.filter((entry) => typeof entry === "string" && entry.trim())
-      : [];
-    permissionsCell.textContent = permissions.length ? permissions.join(", ") : "Brak";
-    actionsCell.textContent = "";
-
-    row.append(appCell, nameCell, pinCell, permissionsCell, actionsCell);
-    tableBody.appendChild(row);
   });
 };
 
@@ -878,7 +817,6 @@ const setupUserView = (root) => {
   const newsStatus = root.querySelector("#newsOutputStatus");
   const rulesOutput = root.querySelector("#rulesOutput");
   const rulesStatus = root.querySelector("#rulesStatus");
-  const playersBody = root.querySelector("#playersTableBody");
   const chatMessages = root.querySelector("#chatMessages");
   const chatInput = root.querySelector("#chatMessageInput");
   const chatSendButton = root.querySelector("#chatSendButton");
@@ -918,12 +856,6 @@ const setupUserView = (root) => {
         if (activeTabId === "rulesTab") {
           await db.collection(SECOND_APP_SETTINGS_COLLECTION).doc(RULES_DOCUMENT).get({ source: "server" });
           setRefreshStatus("Regulamin został odświeżony.");
-          return;
-        }
-
-        if (activeTabId === "playersTab") {
-          await db.collection(SECOND_APP_SETTINGS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).get({ source: "server" });
-          setRefreshStatus("Lista graczy została odświeżona.");
           return;
         }
 
@@ -996,13 +928,6 @@ const setupUserView = (root) => {
       if (rulesStatus) {
         rulesStatus.textContent = "Nie udało się pobrać regulaminu z Firebase.";
       }
-    }
-  );
-
-  db.collection(SECOND_APP_SETTINGS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT).onSnapshot(
-    (snapshot) => {
-      const rawPlayers = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
-      renderPlayersTable(playersBody, rawPlayers);
     }
   );
 
@@ -1357,41 +1282,6 @@ const setupAdminView = () => {
     });
   };
 
-  const initAdminPlayers = () => {
-    const tableBody = rootCard.querySelector("#adminPlayersTableBody");
-    const countNode = rootCard.querySelector("#adminPlayersCount");
-    const statusNode = rootCard.querySelector("#adminPlayersStatus");
-    const firebaseApp = getFirebaseApp();
-
-    if (!tableBody || !countNode || !statusNode) {
-      return;
-    }
-
-    if (!firebaseApp) {
-      statusNode.textContent = "Uzupełnij konfigurację Firebase, aby zobaczyć graczy.";
-      return;
-    }
-
-    const db = firebaseApp.firestore();
-    const playersRef = db.collection(SECOND_APP_SETTINGS_COLLECTION).doc(PLAYER_ACCESS_DOCUMENT);
-
-    registerAdminRefreshHandler("adminPlayersTab", async () => {
-      await playersRef.get({ source: "server" });
-    });
-
-    playersRef.onSnapshot(
-      (snapshot) => {
-        const players = Array.isArray(snapshot.data()?.players) ? snapshot.data().players : [];
-        renderPlayersTable(tableBody, players);
-        countNode.textContent = `Liczba dodanych graczy: ${players.length}`;
-        statusNode.textContent = "Lista graczy zsynchronizowana z Firebase.";
-      },
-      () => {
-        statusNode.textContent = "Nie udało się pobrać listy graczy.";
-      }
-    );
-  };
-
   const initAdminChat = () => {
     const list = rootCard.querySelector("#adminChatList");
     const cleanupButton = rootCard.querySelector("#adminChatCleanup");
@@ -1498,7 +1388,6 @@ const setupAdminView = () => {
   initAdminNews();
   initAdminChat();
   initAdminRules();
-  initAdminPlayers();
   initAdminNotes();
   setupAdminTournament(rootCard);
   initAdminPanelRefresh();

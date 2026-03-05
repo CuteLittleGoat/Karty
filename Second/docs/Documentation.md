@@ -1,11 +1,22 @@
 # Second — dokumentacja techniczna
 
+## Układ zakładek modułu
+
+### Widok administratora
+- Zakładki główne panelu admina: `Aktualności`, `Czat`, `Regulamin`, `Notatki`, `TOURNAMENT OF POKER`.
+- Zakładka `Gracze` nie występuje jako osobna karta — zarządzanie graczami jest wykonywane w sekcji turniejowej `Losowanie graczy`.
+
+### Widok użytkownika
+- Zakładki użytkownika: `Aktualności`, `Czat`, `Regulamin`, `TOURNAMENT OF POKER`.
+- Zakładka `Gracze` została usunięta z panelu użytkownika.
+
 ## Tournament of Poker
 
 ### Struktura UI
 - Renderowanie admina odbywa się w `setupAdminTournament(rootCard)` w `Second/app.js`.
 - Docelowy kontener: `#adminTournamentRoot`.
 - Sekcje przełączane przez przyciski `data-tournament-target`.
+- Pierwsza sekcja turnieju (`data-tournament-target="players"`) pełni rolę `Losowanie graczy` i zawiera wszystkie pola graczy: status, nazwa, PIN, uprawnienia.
 
 ### Firebase
 - Kolekcja: `second_tournament`.
@@ -42,7 +53,7 @@
 - Dodatkowo wejście jest filtrowane przez `digitsOnly`.
 
 ### Widoki sekcji
-- Players: panel admina analogiczny funkcjonalnie do zarządzania listą graczy.
+- Losowanie graczy: metadane turnieju + tabela zarządzania graczami (`status`, `name`, `pin`, `permissions`).
 - Draw: przypisania + per-stół tabela wpisowego.
 - Payments/Pool/Group/Semi/Payouts: szkielety tabel zgodnie z wymaganiami + zapis stanu.
 - Final: tabela + dynamiczny SVG owalu stołu, etykiety rozmieszczane radialnie.

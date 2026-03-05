@@ -2,7 +2,7 @@
 
 ## Moduł Second — Tournament of Poker
 
-### Lista graczy
+### Losowanie graczy
 1. Aplikacja
 2. Status
 3. Nazwa

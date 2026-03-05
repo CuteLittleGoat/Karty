@@ -8,3 +8,4 @@
 - Dodany czerwony komunikat testowy w sekcji Finał: `.test-controls-note`.
 - SVG stołu pokerowego: `.poker-table-svg` (owal z obrysem złotym, pełna szerokość do 760px).
 - Przyciski testowe w sekcji Finał są czerwone i opisane jako testowe (`.test-buttons .danger`).
+- W widoku admina i użytkownika usunięto osobną zakładkę `Gracze`; konfiguracja graczy jest realizowana w sekcji turniejowej `Losowanie graczy`.
