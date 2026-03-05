@@ -65,6 +65,15 @@
 - **Tabela24**: MIEJSCE, GRACZ, POCZĄTKOWA WYGRANA, KOŃCOWA WYGRANA.
 
 
+
+### Tournament of Poker w panelu użytkownika (odczyt z Firebase)
+1. Otwórz widok użytkownika `Second/index.html` (bez `?admin=1`).
+2. Kliknij zakładkę **TOURNAMENT OF POKER**.
+3. W lewym panelu wybierz sekcję: **Losowanie graczy**, **Losowanie stołów** albo **Wpłaty**.
+4. Dane w tych sekcjach są pobierane automatycznie z dokumentu Firebase `second_tournament/state` i odświeżają się na żywo po zmianach wykonanych przez administratora.
+5. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
+6. Pozostałe sekcje zakładki turniejowej w panelu użytkownika pokazują komunikat informacyjny — dane są zapisywane i edytowane w panelu administratora.
+
 ### Stabilność wpisywania danych (autozapis)
 - Wszystkie pola edytowalne w panelu turniejowym mają zabezpieczenie przed utratą fokusu podczas automatycznego zapisu i odświeżeń z Firebase.
 - Podczas pisania (również przy przytrzymaniu Backspace) aplikacja nie nadpisuje aktywnie edytowanego pola starszym snapshotem.
