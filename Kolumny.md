@@ -1,7 +1,6 @@
 # Kolumny — aktualny układ
 
 ## Moduł Second — Tournament of Poker
-Wszystkie nowe tabele sekcji turniejowych używają klasy `.admin-data-table` i kontenera `.admin-table-scroll`.
 
 ### Lista graczy
 1. Aplikacja
@@ -14,6 +13,10 @@ Wszystkie nowe tabele sekcji turniejowych używają klasy `.admin-data-table` i 
 1. Gracz
 2. Status
 3. Stół
+
+Dodatkowo dla każdego stołu:
+- Gracz
+- Wpisowe
 
 ### Wpłaty
 - Tabela10: Buy-in, REBUY/ADD-ON, SUMA, licz. REBUY/ADD-ON
@@ -32,7 +35,10 @@ Wszystkie nowe tabele sekcji turniejowych używają klasy `.admin-data-table` i 
 - Tabela19: Stół, LP, Gracz, ELIMINATED, Stack, REBUY/add-on, REBUY
 
 ### Półfinał
-- Tabela20, Tabela21, Tabela22 + dynamiczne „Stół Półfinałowy numer X” + „Tabela Finałowa”
+- Tabela20: Gracz, Status, Stół
+- Tabela21: LP, Gracz, STACK, %, Stół
+- Tabela22: LP, Gracz, Eliminated, %
+- Tabela Finałowa: LP, GRACZ, STACK, STÓŁ, %
 
 ### Finał
 - Tabela23: LP, GRACZ, STACK, %, Eliminated

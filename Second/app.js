@@ -579,24 +579,52 @@ const createTournamentDefaultState = () => ({
   tables: [],
   assignments: {},
   tableEntries: {},
-  semiTables: [],
-  semiAssignments: {},
-  finalPlayers: []
+  payments: {
+    table10: { buyIn: "", rebuyAddOn: "", sum: "", rebuyCount: "" },
+    table11: { percent: "", rake: "", buyIn: "", rebuyAddOn: "", pot: "" }
+  },
+  pool: {
+    splits: [{ id: crypto.randomUUID(), buyIn: "", split: "" }],
+    mods: [{ id: crypto.randomUUID(), mod: "" }]
+  },
+  group: {
+    playerStacks: {},
+    eliminated: {}
+  },
+  semi: {
+    tables: [],
+    assignments: {},
+    customTables: []
+  },
+  finalPlayers: [],
+  payouts: {
+    showInitial: false,
+    showFinal: false
+  }
 });
 
-const normalizeTournamentState = (value) => ({
-  ...createTournamentDefaultState(),
-  ...(value && typeof value === "object" ? value : {})
-});
+const normalizeTournamentState = (value) => {
+  const state = {
+    ...createTournamentDefaultState(),
+    ...(value && typeof value === "object" ? value : {})
+  };
+  if (!Array.isArray(state.pool?.splits) || !state.pool.splits.length) {
+    state.pool = state.pool || {};
+    state.pool.splits = [{ id: crypto.randomUUID(), buyIn: "", split: "" }];
+  }
+  if (!Array.isArray(state.pool?.mods) || !state.pool.mods.length) {
+    state.pool = state.pool || {};
+    state.pool.mods = [{ id: crypto.randomUUID(), mod: "" }];
+  }
+  return state;
+};
 
 const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");
 
 const setupAdminTournament = (rootCard) => {
   const container = rootCard.querySelector("#adminTournamentTab");
   const mount = rootCard.querySelector("#adminTournamentRoot");
-  if (!container || !mount) {
-    return;
-  }
+  if (!container || !mount) return;
 
   const firebaseApp = getFirebaseApp();
   if (!firebaseApp) {
@@ -609,42 +637,26 @@ const setupAdminTournament = (rootCard) => {
   let tournamentState = createTournamentDefaultState();
   let activeSection = "players";
 
+  const esc = (v) => String(v ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+
   const saveState = async () => {
     await docRef.set({ ...tournamentState, updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp() }, { merge: true });
   };
 
-  const renderPlayersSection = () => {
-    const playersRows = tournamentState.players.map((player, index) => `
-      <tr>
-        <td>Second</td>
-        <td><input class="admin-input" data-role="player-status" data-player-id="${player.id}" type="checkbox" ${player.status ? "checked" : ""}></td>
-        <td><input class="admin-input" data-role="player-name" data-player-id="${player.id}" value="${player.name ?? ""}" type="text"></td>
-        <td><input class="admin-input" data-role="player-pin" data-player-id="${player.id}" value="${player.pin ?? ""}" type="tel" inputmode="numeric" pattern="[0-9]*"></td>
-        <td><input class="admin-input" data-role="player-perm" data-player-id="${player.id}" value="${player.permissions ?? ""}" type="text"></td>
-      </tr>
-    `).join("");
+  const tableNameById = (tableId) => tournamentState.tables.find((table) => table.id === tableId)?.name || "-";
+  const playerNameById = (playerId) => tournamentState.players.find((player) => player.id === playerId)?.name || "";
 
-    mount.innerHTML = `
-      <div class="t-section-grid">
-        <label>ORGANIZATOR <input class="admin-input" data-role="meta-organizer" type="text" value="${tournamentState.organizer}"></label>
-        <label>BUY-IN <input class="admin-input" data-role="meta-buyin" type="tel" inputmode="numeric" pattern="[0-9]*" value="${tournamentState.buyIn}"></label>
-        <label>REBUY/ADD-ON <input class="admin-input" data-role="meta-rebuy" type="tel" inputmode="numeric" pattern="[0-9]*" value="${tournamentState.rebuyAddOn}"></label>
-        <label>RAKE <input class="admin-input" data-role="meta-rake" type="tel" inputmode="numeric" pattern="[0-9]*" value="${tournamentState.rake}"></label>
-        <label>STACK <input class="admin-input" data-role="meta-stack" type="tel" inputmode="numeric" pattern="[0-9]*" value="${tournamentState.stack}"></label>
-        <label>REBUY/ADD-ON STACK <input class="admin-input" data-role="meta-rebuystack" type="tel" inputmode="numeric" pattern="[0-9]*" value="${tournamentState.rebuyStack}"></label>
-      </div>
-      <div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Aplikacja</th><th>Status</th><th>Nazwa</th><th>PIN</th><th>Uprawnienia</th></tr></thead><tbody>${playersRows || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div>
-      <button type="button" class="secondary" data-role="add-player">Dodaj gracza</button>
-    `;
-  };
-
-  const buildGroupedRows = () => {
+  const buildGroupedRows = (assignments) => {
     const all = [];
     let lp = 1;
     tournamentState.tables.forEach((table) => {
       tournamentState.players.forEach((player) => {
-        if ((tournamentState.assignments[player.id]?.tableId || "") === table.id) {
-          all.push({ tableName: table.name || "Bez nazwy", lp: lp++, playerName: player.name || "", playerId: player.id });
+        if ((assignments[player.id]?.tableId || "") === table.id) {
+          all.push({ tableId: table.id, tableName: table.name || "Bez nazwy", lp: lp++, playerId: player.id, playerName: player.name || "" });
         }
       });
     });
@@ -653,25 +665,76 @@ const setupAdminTournament = (rootCard) => {
 
   const render = () => {
     if (activeSection === "players") {
-      renderPlayersSection();
-    } else if (activeSection === "draw") {
+      const playersRows = tournamentState.players.map((player) => `
+        <tr>
+          <td>Second</td>
+          <td><label class="status-radio"><input data-role="player-status" data-player-id="${player.id}" type="checkbox" ${player.status ? "checked" : ""}><span></span></label></td>
+          <td><input class="admin-input" data-role="player-name" data-player-id="${player.id}" value="${esc(player.name)}" type="text" data-focus-target="1" data-section="second-tournament-players" data-row-id="${player.id}" data-column-key="name"></td>
+          <td><input class="admin-input" data-role="player-pin" data-player-id="${player.id}" value="${esc(player.pin)}" type="tel" inputmode="numeric" pattern="[0-9]*" data-focus-target="1" data-section="second-tournament-players" data-row-id="${player.id}" data-column-key="pin"></td>
+          <td><input class="admin-input" data-role="player-perm" data-player-id="${player.id}" value="${esc(player.permissions)}" type="text"></td>
+        </tr>
+      `).join("");
+
+      mount.innerHTML = `
+        <div class="t-section-grid">
+          <label>ORGANIZATOR <input class="admin-input" data-role="meta-organizer" type="text" value="${esc(tournamentState.organizer)}"></label>
+          <label>BUY-IN <input class="admin-input" data-role="meta-buyin" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.buyIn)}"></label>
+          <label>REBUY/ADD-ON <input class="admin-input" data-role="meta-rebuy" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.rebuyAddOn)}"></label>
+          <label>RAKE <input class="admin-input" data-role="meta-rake" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.rake)}"><small>%</small></label>
+          <label>STACK <input class="admin-input" data-role="meta-stack" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.stack)}"></label>
+          <label>REBUY/ADD-ON STACK <input class="admin-input" data-role="meta-rebuystack" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.rebuyStack)}"></label>
+        </div>
+        <div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Aplikacja</th><th>Status</th><th>Nazwa</th><th>PIN</th><th>Uprawnienia</th></tr></thead><tbody>${playersRows || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div>
+        <button type="button" class="secondary" data-role="add-player">Dodaj gracza</button>
+      `;
+      return;
+    }
+
+    if (activeSection === "draw") {
       const rows = tournamentState.players.map((player) => {
-        const assignment = tournamentState.assignments[player.id] || {};
-        return `<tr><td>${player.name || ""}</td><td><select class="admin-input" data-role="assign-status" data-player-id="${player.id}"><option ${assignment.status !== "Opłacone" ? "selected" : ""}>Do zapłaty</option><option ${assignment.status === "Opłacone" ? "selected" : ""}>Opłacone</option></select></td><td><select class="admin-input" data-role="assign-table" data-player-id="${player.id}"><option value="">-</option>${tournamentState.tables.map((table) => `<option value="${table.id}" ${assignment.tableId === table.id ? "selected" : ""}>${table.name}</option>`).join("")}</select></td></tr>`;
+        const assignment = tournamentState.assignments[player.id] || { status: "Do zapłaty", tableId: "" };
+        return `<tr><td>${esc(player.name)}</td><td><select class="admin-input" data-role="assign-status" data-player-id="${player.id}"><option ${assignment.status !== "Opłacone" ? "selected" : ""}>Do zapłaty</option><option ${assignment.status === "Opłacone" ? "selected" : ""}>Opłacone</option></select></td><td><select class="admin-input" data-role="assign-table" data-player-id="${player.id}"><option value="">-</option>${tournamentState.tables.map((table) => `<option value="${table.id}" ${assignment.tableId === table.id ? "selected" : ""}>${esc(table.name)}</option>`).join("")}</select></td></tr>`;
       }).join("");
-      const tableList = tournamentState.tables.map((table) => `<li>${table.name} <button type="button" class="danger" data-role="delete-table" data-table-id="${table.id}">Usuń</button></li>`).join("");
-      mount.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Status</th><th>Stół</th></tr></thead><tbody>${rows || '<tr><td colspan="3">Brak graczy.</td></tr>'}</tbody></table></div><ul>${tableList || "<li>Brak stołów.</li>"}</ul><button type="button" class="secondary" data-role="add-table">Dodaj stół</button>`;
-    } else if (activeSection === "payments") {
-      const grouped = buildGroupedRows();
-      mount.innerHTML = `<h3>Tabela10</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Buy-in</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>licz. REBUY/ADD-ON</th></tr></thead><tbody><tr><td></td><td></td><td></td><td></td></tr></tbody></table></div><h3>Tabela11</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>Rake</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody></table></div><h3>Tabela12</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Stół</th><th>LP</th><th>Gracz</th><th>BUY-IN</th><th>REBUY/add-on</th><th>REBUY</th></tr></thead><tbody>${grouped.map((row) => `<tr><td>${row.tableName}</td><td>${row.lp}</td><td>${row.playerName}</td><td></td><td></td><td></td></tr>`).join("") || '<tr><td colspan="6">Brak danych.</td></tr>'}</tbody></table></div>`;
-    } else if (activeSection === "pool") {
-      mount.innerHTML = `<h3>Tabela13</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZBA REBUY</th></tr></thead><tbody><tr><td></td><td></td><td></td><td></td></tr></tbody></table></div><h3>Tabela14</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>Rake</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody></table></div><h3>Tabela15</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>PODZIAŁ</th><th></th></tr></thead><tbody><tr><td></td><td></td><td><button type="button" class="danger">Usuń</button></td></tr></tbody></table></div><button class="secondary" type="button">Dodaj</button><h3>Tabela16</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>Podział Puli</th><th>Kwota</th><th>Rebuy</th><th>Mod</th><th>Suma</th></tr></thead><tbody><tr><td>1</td><td></td><td></td><td></td><td><input class="admin-input" type="tel" inputmode="numeric" pattern="[0-9]*"></td><td></td></tr></tbody></table></div>`;
-    } else if (activeSection === "group") {
-      const grouped = buildGroupedRows();
-      mount.innerHTML = `<h3>Tabela17</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>STACK GRACZA</th><th>REBUY/ADD-on(w żetonach na os)</th></tr></thead><tbody>${tournamentState.players.map((p) => `<tr><td>${p.name}</td><td><input class="admin-input" type="tel" inputmode="numeric" pattern="[0-9]*"></td><td></td></tr>`).join("")}</tbody></table></div><h3>Tabela18</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr>${tournamentState.tables.map((t) => `<th>${t.name}</th>`).join("")}<th>ŁĄCZNY STACK</th></tr></thead><tbody><tr>${tournamentState.tables.map(() => "<td></td>").join("")}<td></td></tr></tbody></table></div><h3>Tabela19</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Stół</th><th>LP</th><th>Gracz</th><th>ELIMINATED</th><th>Stack</th><th>REBUY/add-on</th><th>REBUY</th></tr></thead><tbody>${grouped.map((r)=>`<tr><td>${r.tableName}</td><td>${r.lp}</td><td>${r.playerName}</td><td><input type="checkbox"></td><td></td><td></td><td></td></tr>`).join("")}</tbody></table></div>`;
-    } else if (activeSection === "semi") {
-      mount.innerHTML = `<h3>Tabela20</h3><p>Losowanie stołów jak w sekcji Losowanie stołów (niezależne dane).</p><h3>Tabela21</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>Gracz</th><th>STACK</th><th>%</th><th>Stół</th></tr></thead><tbody><tr><td>1</td><td></td><td></td><td></td><td></td></tr></tbody></table></div><h3>Tabela22</h3><label>Nazwa <input class="admin-input" type="text"></label><label>Łączny stack <input class="admin-input" readonly></label><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>Gracz</th><th>Eliminated</th><th>%</th></tr></thead><tbody><tr><td>1</td><td></td><td><input type="checkbox"></td><td></td></tr></tbody></table></div><button type="button" class="secondary" data-role="add-semi-table">Dodaj nowy stół</button><div class="semi-tables">${tournamentState.semiTables.map((_, index)=>`<article class="admin-table-card"><h4>Stół Półfinałowy numer ${index + 1} <button type="button" class="danger" data-role="remove-semi-table" data-index="${index}">Usuń stół</button></h4></article>`).join("")}</div><h3>Tabela Finałowa</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>STÓŁ</th><th>%</th></tr></thead><tbody><tr><td>1</td><td></td><td></td><td></td><td></td></tr></tbody></table></div>`;
-    } else if (activeSection === "final") {
+
+      const perTableBlocks = tournamentState.tables.map((table) => {
+        const assignedPlayers = tournamentState.players.filter((player) => (tournamentState.assignments[player.id]?.tableId || "") === table.id);
+        const entries = tournamentState.tableEntries[table.id] || {};
+        const total = assignedPlayers.reduce((sum, player) => sum + Number(entries[player.id] || 0), 0);
+        return `<article class="admin-table-card"><div class="t-section-grid"><label>Nazwa <input class="admin-input" data-role="table-name" data-table-id="${table.id}" type="text" value="${esc(table.name)}"></label><label>Łączna Suma <input class="admin-input" readonly value="${total}"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Wpisowe</th></tr></thead><tbody>${assignedPlayers.map((player) => `<tr><td>${esc(player.name)}</td><td><input class="admin-input" type="tel" inputmode="numeric" pattern="[0-9]*" data-role="table-entry" data-table-id="${table.id}" data-player-id="${player.id}" value="${esc(entries[player.id] || "")}"></td></tr>`).join("") || '<tr><td colspan="2">Brak przypisanych graczy.</td></tr>'}</tbody></table></div><button type="button" class="danger" data-role="delete-table" data-table-id="${table.id}">Usuń</button></article>`;
+      }).join("");
+
+      mount.innerHTML = `<div class="t-section-grid"><label>Nazwa <input class="admin-input" readonly value="Losowanie stołów"></label><label>Łączna Suma <input class="admin-input" readonly value="${Object.values(tournamentState.tableEntries).flatMap((value) => Object.values(value || {})).reduce((acc, val) => acc + Number(val || 0), 0)}"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Status</th><th>Stół</th></tr></thead><tbody>${rows || '<tr><td colspan="3">Brak graczy.</td></tr>'}</tbody></table></div><div class="semi-tables">${perTableBlocks || "<p>Brak stołów.</p>"}</div><button type="button" class="secondary" data-role="add-table">Dodaj stół</button>`;
+      return;
+    }
+
+    const groupedDrawRows = buildGroupedRows(tournamentState.assignments);
+    if (activeSection === "payments") {
+      mount.innerHTML = `<h3>Tabela10</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Buy-in</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>licz. REBUY/ADD-ON</th></tr></thead><tbody><tr><td><input class="admin-input" data-role="pay-10-buyin" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table10.buyIn)}"></td><td><input class="admin-input" data-role="pay-10-rebuy" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table10.rebuyAddOn)}"></td><td><input class="admin-input" data-role="pay-10-sum" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table10.sum)}"></td><td><input class="admin-input" data-role="pay-10-count" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table10.rebuyCount)}"></td></tr></tbody></table></div><h3>Tabela11</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>Rake</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td><input class="admin-input" data-role="pay-11-percent" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table11.percent)}"></td><td><input class="admin-input" data-role="pay-11-rake" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table11.rake)}"></td><td><input class="admin-input" data-role="pay-11-buyin" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table11.buyIn)}"></td><td><input class="admin-input" data-role="pay-11-rebuy" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table11.rebuyAddOn)}"></td><td><input class="admin-input" data-role="pay-11-pot" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table11.pot)}"></td></tr></tbody></table></div><h3>Tabela12</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Stół</th><th>LP</th><th>Gracz</th><th>BUY-IN</th><th>REBUY/add-on</th><th>REBUY</th></tr></thead><tbody>${groupedDrawRows.map((row) => `<tr><td>${esc(row.tableName)}</td><td>${row.lp}</td><td>${esc(row.playerName)}</td><td></td><td></td><td></td></tr>`).join("") || '<tr><td colspan="6">Brak danych.</td></tr>'}</tbody></table></div>`;
+      return;
+    }
+
+    if (activeSection === "pool") {
+      mount.innerHTML = `<h3>Tabela13</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZBA REBUY</th></tr></thead><tbody><tr><td>${esc(tournamentState.payments.table10.buyIn)}</td><td>${esc(tournamentState.payments.table10.rebuyAddOn)}</td><td>${esc(tournamentState.payments.table10.sum)}</td><td>${esc(tournamentState.payments.table10.rebuyCount)}</td></tr></tbody></table></div><h3>Tabela14</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>Rake</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${esc(tournamentState.payments.table11.percent)}</td><td>${esc(tournamentState.payments.table11.rake)}</td><td>${esc(tournamentState.payments.table11.buyIn)}</td><td>${esc(tournamentState.payments.table11.rebuyAddOn)}</td><td>${esc(tournamentState.payments.table11.pot)}</td></tr></tbody></table></div><h3>Tabela15</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>PODZIAŁ</th><th></th></tr></thead><tbody>${tournamentState.pool.splits.map((row, index) => `<tr><td><input class="admin-input" data-role="pool-buyin" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row.buyIn)}"></td><td><input class="admin-input" data-role="pool-split" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row.split)}"></td><td>${index === tournamentState.pool.splits.length - 1 ? `<button type="button" class="danger" data-role="remove-pool-row" data-id="${row.id}">Usuń</button>` : ""}</td></tr>`).join("")}</tbody></table></div><button class="secondary" type="button" data-role="add-pool-row">Dodaj</button><h3>Tabela16</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>Podział Puli</th><th>Kwota</th><th>Rebuy</th><th>Mod</th><th>Suma</th></tr></thead><tbody>${tournamentState.pool.mods.map((row, index) => `<tr><td>${index + 1}</td><td></td><td></td><td></td><td><input class="admin-input" data-role="pool-mod" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row.mod)}"></td><td></td></tr>`).join("")}</tbody></table></div>`;
+      return;
+    }
+
+    if (activeSection === "group") {
+      mount.innerHTML = `<h3>Tabela17</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>STACK GRACZA</th><th>REBUY/ADD-on(w żetonach na os)</th></tr></thead><tbody>${tournamentState.players.map((player) => `<tr><td>${esc(player.name)}</td><td><input class="admin-input" data-role="group-stack" data-player-id="${player.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.group.playerStacks[player.id] || "")}"></td><td></td></tr>`).join("") || '<tr><td colspan="3">Brak danych.</td></tr>'}</tbody></table></div><h3>Tabela18</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr>${tournamentState.tables.map((table) => `<th>${esc(table.name)}</th>`).join("")}<th>ŁĄCZNY STACK</th></tr></thead><tbody><tr>${tournamentState.tables.map(() => "<td></td>").join("")}<td></td></tr></tbody></table></div><h3>Tabela19</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Stół</th><th>LP</th><th>Gracz</th><th>ELIMINATED</th><th>Stack</th><th>REBUY/add-on</th><th>REBUY</th></tr></thead><tbody>${groupedDrawRows.map((row) => `<tr><td>${esc(row.tableName)}</td><td>${row.lp}</td><td>${esc(row.playerName)}</td><td><input type="checkbox" data-role="group-eliminated" data-player-id="${row.playerId}" ${tournamentState.group.eliminated[row.playerId] ? "checked" : ""}></td><td></td><td></td><td></td></tr>`).join("") || '<tr><td colspan="7">Brak danych.</td></tr>'}</tbody></table></div>`;
+      return;
+    }
+
+    if (activeSection === "semi") {
+      const survivors = groupedDrawRows.filter((row) => !tournamentState.group.eliminated[row.playerId]);
+      const semiRows = tournamentState.players.map((player) => {
+        const assignment = tournamentState.semi.assignments[player.id] || { status: "Do zapłaty", tableId: "" };
+        return `<tr><td>${esc(player.name)}</td><td><select class="admin-input" data-role="semi-assign-status" data-player-id="${player.id}"><option ${assignment.status !== "Opłacone" ? "selected" : ""}>Do zapłaty</option><option ${assignment.status === "Opłacone" ? "selected" : ""}>Opłacone</option></select></td><td><select class="admin-input" data-role="semi-assign-table" data-player-id="${player.id}"><option value="">-</option>${tournamentState.tables.map((table) => `<option value="${table.id}" ${assignment.tableId === table.id ? "selected" : ""}>${esc(table.name)}</option>`).join("")}</select></td></tr>`;
+      }).join("");
+      const customTables = tournamentState.semi.customTables.map((table, index) => `<article class="admin-table-card"><h4>Stół Półfinałowy numer ${index + 1} <button type="button" class="danger" data-role="remove-semi-table" data-id="${table.id}">Usuń stół</button></h4><div class="t-section-grid"><label>Nazwa <input class="admin-input" data-role="semi-custom-name" data-id="${table.id}" type="text" value="${esc(table.name || "")}"></label><label>Łączny stack <input class="admin-input" readonly value="0"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>Gracz</th><th>Eliminated</th><th>%</th></tr></thead><tbody><tr><td>1</td><td></td><td><input type="checkbox"></td><td></td></tr></tbody></table></div></article>`).join("");
+      mount.innerHTML = `<h3>Tabela20</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Status</th><th>Stół</th></tr></thead><tbody>${semiRows || '<tr><td colspan="3">Brak graczy.</td></tr>'}</tbody></table></div><h3>Tabela21</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>Gracz</th><th>STACK</th><th>%</th><th>Stół</th></tr></thead><tbody>${survivors.map((row, idx) => `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td></td><td></td><td>${esc(tableNameById(tournamentState.semi.assignments[row.playerId]?.tableId || ""))}</td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div><h3>Tabela22</h3><button type="button" class="secondary" data-role="add-semi-table">Dodaj nowy stół</button><div class="semi-tables">${customTables}</div><h3>Tabela Finałowa</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>STÓŁ</th><th>%</th></tr></thead><tbody>${survivors.map((row, idx) => `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td></td><td>${esc(tableNameById(tournamentState.semi.assignments[row.playerId]?.tableId || ""))}</td><td></td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div>`;
+      return;
+    }
+
+    if (activeSection === "final") {
       const finalPlayers = tournamentState.finalPlayers;
       const width = 700;
       const height = 360;
@@ -683,63 +746,102 @@ const setupAdminTournament = (rootCard) => {
         const angle = (Math.PI * 2 * index) / Math.max(finalPlayers.length, 1) - Math.PI / 2;
         const x = cx + Math.cos(angle) * (rx + 90);
         const y = cy + Math.sin(angle) * (ry + 55);
-        return `<text x="${x}" y="${y}" fill="#ededdf" text-anchor="middle" font-size="13">${player.name || "Gracz"} (${player.stack || 0})</text>`;
+        return `<text x="${x}" y="${y}" fill="#ededdf" text-anchor="middle" font-size="13">${esc(player.name || "Gracz")} (${esc(player.stack || 0)})</text>`;
       }).join("");
-      mount.innerHTML = `<h3>Tabela23</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>Eliminated</th></tr></thead><tbody>${finalPlayers.map((p, i)=>`<tr><td>${i + 1}</td><td>${p.name || ""}</td><td><input class="admin-input" data-role="final-stack" data-index="${i}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${p.stack || ""}"></td><td></td><td><input type="checkbox"></td></tr>`).join("")}</tbody></table></div><div class="test-buttons"><button class="danger" type="button" data-role="add-final-player">Dodaj gracza (test)</button><button class="danger" type="button" data-role="remove-final-player">Usuń gracza (test)</button></div><svg viewBox="0 0 ${width} ${height}" class="poker-table-svg"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0d5f3f" stroke="#d4af37" stroke-width="6"></ellipse>${labels}</svg>`;
-    } else {
-      mount.innerHTML = `<h3>Tabela24</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>MIEJSCE</th><th>GRACZ</th><th>POCZĄTKOWA WYGRANA <input type="checkbox"></th><th>KOŃCOWA WYGRANA <input type="checkbox"></th></tr></thead><tbody><tr><td>1</td><td></td><td></td><td></td></tr></tbody></table></div>`;
+      mount.innerHTML = `<h3>Tabela23</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>Eliminated</th></tr></thead><tbody>${finalPlayers.map((player, i) => `<tr><td>${i + 1}</td><td>${esc(player.name)}</td><td><input class="admin-input" data-role="final-stack" data-id="${player.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(player.stack)}"></td><td></td><td><input type="checkbox" data-role="final-eliminated" data-id="${player.id}" ${player.eliminated ? "checked" : ""}></td></tr>`).join("") || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div><p class="test-controls-note">Przyciski testowe do sprawdzenia poprawności wyświetlania stołu.</p><div class="test-buttons"><button class="danger" type="button" data-role="add-final-player">Dodaj gracza</button><button class="danger" type="button" data-role="remove-final-player">Usuń gracza</button></div><svg viewBox="0 0 ${width} ${height}" class="poker-table-svg"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0d5f3f" stroke="#d4af37" stroke-width="6"></ellipse>${labels}</svg>`;
+      return;
     }
+
+    mount.innerHTML = `<h3>Tabela24</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>MIEJSCE</th><th>GRACZ</th><th>POCZĄTKOWA WYGRANA <input type="checkbox" data-role="toggle-payout-initial" ${tournamentState.payouts.showInitial ? "checked" : ""}></th><th>KOŃCOWA WYGRANA <input type="checkbox" data-role="toggle-payout-final" ${tournamentState.payouts.showFinal ? "checked" : ""}></th></tr></thead><tbody>${tournamentState.finalPlayers.map((player, index) => `<tr><td>${index + 1}</td><td>${esc(player.name)}</td><td></td><td></td></tr>`).join("") || '<tr><td colspan="4">Brak danych.</td></tr>'}</tbody></table></div>`;
   };
 
   container.addEventListener("input", async (event) => {
     const target = event.target;
     const role = target?.dataset?.role;
     if (!role) return;
-    if (["meta-buyin", "meta-rebuy", "meta-rake", "meta-stack", "meta-rebuystack", "player-pin", "final-stack"].includes(role)) {
+    if (["meta-buyin", "meta-rebuy", "meta-rake", "meta-stack", "meta-rebuystack", "player-pin", "table-entry", "group-stack", "final-stack", "pool-buyin", "pool-split", "pool-mod", "pay-10-buyin", "pay-10-rebuy", "pay-10-sum", "pay-10-count", "pay-11-percent", "pay-11-rake", "pay-11-buyin", "pay-11-rebuy", "pay-11-pot"].includes(role)) {
       target.value = digitsOnly(target.value);
     }
+
     if (role === "meta-organizer") tournamentState.organizer = target.value;
     if (role === "meta-buyin") tournamentState.buyIn = target.value;
     if (role === "meta-rebuy") tournamentState.rebuyAddOn = target.value;
     if (role === "meta-rake") tournamentState.rake = target.value;
     if (role === "meta-stack") tournamentState.stack = target.value;
     if (role === "meta-rebuystack") tournamentState.rebuyStack = target.value;
-    if (role === "player-name") tournamentState.players = tournamentState.players.map((p) => p.id === target.dataset.playerId ? { ...p, name: target.value } : p);
-    if (role === "player-pin") tournamentState.players = tournamentState.players.map((p) => p.id === target.dataset.playerId ? { ...p, pin: target.value } : p);
-    if (role === "player-perm") tournamentState.players = tournamentState.players.map((p) => p.id === target.dataset.playerId ? { ...p, permissions: target.value } : p);
+    if (role === "player-name") tournamentState.players = tournamentState.players.map((player) => player.id === target.dataset.playerId ? { ...player, name: target.value } : player);
+    if (role === "player-pin") tournamentState.players = tournamentState.players.map((player) => player.id === target.dataset.playerId ? { ...player, pin: target.value } : player);
+    if (role === "player-perm") tournamentState.players = tournamentState.players.map((player) => player.id === target.dataset.playerId ? { ...player, permissions: target.value } : player);
+    if (role === "table-name") tournamentState.tables = tournamentState.tables.map((table) => table.id === target.dataset.tableId ? { ...table, name: target.value } : table);
     if (role === "assign-status") tournamentState.assignments[target.dataset.playerId] = { ...(tournamentState.assignments[target.dataset.playerId] || {}), status: target.value, tableId: tournamentState.assignments[target.dataset.playerId]?.tableId || "" };
     if (role === "assign-table") tournamentState.assignments[target.dataset.playerId] = { ...(tournamentState.assignments[target.dataset.playerId] || {}), tableId: target.value, status: tournamentState.assignments[target.dataset.playerId]?.status || "Do zapłaty" };
-    if (role === "final-stack") tournamentState.finalPlayers[target.dataset.index].stack = target.value;
+    if (role === "semi-assign-status") tournamentState.semi.assignments[target.dataset.playerId] = { ...(tournamentState.semi.assignments[target.dataset.playerId] || {}), status: target.value, tableId: tournamentState.semi.assignments[target.dataset.playerId]?.tableId || "" };
+    if (role === "semi-assign-table") tournamentState.semi.assignments[target.dataset.playerId] = { ...(tournamentState.semi.assignments[target.dataset.playerId] || {}), tableId: target.value, status: tournamentState.semi.assignments[target.dataset.playerId]?.status || "Do zapłaty" };
+    if (role === "table-entry") {
+      tournamentState.tableEntries[target.dataset.tableId] = tournamentState.tableEntries[target.dataset.tableId] || {};
+      tournamentState.tableEntries[target.dataset.tableId][target.dataset.playerId] = target.value;
+      render();
+    }
+    if (role === "pay-10-buyin") tournamentState.payments.table10.buyIn = target.value;
+    if (role === "pay-10-rebuy") tournamentState.payments.table10.rebuyAddOn = target.value;
+    if (role === "pay-10-sum") tournamentState.payments.table10.sum = target.value;
+    if (role === "pay-10-count") tournamentState.payments.table10.rebuyCount = target.value;
+    if (role === "pay-11-percent") tournamentState.payments.table11.percent = target.value;
+    if (role === "pay-11-rake") tournamentState.payments.table11.rake = target.value;
+    if (role === "pay-11-buyin") tournamentState.payments.table11.buyIn = target.value;
+    if (role === "pay-11-rebuy") tournamentState.payments.table11.rebuyAddOn = target.value;
+    if (role === "pay-11-pot") tournamentState.payments.table11.pot = target.value;
+    if (role === "group-stack") tournamentState.group.playerStacks[target.dataset.playerId] = target.value;
+    if (role === "final-stack") tournamentState.finalPlayers = tournamentState.finalPlayers.map((player) => player.id === target.dataset.id ? { ...player, stack: target.value } : player);
+    if (role === "pool-buyin") tournamentState.pool.splits = tournamentState.pool.splits.map((row) => row.id === target.dataset.id ? { ...row, buyIn: target.value } : row);
+    if (role === "pool-split") tournamentState.pool.splits = tournamentState.pool.splits.map((row) => row.id === target.dataset.id ? { ...row, split: target.value } : row);
+    if (role === "pool-mod") tournamentState.pool.mods = tournamentState.pool.mods.map((row) => row.id === target.dataset.id ? { ...row, mod: target.value } : row);
+    if (role === "semi-custom-name") tournamentState.semi.customTables = tournamentState.semi.customTables.map((table) => table.id === target.dataset.id ? { ...table, name: target.value } : table);
+
     await saveState();
   });
 
   container.addEventListener("change", async (event) => {
     const target = event.target;
-    if (target?.dataset?.role === "player-status") {
-      tournamentState.players = tournamentState.players.map((p) => p.id === target.dataset.playerId ? { ...p, status: target.checked } : p);
-      await saveState();
-    }
+    const role = target?.dataset?.role;
+    if (!role) return;
+    if (role === "player-status") tournamentState.players = tournamentState.players.map((player) => player.id === target.dataset.playerId ? { ...player, status: target.checked } : player);
+    if (role === "group-eliminated") tournamentState.group.eliminated[target.dataset.playerId] = target.checked;
+    if (role === "final-eliminated") tournamentState.finalPlayers = tournamentState.finalPlayers.map((player) => player.id === target.dataset.id ? { ...player, eliminated: target.checked } : player);
+    if (role === "toggle-payout-initial") tournamentState.payouts.showInitial = target.checked;
+    if (role === "toggle-payout-final") tournamentState.payouts.showFinal = target.checked;
+    await saveState();
   });
 
   container.addEventListener("click", async (event) => {
     const target = event.target;
     const role = target?.dataset?.role;
     if (!role) return;
+
     if (role === "add-player") {
       tournamentState.players.push({ id: crypto.randomUUID(), name: "", pin: "", permissions: "", status: false });
     }
-    if (role === "add-table") tournamentState.tables.push({ id: crypto.randomUUID(), name: `Tabela${10 + tournamentState.tables.length}` });
+    if (role === "add-table") {
+      tournamentState.tables.push({ id: crypto.randomUUID(), name: `Tabela${10 + tournamentState.tables.length}` });
+    }
     if (role === "delete-table") {
       const tableId = target.dataset.tableId;
       tournamentState.tables = tournamentState.tables.filter((table) => table.id !== tableId);
+      delete tournamentState.tableEntries[tableId];
       Object.keys(tournamentState.assignments).forEach((key) => {
         if (tournamentState.assignments[key]?.tableId === tableId) tournamentState.assignments[key].tableId = "";
       });
+      Object.keys(tournamentState.semi.assignments).forEach((key) => {
+        if (tournamentState.semi.assignments[key]?.tableId === tableId) tournamentState.semi.assignments[key].tableId = "";
+      });
     }
-    if (role === "add-semi-table") tournamentState.semiTables.push({ id: crypto.randomUUID() });
-    if (role === "remove-semi-table") tournamentState.semiTables.splice(Number(target.dataset.index), 1);
-    if (role === "add-final-player") tournamentState.finalPlayers.push({ id: crypto.randomUUID(), name: `Gracz ${tournamentState.finalPlayers.length + 1}`, stack: "" });
+    if (role === "add-pool-row") tournamentState.pool.splits.push({ id: crypto.randomUUID(), buyIn: "", split: "" });
+    if (role === "remove-pool-row") tournamentState.pool.splits = tournamentState.pool.splits.filter((row) => row.id !== target.dataset.id);
+    if (role === "add-semi-table") tournamentState.semi.customTables.push({ id: crypto.randomUUID(), name: "" });
+    if (role === "remove-semi-table") tournamentState.semi.customTables = tournamentState.semi.customTables.filter((table) => table.id !== target.dataset.id);
+    if (role === "add-final-player") tournamentState.finalPlayers.push({ id: crypto.randomUUID(), name: `Gracz ${tournamentState.finalPlayers.length + 1}`, stack: "", eliminated: false });
     if (role === "remove-final-player") tournamentState.finalPlayers.pop();
+
     await saveState();
     render();
   });
