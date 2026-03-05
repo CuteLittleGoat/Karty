@@ -45,7 +45,6 @@
           <button class="admin-panel-tab" type="button" data-target="adminChatTab">Czat</button>
           <button class="admin-panel-tab" type="button" data-target="adminRulesTab">Regulamin</button>
           <button class="admin-panel-tab" type="button" data-target="adminNotesTab">Notatki</button>
-          <button class="admin-panel-tab" type="button" data-target="adminPlayersTab">Gracze</button>
           <button class="admin-panel-tab" type="button" data-target="adminTournamentTab">TOURNAMENT OF POKER</button>
         </div>
 
@@ -124,35 +123,6 @@
           </div>
         </div>
 
-        <div id="adminPlayersTab" class="admin-panel-content" role="tabpanel">
-          <div class="admin-players">
-            <div class="card-header">
-              <h3>Gracze</h3>
-              <p>Zarządzaj PIN-ami graczy i uprawnieniami do zakładek aplikacji.</p>
-            </div>
-            <span id="adminPlayersStatus" class="status-text" aria-live="polite">Ładowanie listy graczy...</span>
-            <p id="adminPlayersCount" class="status-text">Liczba dodanych graczy: 0</p>
-            <div class="admin-table-scroll">
-              <table class="admin-data-table players-table">
-                <thead>
-                  <tr>
-                    <th>Aplikacja</th>
-                    <th>Nazwa</th>
-                    <th>PIN</th>
-                    <th>Uprawnienia</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                  <tbody id="adminPlayersTableBody">
-                    <tr>
-                      <td colspan="5">Brak graczy. Dodaj</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-          </div>
-        </div>
-
         <div id="adminTournamentTab" class="admin-panel-content" role="tabpanel">
           <div class="admin-games-layout">
             <aside class="admin-games-sidebar">
@@ -160,7 +130,7 @@
                 <h3>Panel</h3>
               </div>
               <div class="admin-games-years-list player-zone-sections-list">
-                <button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Lista graczy</button>
+                <button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Losowanie graczy</button>
                 <button class="admin-games-year-button" type="button" data-tournament-target="draw">Losowanie stołów</button>
                 <button class="admin-games-year-button" type="button" data-tournament-target="payments">Wpłaty</button>
                 <button class="admin-games-year-button" type="button" data-tournament-target="pool">Podział puli</button>
@@ -189,7 +159,6 @@
             <button class="tab-button is-active" type="button" data-target="updatesTab">Aktualności</button>
             <button class="tab-button" type="button" data-target="chatTab">Czat</button>
             <button class="tab-button" type="button" data-target="rulesTab">Regulamin</button>
-            <button class="tab-button" type="button" data-target="playersTab">Gracze</button>
             <button class="tab-button" type="button" data-target="tournamentTab">TOURNAMENT OF POKER</button>
           </div>
           <div class="user-panel-refresh-controls">
@@ -246,33 +215,6 @@
             </div>
           </div>
 
-          <div id="playersTab" class="tab-panel" role="tabpanel">
-            <div class="admin-players">
-              <div class="card-header">
-                <h3>Gracze</h3>
-                <p>Zarządzaj PIN-ami graczy i uprawnieniami do zakładek aplikacji.</p>
-              </div>
-              <div class="admin-table-scroll">
-                <table class="admin-data-table players-table">
-                  <thead>
-                    <tr>
-                      <th>Aplikacja</th>
-                      <th>Nazwa</th>
-                      <th>PIN</th>
-                      <th>Uprawnienia</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody id="playersTableBody">
-                    <tr>
-                      <td colspan="5">Brak graczy.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
           <div id="tournamentTab" class="tab-panel" role="tabpanel">
             <div class="admin-games-layout">
               <aside class="admin-games-sidebar">
@@ -280,7 +222,7 @@
                   <h3>Panel</h3>
                 </div>
                 <div class="admin-games-years-list player-zone-sections-list">
-                  <button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Lista graczy</button>
+                  <button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Losowanie graczy</button>
                   <button class="admin-games-year-button" type="button" data-tournament-target="draw">Losowanie stołów</button>
                   <button class="admin-games-year-button" type="button" data-tournament-target="payments">Wpłaty</button>
                   <button class="admin-games-year-button" type="button" data-tournament-target="pool">Podział puli</button>

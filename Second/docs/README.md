@@ -3,9 +3,9 @@
 ### Jak wejść do panelu turniejowego
 1. Otwórz `Second/index.html?admin=1`.
 2. Kliknij zakładkę **TOURNAMENT OF POKER**.
-3. W lewym panelu sekcje są w kolejności: **Lista graczy**, **Losowanie stołów**, **Wpłaty**, **Podział puli**, **Faza grupowa**, **Półfinał**, **Finał**, **Wypłaty**.
+3. W lewym panelu sekcje są w kolejności: **Losowanie graczy**, **Losowanie stołów**, **Wpłaty**, **Podział puli**, **Faza grupowa**, **Półfinał**, **Finał**, **Wypłaty**.
 
-### 1) Lista graczy
+### 1) Losowanie graczy
 1. Uzupełnij pola nad tabelą: ORGANIZATOR, BUY-IN, REBUY/ADD-ON, RAKE, STACK, REBUY/ADD-ON STACK.
 2. Kliknij **Dodaj gracza**.
 3. W nowym wierszu ustaw:
