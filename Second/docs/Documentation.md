@@ -1,117 +1,51 @@
 # Second — dokumentacja techniczna
 
-## 1. Architektura modułu
-- `Second/index.html` zawiera komplet widoków admin/user w template'ach, modal instrukcji i wszystkie kontrolki UI.
-- `Second/app.js` odpowiada za:
-  - inicjalizację Firebase,
-  - obsługę zakładek,
-  - synchronizację z Firestore,
-  - komunikaty statusów dla operacji Firebase,
-  - obsługę odświeżania aktywnej zakładki admina.
-- `Second/styles.css` definiuje motyw, layout i style komponentów.
+## Tournament of Poker (moduł Second)
 
-## 2. Integracje Firestore (moduł Second)
+### 1. Źródła i montowanie UI
+- Główna sekcja turniejowa admina renderowana jest do `#adminTournamentRoot` w `Second/index.html`.
+- Przełączanie sekcji realizują przyciski z `data-tournament-target`.
+- Inicjalizacja logiki turniejowej: funkcja `setupAdminTournament(rootCard)` w `Second/app.js`.
 
-### 2.1 Aktualności
-- Kolekcja: `second_admin_messages`.
-- Dokument: `admin_messages`.
-- Pola zapisu:
-  - `message` (string),
-  - `createdAt` (serverTimestamp),
-  - `source` (string).
-- Admin:
-  - zapis przez przycisk `#adminMessageSend`,
-  - statusy w `#adminMessageStatus`.
-- User:
-  - podgląd przez `#latestMessageOutput`,
-  - statusy w `#newsOutputStatus`.
+### 2. Firebase (odseparowane od Main)
+- Kolekcja: `second_tournament`
+- Dokument: `state`
+- Stałe: `SECOND_TOURNAMENT_COLLECTION`, `SECOND_TOURNAMENT_DOCUMENT`.
+- Zapis przez `docRef.set(..., { merge: true })`.
+- Odczyt live przez `docRef.onSnapshot(...)`.
 
-### 2.2 Czat
-- Kolekcja: `second_chat_messages`.
-- Pola wiadomości:
-  - `text` (string),
-  - `authorName` (string),
-  - `createdAt` (serverTimestamp),
-  - `expireAt` (timestamp +30 dni).
-- User:
-  - wysyłka przez `#chatSendButton`,
-  - komunikaty w `#chatStatus`,
-  - render historii w `#chatMessages`.
-- Admin:
-  - podgląd i kasowanie pojedynczych wiadomości (`Usuń`),
-  - kasowanie zbiorcze wiadomości starszych niż 30 dni (`#adminChatCleanup`),
-  - statusy w `#adminChatStatus`.
+### 3. Model danych dokumentu `second_tournament/state`
+- `organizer`, `buyIn`, `rebuyAddOn`, `rake`, `stack`, `rebuyStack`
+- `players[]` (obiekty: `id`, `name`, `pin`, `permissions`, `status`)
+- `tables[]` (obiekty: `id`, `name`)
+- `assignments` (mapa po `player.id`, trzyma m.in. `tableId`, `status`)
+- `tableEntries`, `semiTables`, `semiAssignments`, `finalPlayers[]`
+- `updatedAt`
 
-### 2.3 Regulamin
-- Kolekcja: `second_app_settings`.
-- Dokument: `rules`.
-- Pole główne: `text`.
-- Admin:
-  - edycja przez `#adminRulesInput`,
-  - zapis przez `#adminRulesSave`,
-  - statusy w `#adminRulesStatus`.
-- User:
-  - odczyt w `#rulesOutput`,
-  - statusy w `#rulesStatus`.
+### 4. Identyfikacja po ID
+- Relacje gracz ↔ stół trzymane są po ID (`player.id`, `table.id`).
+- Nazwy są wyłącznie warstwą prezentacji.
+- To eliminuje konflikty przy duplikatach nazw graczy i stołów.
 
-### 2.4 Gracze
-- Kolekcja: `second_app_settings`.
-- Dokument: `player_access`.
-- Odczytywane pole: `players[]`.
-- Render tabel:
-  - admin: `#adminPlayersTableBody` + licznik `#adminPlayersCount`,
-  - user: `#playersTableBody`.
-- Statusy:
-  - admin: `#adminPlayersStatus`.
+### 5. Sekcje Tournament of Poker
+- players → Lista graczy
+- draw → Losowanie stołów
+- payments → Wpłaty
+- pool → Podział puli
+- group → Faza grupowa
+- semi → Półfinał
+- final → Finał
+- payouts → Wypłaty
 
-### 2.5 Notatki
-- Kolekcja: `admin_notes`.
-- Dokument: `second`.
-- Pola zapisu:
-  - `text`,
-  - `updatedAt`,
-  - `updatedBy`,
-  - `module`.
-- Logika zabezpiecza aktywną edycję (lokalne zmiany nie są nadpisywane snapshotem do czasu zapisu/wyjścia z pola).
+### 6. Klawiatura numeryczna (mobile)
+- Pola liczbowe mają `type="tel"`, `inputmode="numeric"`, `pattern="[0-9]*"`.
+- Dodatkowo wartości są czyszczone funkcją `digitsOnly`.
 
-## 3. Rejestr handlerów odświeżania
-- `adminRefreshHandlers` to mapa `tabId -> async handler`.
-- Rejestracja przez `registerAdminRefreshHandler`.
-- Przycisk `#adminPanelRefresh` uruchamia handler aktywnej zakładki i aktualizuje `#adminPanelRefreshStatus`.
-- Obsługiwane zakładki: `adminNewsTab`, `adminChatTab`, `adminRulesTab`, `adminNotesTab`, `adminPlayersTab`.
+### 7. Final — rysowanie stołu SVG
+- Sekcja „Finał” renderuje owal stołu jako `<svg>` z `<ellipse>`.
+- Gracze wyliczani są po kącie i rozmieszczani symetrycznie wokół stołu.
+- Label gracza zawiera nazwę i stack.
 
-## 4. Komunikaty statusu operacji Firebase
-W każdej sekcji podpiętej do Firebase występują komunikaty stanu:
-- ładowanie danych,
-- zapisywanie/wysyłanie,
-- sukces,
-- błąd.
-
-Dotyczy to sekcji:
-- Aktualności (admin + user),
-- Czat (admin + user),
-- Regulamin (admin + user),
-- Gracze (admin + user),
-- Notatki (admin).
-
-## 5. Zmiany tekstowe i nazewnicze w UI
-- Nagłówek modułu:
-  - „Drugi moduł”,
-  - „Aplikacja do liczenia Omeru od drugiej nocy Pesach do Szawuot”.
-- Usunięto opis pod nagłówkiem.
-- Zakładka „Turniej” zmieniona na „TOURNAMENT OF POKER” (admin i user).
-- W panelu bocznym turnieju zaktualizowano listę przycisków zgodnie z wymaganiami.
-- W opisie notatek usunięto dopisek „(zapis w Firebase)”.
-
-## 6. Uwagi implementacyjne
-- Kod używa Firebase compat SDK (`firebase-app-compat`, `firebase-firestore-compat`).
-- Inicjalizacja jest warunkowa i wyłącza akcje, jeśli konfiguracja Firebase jest niedostępna.
-- Pozostaje aktywna globalna ochrona przed usunięciem ostatniego dokumentu kolekcji top-level.
-
-
-- Widok użytkownika (`#userViewTemplate`) zawiera przycisk `#userPanelRefresh` i status `#userPanelRefreshStatus`; kliknięcie wykonuje odświeżenie danych aktywnej zakładki (Aktualności/Regulamin/Gracze/Czat) bez `window.location.reload()`.
-
-
-## 2.4.1 Identyfikacja rekordów graczy
-- `renderPlayersTable` normalizuje listę `players[]` do unikalnych rekordów po kluczu `id:<player.id>` z fallbackiem `name:<player.name>`.
-- Render tabel admin/user korzysta z listy po deduplikacji, co zabezpiecza widok przed scaleniem różnych osób o takiej samej nazwie.
+### 8. Integracja z setupAdminView
+- `setupAdminTournament(rootCard)` jest wywoływane podczas inicjalizacji panelu admina.
+- Sekcja działa równolegle z istniejącymi modułami: Aktualności, Czat, Regulamin, Notatki, Gracze.
