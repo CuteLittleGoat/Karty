@@ -1,55 +1,63 @@
-## Instrukcja użytkownika — moduł Second
+## Instrukcja użytkownika — moduł Second (UI)
 
-### TOURNAMENT OF POKER (panel administratora)
-1. Wejdź na `Second/index.html?admin=1`.
+### Jak wejść do panelu turniejowego
+1. Otwórz `Second/index.html?admin=1`.
 2. Kliknij zakładkę **TOURNAMENT OF POKER**.
-3. W panelu bocznym używaj sekcji: **Lista graczy**, **Losowanie stołów**, **Wpłaty**, **Podział puli**, **Faza grupowa**, **Półfinał**, **Finał**, **Wypłaty**.
+3. W lewym panelu sekcje są w kolejności: **Lista graczy**, **Losowanie stołów**, **Wpłaty**, **Podział puli**, **Faza grupowa**, **Półfinał**, **Finał**, **Wypłaty**.
 
 ### 1) Lista graczy
-1. Uzupełnij pola: ORGANIZATOR, BUY-IN, REBUY/ADD-ON, RAKE, STACK, REBUY/ADD-ON STACK.
+1. Uzupełnij pola nad tabelą: ORGANIZATOR, BUY-IN, REBUY/ADD-ON, RAKE, STACK, REBUY/ADD-ON STACK.
 2. Kliknij **Dodaj gracza**.
-3. W tabeli ustaw:
-   - **Status** (checkbox-kółko),
+3. W nowym wierszu ustaw:
+   - **Status** (okrągły checkbox),
    - **Nazwa**,
    - **PIN**,
    - **Uprawnienia**.
-4. Wszystkie dane zapisują się automatycznie do Firebase.
+4. Dane zapisują się automatycznie.
 
 ### 2) Losowanie stołów
-1. W tabeli przypisz dla każdego gracza:
-   - status (**Do zapłaty** / **Opłacone**),
-   - stół.
-2. Kliknij **Dodaj stół**, aby dodać kolejny stół.
-3. Użyj **Usuń** przy stole, aby go usunąć.
+1. W tabeli przypisz każdemu graczowi:
+   - **Status** (Do zapłaty / Opłacone),
+   - **Stół**.
+2. Kliknij **Dodaj stół**.
+3. Dla każdego stołu poniżej wpisuj:
+   - **Nazwa**,
+   - **Wpisowe** dla przypisanych graczy.
+4. Użyj **Usuń** przy wybranym stole, aby go usunąć.
 
 ### 3) Wpłaty
-- Widoczne są tabele szkieletowe: **Tabela10**, **Tabela11**, **Tabela12**.
-- Tabela12 grupuje graczy wg przypisanych stołów.
+- Dostępne są tabele: **Tabela10**, **Tabela11**, **Tabela12**.
+- Tabela10 i Tabela11 pozwalają wpisywać wartości numeryczne.
+- Tabela12 pokazuje grupowanie graczy według stołów.
 
 ### 4) Podział puli
-- Widoczne są tabele: **Tabela13**, **Tabela14**, **Tabela15**, **Tabela16**.
-- W Tabela15 dostępne przyciski **Dodaj** i **Usuń** (szkielet UI).
+- Dostępne są: **Tabela13**, **Tabela14**, **Tabela15**, **Tabela16**.
+- W **Tabela15** działa:
+  - **Dodaj** (dodaje kolejny wiersz),
+  - **Usuń** (usuwa ostatni wiersz z przyciskiem).
+- W **Tabela16** kolumna **Mod** przyjmuje wartości numeryczne.
 
 ### 5) Faza grupowa
-- Widoczne są tabele: **Tabela17**, **Tabela18**, **Tabela19**.
-- Tabela19 pokazuje grupowanie po stołach oraz checkbox **ELIMINATED**.
+- **Tabela17**: wpisuj stack gracza.
+- **Tabela18**: widok zbiorczy stołów (szkielet).
+- **Tabela19**: grupowanie wg stołów + checkbox **ELIMINATED**.
 
 ### 6) Półfinał
-- Widoczne są tabele: **Tabela20**, **Tabela21**, **Tabela22**, oraz **Tabela Finałowa**.
-- Przycisk **Dodaj nowy stół** tworzy kolejne stoły półfinałowe.
-- Przycisk **Usuń stół** usuwa stół i przelicza numerację.
+- **Tabela20**: niezależne od losowania głównego przypisanie statusu i stołu.
+- **Tabela21**: lista graczy bez zaznaczonego ELIMINATED z fazy grupowej.
+- **Tabela22**: dynamiczne stoły półfinałowe.
+1. Kliknij **Dodaj nowy stół**.
+2. Powstaje „Stół Półfinałowy numer X”.
+3. Kliknij **Usuń stół** przy wybranym stole — numeracja przelicza się automatycznie.
 
 ### 7) Finał
-1. Używaj **Tabela23**.
-2. Przyciskami testowymi (czerwone):
-   - **Dodaj gracza (test)**,
-   - **Usuń gracza (test)**
-   sprawdzisz rysowanie stołu.
-3. Pod tabelą jest wizualizacja stołu pokerowego w SVG z rozmieszczeniem graczy wokół owalu.
+- **Tabela23**: LP, GRACZ, STACK, %, Eliminated.
+- Czerwony opis i czerwone przyciski:
+  - **Dodaj gracza**,
+  - **Usuń gracza**
+  służą do testu wyświetlania stołu.
+- Pod tabelą widoczny jest stół pokerowy SVG z rozmieszczeniem graczy i stacków.
 
 ### 8) Wypłaty
-- W sekcji jest tabela **Tabela24** z kolumnami:
-  - MIEJSCE,
-  - GRACZ,
-  - POCZĄTKOWA WYGRANA (z checkboxem widoczności),
-  - KOŃCOWA WYGRANA (z checkboxem widoczności).
+- **Tabela24**: MIEJSCE, GRACZ, POCZĄTKOWA WYGRANA, KOŃCOWA WYGRANA.
+- Checkboxy w nagłówkach dwóch kolumn sterują ich widocznością dla widoku użytkownika (logika zapisywana).
