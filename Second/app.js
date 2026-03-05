@@ -559,6 +559,15 @@ const normalizeTournamentState = (value) => {
 };
 
 const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");
+const normalizeTournamentPermissions = (value) => {
+  if (Array.isArray(value)) {
+    return Array.from(new Set(value.map((item) => String(item ?? "").trim()).filter(Boolean)));
+  }
+  if (typeof value !== "string") {
+    return [];
+  }
+  return Array.from(new Set(value.split(",").map((item) => item.trim()).filter(Boolean)));
+};
 
 const setupAdminTournament = (rootCard) => {
   const container = rootCard.querySelector("#adminTournamentTab");
@@ -575,6 +584,7 @@ const setupAdminTournament = (rootCard) => {
   const docRef = db.collection(SECOND_TOURNAMENT_COLLECTION).doc(SECOND_TOURNAMENT_DOCUMENT);
   let tournamentState = createTournamentDefaultState();
   let activeSection = "players";
+  let tournamentStatusMessage = "";
 
   const esc = (v) => String(v ?? "")
     .replaceAll("&", "&amp;")
@@ -583,7 +593,32 @@ const setupAdminTournament = (rootCard) => {
     .replaceAll('"', "&quot;");
 
   const saveState = async () => {
-    await docRef.set({ ...tournamentState, updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    try {
+      await docRef.set({ ...tournamentState, updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      tournamentStatusMessage = "";
+      return true;
+    } catch (error) {
+      tournamentStatusMessage = "Nie udało się zapisać danych turnieju do Firebase. Sprawdź konfigurację i uprawnienia.";
+      return false;
+    }
+  };
+
+  const generateUniquePin = (playerId) => {
+    const usedPins = new Set(
+      tournamentState.players
+        .filter((player) => player.id !== playerId)
+        .map((player) => digitsOnly(player.pin).slice(0, 5))
+        .filter((pin) => pin.length === 5)
+    );
+    let attempts = 0;
+    while (attempts < 200) {
+      const candidate = String(Math.floor(Math.random() * 100000)).padStart(5, "0");
+      if (!usedPins.has(candidate)) {
+        return candidate;
+      }
+      attempts += 1;
+    }
+    return String(Math.floor(Math.random() * 100000)).padStart(5, "0");
   };
 
   const tableNameById = (tableId) => tournamentState.tables.find((table) => table.id === tableId)?.name || "-";
@@ -606,24 +641,37 @@ const setupAdminTournament = (rootCard) => {
     if (activeSection === "players") {
       const playersRows = tournamentState.players.map((player) => `
         <tr>
-          <td>Second</td>
           <td><label class="status-radio"><input data-role="player-status" data-player-id="${player.id}" type="checkbox" ${player.status ? "checked" : ""}><span></span></label></td>
           <td><input class="admin-input" data-role="player-name" data-player-id="${player.id}" value="${esc(player.name)}" type="text" data-focus-target="1" data-section="second-tournament-players" data-row-id="${player.id}" data-column-key="name"></td>
-          <td><input class="admin-input" data-role="player-pin" data-player-id="${player.id}" value="${esc(player.pin)}" type="tel" inputmode="numeric" pattern="[0-9]*" data-focus-target="1" data-section="second-tournament-players" data-row-id="${player.id}" data-column-key="pin"></td>
-          <td><input class="admin-input" data-role="player-perm" data-player-id="${player.id}" value="${esc(player.permissions)}" type="text"></td>
+          <td>
+            <div class="pin-control">
+              <input class="admin-input" data-role="player-pin" data-player-id="${player.id}" value="${esc(player.pin)}" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="5 cyfr" data-focus-target="1" data-section="second-tournament-players" data-row-id="${player.id}" data-column-key="pin">
+              <button type="button" class="secondary admin-pin-random" data-role="player-pin-random" data-player-id="${player.id}">Losuj</button>
+            </div>
+          </td>
+          <td>
+            <div class="permissions-tags">${normalizeTournamentPermissions(player.permissions).map((permission) => `<span class="permission-badge">${esc(permission)}</span>`).join("") || '<span class="permission-badge is-empty">Brak uprawnień</span>'}</div>
+            <button type="button" class="secondary admin-permissions-edit" data-role="player-perm-edit" data-player-id="${player.id}">Edytuj</button>
+          </td>
+          <td><button type="button" class="danger admin-row-delete" data-role="delete-player" data-player-id="${player.id}">Usuń</button></td>
         </tr>
       `).join("");
 
+      const rakeValue = digitsOnly(tournamentState.rake);
+      const rakeLabel = rakeValue ? `${rakeValue}%` : "";
+
       mount.innerHTML = `
+        ${tournamentStatusMessage ? `<p class="builder-info">${esc(tournamentStatusMessage)}</p>` : ""}
         <div class="t-section-grid">
           <label>ORGANIZATOR <input class="admin-input" data-role="meta-organizer" type="text" value="${esc(tournamentState.organizer)}"></label>
           <label>BUY-IN <input class="admin-input" data-role="meta-buyin" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.buyIn)}"></label>
           <label>REBUY/ADD-ON <input class="admin-input" data-role="meta-rebuy" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.rebuyAddOn)}"></label>
-          <label>RAKE <input class="admin-input" data-role="meta-rake" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.rake)}"><small>%</small></label>
+          <label>RAKE <input class="admin-input" data-role="meta-rake" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.rake)}">${rakeLabel ? `<small>${esc(rakeLabel)}</small>` : ""}</label>
           <label>STACK <input class="admin-input" data-role="meta-stack" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.stack)}"></label>
           <label>REBUY/ADD-ON STACK <input class="admin-input" data-role="meta-rebuystack" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.rebuyStack)}"></label>
         </div>
-        <div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Aplikacja</th><th>Status</th><th>Nazwa</th><th>PIN</th><th>Uprawnienia</th></tr></thead><tbody>${playersRows || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div>
+        <p class="builder-info">Liczba dodanych graczy: ${tournamentState.players.length}</p>
+        <div class="admin-table-scroll"><table class="admin-data-table players-table"><thead><tr><th>Status</th><th>Nazwa</th><th>PIN</th><th>Uprawnienia</th><th>Akcje</th></tr></thead><tbody>${playersRows || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div>
         <button type="button" class="secondary" data-role="add-player">Dodaj gracza</button>
       `;
       return;
@@ -709,8 +757,10 @@ const setupAdminTournament = (rootCard) => {
     if (role === "meta-stack") tournamentState.stack = target.value;
     if (role === "meta-rebuystack") tournamentState.rebuyStack = target.value;
     if (role === "player-name") tournamentState.players = tournamentState.players.map((player) => player.id === target.dataset.playerId ? { ...player, name: target.value } : player);
-    if (role === "player-pin") tournamentState.players = tournamentState.players.map((player) => player.id === target.dataset.playerId ? { ...player, pin: target.value } : player);
-    if (role === "player-perm") tournamentState.players = tournamentState.players.map((player) => player.id === target.dataset.playerId ? { ...player, permissions: target.value } : player);
+    if (role === "player-pin") {
+      target.value = digitsOnly(target.value).slice(0, 5);
+      tournamentState.players = tournamentState.players.map((player) => player.id === target.dataset.playerId ? { ...player, pin: target.value } : player);
+    }
     if (role === "table-name") tournamentState.tables = tournamentState.tables.map((table) => table.id === target.dataset.tableId ? { ...table, name: target.value } : table);
     if (role === "assign-status") tournamentState.assignments[target.dataset.playerId] = { ...(tournamentState.assignments[target.dataset.playerId] || {}), status: target.value, tableId: tournamentState.assignments[target.dataset.playerId]?.tableId || "" };
     if (role === "assign-table") tournamentState.assignments[target.dataset.playerId] = { ...(tournamentState.assignments[target.dataset.playerId] || {}), tableId: target.value, status: tournamentState.assignments[target.dataset.playerId]?.status || "Do zapłaty" };
@@ -737,6 +787,7 @@ const setupAdminTournament = (rootCard) => {
     if (role === "pool-mod") tournamentState.pool.mods = tournamentState.pool.mods.map((row) => row.id === target.dataset.id ? { ...row, mod: target.value } : row);
     if (role === "semi-custom-name") tournamentState.semi.customTables = tournamentState.semi.customTables.map((table) => table.id === target.dataset.id ? { ...table, name: target.value } : table);
 
+
     await saveState();
   });
 
@@ -760,6 +811,31 @@ const setupAdminTournament = (rootCard) => {
     if (role === "add-player") {
       tournamentState.players.push({ id: crypto.randomUUID(), name: "", pin: "", permissions: "", status: false });
     }
+    if (role === "player-pin-random") {
+      const playerId = target.dataset.playerId;
+      tournamentState.players = tournamentState.players.map((player) => player.id === playerId ? { ...player, pin: generateUniquePin(playerId) } : player);
+    }
+    if (role === "player-perm-edit") {
+      const playerId = target.dataset.playerId;
+      const currentPlayer = tournamentState.players.find((player) => player.id === playerId);
+      const nextValue = window.prompt("Podaj uprawnienia oddzielone przecinkami (np. Aktualności, Czat).", normalizeTournamentPermissions(currentPlayer?.permissions).join(", "));
+      if (nextValue !== null) {
+        tournamentState.players = tournamentState.players.map((player) => player.id === playerId ? { ...player, permissions: nextValue } : player);
+      }
+    }
+    if (role === "delete-player") {
+      const playerId = target.dataset.playerId;
+      tournamentState.players = tournamentState.players.filter((player) => player.id !== playerId);
+      delete tournamentState.assignments[playerId];
+      Object.keys(tournamentState.tableEntries).forEach((tableId) => {
+        if (tournamentState.tableEntries[tableId]?.[playerId] !== undefined) {
+          delete tournamentState.tableEntries[tableId][playerId];
+        }
+      });
+      delete tournamentState.group.playerStacks[playerId];
+      delete tournamentState.group.eliminated[playerId];
+      delete tournamentState.semi.assignments[playerId];
+    }
     if (role === "add-table") {
       tournamentState.tables.push({ id: crypto.randomUUID(), name: `Tabela${10 + tournamentState.tables.length}` });
     }
@@ -781,7 +857,14 @@ const setupAdminTournament = (rootCard) => {
     if (role === "add-final-player") tournamentState.finalPlayers.push({ id: crypto.randomUUID(), name: `Gracz ${tournamentState.finalPlayers.length + 1}`, stack: "", eliminated: false });
     if (role === "remove-final-player") tournamentState.finalPlayers.pop();
 
+    render();
     await saveState();
+  });
+
+  registerAdminRefreshHandler("adminTournamentTab", async () => {
+    const snapshot = await docRef.get({ source: "server" });
+    tournamentState = normalizeTournamentState(snapshot.data());
+    tournamentStatusMessage = "";
     render();
   });
 
@@ -795,9 +878,11 @@ const setupAdminTournament = (rootCard) => {
 
   docRef.onSnapshot((snapshot) => {
     tournamentState = normalizeTournamentState(snapshot.data());
+    tournamentStatusMessage = "";
     render();
   }, () => {
-    mount.innerHTML = '<p class="builder-info">Nie udało się pobrać danych turnieju.</p>';
+    tournamentStatusMessage = "Nie udało się pobrać danych turnieju z Firebase. Widok pokazuje dane lokalne.";
+    render();
   });
 };
 

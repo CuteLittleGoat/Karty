@@ -976,7 +976,9 @@ select:disabled,
 }
 
 .pin-control .admin-input {
+  width: 5ch;
   min-width: 5ch;
+  max-width: 5ch;
 }
 
 .admin-pin-random {
@@ -1527,7 +1529,18 @@ body.modal-open {
 
 .players-table th:nth-child(3),
 .players-table td:nth-child(3) {
-  min-width: 5ch;
+  min-width: 10ch;
+}
+
+.players-table th:nth-child(4),
+.players-table td:nth-child(4) {
+  min-width: 28ch;
+}
+
+.players-table th:nth-child(5),
+.players-table td:nth-child(5) {
+  min-width: 8ch;
+  text-align: right;
 }
 
 .game-details-table th:nth-child(1),

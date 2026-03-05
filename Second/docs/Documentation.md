@@ -1,59 +1,52 @@
 # Second — dokumentacja techniczna
 
-## Układ zakładek modułu
+## Tournament of Poker (admin)
 
-### Widok administratora
-- Zakładki główne panelu admina: `Aktualności`, `Czat`, `Regulamin`, `Notatki`, `TOURNAMENT OF POKER`.
-- Zakładka `Gracze` nie występuje jako osobna karta — zarządzanie graczami jest wykonywane w sekcji turniejowej `Losowanie graczy`.
+### Główna logika
+- Funkcja: `setupAdminTournament(rootCard)` w `Second/app.js`.
+- Kontenery:
+  - `#adminTournamentTab` — panel sekcji turniejowych,
+  - `#adminTournamentRoot` — dynamiczny mount renderu aktywnej sekcji.
+- Dane zapisywane są w Firestore:
+  - kolekcja `second_tournament`,
+  - dokument `state`.
 
-### Widok użytkownika
-- Zakładki użytkownika: `Aktualności`, `Czat`, `Regulamin`, `TOURNAMENT OF POKER`.
-- Zakładka `Gracze` została usunięta z panelu użytkownika.
+### Odczyt i zapis Firebase
+- Odczyt ciągły: `docRef.onSnapshot(...)`.
+- Ręczne odświeżenie zakładki: rejestracja `registerAdminRefreshHandler("adminTournamentTab", ...)` i pobranie `docRef.get({ source: "server" })`.
+- Zapis: `docRef.set({ ...tournamentState, updatedAt: serverTimestamp }, { merge: true })`.
+- Przy błędzie zapisu widok nie blokuje pracy użytkownika; pokazuje komunikat o problemie synchronizacji z Firebase i pozostaje interaktywny.
 
-## Tournament of Poker
+### Struktura stanu
+- Metadane: `organizer`, `buyIn`, `rebuyAddOn`, `rake`, `stack`, `rebuyStack`.
+- Gracze: `players[]` z polami `id`, `name`, `pin`, `permissions`, `status`.
+- Pozostałe sekcje: `tables`, `assignments`, `tableEntries`, `payments`, `pool`, `group`, `semi`, `finalPlayers`, `payouts`.
 
-### Struktura UI
-- Renderowanie admina odbywa się w `setupAdminTournament(rootCard)` w `Second/app.js`.
-- Docelowy kontener: `#adminTournamentRoot`.
-- Sekcje przełączane przez przyciski `data-tournament-target`.
-- Pierwsza sekcja turnieju (`data-tournament-target="players"`) pełni rolę `Losowanie graczy` i zawiera wszystkie pola graczy: status, nazwa, PIN, uprawnienia.
+### Losowanie graczy — aktualny render
+- Nagłówek metadanych turnieju: grid `.t-section-grid`.
+- Pole `RAKE`:
+  - wejście tylko cyfrowe,
+  - podgląd z automatycznym `%` renderowany jako `<small>` (np. `15%`).
+- Nad tabelą renderowany licznik: `Liczba dodanych graczy: X`.
+- Tabela `players-table` ma kolumny:
+  1. `Status` (checkbox w stylu `.status-radio`),
+  2. `Nazwa` (input tekstowy),
+  3. `PIN` (input 5-cyfrowy + przycisk `Losuj`),
+  4. `Uprawnienia` (badge + przycisk `Edytuj`),
+  5. `Akcje` (przycisk `Usuń`).
 
-### Firebase
-- Kolekcja: `second_tournament`.
-- Dokument: `state`.
-- Odczyt: `onSnapshot`.
-- Zapis: `docRef.set(..., { merge: true })`.
+### Obsługa PIN
+- PIN jest filtrowany do cyfr i skracany do 5 znaków.
+- Losowanie PIN: helper `generateUniquePin(playerId)` losuje 5-cyfrową wartość i unika kolizji z innymi graczami.
 
-### Model danych (aktualny)
-- Metadane turnieju: `organizer`, `buyIn`, `rebuyAddOn`, `rake`, `stack`, `rebuyStack`.
-- Gracze: `players[]` (`id`, `name`, `pin`, `permissions`, `status`).
-- Stoły główne: `tables[]` (`id`, `name`).
-- Przydział główny: `assignments[playerId] = { status, tableId }`.
-- Wpisowe stołów: `tableEntries[tableId][playerId]`.
-- Wpłaty:
-  - `payments.table10` (`buyIn`, `rebuyAddOn`, `sum`, `rebuyCount`),
-  - `payments.table11` (`percent`, `rake`, `buyIn`, `rebuyAddOn`, `pot`).
-- Podział puli:
-  - `pool.splits[]` (Tabela15),
-  - `pool.mods[]` (Tabela16).
-- Faza grupowa: `group.playerStacks`, `group.eliminated`.
-- Półfinał: `semi.assignments`, `semi.customTables[]`, `semi.tables[]`.
-- Finał: `finalPlayers[]` (`id`, `name`, `stack`, `eliminated`).
-- Wypłaty: `payouts.showInitial`, `payouts.showFinal`.
+### Obsługa uprawnień
+- `normalizeTournamentPermissions(value)` wspiera dane jako string CSV lub tablicę.
+- Widok pokazuje uprawnienia jako badge.
+- Przycisk `Edytuj` otwiera `prompt` i zapisuje listę uprawnień oddzieloną przecinkami do pola `permissions`.
 
-### Zasada ID zamiast nazw
-- Relacje gracz/stół trzymane po ID:
-  - `assignments[playerId].tableId`,
-  - `semi.assignments[playerId].tableId`,
-  - `tableEntries[tableId][playerId]`.
-- Nazwy służą tylko do renderu UI.
+### Usuwanie gracza
+- `delete-player` usuwa rekord gracza z `players` oraz czyści powiązane dane (`assignments`, `tableEntries`, `group`, `semi`).
 
-### Klawiatura mobilna i pola liczbowe
-- Wszystkie nowe pola liczbowe mają `type="tel"`, `inputmode="numeric"`, `pattern="[0-9]*"`.
-- Dodatkowo wejście jest filtrowane przez `digitsOnly`.
-
-### Widoki sekcji
-- Losowanie graczy: metadane turnieju + tabela zarządzania graczami (`status`, `name`, `pin`, `permissions`).
-- Draw: przypisania + per-stół tabela wpisowego.
-- Payments/Pool/Group/Semi/Payouts: szkielety tabel zgodnie z wymaganiami + zapis stanu.
-- Final: tabela + dynamiczny SVG owalu stołu, etykiety rozmieszczane radialnie.
+### Stabilność UI przy błędach Firebase
+- Dla błędów odczytu `onSnapshot` renderuje się informacja ostrzegawcza, a nie pusty ekran sekcji.
+- Dla błędów zapisu render nie jest blokowany; użytkownik widzi aktualny stan lokalny i komunikat o synchronizacji.
