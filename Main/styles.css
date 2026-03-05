@@ -1717,6 +1717,10 @@ button.danger {
   overflow: hidden;
 }
 
+.game-details-modal-card .modal-body {
+  overflow-y: auto;
+}
+
 .modal-content {
   flex: 1;
   overflow: auto;
