@@ -3,11 +3,11 @@
 ## Moduł Second — Tournament of Poker
 
 ### Losowanie graczy
-1. Aplikacja
-2. Status
-3. Nazwa
-4. PIN
-5. Uprawnienia
+1. Status
+2. Nazwa
+3. PIN
+4. Uprawnienia
+5. Akcje
 
 ### Losowanie stołów
 1. Gracz

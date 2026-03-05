@@ -1,11 +1,12 @@
 # Detale layoutu — aktualny stan
 
 ## Moduł Second — Tournament of Poker
-- Sekcja renderowana dynamicznie do `#adminTournamentRoot`.
-- Utrzymany motyw ciemny z istniejących klas `admin-data-table`, `admin-input`, `secondary`, `danger`.
-- Dodane style statusu gracza jako checkbox-kółko: `.status-radio`.
-- Dodane wyrównanie i tło dla pól `select` w turnieju: `#adminTournamentRoot select.admin-input`.
-- Dodany czerwony komunikat testowy w sekcji Finał: `.test-controls-note`.
-- SVG stołu pokerowego: `.poker-table-svg` (owal z obrysem złotym, pełna szerokość do 760px).
-- Przyciski testowe w sekcji Finał są czerwone i opisane jako testowe (`.test-buttons .danger`).
-- W widoku admina i użytkownika usunięto osobną zakładkę `Gracze`; konfiguracja graczy jest realizowana w sekcji turniejowej `Losowanie graczy`.
+- Sekcja `Losowanie graczy` ma układ metadanych w siatce `.t-section-grid` oraz tabelę `players-table`.
+- W polu `RAKE` usunięto statyczny znak `%` pod inputem; podgląd wartości procentowej jest generowany dynamicznie na podstawie wpisanej liczby (np. `12%`).
+- Kolumna `PIN` używa kontrolki `.pin-control`:
+  - pole wejściowe ma stałą szerokość 5 znaków,
+  - obok pola znajduje się przycisk `Losuj` (`.admin-pin-random`).
+- Kolumna `Uprawnienia` prezentuje bieżące uprawnienia jako badge (`.permissions-tags`, `.permission-badge`) i zawiera przycisk `Edytuj` (`.admin-permissions-edit`).
+- Ostatnia kolumna `Akcje` zawiera przycisk `Usuń` (`.admin-row-delete`) wyrównany do prawej strony.
+- Nad tabelą prezentowany jest licznik liczby graczy (tekst informacyjny `.builder-info`).
+- Wiersze statusu nadal używają wskaźnika kołowego `.status-radio`.
