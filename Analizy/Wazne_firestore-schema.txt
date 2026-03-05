@@ -1,5 +1,5 @@
 FIRESTORE SCHEMA EXPORT (NO VALUES)
-2026-02-28T17:22:51.967Z
+2026-03-05T16:21:14.857Z
 
 Key file: karty-turniej-firebase-adminsdk-fbsvc-0462e6af5d.json
 Max docs/collection (sampling): 200
@@ -66,7 +66,7 @@ Doc IDs: sample (3)
 ├─ calculators
 │  ├─ schema
 │  │  ├─ createdAt (timestamp)
-│  │  ├─ eliminatedOrder (array) -> array<unknown>
+│  │  ├─ eliminatedOrder (array) -> array<string|unknown>
 │  │  ├─ isActive (boolean)
 │  │  ├─ name (string)
 │  │  ├─ table1Row (map)
@@ -75,6 +75,7 @@ Doc IDs: sample (3)
 │  │  ├─ table2Rows (array) -> array<map>
 │  │  │  ├─ [] (map)
 │  │  │  │  ├─ id (string)
+│  │  │  │  ├─ playerId (string)
 │  │  │  │  ├─ playerName (string)
 │  │  │  │  ├─ eliminated (boolean)
 │  │  │  │  └─ rebuys (array) -> array<string|unknown>
@@ -88,15 +89,17 @@ Doc IDs: sample (3)
 │  │  ├─ table9Rows (array) -> array<map>
 │  │  │  ├─ [] (map)
 │  │  │  │  ├─ id (string)
+│  │  │  │  ├─ playerId (string)
 │  │  │  │  ├─ playerName (string)
 │  │  │  │  ├─ buyIn (string)
 │  │  │  │  ├─ payout (string)
 │  │  │  │  └─ rebuys (array) -> array<string|unknown>
 │  │  ├─ type (string)
 │  │  └─ updatedAt (timestamp)
-│  ├─ docs (sample 2)
+│  ├─ docs (sample 3)
 │  │  ├─ cash
-│  │  └─ tournament
+│  │  ├─ tournament
+│  │  └─ tournament2
 │  ├─ definitions
 │  │  ├─ schema
 │  │  │  ├─ appliesTo (array) -> array<string>
@@ -230,9 +233,9 @@ Doc IDs: sample (3)
 │  │  ├─ source (string)
 │  │  └─ text (string)
 │  ├─ docs (sample 3)
-│  │  ├─ oTCurlLmPyWeCsQGUq7j
-│  │  ├─ qM3F6VYUDVIWhM9nyI8k
-│  │  └─ vScChNb9lO7Qe6BAVJJ9
+│  │  ├─ LA3ohz9GlaeOVx1xc4qv
+│  │  ├─ QVYMivNJldtneAeO2TDD
+│  │  └─ oTCurlLmPyWeCsQGUq7j
 ├─ modules_config
 │  ├─ schema
 │  │  ├─ main (map)
@@ -272,6 +275,7 @@ Doc IDs: sample (3)
 │  │  └─ sources
 ├─ Nekrolog_refresh_jobs
 │  ├─ schema
+│  │  ├─ agent_ping (null)
 │  │  ├─ error_message (string)
 │  │  ├─ finished_at (string)
 │  │  ├─ ok (boolean)
@@ -566,7 +570,8 @@ Doc IDs: sample (3)
 │  │  ├─ createdAt (timestamp)
 │  │  ├─ message (string)
 │  │  └─ source (string)
-│  ├─ docs (sample 1)
+│  ├─ docs (sample 2)
+│  │  ├─ admin_messages
 │  │  └─ main
 ├─ second_app_settings
 │  ├─ schema
@@ -690,6 +695,47 @@ Doc IDs: sample (3)
 │     │  └─ rebuy (string)
 │     ├─ docs (sample 1)
 │     │  └─ bootstrap
+├─ second_tournament
+│  ├─ schema
+│  │  ├─ assignments (map)
+│  │  ├─ buyIn (string)
+│  │  ├─ finalPlayers (array) -> array<unknown>
+│  │  ├─ group (map)
+│  │  │  ├─ eliminated (map)
+│  │  │  └─ playerStacks (map)
+│  │  ├─ organizer (string)
+│  │  ├─ payments (map)
+│  │  │  ├─ table10 (map)
+│  │  │  │  ├─ buyIn (string)
+│  │  │  │  ├─ rebuyAddOn (string)
+│  │  │  │  ├─ rebuyCount (string)
+│  │  │  │  └─ sum (string)
+│  │  │  └─ table11 (map)
+│  │  │     ├─ buyIn (string)
+│  │  │     ├─ rebuyAddOn (string)
+│  │  │     ├─ pot (string)
+│  │  │     ├─ rake (string)
+│  │  │     └─ percent (string)
+│  │  ├─ payouts (map)
+│  │  │  ├─ showFinal (boolean)
+│  │  │  └─ showInitial (boolean)
+│  │  ├─ players (array) -> array<unknown>
+│  │  ├─ pool (map)
+│  │  │  ├─ mods (array) -> array<unknown>
+│  │  │  └─ splits (array) -> array<unknown>
+│  │  ├─ rake (string)
+│  │  ├─ rebuyAddOn (string)
+│  │  ├─ rebuyStack (string)
+│  │  ├─ semi (map)
+│  │  │  ├─ tables (array) -> array<unknown>
+│  │  │  ├─ assignments (map)
+│  │  │  └─ customTables (array) -> array<unknown>
+│  │  ├─ stack (string)
+│  │  ├─ tableEntries (map)
+│  │  ├─ tables (array) -> array<unknown>
+│  │  └─ updatedAt (timestamp)
+│  ├─ docs (sample 1)
+│  │  └─ state
 ├─ second_user_games
 │  ├─ schema
 │  │  ├─ createdAt (timestamp)
@@ -733,6 +779,17 @@ Doc IDs: sample (3)
 │  │  ├─ 3RAPSXbOk5Z7aChy94AN
 │  │  ├─ 4LEbMfHAjCQjxROE8INf
 │  │  └─ BD2KzUxHvnGbRC7ehMim
+│  ├─ confirmations
+│  │  ├─ schema
+│  │  │  ├─ confirmed (boolean)
+│  │  │  ├─ playerId (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ updatedAt (timestamp)
+│  │  │  └─ updatedBy (string)
+│  │  ├─ docs (sample 3)
+│  │  │  ├─ player-1770711680692
+│  │  │  ├─ player-1770711818720
+│  │  │  └─ player-1770712313347
 │  ├─ rows
 │  │  ├─ schema
 │  │  │  ├─ championship (boolean)
@@ -795,6 +852,19 @@ Doc IDs: sample (3)
 │  │  │  ├─ points (string)
 │  │  │  └─ rebuy (string)
 │  │  ├─ docs (sample 3)
+│  │  │  ├─ 2pVCuBqmu0WXHdWdteZ6
+│  │  │  ├─ 5LCAZftq3v3feVYbYGAR
+│  │  │  └─ CU3ZV7gSgPougIx4RZ7w
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
 │  │  │  ├─ 1ItvMRMcpK8nrVQeHXdr
 │  │  │  ├─ NoFq3zxvJEppDkuKeR6S
 │  │  │  └─ RAt7qy7NcelSf5Sl7C86
@@ -822,6 +892,7 @@ Doc IDs: sample (3)
 │  │  │  ├─ payouts (string)
 │  │  │  ├─ percentAllGames (string)
 │  │  │  ├─ percentPlayedGames (string)
+│  │  │  ├─ playerId (string)
 │  │  │  ├─ playerName (string)
 │  │  │  ├─ points (string)
 │  │  │  ├─ rebuy (string)
@@ -907,6 +978,19 @@ Doc IDs: sample (3)
 │  │  │  ├─ points (string)
 │  │  │  └─ rebuy (string)
 │  │  ├─ docs (sample 3)
+│  │  │  ├─ 0BgYKuaqto5xHnMPcNSY
+│  │  │  ├─ 18RaEXDofiQaQQuXnPLR
+│  │  │  └─ Ax3sJB9Vy5TOsHuRD3xb
+│  ├─ rows
+│  │  ├─ schema
+│  │  │  ├─ championship (boolean)
+│  │  │  ├─ createdAt (timestamp)
+│  │  │  ├─ entryFee (string)
+│  │  │  ├─ payout (string)
+│  │  │  ├─ playerName (string)
+│  │  │  ├─ points (string)
+│  │  │  └─ rebuy (string)
+│  │  ├─ docs (sample 3)
 │  │  │  ├─ DlTTsdDLyqLUY53YaIPA
 │  │  │  ├─ G4tbOS9Hgv4EIphWycvP
 │  │  │  └─ J8MB7tJ6SMgk8jbH5Rd5
@@ -916,9 +1000,11 @@ Doc IDs: sample (3)
 │     │  ├─ createdAt (timestamp)
 │     │  ├─ entryFee (string)
 │     │  ├─ payout (string)
+│     │  ├─ playerId (string)
 │     │  ├─ playerName (string)
 │     │  ├─ points (string)
-│     │  └─ rebuy (string)
+│     │  ├─ rebuy (string)
+│     │  └─ rebuys (array) -> array<string|unknown>
 │     ├─ docs (sample 3)
 │     │  ├─ 17HNAnf3IfVASK8sOt2E
 │     │  ├─ BkfyC33b5i0iZ7ZP30Qw
@@ -935,19 +1021,66 @@ Doc IDs: sample (3)
    │  ├─ name (string)
    │  ├─ postGameNotes (string)
    │  └─ preGameNotes (string)
-   ├─ docs (sample 2)
+   ├─ docs (sample 3)
    │  ├─ 20jIN0MxVoeCkmEFK4hp
+   │  ├─ ZeZwRZzAAODIkD1RZ9jy
    │  └─ nFV8Sc9WnsvwW6Hp28UT
+   ├─ confirmations
+   │  ├─ schema
+   │  │  ├─ confirmed (boolean)
+   │  │  ├─ playerId (string)
+   │  │  ├─ playerName (string)
+   │  │  ├─ updatedAt (timestamp)
+   │  │  └─ updatedBy (string)
+   │  ├─ docs (sample 3)
+   │  │  ├─ player-1770711680692
+   │  │  ├─ player-1770711818720
+   │  │  └─ player-1770712313347
+   ├─ rows
+   │  ├─ schema
+   │  │  ├─ championship (boolean)
+   │  │  ├─ createdAt (timestamp)
+   │  │  ├─ entryFee (string)
+   │  │  ├─ payout (string)
+   │  │  ├─ playerId (string)
+   │  │  ├─ playerName (string)
+   │  │  ├─ points (string)
+   │  │  ├─ rebuy (string)
+   │  │  ├─ rebuyIndexes (array) -> array<integer>
+   │  │  ├─ rebuyNextIndex (integer)
+   │  │  └─ rebuys (array) -> array<string>
+   │  ├─ docs (sample 3)
+   │  │  ├─ CGCmZX2acX3kFVhw8Dmt
+   │  │  ├─ EiLLMeBjnZ8boTh2YTxh
+   │  │  └─ IdGjeovNZFuX8zUyq4s8
+   ├─ rows
+   │  ├─ schema
+   │  │  ├─ championship (boolean)
+   │  │  ├─ createdAt (timestamp)
+   │  │  ├─ entryFee (string)
+   │  │  ├─ payout (string)
+   │  │  ├─ playerId (string)
+   │  │  ├─ playerName (string)
+   │  │  ├─ points (string)
+   │  │  └─ rebuy (string)
+   │  ├─ docs (sample 3)
+   │  │  ├─ 1YCcJp11jZWlsrZ4tz4E
+   │  │  ├─ Eehd0vBI7Uu2UWYSfiqW
+   │  │  └─ eBulNVdzmGRIOQUoyUbZ
    └─ rows
       ├─ schema
       │  ├─ championship (boolean)
       │  ├─ createdAt (timestamp)
       │  ├─ entryFee (string)
       │  ├─ payout (string)
+      │  ├─ playerId (string)
       │  ├─ playerName (string)
       │  ├─ points (string)
-      │  └─ rebuy (string)
+      │  ├─ rebuy (string)
+      │  ├─ rebuyIndexes (array) -> array<unknown>
+      │  ├─ rebuyNextIndex (integer)
+      │  └─ rebuys (array) -> array<unknown>
       ├─ docs (sample 3)
-      │  ├─ EiLLMeBjnZ8boTh2YTxh
-      │  ├─ IdGjeovNZFuX8zUyq4s8
-      │  └─ WmHGHSImyIzPplYJ7jIm
+      │  ├─ 1zXmExl6mHacVmgaVOXX
+      │  ├─ 3t9D5U7bRPOc28vDrD24
+      │  └─ 7X71nks9MtV5wHQnM94N
