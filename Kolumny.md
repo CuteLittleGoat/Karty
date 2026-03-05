@@ -1,302 +1,111 @@
-# Kolumny w tabelach
+# Kolumny — aktualny układ (Main)
 
-## Zasady ogólne dla większości tabel
+Wartości poniżej opisują docelowe szerokości kolumn ustawione na stałe dla modułu **Main**.
+Każda tabela działa w kontenerze `.admin-table-scroll` z poziomym i pionowym przewijaniem przy nadmiarze danych.
 
-| Obszar | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Główne tabele w panelach | 860 px | brak stałego limitu | do lewej | tekst | Tabela zajmuje całą dostępną szerokość sekcji, a przy zbyt małym oknie przewija się poziomo wewnątrz kontenera. |
-| wartość oczekiwana |  |  |  |  |  |
-| Tabela graczy | 1320 px | brak stałego limitu | do lewej (kolumna z polem wyboru wizualnie na środku) | tekst | Kolumna z polem wyboru ma około 88 px. |
-| wartość oczekiwana |  |  |  |  |  |
-| Szeroka tabela statystyk graczy | 2300 px | brak stałego limitu | do lewej | tekst | Na mniejszych ekranach wymaga przesuwania poziomego. |
-| wartość oczekiwana |  |  |  |  |  |
-| Tabele kalkulatora | 760 px (na małych ekranach 680 px) | brak stałego limitu | do lewej | tekst | Dostosowane do pracy na mniejszych ekranach. |
-| wartość oczekiwana |  |  |  |  |  |
-| Tabela rebuy w oknie kalkulatora | stała szerokość każdej kolumny: 8 znaków | stała szerokość każdej kolumny: 8 znaków | do lewej | numeric | Wszystkie kolumny tej tabeli mają jednakową szerokość. |
-| wartość oczekiwana |  |  |  |  |  |
-| Układ zakładek admina z rankingiem (Main: Gry admina, Statystyki) | 20 ch (Lata) / elastyczna środkowa / 42 ch (Ranking) | brak stałego limitu | układ od lewej do prawej | tekst | Sekcja Ranking jest przypięta do prawej kolumny i mieści pełną tabelę bez przewijania. |
-| wartość oczekiwana |  |  |  |  |  |
+## Gracze (`.players-table`)
+1. Aplikacja: 5.5rem
+2. Nazwa: 16rem
+3. PIN: 10rem
+4. Uprawnienia: 22rem
+5. Akcje: 7.5rem
 
-## 1) Gracze (panel administratora)
+## Tabele gier (`.admin-games-table` / `.admin-user-games-table`)
+1. Rodzaj gry: 8.5rem
+2. Data: 8.5rem
+3. Nazwa: 20rem
+4. CzyZamknięta: 7rem
+5. Ilość potwierdzonych: 11rem
+6. Akcje: 12rem
 
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Aplikacja | 100 px | brak stałego limitu | środek | tekst | Pole wyboru ma rozmiar około 18 x 18 px. |
-| wartość oczekiwana |  |  |  |  |  |
-| Nazwa | 280 px | brak stałego limitu | do lewej | tekst | Pole tekstowe. |
-| wartość oczekiwana |  |  |  |  |  |
-| PIN | 180 px | brak stałego limitu | do lewej | numeric | Przyjmuje wyłącznie cyfry, maksymalnie 5 cyfr. |
-| wartość oczekiwana |  |  |  |  |  |
-| Uprawnienia | 620 px | brak stałego limitu | do lewej | tekst | Lista uprawnień i przycisk edycji. |
-| wartość oczekiwana |  |  |  |  |  |
-| Akcje | 130 px | brak stałego limitu | do lewej | tekst | Przyciski działań (np. usuwanie). |
-| wartość oczekiwana |  |  |  |  |  |
+## Statystyki graczy (`.admin-games-players-stats-table`)
+1. Gracz: 12rem
+2. Mistrzostwo: 8rem
+3. Waga1: 6.5rem
+4. Ilość spotkań: 8rem
+5. Waga2: 6.5rem
+6. % udział: 8rem
+7. Punkty: 8rem
+8. Waga3: 6.5rem
+9. (+/-): 8rem
+10. Waga4: 6.5rem
+11. Wypłata: 8rem
+12. Waga5: 6.5rem
+13. Wpłaty: 8rem
+14. Waga6: 6.5rem
+15. Suma z rozegranych gier: 8rem
+16. % rozegranych gier: 8rem
+17. % wszystkich gier: 8rem
+18. Wyniki: 8rem
 
-## 2) Listy gier (administrator, użytkownik, najbliższa gra)
+## Ranking (`.admin-games-ranking-table`)
+1. LP: 3.5rem
+2. Gracz: 16rem
+3. Wynik: 7rem
 
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Rodzaj gry | 150 px | brak stałego limitu | do lewej | tekst | Lista wyboru typu gry. |
-| wartość oczekiwana |  |  |  |  |  |
-| Data | 170 px | brak stałego limitu | do lewej | tekst | Pole daty. |
-| wartość oczekiwana |  |  |  |  |  |
-| Nazwa (Gry admina / Najbliższa gra) | 360 px | brak stałego limitu | do lewej | tekst | Pole tekstowe i przycisk „Szczegóły”. |
-| wartość oczekiwana |  |  |  |  |  |
-| Nazwa (Gry użytkowników) | 440 px | brak stałego limitu | do lewej | tekst | Szersza kolumna dla pola nazwy oraz przycisków „Szczegóły” i „Notatki do gry”. |
-| wartość oczekiwana |  |  |  |  |  |
-| Status zamknięcia / potwierdzeń | 150 px | brak stałego limitu | do lewej | tekst | Pole wyboru tak/nie. |
-| wartość oczekiwana |  |  |  |  |  |
-| IlośćPotwierdzonych | 230 px | brak stałego limitu | do lewej | numeric | Format `potwierdzeni/zapisani`, np. `3/5`. |
-| wartość oczekiwana |  |  |  |  |  |
-| Akcje | 140 px | brak stałego limitu | do lewej | tekst | Przyciski (np. szczegóły, usuwanie). |
-| wartość oczekiwana |  |  |  |  |  |
+## Gry do potwierdzenia (`.confirmations-table`)
+1. Rodzaj gry: 8rem
+2. Data: 8.5rem
+3. Nazwa: 16rem
+4. Potwierdzenia: 10rem
+5. Akcje: 16rem
 
-## 3) Szczegóły gry (okno szczegółów)
+## Szczegóły gry (`.game-details-table`, `.confirmations-details-table`)
+1. LP: 3.5rem
+2. Gracz: 13rem
+3. Wpisowe: 8rem
+4. Rebuy/Add-on: 8rem
+5. Wypłata: 8rem
+6. +/-: 8rem
+7. Punkty: 8rem
+8. Mistrzostwo: 8rem
+9. Akcje (tylko `.game-details-table`): 10rem
 
-W kolumnie **Gracz** lista rozwijana pokazuje tylko osoby dostępne dla danego wiersza; gracze już wybrani w innych wierszach tej samej gry są ukrywani (aktualnie wybrana wartość wiersza pozostaje widoczna). Kolumna **Rebuy/Add-on** ma zwykły nagłówek, a wierszowa wartość działa jako przycisk otwierający modal szczegółów rebuy.
+## Kalkulator — Tournament
 
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| LP | automatyczna | brak stałego limitu | do lewej | numeric | Numer porządkowy. |
-| wartość oczekiwana |  |  |  |  |  |
-| Gracz | automatyczna | brak stałego limitu | do lewej | tekst | Lista wyboru gracza. |
-| wartość oczekiwana |  |  |  |  |  |
-| Wpisowe | automatyczna | brak stałego limitu | do lewej | numeric | Pole liczbowe. |
-| wartość oczekiwana |  |  |  |  |  |
-| Rebuy / Add-on | automatyczna | brak stałego limitu | do lewej | numeric | Przycisk otwierający okno wpisania wartości (analogicznie do Wpisowego). |
-| wartość oczekiwana |  |  |  |  |  |
-| Wypłata | automatyczna | brak stałego limitu | do lewej | numeric | Pole liczbowe. |
-| wartość oczekiwana |  |  |  |  |  |
-| +/- | automatyczna | brak stałego limitu | do lewej | numeric | Pole wyliczane automatycznie. |
-| wartość oczekiwana |  |  |  |  |  |
-| Punkty | automatyczna | brak stałego limitu | do lewej | numeric | Pole liczbowe. |
-| wartość oczekiwana |  |  |  |  |  |
-| Mistrzostwo | automatyczna | brak stałego limitu | do lewej | tekst | Pole wyboru tak/nie. |
-| wartość oczekiwana |  |  |  |  |  |
-| Akcje (część administratora) | automatyczna | brak stałego limitu | do lewej | tekst | Przycisk usuwania wiersza. |
-| wartość oczekiwana |  |  |  |  |  |
+### Tabela1 (`.admin-calculator-table1`)
+- Suma, Buy-In, Rebuy, Liczba rebuy: po 8rem
 
-## 4) Gry do potwierdzenia (strefa gracza)
+### Tabela2 (`.admin-calculator-table2`)
+1. LP: 4rem
+2. Gracz: 14rem
+3. Buy-In: 8rem
+4. Eliminacja: 7rem
+5. Akcje: 9rem
 
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Rodzaj gry | 150 px | brak stałego limitu | do lewej | tekst | Wartość informacyjna. |
-| wartość oczekiwana |  |  |  |  |  |
-| Data | 170 px | brak stałego limitu | do lewej | tekst | Data gry. |
-| wartość oczekiwana |  |  |  |  |  |
-| Nazwa | 360 px | brak stałego limitu | do lewej | tekst | Nazwa gry. |
-| wartość oczekiwana |  |  |  |  |  |
-| Potwierdzenie | automatyczna | brak stałego limitu | do lewej | tekst | Status i działanie potwierdzające. |
-| wartość oczekiwana |  |  |  |  |  |
+### Tabela3 (`.admin-calculator-table3`)
+- Wszystkie kolumny: 8rem
 
-## 5) Statystyki
+### Tabela4 (`.admin-calculator-table4`)
+- Wszystkie kolumny: 8rem
 
-### 5.1 Podsumowanie „Opis / Wartość”
+### Tabela5 (`.admin-calculator-table5`)
+1. LP: 4rem
+2. Podział puli: 9rem
+3. Kwota: 8rem
+4. Kolumny rebuy: szerokość naturalna (zachowane na jednej linii)
+5. Mod: szerokość naturalna
+6. Suma: 8rem
 
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Opis | automatyczna | brak stałego limitu | do lewej | tekst | Nazwa wskaźnika. |
-| wartość oczekiwana |  |  |  |  |  |
-| Wartość | automatyczna | brak stałego limitu | do lewej | tekstowe i liczbowe | Wartość liczbowa lub tekstowa. |
-| wartość oczekiwana |  |  |  |  |  |
+## Kalkulator — Cash
 
-### 5.2 Rozbudowana tabela statystyk graczy
+### Tabela7 (`.admin-calculator-cash-table7`)
+- Wszystkie kolumny: 8rem
 
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Gracz | automatyczna | brak stałego limitu | do lewej | tekst | Nazwa gracza. |
-| wartość oczekiwana |  |  |  |  |  |
-| Mistrzostwo | automatyczna | brak stałego limitu | do lewej | numeric | Liczba zwycięstw. |
-| wartość oczekiwana |  |  |  |  |  |
-| Waga 1 | 8 ch | 8 ch | do lewej | numeric | Pole edytowalne (liczba całkowita), szerokość stała zgodna z przyciskiem nagłówka. |
-| wartość oczekiwana |  |  |  |  |  |
-| Ilość spotkań | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Waga 2 | 8 ch | 8 ch | do lewej | numeric | Pole edytowalne (liczba całkowita), szerokość stała zgodna z przyciskiem nagłówka. |
-| wartość oczekiwana |  |  |  |  |  |
-| Udział procentowy | automatyczna | brak stałego limitu | do lewej | numeric | Znak % dodawany automatycznie. |
-| wartość oczekiwana |  |  |  |  |  |
-| Punkty | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Waga 3 | 8 ch | 8 ch | do lewej | numeric | Pole edytowalne (liczba całkowita), szerokość stała zgodna z przyciskiem nagłówka. |
-| wartość oczekiwana |  |  |  |  |  |
-| Bilans (+/-) | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Waga 4 | 8 ch | 8 ch | do lewej | numeric | Pole edytowalne (liczba całkowita), szerokość stała zgodna z przyciskiem nagłówka. |
-| wartość oczekiwana |  |  |  |  |  |
-| Wypłata | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Waga 5 | 8 ch | 8 ch | do lewej | numeric | Pole edytowalne (liczba całkowita), szerokość stała zgodna z przyciskiem nagłówka. |
-| wartość oczekiwana |  |  |  |  |  |
-| Wpłaty | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Waga 6 | 8 ch | 8 ch | do lewej | numeric | Pole edytowalne (liczba całkowita), szerokość stała zgodna z przyciskiem nagłówka. |
-| wartość oczekiwana |  |  |  |  |  |
-| Suma z rozegranych gier | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Procent rozegranych gier | automatyczna | brak stałego limitu | do lewej | numeric | Znak % dodawany automatycznie. |
-| wartość oczekiwana |  |  |  |  |  |
-| Procent wszystkich gier | automatyczna | brak stałego limitu | do lewej | numeric | Znak % dodawany automatycznie. |
-| wartość oczekiwana |  |  |  |  |  |
-| Wynik końcowy | automatyczna | brak stałego limitu | do lewej | numeric | Wartość końcowa rankingu. |
-| wartość oczekiwana |  |  |  |  |  |
+### Tabela8 (`.admin-calculator-cash-table8`)
+- Wszystkie kolumny: 8rem
 
-### 5.3 Ranking
+### Tabela9 (`.admin-calculator-cash-table9`)
+1. Gracz: 13rem
+2. Buy-In: 8rem
+3. Rebuy: 8rem
+4. Wypłata: 8rem
+5. +/-: 8rem
+6. Akcje: 10rem
 
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Miejsce | 3 znaki | brak stałego limitu | pionowo środek, poziomo do lewej | numeric | Wiersze rankingu mają podwójną wysokość względem poprzedniego układu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Gracz | 16 znaków | brak stałego limitu | pionowo środek, poziomo do lewej | tekst | Kolumna zwężona; nazwy zawijają się tylko między słowami (bez łamania słów). |
-| wartość oczekiwana |  |  |  |  |  |
-| Wynik | 8 znaków | brak stałego limitu | środek (pion i poziom) | numeric | Wynik punktowy. |
-| wartość oczekiwana |  |  |  |  |  |
-
-## 6) Kalkulator
-
-### 6.0 Tabela7 (Cash)
-
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Buy-In | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu, suma Buy-In z Tabela9 pomniejszona o wartość z kolumny `%` (Tabela8). |
-| wartość oczekiwana |  |  |  |  |  |
-| Rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu, suma Rebuy z Tabela9 pomniejszona o wartość z kolumny `%` (Tabela8). |
-| wartość oczekiwana |  |  |  |  |  |
-| Suma | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu, suma Buy-In i Rebuy z Tabela9. |
-| wartość oczekiwana |  |  |  |  |  |
-
-### 6.1 Tabela8 (Cash)
-
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| % | automatyczna | brak stałego limitu | do lewej | numeric | Wpis liczbowy, znak `%` dodawany automatycznie po opuszczeniu pola. |
-| wartość oczekiwana |  |  |  |  |  |
-| Rake | automatyczna | brak stałego limitu | do lewej | numeric | Wpis liczbowy kwoty rake. |
-| wartość oczekiwana |  |  |  |  |  |
-| Pot | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu, wynik `Suma z Tabela7 - Rake z Tabela8`. |
-| wartość oczekiwana |  |  |  |  |  |
-
-### 6.2 Tabela9 (Cash)
-
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Gracz | automatyczna | brak stałego limitu | do lewej | tekst | Lista wyboru pokazuje tylko dostępnych graczy; osoby już wskazane w innych wierszach Cash są ukryte. |
-| wartość oczekiwana |  |  |  |  |  |
-| Buy-In | automatyczna | brak stałego limitu | do lewej | numeric | W nagłówku znajduje się przycisk do zbiorczego ustawienia wartości Buy-In dla wszystkich wierszy; każde pole można potem edytować ręcznie, domyślnie 0. |
-| wartość oczekiwana |  |  |  |  |  |
-| Rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Przycisk z sumą rebuy, otwiera modal. |
-| wartość oczekiwana |  |  |  |  |  |
-| Wypłata | automatyczna | brak stałego limitu | do lewej | numeric | Pole liczbowe, domyślnie 0. |
-| wartość oczekiwana |  |  |  |  |  |
-| +/- | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu, wynik Wypłata-(Buy-In+Rebuy). |
-| wartość oczekiwana |  |  |  |  |  |
-| Akcje | automatyczna | brak stałego limitu | do lewej | tekst | Przyciski Dodaj i Usuń wiersz. |
-| wartość oczekiwana |  |  |  |  |  |
-
-### 6.3 Tabela10 (Cash)
-
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Lp | automatyczna | brak stałego limitu | do lewej | numeric | Autonumeracja po sortowaniu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Gracz | automatyczna | brak stałego limitu | do lewej | tekst | Dane z Tabela9. |
-| wartość oczekiwana |  |  |  |  |  |
-| Wypłata | automatyczna | brak stałego limitu | do lewej | numeric | Dane z Tabela9. |
-| wartość oczekiwana |  |  |  |  |  |
-| +/- | automatyczna | brak stałego limitu | do lewej | numeric | Dane z Tabela9, sortowanie malejące. |
-| wartość oczekiwana |  |  |  |  |  |
-| % Puli | automatyczna | brak stałego limitu | do lewej | numeric | Wypłata z Tabela9 / Suma z Tabela7. |
-| wartość oczekiwana |  |  |  |  |  |
-
-### 6.4 Tabela podsumowania wejść (Tournament)
-
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Suma | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Buy-In | automatyczna | brak stałego limitu | do lewej | numeric | Pole liczbowe. |
-| wartość oczekiwana |  |  |  |  |  |
-| Rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Pole liczbowe. |
-| wartość oczekiwana |  |  |  |  |  |
-| Liczba Rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-
-### 6.5 Tabela uczestników (Tournament)
-
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| LP | automatyczna | brak stałego limitu | do lewej | numeric | Numer porządkowy. |
-| wartość oczekiwana |  |  |  |  |  |
-| Gracz | automatyczna | brak stałego limitu | do lewej | tekst | Lista wyboru pokazuje tylko dostępnych graczy; osoba wybrana w innym wierszu Tournament jest ukryta. |
-| wartość oczekiwana |  |  |  |  |  |
-| Buy-In | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Przycisk otwierający okno rebuy. |
-| wartość oczekiwana |  |  |  |  |  |
-| Eliminacja | automatyczna | brak stałego limitu | do lewej | tekst | Pole wyboru tak/nie. |
-| wartość oczekiwana |  |  |  |  |  |
-| Akcje | automatyczna | brak stałego limitu | do lewej | tekst | Dodawanie i usuwanie wiersza. |
-| wartość oczekiwana |  |  |  |  |  |
-
-### 6.6 Tabela wartości procentowych i puli (Tournament)
-
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Procent | automatyczna | brak stałego limitu | do lewej | numeric | Wpisujesz liczbę, znak % dodaje się automatycznie. |
-| wartość oczekiwana |  |  |  |  |  |
-| Rake | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Wpisowe | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Pot | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-
-### 6.7 Tabela wygranych (Tournament)
-
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| LP | automatyczna | brak stałego limitu | do lewej | numeric | Numer miejsca. |
-| wartość oczekiwana |  |  |  |  |  |
-| Gracz | automatyczna | brak stałego limitu | do lewej | tekst | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Wygrana | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-
-### 6.8 Tabela podziału puli (Tournament)
-
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| LP | automatyczna | brak stałego limitu | do lewej | numeric | Numer porządkowy. |
-| wartość oczekiwana |  |  |  |  |  |
-| Podział puli | automatyczna | brak stałego limitu | do lewej | numeric | Wpisujesz liczbę, znak % dodaje się automatycznie. |
-| wartość oczekiwana |  |  |  |  |  |
-| Kwota | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-| Kolumny kolejnych rebuy | automatyczna | brak stałego limitu | do lewej | numeric | Pojawiają się tylko, gdy są potrzebne. |
-| wartość oczekiwana |  |  |  |  |  |
-| Mod | automatyczna | brak stałego limitu | do lewej | tekst | Pole pomocnicze do obliczeń. |
-| wartość oczekiwana |  |  |  |  |  |
-| Suma | automatyczna | brak stałego limitu | do lewej | numeric | Pole tylko do odczytu. |
-| wartość oczekiwana |  |  |  |  |  |
-
-### 6.9 Tabela rebuy w osobnym oknie (Tournament)
-
-| Kolumna | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Rebuy 1, Rebuy 2, kolejne | stała szerokość: 8 znaków | stała szerokość: 8 znaków | do lewej | numeric | Wszystkie kolumny mają identyczną szerokość dla łatwego porównania. |
-| wartość oczekiwana |  |  |  |  |  |
-
-## 7) Zasady wpisywania danych
-
-| Obszar | Minimalna szerokość | Maksymalna szerokość | Wyrównanie | Typ | Inne |
-|---|---|---|---|---|---|
-| Pola liczbowe | nie dotyczy | nie dotyczy | do lewej | tekst | Aplikacja usuwa nieprawidłowe znaki i zostawia poprawną liczbę. |
-| wartość oczekiwana |  |  |  |  |  |
-| Pola procentowe | nie dotyczy | nie dotyczy | do lewej | tekst | Użytkownik wpisuje samą liczbę, a znak % dodaje się automatycznie. |
-| wartość oczekiwana |  |  |  |  |  |
-| Spójność prezentacji liczb i tekstu | nie dotyczy | nie dotyczy | do lewej | tekst | Liczby są ułożone tak samo jak tekst dla jednolitego wyglądu. |
-| wartość oczekiwana |  |  |  |  |  |
-
-| Tabela rebuy w oknie szczegółów gry | stała szerokość każdej kolumny: 8 znaków | stała szerokość każdej kolumny: 8 znaków | do lewej | numeric | Układ zgodny z modalem rebuy z Kalkulatora (przyciski Dodaj/Usuń Rebuy). |
+### Tabela10 (`.admin-calculator-cash-table10`)
+1. LP: 4rem
+2. Gracz: 13rem
+3. Wypłata: 8rem
+4. +/-: 8rem
+5. % Puli: 8rem

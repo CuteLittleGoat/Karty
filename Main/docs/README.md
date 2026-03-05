@@ -538,10 +538,19 @@ To jest kompletna instrukcja obsługi UI modułu Main dla pierwszego uruchomieni
 - Dzięki temu licznik **IlośćPotwierdzonych** i okno **Statusy** pokazują spójne wartości także przy duplikatach tych samych nazw.
 - Nazwa gracza pozostaje etykietą widoczną w tabelach, ale logika dopasowania działa po identyfikatorze.
 
-## 18. Aktualny wygląd nagłówka i tabel (szerokości kolumn)
-- W prawym górnym rogu nagłówka (zarówno w widoku administratora, jak i użytkownika) grafika `Pliki/Ikona.png` jest wyświetlana po lewej stronie przycisku **Instrukcja** w jednej linii.
-- W zakładkach admina **Gry admina** i **Statystyki** tabele w sekcji środkowej zachowują się responsywnie tak samo jak w widoku gracza: tabela ma szerokość `max-content` z minimalną szerokością `100%` kontenera, więc kolumny (w tym `Opis` i `Wartość`) zwężają się razem z oknem i nie utrzymują sztucznej, stałej szerokości.
-- Szerokości większości kolumn są automatyczne (bez stałych limitów min/max), dzięki czemu układ wraca do stanu sprzed ostatnich zmian i lepiej dopasowuje się do danych.
-- Wyjątki, które pozostały stałe: minimalna szerokość tabel (`860 px`), tabela graczy (`1320 px`), tabela list gier (`1260 px`), szeroka tabela statystyk (`2300 px`), kolumny rebuy (`8 znaków`) oraz ranking (`Miejsce: 3 znaki`, `Gracz: 16 znaków`, `Wynik: 8 znaków`).
-- Logika działania widoków nie zmienia się; zmieniony został wyłącznie układ szerokości kolumn i zachowanie przewijania poziomego.
-- Jeżeli tabela ma więcej danych niż miejsce na ekranie, pod tabelą pojawia się poziomy suwak (scrollbar) i całą zawartość można bezpiecznie przesuwać lewo/prawo, bez nachodzenia nagłówków i pól edycji.
+---
+
+## Aktualizacja UI: nowy układ wszystkich tabel (Main)
+
+W module Main wszystkie tabele zostały przebudowane pod kątem czytelności i pracy na PC oraz mobile.
+
+Jak to działa w praktyce dla użytkownika:
+1. Każda tabela ma teraz stałe szerokości kolumn dopasowane do typu danych (np. checkboxy są wąskie, kolumny z akcjami mają miejsce na przyciski obok siebie).
+2. Gdy tabela nie mieści się poziomo, pojawia się **poziomy pasek przewijania**.
+3. Gdy tabela ma dużo wierszy, pojawia się **pionowy pasek przewijania** w obrębie bloku tabeli.
+4. Nie zmienia się logika formularzy, obliczeń ani typy danych — zmienia się wyłącznie układ wizualny i ergonomia pracy.
+5. Układ paneli bocznych (np. **Lata**, **Ranking**) pozostaje bez zmian.
+
+Wskazówka użycia:
+- Na telefonie przewijaj tabelę ruchem poziomym w obrębie jej kontenera.
+- Na komputerze możesz korzystać z poziomego i pionowego scrolla bez wychodzenia poza aktualną sekcję.

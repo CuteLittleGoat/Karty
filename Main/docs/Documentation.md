@@ -94,7 +94,28 @@
 - Zapis potwierdzenia przez administratora ustawia `playerId` na rzeczywiste ID gracza z rekordu gry (jeżeli istnieje), zamiast przepisywać nazwę do pola `playerId`.
 - Ranking statystyk, masowe ustawianie wag i eksport XLSX odczytują wpisy ręczne z mapy rocznej po `statsKey` (`id:<playerId>` z fallbackiem nazwy), a nie po samym `playerName`.
 
-## 7. Aktualizacja techniczna układu kolumn (Main)
-- W `Main/styles.css` przywrócono układ kolumn zgodny z bieżącą specyfikacją: większość kolumn działa na szerokościach automatycznych (`auto`) bez wymuszonych zakresów `min-width/max-width`.
-- Zachowano docelowe wyjątki: minimalna szerokość tabel (`860px` globalnie, `700px` dla tabeli graczy, `2300px` dla szerokiej tabeli statystyk), stałe kolumny `8ch` w tabelach rebuy oraz dedykowane szerokości rankingu (`3/16/8` znaków).
-- W `Main/index.html` nagłówek ma jedną wspólną sekcję sterowania (`.header-controls`) dla widoku administratora i użytkownika: grafika `Pliki/Ikona.png` (`.header-icon`) jest umieszczona po lewej stronie przycisku `Instrukcja` w tej samej linii.
+## Rework layoutu tabel (Main)
+
+Zmiany obejmują wyłącznie warstwę prezentacji tabel (`Main/styles.css`):
+
+- ` .admin-table-scroll`
+  - `overflow` zmienione na `auto` (obsługa osi X i Y),
+  - dodany limit wysokości `max-height: min(72vh, 760px)`,
+  - zachowane stylowanie pasków przewijania.
+- `.admin-data-table`
+  - `width: max-content`,
+  - `min-width: 100%`,
+  - dzięki temu tabela jest pełna w szerokich kontenerach, ale może też rozszerzać się wg zawartości i przewijać poziomo.
+- Usunięto wcześniejsze, rozproszone i częściowo niespójne ograniczenia szerokości (`min-width`) z poprzedniego układu dla tabel gier, graczy i rankingu.
+- Dodano pełny zestaw jawnych szerokości `width/min-width` dla kolumn we wszystkich głównych tabelach:
+  - gracze,
+  - gry administratora i gry użytkowników,
+  - statystyki i ranking,
+  - gry do potwierdzenia,
+  - szczegóły gry (modale),
+  - kalkulator (Tournament i Cash).
+
+Efekt techniczny:
+- stabilny układ kolumn niezależnie od długości danych,
+- lepsza przewidywalność renderowania przycisków i pól,
+- pełna obsługa przepełnienia danych przez scroll lokalny bez zmiany szerokości paneli bocznych.

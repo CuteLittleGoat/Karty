@@ -251,11 +251,11 @@ h1 {
 }
 
 .admin-table-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: auto;
   border-radius: var(--radius-sm);
   scrollbar-width: thin;
   scrollbar-color: rgba(237, 235, 230, 0.4) rgba(0, 0, 0, 0.2);
+  max-height: min(72vh, 760px);
 }
 
 .admin-table-scroll::-webkit-scrollbar {
@@ -272,9 +272,9 @@ h1 {
 }
 
 .admin-data-table {
-  width: 100%;
+  width: max-content;
   border-collapse: collapse;
-  min-width: 860px;
+  min-width: 100%;
   table-layout: auto;
 }
 
@@ -506,7 +506,7 @@ select:disabled,
 }
 
 .admin-calculator-table-wrap .admin-data-table {
-  min-width: 760px;
+  min-width: 100%;
 }
 
 .admin-calculator-cash-empty {
@@ -787,86 +787,135 @@ select:disabled,
   min-width: 0;
 }
 
-.admin-games-players-stats-table {
-  min-width: 2300px;
-}
-
-.admin-games-table {
-  min-width: 1260px;
-}
-
 .admin-games-table th,
-.admin-games-table td {
+.admin-games-table td,
+.admin-user-games-table th,
+.admin-user-games-table td,
+.players-table th,
+.players-table td,
+.confirmations-table th,
+.confirmations-table td,
+.game-details-table th,
+.game-details-table td,
+.confirmations-details-table th,
+.confirmations-details-table td,
+.admin-games-players-stats-table th,
+.admin-games-players-stats-table td,
+.admin-games-ranking-table th,
+.admin-games-ranking-table td,
+.admin-calculator-table1 th,
+.admin-calculator-table1 td,
+.admin-calculator-table2 th,
+.admin-calculator-table2 td,
+.admin-calculator-table3 th,
+.admin-calculator-table3 td,
+.admin-calculator-table4 th,
+.admin-calculator-table4 td,
+.admin-calculator-table5 th,
+.admin-calculator-table5 td,
+.admin-calculator-cash-table7 th,
+.admin-calculator-cash-table7 td,
+.admin-calculator-cash-table8 th,
+.admin-calculator-cash-table8 td,
+.admin-calculator-cash-table9 th,
+.admin-calculator-cash-table9 td,
+.admin-calculator-cash-table10 th,
+.admin-calculator-cash-table10 td {
   white-space: nowrap;
 }
 
-.admin-games-table th:nth-child(1),
-.admin-games-table td:nth-child(1) {
-  min-width: 150px;
-}
+.players-table th:nth-child(1), .players-table td:nth-child(1) { width: 5.5rem; min-width: 5.5rem; text-align: center; }
+.players-table th:nth-child(2), .players-table td:nth-child(2) { width: 16rem; min-width: 16rem; }
+.players-table th:nth-child(3), .players-table td:nth-child(3) { width: 10rem; min-width: 10rem; }
+.players-table th:nth-child(4), .players-table td:nth-child(4) { width: 22rem; min-width: 22rem; }
+.players-table th:nth-child(5), .players-table td:nth-child(5) { width: 7.5rem; min-width: 7.5rem; }
 
-.admin-games-table th:nth-child(2),
-.admin-games-table td:nth-child(2) {
-  min-width: 170px;
-}
+.admin-games-table th:nth-child(1), .admin-games-table td:nth-child(1) { width: 8.5rem; min-width: 8.5rem; }
+.admin-games-table th:nth-child(2), .admin-games-table td:nth-child(2) { width: 8.5rem; min-width: 8.5rem; }
+.admin-games-table th:nth-child(3), .admin-games-table td:nth-child(3) { width: 20rem; min-width: 20rem; }
+.admin-games-table th:nth-child(4), .admin-games-table td:nth-child(4) { width: 7rem; min-width: 7rem; text-align: center; }
+.admin-games-table th:nth-child(5), .admin-games-table td:nth-child(5) { width: 11rem; min-width: 11rem; }
+.admin-games-table th:nth-child(6), .admin-games-table td:nth-child(6) { width: 12rem; min-width: 12rem; }
 
-.admin-games-table th:nth-child(3),
-.admin-games-table td:nth-child(3) {
-  min-width: 360px;
-}
+.admin-games-players-stats-table th:nth-child(1), .admin-games-players-stats-table td:nth-child(1) { width: 12rem; min-width: 12rem; }
+.admin-games-players-stats-table th:nth-child(2), .admin-games-players-stats-table td:nth-child(2),
+.admin-games-players-stats-table th:nth-child(4), .admin-games-players-stats-table td:nth-child(4),
+.admin-games-players-stats-table th:nth-child(6), .admin-games-players-stats-table td:nth-child(6),
+.admin-games-players-stats-table th:nth-child(7), .admin-games-players-stats-table td:nth-child(7),
+.admin-games-players-stats-table th:nth-child(9), .admin-games-players-stats-table td:nth-child(9),
+.admin-games-players-stats-table th:nth-child(11), .admin-games-players-stats-table td:nth-child(11),
+.admin-games-players-stats-table th:nth-child(13), .admin-games-players-stats-table td:nth-child(13),
+.admin-games-players-stats-table th:nth-child(15), .admin-games-players-stats-table td:nth-child(15),
+.admin-games-players-stats-table th:nth-child(16), .admin-games-players-stats-table td:nth-child(16),
+.admin-games-players-stats-table th:nth-child(17), .admin-games-players-stats-table td:nth-child(17),
+.admin-games-players-stats-table th:nth-child(18), .admin-games-players-stats-table td:nth-child(18) { width: 8rem; min-width: 8rem; }
+.admin-games-players-stats-table th:nth-child(3), .admin-games-players-stats-table td:nth-child(3),
+.admin-games-players-stats-table th:nth-child(5), .admin-games-players-stats-table td:nth-child(5),
+.admin-games-players-stats-table th:nth-child(8), .admin-games-players-stats-table td:nth-child(8),
+.admin-games-players-stats-table th:nth-child(10), .admin-games-players-stats-table td:nth-child(10),
+.admin-games-players-stats-table th:nth-child(12), .admin-games-players-stats-table td:nth-child(12),
+.admin-games-players-stats-table th:nth-child(14), .admin-games-players-stats-table td:nth-child(14) { width: 6.5rem; min-width: 6.5rem; }
 
-.admin-user-games-table {
-  min-width: 1340px;
-}
+.admin-games-ranking-table th:nth-child(1), .admin-games-ranking-table td:nth-child(1) { width: 3.5rem; min-width: 3.5rem; text-align: center; }
+.admin-games-ranking-table th:nth-child(2), .admin-games-ranking-table td:nth-child(2) { width: 16rem; min-width: 16rem; }
+.admin-games-ranking-table th:nth-child(3), .admin-games-ranking-table td:nth-child(3) { width: 7rem; min-width: 7rem; text-align: center; }
 
-.admin-user-games-table th:nth-child(3),
-.admin-user-games-table td:nth-child(3) {
-  min-width: 440px;
-}
+.confirmations-table th:nth-child(1), .confirmations-table td:nth-child(1) { width: 8rem; min-width: 8rem; }
+.confirmations-table th:nth-child(2), .confirmations-table td:nth-child(2) { width: 8.5rem; min-width: 8.5rem; }
+.confirmations-table th:nth-child(3), .confirmations-table td:nth-child(3) { width: 16rem; min-width: 16rem; }
+.confirmations-table th:nth-child(4), .confirmations-table td:nth-child(4) { width: 10rem; min-width: 10rem; }
+.confirmations-table th:nth-child(5), .confirmations-table td:nth-child(5) { width: 16rem; min-width: 16rem; }
 
-.admin-games-table th:nth-child(4),
-.admin-games-table td:nth-child(4) {
-  min-width: 150px;
-  text-align: center;
-}
+.game-details-table th:nth-child(1), .game-details-table td:nth-child(1),
+.confirmations-details-table th:nth-child(1), .confirmations-details-table td:nth-child(1) { width: 3.5rem; min-width: 3.5rem; }
+.game-details-table th:nth-child(2), .game-details-table td:nth-child(2),
+.confirmations-details-table th:nth-child(2), .confirmations-details-table td:nth-child(2) { width: 13rem; min-width: 13rem; }
+.game-details-table th:nth-child(3), .game-details-table td:nth-child(3),
+.confirmations-details-table th:nth-child(3), .confirmations-details-table td:nth-child(3),
+.game-details-table th:nth-child(4), .game-details-table td:nth-child(4),
+.confirmations-details-table th:nth-child(4), .confirmations-details-table td:nth-child(4),
+.game-details-table th:nth-child(5), .game-details-table td:nth-child(5),
+.confirmations-details-table th:nth-child(5), .confirmations-details-table td:nth-child(5),
+.game-details-table th:nth-child(6), .game-details-table td:nth-child(6),
+.confirmations-details-table th:nth-child(6), .confirmations-details-table td:nth-child(6),
+.game-details-table th:nth-child(7), .game-details-table td:nth-child(7),
+.confirmations-details-table th:nth-child(7), .confirmations-details-table td:nth-child(7),
+.game-details-table th:nth-child(8), .game-details-table td:nth-child(8),
+.confirmations-details-table th:nth-child(8), .confirmations-details-table td:nth-child(8) { width: 8rem; min-width: 8rem; }
+.game-details-table th:nth-child(9), .game-details-table td:nth-child(9) { width: 10rem; min-width: 10rem; }
 
-.admin-games-table th:nth-child(5),
-.admin-games-table td:nth-child(5) {
-  min-width: 230px;
-}
+.admin-calculator-table1 th:nth-child(1), .admin-calculator-table1 td:nth-child(1),
+.admin-calculator-table1 th:nth-child(2), .admin-calculator-table1 td:nth-child(2),
+.admin-calculator-table1 th:nth-child(3), .admin-calculator-table1 td:nth-child(3),
+.admin-calculator-table1 th:nth-child(4), .admin-calculator-table1 td:nth-child(4) { width: 8rem; min-width: 8rem; }
+.admin-calculator-table2 th:nth-child(1), .admin-calculator-table2 td:nth-child(1) { width: 4rem; min-width: 4rem; }
+.admin-calculator-table2 th:nth-child(2), .admin-calculator-table2 td:nth-child(2) { width: 14rem; min-width: 14rem; }
+.admin-calculator-table2 th:nth-child(3), .admin-calculator-table2 td:nth-child(3) { width: 8rem; min-width: 8rem; }
+.admin-calculator-table2 th:nth-child(4), .admin-calculator-table2 td:nth-child(4) { width: 7rem; min-width: 7rem; text-align: center; }
+.admin-calculator-table2 th:nth-child(5), .admin-calculator-table2 td:nth-child(5) { width: 9rem; min-width: 9rem; }
+.admin-calculator-table3 th, .admin-calculator-table3 td,
+.admin-calculator-cash-table7 th, .admin-calculator-cash-table7 td,
+.admin-calculator-cash-table8 th, .admin-calculator-cash-table8 td,
+.admin-calculator-table4 th, .admin-calculator-table4 td { width: 8rem; min-width: 8rem; }
+.admin-calculator-table5 th:nth-child(1), .admin-calculator-table5 td:nth-child(1) { width: 4rem; min-width: 4rem; }
+.admin-calculator-table5 th:nth-child(2), .admin-calculator-table5 td:nth-child(2) { width: 9rem; min-width: 9rem; }
+.admin-calculator-table5 th:nth-child(3), .admin-calculator-table5 td:nth-child(3) { width: 8rem; min-width: 8rem; }
+.admin-calculator-table5 th:last-child, .admin-calculator-table5 td:last-child { width: 8rem; min-width: 8rem; }
+.admin-calculator-cash-table9 th:nth-child(1), .admin-calculator-cash-table9 td:nth-child(1) { width: 13rem; min-width: 13rem; }
+.admin-calculator-cash-table9 th:nth-child(2), .admin-calculator-cash-table9 td:nth-child(2),
+.admin-calculator-cash-table9 th:nth-child(3), .admin-calculator-cash-table9 td:nth-child(3),
+.admin-calculator-cash-table9 th:nth-child(4), .admin-calculator-cash-table9 td:nth-child(4),
+.admin-calculator-cash-table9 th:nth-child(5), .admin-calculator-cash-table9 td:nth-child(5) { width: 8rem; min-width: 8rem; }
+.admin-calculator-cash-table9 th:nth-child(6), .admin-calculator-cash-table9 td:nth-child(6) { width: 10rem; min-width: 10rem; }
+.admin-calculator-cash-table10 th:nth-child(1), .admin-calculator-cash-table10 td:nth-child(1) { width: 4rem; min-width: 4rem; }
+.admin-calculator-cash-table10 th:nth-child(2), .admin-calculator-cash-table10 td:nth-child(2) { width: 13rem; min-width: 13rem; }
+.admin-calculator-cash-table10 th:nth-child(3), .admin-calculator-cash-table10 td:nth-child(3),
+.admin-calculator-cash-table10 th:nth-child(4), .admin-calculator-cash-table10 td:nth-child(4),
+.admin-calculator-cash-table10 th:nth-child(5), .admin-calculator-cash-table10 td:nth-child(5) { width: 8rem; min-width: 8rem; }
 
-.admin-games-table th:nth-child(6),
-.admin-games-table td:nth-child(6) {
-  min-width: 140px;
-}
-
-
-.admin-games-players-stats-table th:nth-child(3),
-.admin-games-players-stats-table td:nth-child(3),
-.admin-games-players-stats-table th:nth-child(5),
-.admin-games-players-stats-table td:nth-child(5),
-.admin-games-players-stats-table th:nth-child(8),
-.admin-games-players-stats-table td:nth-child(8),
-.admin-games-players-stats-table th:nth-child(10),
-.admin-games-players-stats-table td:nth-child(10),
-.admin-games-players-stats-table th:nth-child(12),
-.admin-games-players-stats-table td:nth-child(12),
-.admin-games-players-stats-table th:nth-child(14),
-.admin-games-players-stats-table td:nth-child(14) {
-  width: 8ch;
-  min-width: 8ch;
-  max-width: 8ch;
-}
-
-.admin-games-players-stats-table input.admin-input {
-  min-width: 84px;
-}
-.admin-games-players-stats-table td:nth-child(3) input.admin-input,
-.admin-games-players-stats-table td:nth-child(5) input.admin-input,
-.admin-games-players-stats-table td:nth-child(8) input.admin-input,
-.admin-games-players-stats-table td:nth-child(10) input.admin-input,
-.admin-games-players-stats-table td:nth-child(12) input.admin-input,
-.admin-games-players-stats-table td:nth-child(14) input.admin-input {
+.admin-games-players-stats-table input.admin-input,
+.admin-calculator-table2 .admin-input,
+.admin-calculator-cash-table9 .admin-input {
   min-width: 0;
 }
 
@@ -1108,40 +1157,6 @@ select:disabled,
   padding: 8px 12px;
   font-size: 11px;
   letter-spacing: 0.12em;
-}
-
-.players-table {
-  min-width: 1320px;
-}
-
-.players-table th,
-.players-table td {
-  white-space: nowrap;
-}
-
-.players-table th:nth-child(1),
-.players-table td:nth-child(1) {
-  min-width: 100px;
-}
-
-.players-table th:nth-child(2),
-.players-table td:nth-child(2) {
-  min-width: 280px;
-}
-
-.players-table th:nth-child(3),
-.players-table td:nth-child(3) {
-  min-width: 180px;
-}
-
-.players-table th:nth-child(4),
-.players-table td:nth-child(4) {
-  min-width: 620px;
-}
-
-.players-table th:nth-child(5),
-.players-table td:nth-child(5) {
-  min-width: 130px;
 }
 
 .players-app-cell {
@@ -1762,26 +1777,6 @@ body.modal-open {
 }
 
 
-/* Kolumny tabel zgodnie z aktualnym układem Main */
-.admin-games-ranking-table th:nth-child(1),
-.admin-games-ranking-table td:nth-child(1) {
-  min-width: 3ch;
-}
-
-.admin-games-ranking-table th:nth-child(2),
-.admin-games-ranking-table td:nth-child(2) {
-  min-width: 16ch;
-  white-space: normal;
-  overflow-wrap: normal;
-  word-break: normal;
-}
-
-.admin-games-ranking-table th:nth-child(3),
-.admin-games-ranking-table td:nth-child(3) {
-  min-width: 8ch;
-  text-align: center;
-}
-
 @media (max-width: 720px) {
   .page {
     padding: 24px 16px 60px;
@@ -1800,7 +1795,7 @@ body.modal-open {
   }
 
   .admin-calculator-table-wrap .admin-data-table {
-    min-width: 680px;
+    min-width: max-content;
   }
 
   .admin-message-actions {
@@ -1866,10 +1861,6 @@ body.modal-open {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--gap-2);
-}
-
-.confirmations-table {
-  min-width: 760px;
 }
 
 .confirmations-actions {
