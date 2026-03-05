@@ -181,7 +181,8 @@ W modalu:
 9. Suma z okna `Rebuy gracza` jest wyświetlana na przycisku w wierszu i automatycznie uwzględniana w kolumnach **+/-**, puli i podsumowaniach.
 10. Modal szczegółów nie koloruje już wierszy po statusie potwierdzenia.
 11. Pola **Wpisowe**, **Wypłata**, **Punkty** oraz wartości w oknie `Rebuy gracza` otwierają na urządzeniach mobilnych klawiaturę numeryczną.
-12. Zamknięcie modalu: przycisk `×`, kliknięcie poza modalem lub klawisz `Esc`.
+12. Gdy lista graczy jest długa, sekcja tabeli w modalu ma pionowy pasek przewijania — przewiń w dół, aby edytować kolejne wiersze.
+13. Zamknięcie modalu: przycisk `×`, kliknięcie poza modalem lub klawisz `Esc`.
 
 ### F) Modal „Notatki do gry”
 Przyciski:
@@ -361,6 +362,7 @@ W każdym wierszu gry:
 5. Kliknij nagłówek-przycisk **Wpisowe**, by ustawić jedno wpisowe dla wszystkich wierszy.
 6. Kliknij przycisk z wartością w kolumnie **Rebuy/Add-on** dla wybranego gracza, aby otworzyć okno `Rebuy gracza` i zarządzać wieloma wpisami rebuy/add-on (przyciski **Dodaj Rebuy** i **Usuń Rebuy**). Numeracja kolumn (`Rebuy1`, `Rebuy2`, …) jest niezależna dla każdego gracza, a po usunięciu ostatniej kolumny następne dodanie przywraca ten numer.
 7. W polach liczbowych tego modalu i w oknie `Rebuy gracza` na telefonie uruchamia się klawiatura numeryczna.
+8. Przy większej liczbie uczestników sekcja tabeli w modalu ma pionowy scrollbar, więc możesz przewijać listę graczy i uzupełniać dane wszystkich wierszy.
 
 ### 10.5. „Notatki po grze”
 W podsumowaniu każdej gry użyj przycisku **Notatki po grze**:
