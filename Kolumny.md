@@ -55,3 +55,14 @@ Dodatkowo dla każdego stołu:
 
 ### Losowanie stołów — kolumna Status
 - Kolumna `Status` zawiera etykietę statusu płatności oraz przycisk `Zmień status` (układ pionowo/elastyczny w `.payment-status-cell`).
+
+## Moduł Main — Ranking (Gry admina i Statystyki)
+1. Miejsce
+2. Gracz
+3. Wynik
+
+### Szerokości i zachowanie kolumn (Ranking Main)
+- `Miejsce`: stała szerokość `8ch`.
+- `Gracz`: kolumna elastyczna (`auto`), wypełnia pozostałą przestrzeń i może zawijać długie nazwy; nagłówek tej kolumny jest wyśrodkowany.
+- `Wynik`: stała szerokość `6.5ch`, wyrównanie do środka.
+- Tabela używa `table-layout: fixed` i `width: 100%`, dzięki czemu wszystkie 3 kolumny są widoczne na desktopie i mobile bez poziomego scrolla.

@@ -21,3 +21,10 @@
 - W `Faza grupowa` dodano tabelę `Tabela17A` (`LP`, `Gracz`, `Stack`, `%`, `Stół`).
 - W `Półfinał` usunięto `Tabela20`, a w tabelach tworzonych po `Dodaj nowy stół` dodano kolumnę `Stack` przed `Eliminated`.
 - Kontrolka statusu aktywności gracza (`.status-radio`) ma pełny obszar kliknięcia 20x20 px, z ukrytym inputem rozciągniętym na cały element, co poprawia klikalność.
+
+## Moduł Main — panel Ranking (Gry admina i Statystyki)
+- Tabela rankingu ma zawsze trzy kolumny widoczne jednocześnie: `Miejsce`, `Gracz`, `Wynik` (bez poziomego przewijania panelu rankingu), również w węższych szerokościach mobilnych.
+- Wysokość wiersza rankingu jest taka sama jak standardowa wysokość innych wierszy paneli admina (`--admin-games-panel-item-height`).
+- Nagłówek kolumny `Gracz` jest wyśrodkowany (tylko nagłówek), aby nie nachodził wizualnie na `Miejsce`.
+- Kolumna `Gracz` pozwala na zawijanie nazw (`white-space: normal` + `overflow-wrap: anywhere`), więc bardzo długa nazwa może przejść do dwóch linii.
+- Gdy nazwa gracza zawinie się, tylko ten konkretny wiersz zwiększa wysokość pionowo; pozostałe wiersze zachowują standardową wysokość.
