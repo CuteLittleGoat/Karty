@@ -1,0 +1,23 @@
+{
+  "project_info": {
+    "project_number": "123456789012",
+    "project_id": "twoj-projekt-firebase",
+    "storage_bucket": "twoj-projekt-firebase.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123456789012:android:xxxxxxxxxxxxxxxx",
+        "android_client_info": {
+          "package_name": "com.karty.mainmobile"
+        }
+      },
+      "api_key": [
+        {
+          "current_key": "AIza..."
+        }
+      ]
+    }
+  ],
+  "configuration_version": "1"
+}
