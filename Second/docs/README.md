@@ -13,7 +13,9 @@
 3. Sprawdź licznik nad tabelą: **Liczba dodanych graczy: X**.
 4. Kliknij **Dodaj gracza**, aby utworzyć nowy wiersz.
    - Przycisk ma teraz krótki format i jest wyrównany do lewej strony (jak w module Main).
-5. W kolumnie **Status** kliknij kółko, aby oznaczyć gracza jako aktywnego.
+5. W kolumnie **Status** kliknij okrągły przycisk statusu płatności dla danego gracza.
+   - Zaznaczony przycisk oznacza **Opłacone** (złoty napis przy graczu).
+   - Odznaczony przycisk (domyślnie) oznacza **Do zapłaty** (czerwony napis przy graczu).
 6. W kolumnie **Nazwa** wpisz nazwę gracza.
 7. W kolumnie **PIN**:
    - pole ma szerokość pozwalającą wygodnie wpisać pełne 5 cyfr PIN,
@@ -25,15 +27,17 @@
 
 ### Losowanie stołów
 1. W górnej tabeli przypisz każdemu graczowi:
-   - **Status**: widoczny jako kolorowy tekst + przycisk **Zmień status**.
-     - Domyślnie status to **Do zapłaty** (czerwony napis).
-     - Po kliknięciu **Zmień status** status przełącza się cyklicznie na **Opłacone** (złoty napis), a kolejne kliknięcie wraca do **Do zapłaty**.
+   - **Status**: widoczny wyłącznie jako kolorowy tekst (bez przycisku zmiany).
+     - **Do zapłaty** — czerwony napis.
+     - **Opłacone** — złoty napis.
    - **Stół**: wybierany z listy rozwijanej.
-2. Kliknij **Dodaj stół**.
+2. Zmiana statusu płatności odbywa się w zakładce **Losowanie graczy** przez zaznaczenie/odznaczenie okrągłego przycisku w kolumnie **Status**.
+   - Zmiana jest od razu widoczna także w zakładce **Losowanie stołów**.
+3. Kliknij **Dodaj stół**.
    - Przycisk ma krótki format i nie rozciąga się na pełną szerokość sekcji.
-3. Dla każdego dodanego stołu pojawia się osobny blok z tabelą i nagłówkiem: **Nazwa** + **Łączna Suma**.
-4. W tabeli stołu wpisz **Wpisowe** przypisanych graczy.
-5. Kliknij **Usuń** przy wybranym stole, aby go usunąć.
+4. Dla każdego dodanego stołu pojawia się osobny blok z tabelą i nagłówkiem: **Nazwa** + **Łączna Suma**.
+5. W tabeli stołu wpisz **Wpisowe** przypisanych graczy.
+6. Kliknij **Usuń** przy wybranym stole, aby go usunąć.
 
 ### Wpłaty
 - **Tabela10**: Buy-in, REBUY/ADD-ON, SUMA, licz. REBUY/ADD-ON.
