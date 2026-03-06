@@ -846,7 +846,7 @@ const setupAdminTournament = (rootCard) => {
         const assignedPlayers = tournamentState.players.filter((player) => (tournamentState.assignments[player.id]?.tableId || "") === table.id);
         const entries = tournamentState.tableEntries[table.id] || {};
         const total = assignedPlayers.reduce((sum, player) => sum + Number(entries[player.id] || 0), 0);
-        return `<article class="admin-table-card"><div class="t-section-grid"><label>Nazwa <input class="admin-input" data-role="table-name" data-table-id="${table.id}" type="text" value="${esc(table.name)}"></label><label>Łączna Suma <input class="admin-input" readonly value="${total}"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Wpisowe</th></tr></thead><tbody>${assignedPlayers.map((player) => `<tr><td>${esc(player.name)}</td><td><input class="admin-input" type="tel" inputmode="numeric" pattern="[0-9]*" data-role="table-entry" data-table-id="${table.id}" data-player-id="${player.id}" value="${esc(entries[player.id] || "")}"></td></tr>`).join("") || '<tr><td colspan="2">Brak przypisanych graczy.</td></tr>'}</tbody></table></div><button type="button" class="danger" data-role="delete-table" data-table-id="${table.id}">Usuń</button></article>`;
+        return `<article class="admin-table-card"><div class="t-section-grid"><label>Nazwa <input class="admin-input" data-role="table-name" data-table-id="${table.id}" type="text" value="${esc(table.name)}"></label><label>Łączna Suma <input class="admin-input" readonly value="${total}"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Wpisowe</th></tr></thead><tbody>${assignedPlayers.map((player) => `<tr><td>${esc(player.name)}</td><td><input class="admin-input" type="tel" inputmode="numeric" pattern="[0-9]*" data-role="table-entry" data-table-id="${table.id}" data-player-id="${player.id}" value="${esc(entries[player.id] || "")}"></td></tr>`).join("") || '<tr><td colspan="2">Brak przypisanych graczy.</td></tr>'}</tbody></table></div><button type="button" class="danger admin-row-delete draw-table-delete" data-role="delete-table" data-table-id="${table.id}">Usuń</button></article>`;
       }).join("");
 
       mount.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Status</th><th>Stół</th></tr></thead><tbody>${rows || '<tr><td colspan="3">Brak graczy.</td></tr>'}</tbody></table></div><div class="semi-tables">${perTableBlocks || "<p>Brak stołów.</p>"}</div><button type="button" class="secondary t-inline-add-button" data-role="add-table">Dodaj stół</button>`;
@@ -1086,7 +1086,7 @@ const setupAdminTournament = (rootCard) => {
       delete tournamentState.semi.assignments[playerId];
     }
     if (role === "add-table") {
-      tournamentState.tables.push({ id: crypto.randomUUID(), name: `Tabela${10 + tournamentState.tables.length}` });
+      tournamentState.tables.push({ id: crypto.randomUUID(), name: `Stół${tournamentState.tables.length + 1}` });
     }
     if (role === "delete-table") {
       const tableId = target.dataset.tableId;

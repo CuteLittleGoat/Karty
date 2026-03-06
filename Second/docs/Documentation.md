@@ -66,7 +66,7 @@
 
 ### Losowanie stołów — status i wybór stołu
 - Usunięto górny, zbiorczy blok z polami `Nazwa` i `Łączna Suma` nad tabelą przypisań.
-- Bloki pojedynczych stołów (tworzone po `Dodaj stół`) nadal mają nagłówek `Nazwa` + `Łączna Suma` i tabelę `Gracz/Wpisowe`.
+- Bloki pojedynczych stołów (tworzone po `Dodaj stół`) nadal mają nagłówek `Nazwa` + `Łączna Suma` i tabelę `Gracz/Wpisowe`; nowy stół otrzymuje nazwę `Stół${n}` (numerowanie od 1).
 - Sekcja `draw` (`Losowanie stołów`) renderuje status gracza jako nieedytowalną pigułkę `.payment-status-label` (bez przycisku zmiany).
 - Zmiana statusu płatności odbywa się w sekcji `players` przez checkbox `data-role="player-payment-status"`.
 - Styl statusu:
@@ -101,6 +101,7 @@
 
 ### Przyciski dodawania — zmiana layoutu
 - Dodano klasę `t-inline-add-button` dla przycisków `Dodaj gracza`, `Dodaj stół`, `Dodaj` (Podział puli) i `Dodaj nowy stół`.
+- Przycisk usuwania stołu (`data-role="delete-table"`) używa klas `.admin-row-delete.draw-table-delete`, dzięki czemu jest kompaktowy jak w `Losowanie graczy` i wyrównany do prawej krawędzi karty stołu.
 - Styl `#adminTournamentRoot .t-inline-add-button` ustawia `justify-self: flex-start` oraz `width: auto`, co eliminuje rozciąganie przycisku na pełną szerokość kontenera grid.
 - Czerwone przyciski testowe w sekcji `Finał` pozostały bez zmian.
 

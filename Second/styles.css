@@ -388,6 +388,10 @@ select:disabled,
   letter-spacing: 0.12em;
 }
 
+.draw-table-delete {
+  justify-self: end;
+}
+
 .admin-summary {
   display: grid;
   gap: var(--gap-2);
