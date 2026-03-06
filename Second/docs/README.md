@@ -13,7 +13,7 @@
 3. Sprawdź licznik nad tabelą: **Liczba dodanych graczy: X**.
 4. Kliknij **Dodaj gracza**, aby utworzyć nowy wiersz.
    - Przycisk ma teraz krótki format i jest wyrównany do lewej strony (jak w module Main).
-5. W kolumnie **Status** kliknij duży przycisk statusu płatności dla danego gracza (styl pigułki).
+5. W kolumnie **Status** kliknij kompaktowy przycisk statusu płatności dla danego gracza (styl pigułki).
    - Przycisk **OPŁACONE** ma złoty napis i złotą obwódkę.
    - Przycisk **DO ZAPŁATY** ma jasnoróżowy napis i czerwonawą obwódkę.
    - Działa tak samo po kliknięciu myszą (PC) i po tapnięciu na telefonie/tablecie.

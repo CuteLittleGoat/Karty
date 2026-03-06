@@ -1901,14 +1901,14 @@ body.modal-open {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 46px;
-  padding: 0 28px;
+  min-height: 36px;
+  padding: 0 20px;
   border-radius: 999px;
   border: 2px solid transparent;
   background: rgba(18, 28, 30, 0.92);
-  font-size: 0.85rem;
+  font-size: 0.77rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   line-height: 1;
 }

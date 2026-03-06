@@ -30,7 +30,7 @@
   - podgląd z automatycznym `%` renderowany jako `<small>` (np. `15%`).
 - Nad tabelą renderowany licznik: `Liczba dodanych graczy: X`.
 - Tabela `players-table` ma kolumny:
-  1. `Status` (przycisk `.payment-status-toggle` z ukrytym checkboxem sterującym statusem płatności):
+  1. `Status` (przycisk `.payment-status-toggle` z ukrytym checkboxem sterującym statusem płatności; wariant kompaktowy dopasowany wysokością do pól formularza):
      - zaznaczenie ustawia `assignments[playerId].status = "Opłacone"`,
      - odznaczenie ustawia `assignments[playerId].status = "Do zapłaty"`,
   2. `Nazwa` (input tekstowy),

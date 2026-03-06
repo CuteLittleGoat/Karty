@@ -9,7 +9,7 @@
 - Kolumna `Uprawnienia` prezentuje bieżące uprawnienia jako badge (`.permissions-tags`, `.permission-badge`) i zawiera przycisk `Edytuj` (`.admin-permissions-edit`).
 - Ostatnia kolumna `Akcje` zawiera przycisk `Usuń` (`.admin-row-delete`) wyrównany do prawej strony.
 - Nad tabelą prezentowany jest licznik liczby graczy (tekst informacyjny `.builder-info`).
-- Wiersze statusu w `Losowanie graczy` używają przycisku-pigułki `.payment-status-toggle` z ukrytym inputem oraz etykietą statusu wewnątrz przycisku.
+- Wiersze statusu w `Losowanie graczy` używają przycisku-pigułki `.payment-status-toggle` z ukrytym inputem oraz etykietą statusu wewnątrz przycisku; wariant jest kompaktowy, aby pasował proporcją do pozostałych kontrolek.
 
 - Przyciski dodawania w module `Second` (Dodaj gracza / Dodaj stół / Dodaj / Dodaj nowy stół) mają klasę `.t-inline-add-button` i są wyrównane do lewej (`justify-self: flex-start`) z naturalną szerokością (`width: auto`) zamiast pełnej szerokości kontenera.
 - Czerwone przyciski testowe w sekcji `Finał` pozostają bez zmian kolorystycznych i rozmiarowych.
