@@ -30,7 +30,7 @@
   - podgląd z automatycznym `%` renderowany jako `<small>` (np. `15%`).
 - Nad tabelą renderowany licznik: `Liczba dodanych graczy: X`.
 - Tabela `players-table` ma kolumny:
-  1. `Status` (checkbox `.status-radio` sterujący statusem płatności oraz etykieta `.payment-status-label`):
+  1. `Status` (przycisk `.payment-status-toggle` z ukrytym checkboxem sterującym statusem płatności):
      - zaznaczenie ustawia `assignments[playerId].status = "Opłacone"`,
      - odznaczenie ustawia `assignments[playerId].status = "Do zapłaty"`,
   2. `Nazwa` (input tekstowy),
@@ -53,11 +53,11 @@
 ### Losowanie stołów — status i wybór stołu
 - Usunięto górny, zbiorczy blok z polami `Nazwa` i `Łączna Suma` nad tabelą przypisań.
 - Bloki pojedynczych stołów (tworzone po `Dodaj stół`) nadal mają nagłówek `Nazwa` + `Łączna Suma` i tabelę `Gracz/Wpisowe`.
-- Sekcja `draw` (`Losowanie stołów`) renderuje status gracza wyłącznie jako etykietę tekstową `.payment-status-label` (bez przycisku zmiany).
+- Sekcja `draw` (`Losowanie stołów`) renderuje status gracza jako nieedytowalną pigułkę `.payment-status-label` (bez przycisku zmiany).
 - Zmiana statusu płatności odbywa się w sekcji `players` przez checkbox `data-role="player-payment-status"`.
 - Styl statusu:
-  - `Do zapłaty` ma klasę `.payment-status-label.is-unpaid` (czerwony wygląd),
-  - `Opłacone` ma klasę `.payment-status-label.is-paid` (złoty wygląd jak aktywna zakładka).
+  - `Do zapłaty` ma klasę `.payment-status-label.is-unpaid` (jasnoróżowy napis + czerwonawa obwódka),
+  - `Opłacone` ma klasę `.payment-status-label.is-paid` (złoty napis + złota obwódka + glow).
 - Wybór stołu (`assign-table`) i status w półfinale (`semi-assign-status`, `semi-assign-table`) zapisują się na zdarzeniu `change`, bez wymuszonego zapisu na `input`, co eliminuje znikanie rozwijanych list podczas wyboru.
 - Handler `click` wykonuje logikę wyłącznie dla ról-akcji (`add-player`, `delete-player`, `add-table`, itp.). Kontrolki formularza (`checkbox`, `select`, `input`) nie uruchamiają już globalnego `render()` przez `click`, dzięki czemu przełączenie statusu działa stabilnie na desktopie i mobile (tap).
 

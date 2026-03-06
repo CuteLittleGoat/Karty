@@ -9,18 +9,18 @@
 - Kolumna `Uprawnienia` prezentuje bieżące uprawnienia jako badge (`.permissions-tags`, `.permission-badge`) i zawiera przycisk `Edytuj` (`.admin-permissions-edit`).
 - Ostatnia kolumna `Akcje` zawiera przycisk `Usuń` (`.admin-row-delete`) wyrównany do prawej strony.
 - Nad tabelą prezentowany jest licznik liczby graczy (tekst informacyjny `.builder-info`).
-- Wiersze statusu w `Losowanie graczy` używają wskaźnika kołowego `.status-radio` oraz tekstowej etykiety `.payment-status-label` obok przycisku.
+- Wiersze statusu w `Losowanie graczy` używają przycisku-pigułki `.payment-status-toggle` z ukrytym inputem oraz etykietą statusu wewnątrz przycisku.
 
 - Przyciski dodawania w module `Second` (Dodaj gracza / Dodaj stół / Dodaj / Dodaj nowy stół) mają klasę `.t-inline-add-button` i są wyrównane do lewej (`justify-self: flex-start`) z naturalną szerokością (`width: auto`) zamiast pełnej szerokości kontenera.
 - Czerwone przyciski testowe w sekcji `Finał` pozostają bez zmian kolorystycznych i rozmiarowych.
 
-- Sekcja `Losowanie stołów` pokazuje status płatności wyłącznie jako etykietę `.payment-status-label` (bez przycisku) w kontenerze `.payment-status-cell`.
-  - `Do zapłaty` ma styl `.is-unpaid` (czerwony).
-  - `Opłacone` ma styl `.is-paid` (złoty, glow jak aktywna zakładka).
+- Sekcja `Losowanie stołów` pokazuje status płatności jako nieklikalną pigułkę `.payment-status-label` (bez przycisku zmiany) w kontenerze `.payment-status-cell`.
+  - `Do zapłaty` ma styl `.is-unpaid` (jasnoróżowy napis + czerwonawa obwódka).
+  - `Opłacone` ma styl `.is-paid` (złoty napis + złota obwódka + glow).
 - W `Losowanie stołów` usunięto górny zbiorczy blok `Nazwa` + `Łączna Suma`; nagłówki `Nazwa` i `Łączna Suma` występują teraz wyłącznie wewnątrz każdego dodanego bloku stołu.
 - W `Faza grupowa` dodano tabelę `Tabela17A` (`LP`, `Gracz`, `Stack`, `%`, `Stół`).
 - W `Półfinał` usunięto `Tabela20`, a w tabelach tworzonych po `Dodaj nowy stół` dodano kolumnę `Stack` przed `Eliminated`.
-- Kontrolka statusu płatności gracza (`.status-radio`) ma pełny obszar kliknięcia 20x20 px, z ukrytym inputem rozciągniętym na cały element, co poprawia klikalność.
+- Kontrolka statusu płatności gracza (`.payment-status-toggle`) ma pełny obszar kliknięcia obejmujący całą pigułkę, z ukrytym inputem rozciągniętym na cały element.
 
 ## Moduł Main — panel Ranking (Gry admina, Statystyki i widok gracza)
 - Tabela rankingu ma trzy kolumny: `Miejsce`, `Gracz`, `Wynik` i używa `table-layout: fixed`.
