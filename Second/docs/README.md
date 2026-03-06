@@ -40,9 +40,11 @@
    - Zmiana jest od razu widoczna także w zakładce **Losowanie stołów**.
 3. Kliknij **Dodaj stół**.
    - Przycisk ma krótki format i nie rozciąga się na pełną szerokość sekcji.
+   - Nowy stół dostaje domyślną nazwę w formacie **Stół1, Stół2, Stół3...**.
 4. Dla każdego dodanego stołu pojawia się osobny blok z tabelą i nagłówkiem: **Nazwa** + **Łączna Suma**.
 5. W tabeli stołu wpisz **Wpisowe** przypisanych graczy.
 6. Kliknij **Usuń** przy wybranym stole, aby go usunąć.
+   - Czerwony przycisk **Usuń** jest kompaktowy i wyrównany do prawej krawędzi bloku (spójny wizualnie z przyciskami **Usuń** w sekcji **Losowanie graczy**).
 
 ### Wpłaty
 - **Tabela10**: Buy-in, REBUY/ADD-ON, SUMA, licz. REBUY/ADD-ON.
