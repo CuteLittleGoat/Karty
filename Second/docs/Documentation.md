@@ -19,7 +19,8 @@
 
 ### Struktura stanu
 - Metadane: `organizer`, `buyIn`, `rebuyAddOn`, `rake`, `stack`, `rebuyStack`.
-- Gracze: `players[]` z polami `id`, `name`, `pin`, `permissions`, `status`.
+- Gracze: `players[]` z polami `id`, `name`, `pin`, `permissions`, `status` (status aktywności gracza).
+- Status płatności gracza: `assignments[playerId].status` (`"Do zapłaty"` lub `"Opłacone"`).
 - Pozostałe sekcje: `tables`, `assignments`, `tableEntries`, `payments`, `pool`, `group`, `semi`, `finalPlayers`, `payouts`.
 
 ### Losowanie graczy — aktualny render
@@ -29,7 +30,9 @@
   - podgląd z automatycznym `%` renderowany jako `<small>` (np. `15%`).
 - Nad tabelą renderowany licznik: `Liczba dodanych graczy: X`.
 - Tabela `players-table` ma kolumny:
-  1. `Status` (checkbox w stylu `.status-radio`),
+  1. `Status` (checkbox `.status-radio` sterujący statusem płatności oraz etykieta `.payment-status-label`):
+     - zaznaczenie ustawia `assignments[playerId].status = "Opłacone"`,
+     - odznaczenie ustawia `assignments[playerId].status = "Do zapłaty"`,
   2. `Nazwa` (input tekstowy),
   3. `PIN` (input 5-cyfrowy o poszerzonej szerokości + przycisk `Losuj`),
   4. `Uprawnienia` (badge + przycisk `Edytuj`),
@@ -50,8 +53,8 @@
 ### Losowanie stołów — status i wybór stołu
 - Usunięto górny, zbiorczy blok z polami `Nazwa` i `Łączna Suma` nad tabelą przypisań.
 - Bloki pojedynczych stołów (tworzone po `Dodaj stół`) nadal mają nagłówek `Nazwa` + `Łączna Suma` i tabelę `Gracz/Wpisowe`.
-- Sekcja `draw` (`Losowanie stołów`) renderuje status gracza jako tekst + przycisk `Zmień status` (`data-role="assign-status-toggle"`).
-- Domyślny status pozostaje `Do zapłaty`; kliknięcie przycisku przełącza wartość cyklicznie `Do zapłaty` ↔ `Opłacone`.
+- Sekcja `draw` (`Losowanie stołów`) renderuje status gracza wyłącznie jako etykietę tekstową `.payment-status-label` (bez przycisku zmiany).
+- Zmiana statusu płatności odbywa się w sekcji `players` przez checkbox `data-role="player-payment-status"`.
 - Styl statusu:
   - `Do zapłaty` ma klasę `.payment-status-label.is-unpaid` (czerwony wygląd),
   - `Opłacone` ma klasę `.payment-status-label.is-paid` (złoty wygląd jak aktywna zakładka).

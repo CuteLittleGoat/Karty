@@ -699,9 +699,13 @@ const setupAdminTournament = (rootCard) => {
   const render = () => {
     const focusState = getTournamentEditableFocusState(container);
     if (activeSection === "players") {
-      const playersRows = tournamentState.players.map((player) => `
+      const playersRows = tournamentState.players.map((player) => {
+        const assignment = tournamentState.assignments[player.id] || { status: "Do zapłaty", tableId: "" };
+        const statusConfig = getPaymentStatusConfig(assignment.status);
+        const isPaid = assignment.status === "Opłacone";
+        return `
         <tr>
-          <td><label class="status-radio"><input data-role="player-status" data-player-id="${player.id}" type="checkbox" ${player.status ? "checked" : ""}><span></span></label></td>
+          <td><div class="payment-status-cell"><label class="status-radio"><input data-role="player-payment-status" data-player-id="${player.id}" type="checkbox" ${isPaid ? "checked" : ""}><span></span></label><span class="payment-status-label ${statusConfig.className}">${statusConfig.label}</span></div></td>
           <td><input class="admin-input" data-role="player-name" data-player-id="${player.id}" value="${esc(player.name)}" type="text" data-focus-target="1" data-section="second-tournament-players" data-row-id="${player.id}" data-column-key="name"></td>
           <td>
             <div class="pin-control">
@@ -715,7 +719,8 @@ const setupAdminTournament = (rootCard) => {
           </td>
           <td><button type="button" class="danger admin-row-delete" data-role="delete-player" data-player-id="${player.id}">Usuń</button></td>
         </tr>
-      `).join("");
+      `;
+      }).join("");
 
       const rakeValue = digitsOnly(tournamentState.rake);
       const rakeLabel = rakeValue ? `${rakeValue}%` : "";
@@ -742,7 +747,7 @@ const setupAdminTournament = (rootCard) => {
       const rows = tournamentState.players.map((player) => {
         const assignment = tournamentState.assignments[player.id] || { status: "Do zapłaty", tableId: "" };
         const statusConfig = getPaymentStatusConfig(assignment.status);
-        return `<tr><td>${esc(player.name)}</td><td><div class="payment-status-cell"><span class="payment-status-label ${statusConfig.className}">${statusConfig.label}</span><button type="button" class="secondary" data-role="assign-status-toggle" data-player-id="${player.id}">Zmień status</button></div></td><td><select class="admin-input" data-role="assign-table" data-player-id="${player.id}"><option value="">-</option>${tournamentState.tables.map((table) => `<option value="${table.id}" ${assignment.tableId === table.id ? "selected" : ""}>${esc(table.name)}</option>`).join("")}</select></td></tr>`;
+        return `<tr><td>${esc(player.name)}</td><td><div class="payment-status-cell"><span class="payment-status-label ${statusConfig.className}">${statusConfig.label}</span></div></td><td><select class="admin-input" data-role="assign-table" data-player-id="${player.id}"><option value="">-</option>${tournamentState.tables.map((table) => `<option value="${table.id}" ${assignment.tableId === table.id ? "selected" : ""}>${esc(table.name)}</option>`).join("")}</select></td></tr>`;
       }).join("");
 
       const perTableBlocks = tournamentState.tables.map((table) => {
@@ -863,7 +868,7 @@ const setupAdminTournament = (rootCard) => {
       tournamentState.players = tournamentState.players.map((player) => player.id === target.dataset.playerId ? { ...player, pin: target.value } : player);
     }
     if (role === "table-name") tournamentState.tables = tournamentState.tables.map((table) => table.id === target.dataset.tableId ? { ...table, name: target.value } : table);
-    if (["assign-status-toggle", "assign-table", "semi-assign-status", "semi-assign-table"].includes(role)) {
+    if (["player-payment-status", "assign-table", "semi-assign-status", "semi-assign-table"].includes(role)) {
       return;
     }
     if (role === "table-entry") {
@@ -903,6 +908,7 @@ const setupAdminTournament = (rootCard) => {
     const role = target?.dataset?.role;
     if (!role) return;
     if (role === "player-status") tournamentState.players = tournamentState.players.map((player) => player.id === target.dataset.playerId ? { ...player, status: target.checked } : player);
+    if (role === "player-payment-status") tournamentState.assignments[target.dataset.playerId] = { ...(tournamentState.assignments[target.dataset.playerId] || {}), status: target.checked ? "Opłacone" : "Do zapłaty", tableId: tournamentState.assignments[target.dataset.playerId]?.tableId || "" };
     if (role === "assign-table") tournamentState.assignments[target.dataset.playerId] = { ...(tournamentState.assignments[target.dataset.playerId] || {}), tableId: target.value, status: tournamentState.assignments[target.dataset.playerId]?.status || "Do zapłaty" };
     if (role === "semi-assign-status") tournamentState.semi.assignments[target.dataset.playerId] = { ...(tournamentState.semi.assignments[target.dataset.playerId] || {}), status: target.value, tableId: tournamentState.semi.assignments[target.dataset.playerId]?.tableId || "" };
     if (role === "semi-assign-table") tournamentState.semi.assignments[target.dataset.playerId] = { ...(tournamentState.semi.assignments[target.dataset.playerId] || {}), tableId: target.value, status: tournamentState.semi.assignments[target.dataset.playerId]?.status || "Do zapłaty" };
@@ -910,7 +916,7 @@ const setupAdminTournament = (rootCard) => {
     if (role === "final-eliminated") tournamentState.finalPlayers = tournamentState.finalPlayers.map((player) => player.id === target.dataset.id ? { ...player, eliminated: target.checked } : player);
     if (role === "toggle-payout-initial") tournamentState.payouts.showInitial = target.checked;
     if (role === "toggle-payout-final") tournamentState.payouts.showFinal = target.checked;
-    if (["assign-table", "semi-assign-status", "semi-assign-table"].includes(role)) {
+    if (["player-payment-status", "assign-table", "semi-assign-status", "semi-assign-table"].includes(role)) {
       render();
     }
     pendingLocalWrites += 1;
@@ -975,17 +981,6 @@ const setupAdminTournament = (rootCard) => {
     if (role === "remove-semi-table") tournamentState.semi.customTables = tournamentState.semi.customTables.filter((table) => table.id !== target.dataset.id);
     if (role === "add-final-player") tournamentState.finalPlayers.push({ id: crypto.randomUUID(), name: `Gracz ${tournamentState.finalPlayers.length + 1}`, stack: "", eliminated: false });
     if (role === "remove-final-player") tournamentState.finalPlayers.pop();
-    if (role === "assign-status-toggle") {
-      const playerId = target.dataset.playerId;
-      const current = tournamentState.assignments[playerId]?.status || "Do zapłaty";
-      const next = current === "Opłacone" ? "Do zapłaty" : "Opłacone";
-      tournamentState.assignments[playerId] = {
-        ...(tournamentState.assignments[playerId] || {}),
-        status: next,
-        tableId: tournamentState.assignments[playerId]?.tableId || ""
-      };
-    }
-
     render();
     pendingLocalWrites += 1;
     try {

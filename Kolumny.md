@@ -54,7 +54,8 @@ Dodatkowo dla każdego stołu:
 - Kolumna `Akcje` (5): `min-width: 8ch`, wyrównanie do prawej.
 
 ### Losowanie stołów — kolumna Status
-- Kolumna `Status` zawiera etykietę statusu płatności oraz przycisk `Zmień status` (układ pionowo/elastyczny w `.payment-status-cell`).
+- Kolumna `Status` zawiera wyłącznie etykietę statusu płatności (układ w `.payment-status-cell`, bez przycisku zmiany).
+- Zmiana statusu następuje w sekcji `Losowanie graczy` przez zaznaczenie/odznaczenie okrągłej kontrolki w kolumnie `Status`.
 
 ## Moduł Main — Ranking (Gry admina i Statystyki)
 1. Miejsce
