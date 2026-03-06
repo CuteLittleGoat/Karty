@@ -494,6 +494,92 @@ const setupTabs = ({ container, buttonSelector, panelSelector, activeClass = "is
   });
 };
 
+const initSecondPlayerPermissionsModal = ({
+  onSave
+}) => {
+  const modal = document.querySelector("#secondPlayerPermissionsModal");
+  const closeButton = document.querySelector("#secondPlayerPermissionsClose");
+  const list = document.querySelector("#secondPlayerPermissionsList");
+  const status = document.querySelector("#secondPlayerPermissionsStatus");
+
+  if (!modal || !closeButton || !list || !status || typeof onSave !== "function") {
+    return {
+      open: () => {}
+    };
+  }
+
+  let editingPlayerId = "";
+
+  const closeModal = () => {
+    modal.classList.remove("is-visible");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+    editingPlayerId = "";
+  };
+
+  const renderList = ({ playerId, getPermissions, setPermissions }) => {
+    const selectedPermissions = new Set(normalizeTournamentPermissions(getPermissions(playerId)));
+    list.innerHTML = "";
+    status.textContent = "";
+
+    SECOND_AVAILABLE_PLAYER_PERMISSIONS.forEach((permission) => {
+      const label = document.createElement("label");
+      label.className = "permissions-item";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = selectedPermissions.has(permission.label);
+      checkbox.addEventListener("change", async () => {
+        if (!editingPlayerId) {
+          return;
+        }
+
+        const nextPermissions = new Set(normalizeTournamentPermissions(getPermissions(editingPlayerId)));
+        if (checkbox.checked) {
+          nextPermissions.add(permission.label);
+        } else {
+          nextPermissions.delete(permission.label);
+        }
+
+        setPermissions(editingPlayerId, Array.from(nextPermissions));
+        await onSave();
+      });
+
+      const text = document.createElement("span");
+      text.textContent = permission.label;
+
+      label.append(checkbox, text);
+      list.appendChild(label);
+    });
+  };
+
+  const open = ({ playerId, getPermissions, setPermissions }) => {
+    editingPlayerId = playerId;
+    renderList({ playerId, getPermissions, setPermissions });
+    modal.classList.add("is-visible");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  };
+
+  closeButton.addEventListener("click", closeModal);
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modal.classList.contains("is-visible")) {
+      closeModal();
+    }
+  });
+
+  return {
+    open
+  };
+};
+
 const setupTournamentButtons = (container) => {
   const buttonGroups = container.querySelectorAll(".admin-games-years-list");
 
@@ -568,6 +654,12 @@ const normalizeTournamentPermissions = (value) => {
   }
   return Array.from(new Set(value.split(",").map((item) => item.trim()).filter(Boolean)));
 };
+
+const SECOND_AVAILABLE_PLAYER_PERMISSIONS = [
+  { key: "tab1", label: "Zakładka1" },
+  { key: "tab2", label: "Zakładka2" },
+  { key: "tab3", label: "Zakładka3" }
+];
 
 const getTournamentEditableFocusState = (container) => {
   const activeElement = document.activeElement;
@@ -928,6 +1020,19 @@ const setupAdminTournament = (rootCard) => {
     }
   });
 
+  const playerPermissionsModal = initSecondPlayerPermissionsModal({
+    onSave: async () => {
+      render();
+      pendingLocalWrites += 1;
+      try {
+        await saveState();
+      } finally {
+        pendingLocalWrites = Math.max(0, pendingLocalWrites - 1);
+        commitDeferredSnapshotIfSafe();
+      }
+    }
+  });
+
   const tournamentClickActionRoles = new Set([
     "add-player",
     "player-pin-random",
@@ -958,11 +1063,14 @@ const setupAdminTournament = (rootCard) => {
     }
     if (role === "player-perm-edit") {
       const playerId = target.dataset.playerId;
-      const currentPlayer = tournamentState.players.find((player) => player.id === playerId);
-      const nextValue = window.prompt("Podaj uprawnienia oddzielone przecinkami (np. Aktualności, Czat).", normalizeTournamentPermissions(currentPlayer?.permissions).join(", "));
-      if (nextValue !== null) {
-        tournamentState.players = tournamentState.players.map((player) => player.id === playerId ? { ...player, permissions: nextValue } : player);
-      }
+      playerPermissionsModal.open({
+        playerId,
+        getPermissions: (id) => tournamentState.players.find((player) => player.id === id)?.permissions,
+        setPermissions: (id, nextPermissions) => {
+          tournamentState.players = tournamentState.players.map((player) => player.id === id ? { ...player, permissions: nextPermissions } : player);
+        }
+      });
+      return;
     }
     if (role === "delete-player") {
       const playerId = target.dataset.playerId;

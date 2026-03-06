@@ -4,6 +4,14 @@
 
 ### Główna logika
 - Funkcja: `setupAdminTournament(rootCard)` w `Second/app.js`.
+### Edycja uprawnień gracza (modal)
+- Zamiast `window.prompt` używany jest dedykowany modal: `#secondPlayerPermissionsModal` w `Second/index.html`.
+- Inicjalizacja i obsługa: `initSecondPlayerPermissionsModal(...)` w `Second/app.js`.
+- Aktualna lista placeholderów uprawnień (`SECOND_AVAILABLE_PLAYER_PERMISSIONS`): `Zakładka1`, `Zakładka2`, `Zakładka3`.
+- Każdy checkbox aktualizuje `player.permissions` jako tablicę unikalnych etykiet i natychmiast zapisuje zmiany do `second_tournament/state`.
+- Modal wspiera trzy sposoby zamknięcia: przycisk `✕`, kliknięcie w overlay i klawisz `Escape`.
+- Widok tabeli graczy renderuje wybrane uprawnienia jako badge (`.permission-badge`) w kolumnie `Uprawnienia`.
+
 - Kontenery:
   - `#adminTournamentTab` — panel sekcji turniejowych,
   - `#adminTournamentRoot` — dynamiczny mount renderu aktywnej sekcji.
