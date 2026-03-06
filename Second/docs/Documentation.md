@@ -59,6 +59,7 @@
   - `Do zapłaty` ma klasę `.payment-status-label.is-unpaid` (czerwony wygląd),
   - `Opłacone` ma klasę `.payment-status-label.is-paid` (złoty wygląd jak aktywna zakładka).
 - Wybór stołu (`assign-table`) i status w półfinale (`semi-assign-status`, `semi-assign-table`) zapisują się na zdarzeniu `change`, bez wymuszonego zapisu na `input`, co eliminuje znikanie rozwijanych list podczas wyboru.
+- Handler `click` wykonuje logikę wyłącznie dla ról-akcji (`add-player`, `delete-player`, `add-table`, itp.). Kontrolki formularza (`checkbox`, `select`, `input`) nie uruchamiają już globalnego `render()` przez `click`, dzięki czemu przełączenie statusu działa stabilnie na desktopie i mobile (tap).
 
 ### Faza grupowa
 - `Tabela17` ma teraz tylko kolumny `STACK GRACZA` oraz `REBUY/ADD-on(w żetonach na os)` (usunięto kolumnę `Gracz`).

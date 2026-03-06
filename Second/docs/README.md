@@ -16,6 +16,7 @@
 5. W kolumnie **Status** kliknij okrągły przycisk statusu płatności dla danego gracza.
    - Zaznaczony przycisk oznacza **Opłacone** (złoty napis przy graczu).
    - Odznaczony przycisk (domyślnie) oznacza **Do zapłaty** (czerwony napis przy graczu).
+   - Działa tak samo po kliknięciu myszą (PC) i po tapnięciu na telefonie/tablecie.
 6. W kolumnie **Nazwa** wpisz nazwę gracza.
 7. W kolumnie **PIN**:
    - pole ma szerokość pozwalającą wygodnie wpisać pełne 5 cyfr PIN,

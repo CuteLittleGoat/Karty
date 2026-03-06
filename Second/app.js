@@ -928,10 +928,26 @@ const setupAdminTournament = (rootCard) => {
     }
   });
 
+  const tournamentClickActionRoles = new Set([
+    "add-player",
+    "player-pin-random",
+    "player-perm-edit",
+    "delete-player",
+    "add-table",
+    "delete-table",
+    "add-pool-row",
+    "remove-pool-row",
+    "add-semi-table",
+    "remove-semi-table",
+    "add-final-player",
+    "remove-final-player"
+  ]);
+
   container.addEventListener("click", async (event) => {
     const target = event.target;
     const role = target?.dataset?.role;
     if (!role) return;
+    if (!tournamentClickActionRoles.has(role)) return;
 
     if (role === "add-player") {
       tournamentState.players.push({ id: crypto.randomUUID(), name: "", pin: "", permissions: "", status: false });
