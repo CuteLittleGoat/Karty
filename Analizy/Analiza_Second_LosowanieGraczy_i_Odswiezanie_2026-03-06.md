@@ -290,3 +290,222 @@ match /second_tournament/{docId} {
 ### Krótki werdykt
 - **Obecny plik `Wazne_Rules.txt`: NIE, jeszcze nie jest OK.**
 - Po dodaniu powyższej reguły dla `second_tournament` — w kontekście zgłoszonego problemu — będzie OK.
+
+## Aktualizacja analizy — pełen Rules do skopiowania (2026-03-06)
+
+### Nowy prompt użytkownika
+"\"Minimalna poprawka, którą trzeba dodać do aktualnego Rules\"\n\nNapisz mi PEŁEN Rules w tej analizie. Taki, żebym go skopiował i wkleił do Firebase."
+
+Poniżej masz **pełny plik Rules** (zawiera brakującą regułę `second_tournament`) gotowy do skopiowania i wklejenia do Firebase:
+
+```txt
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.role == "admin";
+    }
+
+    // ===== MAIN MODULE =====
+
+    match /admin_security/{docId} {
+      allow read, write: if true;
+    }
+
+    match /admin_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    match /app_settings/{docId} {
+      allow read, write: if true;
+    }
+
+    match /admin_notes/{docId} {
+      allow read, write: if true;
+    }
+
+    match /Tables/{tableId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /UserGames/{gameId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /Collection1/{docId} {
+      allow read, write: if true;
+    }
+
+    match /chat_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    match /admin_games_stats/{year} {
+      allow read, write: if true;
+    }
+
+    match /players/{docId} {
+      allow read, write: if true;
+    }
+
+    match /calculators/{type} {
+      allow read, write: if true;
+
+      match /definitions/{versionId} {
+        allow read, write: if true;
+      }
+
+      match /placeholders/{placeholderId} {
+        allow read, write: if true;
+      }
+
+      match /sessions/{sessionId} {
+        allow read, write: if true;
+
+        match /variables/{varDocId} {
+          allow read, write: if true;
+        }
+
+        match /calculationFlags/{flagDocId} {
+          allow read, write: if true;
+        }
+
+        match /tables/{tableId} {
+          allow read, write: if true;
+
+          match /rows/{rowId} {
+            allow read, write: if true;
+          }
+        }
+
+        match /snapshots/{snapshotId} {
+          allow read, write: if true;
+        }
+      }
+    }
+
+    // ===== NEKROLOG =====
+
+    match /Nekrolog_config/{docId} {
+      allow read, write: if true;
+    }
+
+    match /Nekrolog_snapshots/{docId} {
+      allow read, write: if true;
+    }
+
+    match /Nekrolog_refresh_jobs/{docId} {
+      allow read: if true;
+      allow write: if docId == "latest";
+    }
+
+    // ===== SECOND MODULE =====
+
+    match /second_admin_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    match /second_app_settings/{docId} {
+      allow read, write: if true;
+    }
+
+    match /second_chat_messages/{docId} {
+      allow read, write: if true;
+    }
+
+    match /second_players/{docId} {
+      allow read, write: if true;
+    }
+
+    match /second_admin_games_stats/{year} {
+      allow read, write: if true;
+    }
+
+    match /second_tournament/{docId} {
+      allow read, write: if true;
+    }
+
+    match /second_tables/{tableId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /second_user_games/{gameId} {
+      allow read, write: if true;
+
+      match /rows/{rowId} {
+        allow read, write: if true;
+      }
+
+      match /confirmations/{playerId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /second_calculators/{type} {
+      allow read, write: if true;
+
+      match /definitions/{versionId} {
+        allow read, write: if true;
+      }
+
+      match /placeholders/{placeholderId} {
+        allow read, write: if true;
+      }
+
+      match /sessions/{sessionId} {
+        allow read, write: if true;
+
+        match /variables/{varDocId} {
+          allow read, write: if true;
+        }
+
+        match /calculationFlags/{flagDocId} {
+          allow read, write: if true;
+        }
+
+        match /tables/{tableId} {
+          allow read, write: if true;
+
+          match /rows/{rowId} {
+            allow read, write: if true;
+          }
+        }
+
+        match /snapshots/{snapshotId} {
+          allow read, write: if true;
+        }
+      }
+    }
+
+  }
+}
+```
