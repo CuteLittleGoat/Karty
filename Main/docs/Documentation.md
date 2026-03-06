@@ -28,6 +28,7 @@
 - Statystyki roczne i konfiguracja ręcznych wag (`admin_games_stats`) używają klucza gracza wyliczanego z `playerId` (fallback: `playerName`) oraz serializują `playerId` w rekordach manualnych; ten sam klucz jest używany zarówno w zakładce „Statystyki”, jak i w sekcji statystyk zakładki „Gry admina”.
 - Przyciski zbiorczej edycji wag (`.admin-weight-bulk-button`) w sekcjach statystyk zakładek „Gry admina” i „Statystyki” mają stałą szerokość `8ch` (`width/min-width/max-width`), co stabilizuje szerokość kolumn wag i zapobiega ich nadmiernemu rozciąganiu.
 - W `Main/styles.css` kontener `.admin-table-scroll` ma poziome przewijanie z widocznym stylowaniem suwaka (`overflow-x: auto`, dedykowane style paska), dzięki czemu szerokie tabele można przesuwać lewo/prawo bez nakładania treści.
+- W widoku gracza (`#statisticsTab`) desktopowa siatka `.admin-games-layout` ma trzy kolumny: `20ch` (`Lata`), `minmax(0, 1fr)` (`Statystyki`) i `34ch` (`Ranking`), dzięki czemu ranking jest po prawej stronie tabel; w breakpointcie `max-width: 720px` układ przechodzi na jedną kolumnę i ranking ląduje pod tabelą statystyk.
 - W modalach szczegółów gry (`.game-details-modal-card`) obszar treści (`.modal-body`) działa jako kontener flex (`flex: 1; min-height: 0`), a sekcja tabeli (`.admin-table-scroll`) przejmuje przewijanie (`overflow: auto`, `-webkit-overflow-scrolling: touch`), dzięki czemu na desktopie i mobile działa pionowe i poziome przewijanie długiej listy graczy.
 - Kalkulator (tabele 2 i 9) przechowuje i serializuje `playerId` wraz z `playerName`; wybory na listach graczy działają po ID, co zabezpiecza scenariusz duplikatów nazw.
 - Tabele `Gracze` (`.players-table`) i listy gier (`.admin-games-table`) mają podniesione minimalne szerokości i minima dla kluczowych kolumn, aby nagłówki, pola i przyciski nie nachodziły na siebie w desktopie; na mniejszych ekranach działają przez przewijanie poziome.
@@ -109,7 +110,7 @@ Zmiany obejmują wyłącznie warstwę prezentacji tabel (`Main/styles.css`):
 - Usunięto wcześniejsze, rozproszone i częściowo niespójne ograniczenia szerokości (`min-width`) z poprzedniego układu dla tabel gier, graczy i rankingu.
 - Dodano pełny zestaw jawnych szerokości `width/min-width` dla kolumn we wszystkich głównych tabelach:
 - Dla rankingu (w `#adminGamesTab`, `#adminStatisticsTab` i `#statisticsTab`) ustawiono tabelę na `width: 100%` + `table-layout: fixed`, aby trzy kolumny zawsze mieściły się w panelu bez poziomego przewijania.
-- Wiersze rankingu wróciły do standardowej wysokości panelu (`height: var(--admin-games-panel-item-height)`), a kolumna `Gracz` ma `white-space: normal` z `overflow-wrap: anywhere`, więc długie nazwy zawijają się i podnoszą wysokość tylko konkretnego wiersza; dodatkowo nagłówek `Gracz` jest wyśrodkowany, a nagłówki rankingu mają zmniejszone `padding/font-size/letter-spacing`, aby uniknąć nakładania i poziomego scrolla na mobile.
+- Wiersze rankingu używają standardowej wysokości panelu (`height: var(--admin-games-panel-item-height)`), a kolumna `Gracz` ma stałą szerokość `13ch` i skracanie nazw przez `text-overflow: ellipsis` (`white-space: nowrap`, `overflow: hidden`), dzięki czemu tabela mieści się bez poziomego przewijania.
   - gracze,
   - gry administratora i gry użytkowników,
   - statystyki i ranking,

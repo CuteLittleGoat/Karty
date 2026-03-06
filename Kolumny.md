@@ -63,6 +63,11 @@ Dodatkowo dla każdego stołu:
 
 ### Szerokości i zachowanie kolumn (Ranking Main)
 - `Miejsce`: stała szerokość `8ch`.
-- `Gracz`: kolumna elastyczna (`auto`), wypełnia pozostałą przestrzeń i może zawijać długie nazwy; nagłówek tej kolumny jest wyśrodkowany.
+- `Gracz`: stała szerokość `13ch`; nazwy są obcinane wielokropkiem (`ellipsis`), aby cała tabela rankingu mieściła się w panelu bez poziomego przewijania.
 - `Wynik`: stała szerokość `6.5ch`, wyrównanie do środka.
-- Tabela używa `table-layout: fixed` i `width: 100%`, dzięki czemu wszystkie 3 kolumny są widoczne na desktopie i mobile bez poziomego scrolla.
+- Tabela używa `table-layout: fixed` i `width: 100%`.
+
+### Układ paneli Statystyk (widok gracza, desktop)
+- W `Statystyki` (widok gracza) siatka ma trzy kolumny: `Lata` (`20ch`), `Statystyki` (`minmax(0, 1fr)`) i `Ranking` (`34ch`).
+- Dzięki temu panel `Ranking` jest po prawej stronie tabel statystyk na desktopie.
+- W mobile (`max-width: 720px`) układ przechodzi na jedną kolumnę i panel `Ranking` wraca pod tabelę statystyk.
