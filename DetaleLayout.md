@@ -17,4 +17,7 @@
 - Sekcja `Losowanie stołów` pokazuje status płatności jako etykietę `.payment-status-label` oraz przycisk `Zmień status` w kontenerze `.payment-status-cell`.
   - `Do zapłaty` ma styl `.is-unpaid` (czerwony).
   - `Opłacone` ma styl `.is-paid` (złoty, glow jak aktywna zakładka).
+- W `Losowanie stołów` usunięto górny zbiorczy blok `Nazwa` + `Łączna Suma`; nagłówki `Nazwa` i `Łączna Suma` występują teraz wyłącznie wewnątrz każdego dodanego bloku stołu.
+- W `Faza grupowa` dodano tabelę `Tabela17A` (`LP`, `Gracz`, `Stack`, `%`, `Stół`).
+- W `Półfinał` usunięto `Tabela20`, a w tabelach tworzonych po `Dodaj nowy stół` dodano kolumnę `Stack` przed `Eliminated`.
 - Kontrolka statusu aktywności gracza (`.status-radio`) ma pełny obszar kliknięcia 20x20 px, z ukrytym inputem rozciągniętym na cały element, co poprawia klikalność.

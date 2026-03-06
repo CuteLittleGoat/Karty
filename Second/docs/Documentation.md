@@ -48,12 +48,24 @@
 - `delete-player` usuwa rekord gracza z `players` oraz czyści powiązane dane (`assignments`, `tableEntries`, `group`, `semi`).
 
 ### Losowanie stołów — status i wybór stołu
+- Usunięto górny, zbiorczy blok z polami `Nazwa` i `Łączna Suma` nad tabelą przypisań.
+- Bloki pojedynczych stołów (tworzone po `Dodaj stół`) nadal mają nagłówek `Nazwa` + `Łączna Suma` i tabelę `Gracz/Wpisowe`.
 - Sekcja `draw` (`Losowanie stołów`) renderuje status gracza jako tekst + przycisk `Zmień status` (`data-role="assign-status-toggle"`).
 - Domyślny status pozostaje `Do zapłaty`; kliknięcie przycisku przełącza wartość cyklicznie `Do zapłaty` ↔ `Opłacone`.
 - Styl statusu:
   - `Do zapłaty` ma klasę `.payment-status-label.is-unpaid` (czerwony wygląd),
   - `Opłacone` ma klasę `.payment-status-label.is-paid` (złoty wygląd jak aktywna zakładka).
 - Wybór stołu (`assign-table`) i status w półfinale (`semi-assign-status`, `semi-assign-table`) zapisują się na zdarzeniu `change`, bez wymuszonego zapisu na `input`, co eliminuje znikanie rozwijanych list podczas wyboru.
+
+### Faza grupowa
+- `Tabela17` ma teraz tylko kolumny `STACK GRACZA` oraz `REBUY/ADD-on(w żetonach na os)` (usunięto kolumnę `Gracz`).
+- Dodano `Tabela17A` z kolumnami `LP`, `Gracz`, `Stack`, `%`, `Stół`.
+- Kolumna `Stack` w `Tabela17A` jest polem liczbowym (`data-role="group-stack"`) mapowanym do `group.playerStacks[playerId]`.
+
+### Półfinał
+- Usunięto `Tabela20`.
+- W stołach dodawanych przyciskiem `Dodaj nowy stół` tabela ma kolumny: `LP`, `Gracz`, `Stack`, `Eliminated`, `%`.
+- Dodana kolumna `Stack` używa pola liczbowego `data-role="semi-custom-stack"` zapisywanego do `semi.customTables[].stack`.
 
 ### Stabilność UI przy błędach Firebase
 - Dla błędów odczytu `onSnapshot` renderuje się informacja ostrzegawcza, a nie pusty ekran sekcji.

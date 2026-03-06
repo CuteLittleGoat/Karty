@@ -24,17 +24,16 @@
 9. W kolumnie **Akcje** kliknij **Usuń**, aby skasować gracza z tabeli.
 
 ### Losowanie stołów
-1. W tabeli przypisz każdemu graczowi:
+1. W górnej tabeli przypisz każdemu graczowi:
    - **Status**: widoczny jako kolorowy tekst + przycisk **Zmień status**.
      - Domyślnie status to **Do zapłaty** (czerwony napis).
      - Po kliknięciu **Zmień status** status przełącza się cyklicznie na **Opłacone** (złoty napis), a kolejne kliknięcie wraca do **Do zapłaty**.
    - **Stół**: wybierany z listy rozwijanej.
 2. Kliknij **Dodaj stół**.
-   - Przycisk ma krótki format i nie rozciąga się już na pełną szerokość sekcji.
-3. Dla każdego stołu niżej wpisz:
-   - **Nazwa**,
-   - **Wpisowe** przypisanych graczy.
-4. Kliknij **Usuń** przy wybranym stole, aby go usunąć.
+   - Przycisk ma krótki format i nie rozciąga się na pełną szerokość sekcji.
+3. Dla każdego dodanego stołu pojawia się osobny blok z tabelą i nagłówkiem: **Nazwa** + **Łączna Suma**.
+4. W tabeli stołu wpisz **Wpisowe** przypisanych graczy.
+5. Kliknij **Usuń** przy wybranym stole, aby go usunąć.
 
 ### Wpłaty
 - **Tabela10**: Buy-in, REBUY/ADD-ON, SUMA, licz. REBUY/ADD-ON.
@@ -47,14 +46,16 @@
 - Przycisk **Dodaj** jest krótki i wyrównany do lewej, spójnie z pozostałymi przyciskami dodawania.
 
 ### Faza grupowa
-- **Tabela17**: stack gracza.
+- **Tabela17**: kolumny `STACK GRACZA` i `REBUY/ADD-on(w żetonach na os)` (kolumna `Gracz` została usunięta).
+- **Tabela17A**: nowa tabela z kolumnami `LP`, `Gracz`, `Stack`, `%`, `Stół` (LP automatyczne, Stół z losowania stołów).
 - **Tabela18**: widok zbiorczy stołów.
 - **Tabela19**: gracze wg stołów + checkbox **ELIMINATED**.
 
 ### Półfinał
-- **Tabela20**: status i stół dla gracza (status wybierany z listy rozwijanej).
+- **Tabela20** została usunięta.
 - **Tabela21**: gracze bez ELIMINATED z fazy grupowej.
 - **Tabela22**: dynamiczne stoły półfinałowe.
+  - Po kliknięciu **Dodaj nowy stół** każdy stół ma tabelę z kolumnami `LP`, `Gracz`, `Stack`, `Eliminated`, `%`.
 - Przycisk **Dodaj nowy stół** jest krótki i wyrównany do lewej strony.
 
 ### Finał
