@@ -705,7 +705,7 @@ const setupAdminTournament = (rootCard) => {
         const isPaid = assignment.status === "Opłacone";
         return `
         <tr>
-          <td><div class="payment-status-cell"><label class="status-radio"><input data-role="player-payment-status" data-player-id="${player.id}" type="checkbox" ${isPaid ? "checked" : ""}><span></span></label><span class="payment-status-label ${statusConfig.className}">${statusConfig.label}</span></div></td>
+          <td><div class="payment-status-cell"><label class="payment-status-toggle ${statusConfig.className}"><input data-role="player-payment-status" data-player-id="${player.id}" type="checkbox" ${isPaid ? "checked" : ""}><span>${statusConfig.label}</span></label></div></td>
           <td><input class="admin-input" data-role="player-name" data-player-id="${player.id}" value="${esc(player.name)}" type="text" data-focus-target="1" data-section="second-tournament-players" data-row-id="${player.id}" data-column-key="name"></td>
           <td>
             <div class="pin-control">

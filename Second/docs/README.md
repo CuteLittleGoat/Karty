@@ -13,9 +13,9 @@
 3. Sprawdź licznik nad tabelą: **Liczba dodanych graczy: X**.
 4. Kliknij **Dodaj gracza**, aby utworzyć nowy wiersz.
    - Przycisk ma teraz krótki format i jest wyrównany do lewej strony (jak w module Main).
-5. W kolumnie **Status** kliknij okrągły przycisk statusu płatności dla danego gracza.
-   - Zaznaczony przycisk oznacza **Opłacone** (złoty napis przy graczu).
-   - Odznaczony przycisk (domyślnie) oznacza **Do zapłaty** (czerwony napis przy graczu).
+5. W kolumnie **Status** kliknij duży przycisk statusu płatności dla danego gracza (styl pigułki).
+   - Przycisk **OPŁACONE** ma złoty napis i złotą obwódkę.
+   - Przycisk **DO ZAPŁATY** ma jasnoróżowy napis i czerwonawą obwódkę.
    - Działa tak samo po kliknięciu myszą (PC) i po tapnięciu na telefonie/tablecie.
 6. W kolumnie **Nazwa** wpisz nazwę gracza.
 7. W kolumnie **PIN**:
@@ -28,11 +28,11 @@
 
 ### Losowanie stołów
 1. W górnej tabeli przypisz każdemu graczowi:
-   - **Status**: widoczny wyłącznie jako kolorowy tekst (bez przycisku zmiany).
-     - **Do zapłaty** — czerwony napis.
-     - **Opłacone** — złoty napis.
+   - **Status**: widoczny jako pigułka statusu (bez możliwości zmiany w tej sekcji).
+     - **Do zapłaty** — przycisk/pigułka z jasnoróżowym napisem i czerwonawą obwódką.
+     - **Opłacone** — przycisk/pigułka ze złotym napisem i złotą obwódką.
    - **Stół**: wybierany z listy rozwijanej.
-2. Zmiana statusu płatności odbywa się w zakładce **Losowanie graczy** przez zaznaczenie/odznaczenie okrągłego przycisku w kolumnie **Status**.
+2. Zmiana statusu płatności odbywa się w zakładce **Losowanie graczy** przez kliknięcie przycisku statusu (pigułka) w kolumnie **Status**.
    - Zmiana jest od razu widoczna także w zakładce **Losowanie stołów**.
 3. Kliknij **Dodaj stół**.
    - Przycisk ma krótki format i nie rozciąga się na pełną szerokość sekcji.
