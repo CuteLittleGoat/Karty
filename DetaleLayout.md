@@ -22,9 +22,9 @@
 - W `Półfinał` usunięto `Tabela20`, a w tabelach tworzonych po `Dodaj nowy stół` dodano kolumnę `Stack` przed `Eliminated`.
 - Kontrolka statusu aktywności gracza (`.status-radio`) ma pełny obszar kliknięcia 20x20 px, z ukrytym inputem rozciągniętym na cały element, co poprawia klikalność.
 
-## Moduł Main — panel Ranking (Gry admina i Statystyki)
-- Tabela rankingu ma zawsze trzy kolumny widoczne jednocześnie: `Miejsce`, `Gracz`, `Wynik` (bez poziomego przewijania panelu rankingu), również w węższych szerokościach mobilnych.
-- Wysokość wiersza rankingu jest taka sama jak standardowa wysokość innych wierszy paneli admina (`--admin-games-panel-item-height`).
-- Nagłówek kolumny `Gracz` jest wyśrodkowany (tylko nagłówek), aby nie nachodził wizualnie na `Miejsce`.
-- Kolumna `Gracz` pozwala na zawijanie nazw (`white-space: normal` + `overflow-wrap: anywhere`), więc bardzo długa nazwa może przejść do dwóch linii.
-- Gdy nazwa gracza zawinie się, tylko ten konkretny wiersz zwiększa wysokość pionowo; pozostałe wiersze zachowują standardową wysokość.
+## Moduł Main — panel Ranking (Gry admina, Statystyki i widok gracza)
+- Tabela rankingu ma trzy kolumny: `Miejsce`, `Gracz`, `Wynik` i używa `table-layout: fixed`.
+- Kolumna `Gracz` ma stałą szerokość `13ch`; dłuższe nazwy są obcinane z wielokropkiem (`white-space: nowrap`, `overflow: hidden`, `text-overflow: ellipsis`).
+- Dzięki skróceniu kolumny `Gracz` cała tabela rankingu mieści się w panelu bez poziomego przewijania w `Gry admina` i `Statystyki`.
+- Wysokość wiersza rankingu pozostaje zgodna z `--admin-games-panel-item-height`.
+- W widoku gracza (`Statystyki`) na desktopie panel `Ranking` jest po prawej stronie tabeli statystyk (osobna kolumna `34ch`), a na mobile wraca pod tabelę statystyk.
