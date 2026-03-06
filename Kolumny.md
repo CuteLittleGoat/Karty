@@ -30,14 +30,14 @@ Dodatkowo dla każdego stołu:
 - Tabela16: LP, Podział Puli, Kwota, Rebuy, Mod, Suma
 
 ### Faza grupowa
-- Tabela17: Gracz, STACK GRACZA, REBUY/ADD-on(w żetonach na os)
+- Tabela17: STACK GRACZA, REBUY/ADD-on(w żetonach na os)
+- Tabela17A: LP, Gracz, Stack, %, Stół
 - Tabela18: Stoły dynamiczne + ŁĄCZNY STACK
 - Tabela19: Stół, LP, Gracz, ELIMINATED, Stack, REBUY/add-on, REBUY
 
 ### Półfinał
-- Tabela20: Gracz, Status, Stół
 - Tabela21: LP, Gracz, STACK, %, Stół
-- Tabela22: LP, Gracz, Eliminated, %
+- Tabela22: LP, Gracz, Stack, Eliminated, %
 - Tabela Finałowa: LP, GRACZ, STACK, STÓŁ, %
 
 ### Finał
