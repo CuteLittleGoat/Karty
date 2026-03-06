@@ -856,9 +856,9 @@ select:disabled,
 .admin-games-players-stats-table th:nth-child(12), .admin-games-players-stats-table td:nth-child(12),
 .admin-games-players-stats-table th:nth-child(14), .admin-games-players-stats-table td:nth-child(14) { width: 6.5rem; min-width: 6.5rem; }
 
-.admin-games-ranking-table th:nth-child(1), .admin-games-ranking-table td:nth-child(1) { width: 3.5rem; min-width: 3.5rem; text-align: center; }
-.admin-games-ranking-table th:nth-child(2), .admin-games-ranking-table td:nth-child(2) { width: 16rem; min-width: 16rem; }
-.admin-games-ranking-table th:nth-child(3), .admin-games-ranking-table td:nth-child(3) { width: 7rem; min-width: 7rem; text-align: center; }
+.admin-games-ranking-table th:nth-child(1), .admin-games-ranking-table td:nth-child(1) { width: 5ch; min-width: 5ch; text-align: center; }
+.admin-games-ranking-table th:nth-child(2), .admin-games-ranking-table td:nth-child(2) { width: auto; min-width: 0; }
+.admin-games-ranking-table th:nth-child(3), .admin-games-ranking-table td:nth-child(3) { width: 7ch; min-width: 7ch; text-align: center; }
 
 .confirmations-table th:nth-child(1), .confirmations-table td:nth-child(1) { width: 8rem; min-width: 8rem; }
 .confirmations-table th:nth-child(2), .confirmations-table td:nth-child(2) { width: 8.5rem; min-width: 8.5rem; }
@@ -933,7 +933,9 @@ select:disabled,
 }
 
 .admin-games-ranking-table {
-  min-width: 100%;
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
 }
 
 .admin-games-ranking-table th,
@@ -946,38 +948,46 @@ select:disabled,
 }
 
 #adminGamesTab .admin-games-ranking-table,
-#adminStatisticsTab .admin-games-ranking-table {
-  min-width: 0;
-  table-layout: fixed;
+#adminStatisticsTab .admin-games-ranking-table,
+#statisticsTab .admin-games-ranking-table {
+  width: 100%;
 }
 
 #adminGamesTab .admin-games-ranking-table td,
-#adminStatisticsTab .admin-games-ranking-table td {
-  height: calc(var(--admin-games-panel-item-height) * 2);
+#adminStatisticsTab .admin-games-ranking-table td,
+#statisticsTab .admin-games-ranking-table td {
+  height: var(--admin-games-panel-item-height);
+  line-height: 1.25;
   vertical-align: middle;
 }
 
 #adminGamesTab .admin-games-ranking-table th:nth-child(1),
 #adminGamesTab .admin-games-ranking-table td:nth-child(1),
 #adminStatisticsTab .admin-games-ranking-table th:nth-child(1),
-#adminStatisticsTab .admin-games-ranking-table td:nth-child(1) {
+#adminStatisticsTab .admin-games-ranking-table td:nth-child(1),
+#statisticsTab .admin-games-ranking-table th:nth-child(1),
+#statisticsTab .admin-games-ranking-table td:nth-child(1) {
   text-align: left;
 }
 
 #adminGamesTab .admin-games-ranking-table th:nth-child(2),
 #adminGamesTab .admin-games-ranking-table td:nth-child(2),
 #adminStatisticsTab .admin-games-ranking-table th:nth-child(2),
-#adminStatisticsTab .admin-games-ranking-table td:nth-child(2) {
+#adminStatisticsTab .admin-games-ranking-table td:nth-child(2),
+#statisticsTab .admin-games-ranking-table th:nth-child(2),
+#statisticsTab .admin-games-ranking-table td:nth-child(2) {
   text-align: left;
   white-space: normal;
-  overflow-wrap: normal;
-  word-break: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 #adminGamesTab .admin-games-ranking-table th:nth-child(3),
 #adminGamesTab .admin-games-ranking-table td:nth-child(3),
 #adminStatisticsTab .admin-games-ranking-table th:nth-child(3),
-#adminStatisticsTab .admin-games-ranking-table td:nth-child(3) {
+#adminStatisticsTab .admin-games-ranking-table td:nth-child(3),
+#statisticsTab .admin-games-ranking-table th:nth-child(3),
+#statisticsTab .admin-games-ranking-table td:nth-child(3) {
   text-align: center;
 }
 

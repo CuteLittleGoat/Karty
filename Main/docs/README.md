@@ -378,7 +378,8 @@ W tabeli statystyk graczy są przyciski kolumn:
 Działanie:
 - po kliknięciu danej „Wagi” wpisujesz jedną wartość,
 - wartość jest ustawiana zbiorczo dla całej kolumny,
-- tabela i ranking w „Gry admina” korzystają z tej samej logiki liczenia co zakładka „Statystyki”, więc wyniki są spójne między tymi widokami.
+- tabela i ranking w „Gry admina” korzystają z tej samej logiki liczenia co zakładka „Statystyki”, więc wyniki są spójne między tymi widokami,
+- panel **Ranking** pokazuje zawsze trzy kolumny (**Miejsce**, **Gracz**, **Wynik**) bez poziomego przewijania; dłuższa nazwa gracza może przejść do drugiej linii i automatycznie zwiększa wysokość tylko tego jednego wiersza.
 
 ---
 
@@ -388,6 +389,7 @@ Działanie:
 2. Analizuj tabelę statystyk i ranking.
 3. Kliknij **Eksportuj**, aby pobrać statystyki.
 4. W tabeli graczy możesz używać przycisków **Waga1–Waga6** do zbiorczego ustawiania wag kolumn (analogicznie jak wyżej); przyciski mają stałą szerokość `8ch`.
+5. W panelu **Ranking** kolumny **Miejsce**, **Gracz** i **Wynik** mieszczą się na ekranie na komputerze i telefonie bez poziomego przewijania; przy bardzo długiej nazwie gracza zawijanie do dwóch linii podnosi wysokość tylko danego wiersza.
 
 ---
 
