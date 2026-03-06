@@ -141,7 +141,6 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
-    // KLUCZOWA POPRAWKA: brakująca reguła dla losowania graczy / turnieju
     match /second_tournament/{docId} {
       allow read, write: if true;
     }
