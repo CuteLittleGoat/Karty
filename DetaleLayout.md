@@ -1,6 +1,7 @@
 # Detale layoutu — aktualny stan
 
 ## Moduł Second — Tournament of Poker
+- W nagłówku modułu `Second` po prawej stronie widoczna jest ta sama ikona `Pliki/Ikona.png` co w module `Main`, ustawiona po lewej stronie przycisku **Instrukcja** (układ poziomy w `.header-controls`).
 - Sekcja `Losowanie graczy` ma układ metadanych w siatce `.t-section-grid` oraz tabelę `players-table`.
 - W polu `RAKE` usunięto statyczny znak `%` pod inputem; podgląd wartości procentowej jest generowany dynamicznie na podstawie wpisanej liczby (np. `12%`).
 - Kolumna `PIN` używa kontrolki `.pin-control`:
