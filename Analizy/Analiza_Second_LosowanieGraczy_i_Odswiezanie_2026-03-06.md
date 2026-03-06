@@ -262,3 +262,31 @@ service cloud.firestore {
   }
 }
 ```
+
+## Aktualizacja analizy po zmianie Rules (2026-03-06)
+
+### Nowy prompt użytkownika
+"Wprowadziłem nowe rules. Zaktualizowałem plik Rules.txt w Analizy. Przeczytaj ten plik i zaktaulizuj analizę - czy jest już ok?"
+
+### Wynik ponownej weryfikacji
+- Sprawdzony został aktualny plik `Analizy/Wazne_Rules.txt`.
+- W sekcji `// ===== SECOND MODULE =====` nadal **brakuje** reguły:
+  - `match /second_tournament/{docId} { allow read, write: if true; }`
+- W związku z tym z perspektywy zgodności kodu `Second` z Rules: **nadal nie jest OK**.
+
+### Co to oznacza praktycznie
+- Zakładka „Losowanie graczy” dalej może zwracać błąd odczytu z Firebase (`permission-denied`) dla ścieżki `second_tournament/state`.
+- Ręczne odświeżanie tej zakładki (`get({ source: "server" })`) również może kończyć się błędem.
+
+### Minimalna poprawka, którą trzeba dodać do aktualnego Rules
+W sekcji `// ===== SECOND MODULE =====` dodaj:
+
+```txt
+match /second_tournament/{docId} {
+  allow read, write: if true;
+}
+```
+
+### Krótki werdykt
+- **Obecny plik `Wazne_Rules.txt`: NIE, jeszcze nie jest OK.**
+- Po dodaniu powyższej reguły dla `second_tournament` — w kontekście zgłoszonego problemu — będzie OK.
