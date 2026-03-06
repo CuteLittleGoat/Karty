@@ -63,7 +63,7 @@ Dodatkowo dla każdego stołu:
 
 ### Szerokości i zachowanie kolumn (Ranking Main)
 - `Miejsce`: stała szerokość `8ch`.
-- `Gracz`: stała szerokość `13ch`; nazwy są obcinane wielokropkiem (`ellipsis`), aby cała tabela rankingu mieściła się w panelu bez poziomego przewijania.
+- `Gracz`: stała szerokość `13ch`; nagłówek i wartości są wyrównane do lewej, a nazwy są obcinane wielokropkiem (`ellipsis`), aby cała tabela rankingu mieściła się w panelu bez poziomego przewijania.
 - `Wynik`: stała szerokość `6.5ch`, wyrównanie do środka.
 - Tabela używa `table-layout: fixed` i `width: 100%`.
 

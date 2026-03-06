@@ -983,7 +983,7 @@ select:disabled,
 #adminGamesTab .admin-games-ranking-table th:nth-child(2),
 #adminStatisticsTab .admin-games-ranking-table th:nth-child(2),
 #statisticsTab .admin-games-ranking-table th:nth-child(2) {
-  text-align: center;
+  text-align: left;
 }
 
 #adminGamesTab .admin-games-ranking-table td:nth-child(2),

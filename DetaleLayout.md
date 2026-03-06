@@ -24,7 +24,7 @@
 
 ## Moduł Main — panel Ranking (Gry admina, Statystyki i widok gracza)
 - Tabela rankingu ma trzy kolumny: `Miejsce`, `Gracz`, `Wynik` i używa `table-layout: fixed`.
-- Kolumna `Gracz` ma stałą szerokość `13ch`; dłuższe nazwy są obcinane z wielokropkiem (`white-space: nowrap`, `overflow: hidden`, `text-overflow: ellipsis`).
+- Kolumna `Gracz` ma stałą szerokość `13ch`; nagłówek i wartości są wyrównane do lewej, a dłuższe nazwy są obcinane z wielokropkiem (`white-space: nowrap`, `overflow: hidden`, `text-overflow: ellipsis`).
 - Dzięki skróceniu kolumny `Gracz` cała tabela rankingu mieści się w panelu bez poziomego przewijania w `Gry admina` i `Statystyki`.
 - Wysokość wiersza rankingu pozostaje zgodna z `--admin-games-panel-item-height`.
 - W widoku gracza (`Statystyki`) na desktopie panel `Ranking` jest po prawej stronie tabeli statystyk (osobna kolumna `34ch`), a na mobile wraca pod tabelę statystyk.
