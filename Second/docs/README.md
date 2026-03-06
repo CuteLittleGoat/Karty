@@ -23,7 +23,10 @@
    - wpisuj cyfry ręcznie lub kliknij **Losuj** obok pola.
 8. W kolumnie **Uprawnienia**:
    - widzisz aktualne uprawnienia jako badge,
-   - kliknij **Edytuj** i wpisz listę uprawnień oddzielonych przecinkami.
+   - kliknij **Edytuj** — otworzy się modal **Uprawnienia gracza** (jak w module Main),
+   - w modalu zaznacz/odznacz checkboxy: **Zakładka1**, **Zakładka2**, **Zakładka3**,
+   - zamknij modal przyciskiem **✕**, kliknięciem poza oknem lub klawiszem `Esc`,
+   - wybrane pozycje od razu pojawią się w kolumnie **Uprawnienia** jako lista badge.
 9. W kolumnie **Akcje** kliknij **Usuń**, aby skasować gracza z tabeli.
 
 ### Losowanie stołów
