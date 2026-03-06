@@ -62,7 +62,7 @@ Dodatkowo dla każdego stołu:
 3. Wynik
 
 ### Szerokości i zachowanie kolumn (Ranking Main)
-- `Miejsce`: stała szerokość `5ch`.
-- `Gracz`: kolumna elastyczna (`auto`), wypełnia pozostałą przestrzeń i może zawijać długie nazwy.
-- `Wynik`: stała szerokość `7ch`, wyrównanie do środka.
+- `Miejsce`: stała szerokość `8ch`.
+- `Gracz`: kolumna elastyczna (`auto`), wypełnia pozostałą przestrzeń i może zawijać długie nazwy; nagłówek tej kolumny jest wyśrodkowany.
+- `Wynik`: stała szerokość `6.5ch`, wyrównanie do środka.
 - Tabela używa `table-layout: fixed` i `width: 100%`, dzięki czemu wszystkie 3 kolumny są widoczne na desktopie i mobile bez poziomego scrolla.

@@ -109,7 +109,7 @@ Zmiany obejmują wyłącznie warstwę prezentacji tabel (`Main/styles.css`):
 - Usunięto wcześniejsze, rozproszone i częściowo niespójne ograniczenia szerokości (`min-width`) z poprzedniego układu dla tabel gier, graczy i rankingu.
 - Dodano pełny zestaw jawnych szerokości `width/min-width` dla kolumn we wszystkich głównych tabelach:
 - Dla rankingu (w `#adminGamesTab`, `#adminStatisticsTab` i `#statisticsTab`) ustawiono tabelę na `width: 100%` + `table-layout: fixed`, aby trzy kolumny zawsze mieściły się w panelu bez poziomego przewijania.
-- Wiersze rankingu wróciły do standardowej wysokości panelu (`height: var(--admin-games-panel-item-height)`), a kolumna `Gracz` ma `white-space: normal` z `overflow-wrap: anywhere`, więc długie nazwy zawijają się i podnoszą wysokość tylko konkretnego wiersza.
+- Wiersze rankingu wróciły do standardowej wysokości panelu (`height: var(--admin-games-panel-item-height)`), a kolumna `Gracz` ma `white-space: normal` z `overflow-wrap: anywhere`, więc długie nazwy zawijają się i podnoszą wysokość tylko konkretnego wiersza; dodatkowo nagłówek `Gracz` jest wyśrodkowany, a nagłówki rankingu mają zmniejszone `padding/font-size/letter-spacing`, aby uniknąć nakładania i poziomego scrolla na mobile.
   - gracze,
   - gry administratora i gry użytkowników,
   - statystyki i ranking,

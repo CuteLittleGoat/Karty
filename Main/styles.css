@@ -856,9 +856,9 @@ select:disabled,
 .admin-games-players-stats-table th:nth-child(12), .admin-games-players-stats-table td:nth-child(12),
 .admin-games-players-stats-table th:nth-child(14), .admin-games-players-stats-table td:nth-child(14) { width: 6.5rem; min-width: 6.5rem; }
 
-.admin-games-ranking-table th:nth-child(1), .admin-games-ranking-table td:nth-child(1) { width: 5ch; min-width: 5ch; text-align: center; }
+.admin-games-ranking-table th:nth-child(1), .admin-games-ranking-table td:nth-child(1) { width: 8ch; min-width: 8ch; text-align: center; }
 .admin-games-ranking-table th:nth-child(2), .admin-games-ranking-table td:nth-child(2) { width: auto; min-width: 0; }
-.admin-games-ranking-table th:nth-child(3), .admin-games-ranking-table td:nth-child(3) { width: 7ch; min-width: 7ch; text-align: center; }
+.admin-games-ranking-table th:nth-child(3), .admin-games-ranking-table td:nth-child(3) { width: 6.5ch; min-width: 6.5ch; text-align: center; }
 
 .confirmations-table th:nth-child(1), .confirmations-table td:nth-child(1) { width: 8rem; min-width: 8rem; }
 .confirmations-table th:nth-child(2), .confirmations-table td:nth-child(2) { width: 8.5rem; min-width: 8.5rem; }
@@ -941,6 +941,12 @@ select:disabled,
 .admin-games-ranking-table th,
 .admin-games-ranking-table td {
   height: var(--admin-games-panel-item-height);
+  padding: 8px 6px;
+}
+
+.admin-games-ranking-table th {
+  font-size: 11px;
+  letter-spacing: 0.08em;
 }
 
 .admin-games-ranking-sidebar {
@@ -971,10 +977,13 @@ select:disabled,
 }
 
 #adminGamesTab .admin-games-ranking-table th:nth-child(2),
-#adminGamesTab .admin-games-ranking-table td:nth-child(2),
 #adminStatisticsTab .admin-games-ranking-table th:nth-child(2),
+#statisticsTab .admin-games-ranking-table th:nth-child(2) {
+  text-align: center;
+}
+
+#adminGamesTab .admin-games-ranking-table td:nth-child(2),
 #adminStatisticsTab .admin-games-ranking-table td:nth-child(2),
-#statisticsTab .admin-games-ranking-table th:nth-child(2),
 #statisticsTab .admin-games-ranking-table td:nth-child(2) {
   text-align: left;
   white-space: normal;
