@@ -3,6 +3,11 @@
 ## Prompt użytkownika
 "Przeczytaj kod modułu Main. Przeczytaj pliki z \"Migracja_Android\". Przeprowadź analizę czy aplikacja mobilna będzie gotowa na wiadomości Push czy jeszcze coś w Firebase muszę zmienić."
 
+## Prompt użytkownika (uzupełnienie tej analizy)
+"Przeczytaj analizę Analizy/Analiza_Main_MigracjaAndroid_Gotowosc_Push_Firebase.md a następnie zawartość folderu Migracja_Android
+
+Uzupełnij analizę Analizy/Analiza_Main_MigracjaAndroid_Gotowosc_Push_Firebase.md - napisz mi bardzo dokładnie, krok po kroku, co i gdzie mam kliknąć w Firestore, żeby włączyć funkcję powiadomień Push."
+
 ## Zakres analizy
 - Kod modułu `Main` (web) pod kątem zależności od Firebase i ewentualnych wymagań dla push mobilnych.
 - Szablon Android `Migracja_Android/MainWebViewPush` pod kątem kompletności implementacji FCM.
@@ -49,3 +54,79 @@ Aplikacja mobilna **jest technicznie przygotowana do odbierania powiadomień PUS
 
 ## Odpowiedź na pytanie użytkownika (krótko)
 **Tak, aplikacja mobilna jest gotowa kodowo na PUSH, ale musisz dokończyć konfigurację Firebase (co najmniej poprawny `google-services.json` i zgodność package name z `applicationId`) oraz mieć backend wysyłający FCM na topic `main_users`.**
+
+---
+
+## Bardzo dokładnie: co kliknąć w Firebase/Firestore, żeby uruchomić PUSH
+
+> Najważniejsze: **w samym Firestore nie ma przełącznika „włącz PUSH”**.
+> Push dla Androida w tym projekcie idzie przez **Firebase Cloud Messaging (FCM)**.
+> Firestore może być używany pomocniczo (np. do danych aplikacji), ale nie aktywuje pushy sam z siebie.
+
+Poniżej masz pełną procedurę „klik po kliku” dla projektu z `Migracja_Android/MainWebViewPush`.
+
+### Krok 1 — wejście do właściwego projektu Firebase
+1. Wejdź na: https://console.firebase.google.com/
+2. Kliknij kafelek projektu, którego używasz dla aplikacji Main.
+3. Sprawdź nazwę projektu w lewym górnym rogu (żeby nie konfigurować złego środowiska).
+
+### Krok 2 — dodanie aplikacji Android (to jest krytyczne)
+1. W lewym menu kliknij ikonę koła zębatego (obok „Project Overview”) -> **Project settings**.
+2. Przejdź do zakładki **General**.
+3. W sekcji **Your apps** kliknij ikonę **Android** („Add app”).
+4. W polu **Android package name** wpisz dokładnie:
+   - `com.karty.mainwebviewpush`
+   - (albo inny finalny `applicationId`, jeśli został zmieniony w `app/build.gradle.kts`).
+5. (Opcjonalnie) Uzupełnij App nickname.
+6. Kliknij **Register app**.
+7. Na ekranie konfiguracji kliknij **Download google-services.json**.
+8. Skopiuj pobrany plik do: `Migracja_Android/MainWebViewPush/app/google-services.json`.
+9. Wróć do kreatora Firebase i kliknij **Next** / **Continue to console**.
+
+### Krok 3 — upewnienie się, że Firestore jest aktywny (jeśli używasz danych Firestore)
+> Ten krok nie włącza pushy, ale często jest potrzebny dla działania modułu Main.
+
+1. W lewym menu kliknij **Build** -> **Firestore Database**.
+2. Jeśli widzisz przycisk **Create database**, kliknij go.
+3. Wybierz tryb startowy (najczęściej **Start in production mode**).
+4. Wybierz region (np. `europe-central2` lub ten zgodny z resztą projektu).
+5. Kliknij **Enable**.
+
+### Krok 4 — przejście do miejsca, gdzie naprawdę włącza się wysyłkę PUSH
+1. W lewym menu kliknij **Engage** -> **Messaging** (lub **Cloud Messaging**, zależnie od widoku konsoli).
+2. Jeśli to pierwszy raz, zaakceptuj ekran startowy (przycisk typu **Get started**).
+3. To jest właściwe miejsce do wysyłania testowych powiadomień.
+
+### Krok 5 — wysłanie testowego PUSH na topic używany w aplikacji
+W kodzie Android aplikacja subskrybuje topic: `main_users`.
+
+1. W **Messaging** kliknij **Create your first campaign** / **New campaign**.
+2. Wybierz **Notifications**.
+3. Uzupełnij:
+   - **Notification title** (np. `Test PUSH Main`)
+   - **Notification text** (np. `Jeśli to widzisz, FCM działa`).
+4. Kliknij **Next**.
+5. W sekcji targetowania wybierz platformę **Android**.
+6. Jako odbiorców ustaw **Topic**.
+7. Wpisz temat dokładnie: `main_users`.
+8. Kliknij **Review**.
+9. Kliknij **Publish** (lub **Send test message**, jeżeli chcesz najpierw test).
+
+### Krok 6 — co kliknąć na telefonie, żeby test miał prawo zadziałać
+1. Zainstaluj apk z `Migracja_Android/MainWebViewPush`.
+2. Uruchom aplikację.
+3. Na Androidzie 13+ pojawi się pytanie o powiadomienia -> kliknij **Allow / Zezwól**.
+4. Zamknij i uruchom aplikację ponownie (bezpieczny krok po nadaniu zgody).
+5. Po publikacji kampanii z kroku 5 powiadomienie powinno przyjść.
+
+### Krok 7 — szybka diagnostyka, jeśli nie dochodzi
+1. Sprawdź ponownie package name:
+   - Firebase app (Project settings -> General -> Your apps)
+   - musi być identyczny z `applicationId` w Gradle.
+2. Sprawdź, czy `google-services.json` na pewno pochodzi z tego samego projektu Firebase.
+3. Sprawdź, czy aplikacja na pewno dostała zgodę na notyfikacje.
+4. Sprawdź, czy wysyłasz dokładnie na topic `main_users`.
+
+## Najkrótsza odpowiedź „co kliknąć w Firestore”
+- Kliknięcia w Firestore: tylko ewentualne **włączenie bazy** (`Build -> Firestore Database -> Create database -> Enable`).
+- Kliknięcia, które faktycznie uruchamiają PUSH: **Engage -> Messaging -> New campaign -> Topic: `main_users` -> Publish**.
