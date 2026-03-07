@@ -765,6 +765,17 @@ const setupAdminTournament = (rootCard) => {
     return String(Math.floor(Math.random() * 100000)).padStart(5, "0");
   };
 
+  const getPinOwnerId = (pin, excludedPlayerId) => {
+    if (!pin) return null;
+    const normalizedPin = digitsOnly(pin).slice(0, 5);
+    if (!normalizedPin) return null;
+    const match = tournamentState.players.find((player) => (
+      player.id !== excludedPlayerId
+      && digitsOnly(player.pin).slice(0, 5) === normalizedPin
+    ));
+    return match ? match.id : null;
+  };
+
   const tableNameById = (tableId) => tournamentState.tables.find((table) => table.id === tableId)?.name || "-";
   const playerNameById = (playerId) => tournamentState.players.find((player) => player.id === playerId)?.name || "";
   const getPaymentStatusConfig = (status) => {
@@ -957,6 +968,16 @@ const setupAdminTournament = (rootCard) => {
     if (role === "player-name") tournamentState.players = tournamentState.players.map((player) => player.id === target.dataset.playerId ? { ...player, name: target.value } : player);
     if (role === "player-pin") {
       target.value = digitsOnly(target.value).slice(0, 5);
+      const playerId = target.dataset.playerId;
+      const duplicateOwnerId = target.value.length === 5 ? getPinOwnerId(target.value, playerId) : null;
+      if (duplicateOwnerId) {
+        const currentPin = tournamentState.players.find((player) => player.id === playerId)?.pin || "";
+        target.value = currentPin;
+        target.setCustomValidity("Ten PIN jest już przypisany do innego gracza.");
+        target.reportValidity();
+        return;
+      }
+      target.setCustomValidity("");
       tournamentState.players = tournamentState.players.map((player) => player.id === target.dataset.playerId ? { ...player, pin: target.value } : player);
     }
     if (role === "table-name") tournamentState.tables = tournamentState.tables.map((table) => table.id === target.dataset.tableId ? { ...table, name: target.value } : table);

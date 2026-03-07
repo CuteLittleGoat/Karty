@@ -21,7 +21,8 @@
 6. W kolumnie **Nazwa** wpisz nazwę gracza.
 7. W kolumnie **PIN**:
    - pole ma szerokość pozwalającą wygodnie wpisać pełne 5 cyfr PIN,
-   - wpisuj cyfry ręcznie lub kliknij **Losuj** obok pola.
+   - wpisuj cyfry ręcznie lub kliknij **Losuj** obok pola,
+   - aplikacja nie pozwoli zapisać PIN, który jest już przypisany do innego gracza (pojawi się komunikat walidacyjny i w polu zostanie poprzednia wartość).
 8. W kolumnie **Uprawnienia**:
    - widzisz aktualne uprawnienia jako badge,
    - kliknij **Edytuj** — otworzy się modal **Uprawnienia gracza** (jak w module Main),
