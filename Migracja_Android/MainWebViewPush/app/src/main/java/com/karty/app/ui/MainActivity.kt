@@ -1,4 +1,4 @@
-package com.karty.mainwebviewpush.ui
+package com.karty.app.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -13,9 +13,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessaging
-import com.karty.mainwebviewpush.BuildConfig
-import com.karty.mainwebviewpush.R
-import com.karty.mainwebviewpush.databinding.ActivityMainBinding
+import com.karty.app.BuildConfig
+import com.karty.app.R
+import com.karty.app.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 

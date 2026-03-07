@@ -1,4 +1,4 @@
-package com.karty.mainwebviewpush.push
+package com.karty.app.push
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -10,8 +10,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.karty.mainwebviewpush.R
-import com.karty.mainwebviewpush.ui.MainActivity
+import com.karty.app.R
+import com.karty.app.ui.MainActivity
 import kotlin.random.Random
 
 class MainFirebaseMessagingService : FirebaseMessagingService() {
