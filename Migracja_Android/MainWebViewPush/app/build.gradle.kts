@@ -18,8 +18,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
-        buildConfigField("String", "MAIN_WEB_URL", '"https://TWOJ-DOMENOWY-ADRES-MAIN/"')
-        buildConfigField("String", "ALLOWED_WEB_HOST", '"TWOJ-DOMENOWY-ADRES-MAIN"')
+        buildConfigField("String", "MAIN_WEB_URL", "\"https://cutelittlegoat.github.io/Karty/Main/index.html\"")
+        buildConfigField("String", "ALLOWED_WEB_HOST", "\"cutelittlegoat.github.io\"")
     }
 
     buildTypes {
