@@ -17,7 +17,7 @@
         android:usesCleartextTraffic="false">
 
         <activity
-            android:name=".ui.MainActivity"
+            android:name="com.karty.app.ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,7 +27,7 @@
         </activity>
 
         <service
-            android:name=".push.MainFirebaseMessagingService"
+            android:name="com.karty.app.push.MainFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
