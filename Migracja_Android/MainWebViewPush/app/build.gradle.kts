@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.karty.mainwebviewpush"
+    namespace = "com.karty.app"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.karty.mainwebviewpush"
+        applicationId = "com.karty.app"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
