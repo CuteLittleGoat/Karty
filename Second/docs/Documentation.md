@@ -55,6 +55,11 @@
 ### Obsługa PIN
 - PIN jest filtrowany do cyfr i skracany do 5 znaków.
 - Losowanie PIN: helper `generateUniquePin(playerId)` losuje 5-cyfrową wartość i unika kolizji z innymi graczami.
+- Dodano twardą walidację unikalności dla wpisu ręcznego przez helper `getPinOwnerId(pin, excludedPlayerId)`:
+  - jeżeli wpisany 5-cyfrowy PIN istnieje już u innego gracza, zapis jest blokowany,
+  - pole PIN wraca do poprzedniej wartości gracza,
+  - pokazuje się komunikat walidacyjny `Ten PIN jest już przypisany do innego gracza.`,
+  - poprawny (unikalny) PIN czyści stan walidacji (`setCustomValidity("")`) i zapisuje się standardowo.
 
 ### Obsługa uprawnień
 - `normalizeTournamentPermissions(value)` wspiera dane jako string CSV lub tablicę.
