@@ -82,31 +82,39 @@ _//sprawdzić_
 
 Tabela 14
 Kolumna "%" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 11  kolumna "%" 
+_//sprawdzić_
 
 Kolumna "rake" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 11  kolumna "rake" 
+_//sprawdzić_
 
 Kolumna "buy-in" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 11  kolumna "buy-in"
+_//sprawdzić_
 
 Kolumna "Rebuy/add-on" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 11  kolumna "rebuy/add-on"  
+_//sprawdzić_
 
 Kolumna "Pot" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 11  kolumna "pot"
+_//sprawdzić_
 
 Tabela 15
 Kolumna "buy-in" - pole liczbowe. Zaciąga się z Tabeli 14 kolumna "buy-in"
+_//sprawdzić_
 
-Kolumna "podział" pole liczbowe. Jest to wartość z tabeli 15 kolumna "buy-in" minus (suma wszystkich wartości  w tabeli 16  
-
-kolumna "podział puli" miejsca od 4 w dół)   
+Kolumna "podział" pole liczbowe. Jest to wartość z tabeli 15 kolumna "buy-in" minus (suma wszystkich wartości  w tabeli 16  kolumna "podział puli" miejsca od 4 w dół) 
+_//sprawdzić_
  
 SKASOWĆ PRZYCSIK "DODAJ" Z TABELI 15 I DODAĆ GO DO TABELI 16 
+_//sprawdzić_
 
 Tabela 16
 Kolumna "lp" - pole liczbowe. Zależy od dodanych przeze mnie miejsc.
+_//czyli co? bo teraz uzupełnia się sama_
 
 Kolumna "Podział puli" - pole liczbowe. Do ręcznego wpisania
 dla miesc:
 -1-3: podział procentowy
 -od 4 w dół: liczby całkowite
+_//nie rozumiem_
 
 Kolumna "Kwota" - pole liczbowe. Dla miejsc:
 -1. iloczyn wartości tabela16 kolumna "podział puli" pozycja 1 razy tabela 15 kolumna "podział" 
@@ -118,7 +126,11 @@ Kolumny "rebuy" - Pole liczbowe. Muszą być przypsiane tak jak Ci wypisywałem 
  Każdy przypisany rebuy musi być pomniejszony o  RAKE tabela 14 kolumna "rake"
 Podział przypisanych rebuy do miejsc. biorąc pod uwagę że będzie ich 30.
 każdy następny rebay po 30. będą to puste pola z możliwością ręcznego wpisania warości liczbowej
+_//bardzo dokładnie sprawdź_
+
 Kolumna "mod" - pole liczbowe. puste do ręcznego wpisania. taka kolumna musi się znajdować po 12 rebay, 20 rebay i na samym końcu przed kolumną "suma"
+_//sprawdź_
+
 Kolumna 'suma" - pole liczbowe.  jest to suma  wartości. kilku kolumn.  tabela16 kolumna "podział puli" konkretna pozycja plus przypisane rebuy do tego miejsca.
 ……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………..………………………………………………………………………………………………………………………………………………………………………………………………..
 
