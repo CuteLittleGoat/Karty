@@ -1,5 +1,5 @@
 w panelu "losowanie stołu" po dodaniu nowego stołu zmienić nazwę kolumny z "wpisowe" na "buy-in"  
-_nie ma takiej kolumny_
+_Sprawdzić_
 
 
 Zakładka "Tournament of Poker"
