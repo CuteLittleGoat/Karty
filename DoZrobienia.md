@@ -39,17 +39,26 @@ Kolumna "Rake" - pole obliczalne. Iloczyn wartości panel "wpłaty" tabela10 kol
 _dokładnie sprawdzić bo nie wiem co dokładnie jest w kolumnie % i jak to się przeliczy_
 
 Kolumna "Buy-in" - pole obliczalne. Suma wartości z kolumny buy-in panel "wpłaty" tabela 12. pomniejszona o kolumnę "%" panel "wpłaty" tabela 11
+_dokładnie sprawdzić bo nie wiem co dokładnie jest w kolumnie % i jak to się przeliczy_
+
 Kolumna "Rebuy" - pole obliczalne. Suma wartości z kolumny rebuy panel "wpłaty" tabela 12. pomniejszona o kolumnę "%" panel "wpłaty" tabela 11
+_dokładnie sprawdzić bo nie wiem co dokładnie jest w kolumnie % i jak to się przeliczy_
+
 Kolumna "Pot" - pole obliczalne. suma wartości z kolumny "buy-in" oraz "rebuy" tabela 11
+_dokładnie sprawdzić_
 
 Tabela 12 
 Kolumna "Stół" - pola tekstowe. Zaciąga się z panelu "Losowanie stołów" z dodanych do gry stołów kolumna "nazwa".
+_zaciągnie się jeżeli do stołu jest przypisany przynajmniej jeden gracz_
 
 Kolumna "lp" - pole liczbowe. numeryczne- tyle ilu jest graczy.
+_gotowe_
 
 Kolumna "Gracz" - pole tekstowe. Zaciąga się z panelu "Losowanie stołów" z dodanych do gry stołów kolumna "gracz".
+_gotowe_
 
 Kolumna "GRACZE" muszą być odpowiednio przypisani do swoich "STOŁÓW"
+_gotowe_
 
 Kolumna 'Buy-in" - pole liczbowe. zaciąga się z panelu  "losowanie stołu" dodane z wszystkich dodanych stołów kolumna "buy-in"
 
