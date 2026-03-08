@@ -129,9 +129,10 @@ każdy następny rebay po 30. będą to puste pola z możliwością ręcznego wp
 _//bardzo dokładnie sprawdź_
 
 Kolumna "mod" - pole liczbowe. puste do ręcznego wpisania. taka kolumna musi się znajdować po 12 rebay, 20 rebay i na samym końcu przed kolumną "suma"
-_//sprawdź_
+_//sprawdzić_
 
 Kolumna 'suma" - pole liczbowe.  jest to suma  wartości. kilku kolumn.  tabela16 kolumna "podział puli" konkretna pozycja plus przypisane rebuy do tego miejsca.
+_//sprawdzić_
 ……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………..………………………………………………………………………………………………………………………………………………………………………………………………..
 
 
@@ -140,15 +141,26 @@ Panel "Faza grupowa"
 Tabela 17
 
 Skasować nazwę kolumny Rebuy/add-on (w żetonach na os). zostawić tylko Rebuy/add-on
+_//sprawdzić_
+
 W tabeli 17 będą dwie kolumny po jednej wartości. resztę pustych moiejsc skasować
+_//sprawdzić_
+
 Kolumna "Stack gracza" - pole liczbowe. zaciąga się z panelu " losowanie graczy" kolumna "stack"
+_//sprawdzić_
+
 Kolumna "Rebuy/stack" - pole liczbowe. Zaciąga się z panelu "losowanie graczy" kolumna rebuy/add-on stack
+_//sprawdzić_
 
 Tabela 17A - skasować.
+_//sprawdzić_
 
 Tabela 18
 w tej tabeli, nazwami kolumn są nazwy utworzonych stołów w panelu "Losowanie stołu" (stół 1 , stół2 itd.)
+_//gotowe)_
+
 a wartości w.w. kolumnach są  pola liczbowe. zaciągają się z tabeli 19 
+_//nie napisałeś skąd ma się zaciągać. Strzelam, że kolumna Stack_
 
 Tabela 19 Wszystko co wpisze w panelu "wpłaty tabela 12. musi się pojawić w tabeli 19, ale wartości liczbowe będą podane w żetonach panel "losowanie garczy" kolumny "stack i rebuy/add-on satck
-
+_//nie rozumiem_
