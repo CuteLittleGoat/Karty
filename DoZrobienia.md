@@ -1,16 +1,18 @@
-w panelu "losowanie stołu" po dodaniu nowego stołu zmienić nazwę kolumny z "wpisowe" na "buy-in"  
+*w panelu "losowanie stołu" po dodaniu nowego stołu zmienić nazwę kolumny z "wpisowe" na "buy-in"*  
 _nie ma takiej kolumny_
 
 
 Zakładka "Tournament of Poker"
 Panel "Losowanie Stołów".
-Kolumna "status" - pole tekstowe. Zaciąga się z panelu "losowanie graczy" kolumna "status"
+*Kolumna "status" - pole tekstowe. Zaciąga się z panelu "losowanie graczy" kolumna "status"*
 _gotowe - są kolorowe pigułkiy_
 
-kolumna "stół" pole tekstowe. utworzona lista stołów. stoły mają się nazywać stół 1,2,3 itd. Do 20
+*kolumna "stół" pole tekstowe. utworzona lista stołów. stoły mają się nazywać stół 1,2,3 itd. Do 20*
 _jest pole rozwijane. Zaciąga się taka nazwa jak w utworzonych stołach. nie ma limitu_
 
-Kolumna "Nazwa" - pole tekstowe. Każdy dodany stół automatycznie będzie miał nadaną nazwę stół 1, stół 2 itd.
+*Kolumna "Nazwa" - pole tekstowe. Każdy dodany stół automatycznie będzie miał nadaną nazwę stół 1, stół 2 itd.*
+_gotowe_
+
 Kolumna "Łączna Suma" - pole obliczalne. Suma wartości z kolumny "Wpisowe" w danym stole.
 Panel "Wpłaty"
 Tabela 10 
