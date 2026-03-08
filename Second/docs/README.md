@@ -92,3 +92,42 @@
 - Wszystkie pola edytowalne w panelu turniejowym mają zabezpieczenie przed utratą fokusu podczas automatycznego zapisu i odświeżeń z Firebase.
 - Podczas pisania (również przy przytrzymaniu Backspace) aplikacja nie nadpisuje aktywnie edytowanego pola starszym snapshotem.
 - Synchronizacja z serwerem jest stosowana po zakończeniu edycji pola.
+
+## TOURNAMENT OF POKER – aktualny przepływ (moduł Second)
+
+### Losowanie stołów
+1. Przejdź do `TOURNAMENT OF POKER` → `Losowanie stołów`.
+2. Dodaj stoły przyciskiem **Dodaj stół**.
+3. W tabeli głównej przypisz graczy do stołów.
+4. W kartach stołów kolumna wpłaty gracza nazywa się **BUY-IN**.
+5. Pole **ŁĄCZNA SUMA** przy stole liczy się automatycznie z wpisanych BUY-IN.
+
+### Wpłaty
+1. Przejdź do zakładki `Wpłaty`.
+2. `Tabela10` oraz `Tabela11` są automatycznie wyliczane i tylko do odczytu.
+3. W `Tabela12` kolumna **REBUY** to przycisk per gracz:
+   - kliknij przycisk, aby otworzyć modal **Rebuy gracza**,
+   - użyj **Dodaj Rebuy** / **Usuń Rebuy**,
+   - wpisane wartości sumują się na przycisku w tabeli.
+
+### Podział puli
+1. `Tabela13` i `Tabela14` pobierają dane automatycznie z panelu `Wpłaty`.
+2. `Tabela15` pokazuje automatyczny BUY-IN i wartość `PODZIAŁ`.
+3. `Tabela16`:
+   - kolumna `PODZIAŁ PULI` ma domyślne wartości 0.50, 0.30, 0.20 dla pierwszych 3 wierszy,
+   - przyciski **Dodaj**/**Usuń** są pod `Tabela16`,
+   - kolumny `REBUY1..` budują się automatycznie na podstawie rebuy,
+   - kolumna `MOD` jest edytowalna,
+   - kolumna `SUMA` liczy się automatycznie,
+   - przy niezgodnej sumie procentów pojawia się czerwone ostrzeżenie,
+   - przy nadmiarze rebuy ponad limit automatycznej dystrybucji pojawia się ostrzeżenie `Rebuy do rozdysponowania ...`.
+
+### Faza grupowa
+1. `Tabela17` zawiera tylko 1 wiersz.
+2. `Tabela17` ma kolumny: `STACK GRACZA` i `REBUY/ADD-ON` (tylko odczyt).
+3. `Tabela18` pokazuje stack per stół oraz `ŁĄCZNY STACK`.
+4. `Tabela19` pokazuje dane gracza, w tym `STACK`, `REBUY/ADD-ON` i `REBUY` (tylko odczyt).
+
+### Nagłówki kolumn
+- W module Second nagłówki tabel są wyświetlane wielkimi literami.
+- Wyjątek: dynamiczne nazwy stołów w `Tabela18` pozostają w formacie wpisanym przez użytkownika.

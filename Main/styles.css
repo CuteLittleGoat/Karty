@@ -1945,3 +1945,15 @@ body.modal-open {
   color: var(--muted);
   font-size: var(--fs-small);
 }
+
+
+.modal-header-close-right {
+  position: relative;
+  padding-right: 2.2rem;
+}
+
+.modal-header-close-right .icon-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+}

@@ -76,3 +76,16 @@ Dodatkowo dla każdego stołu:
 
 ### Losowanie stołów — akcje w bloku stołu
 - Przycisk `Usuń` w pojedynczym bloku stołu ma kompaktową szerokość (`.admin-row-delete`) i wyrównanie do prawej krawędzi (`.draw-table-delete`).
+
+## Tournament of Poker (Second) – kolumny
+- Panel `Losowanie stołów`: kolumna `Wpisowe` została zastąpiona przez `BUY-IN`.
+- Panel `Wpłaty`:
+  - `Tabela10`: pola readonly (`BUY-IN`, `REBUY/ADD-ON`, `SUMA`, `LICZ. REBUY/ADD-ON`).
+  - `Tabela11`: pola readonly (`%`, `RAKE`, `BUY-IN`, `REBUY/ADD-ON`, `POT`).
+  - `Tabela12`: kolumna `REBUY` jako przycisk otwierający modal.
+- Panel `Podział puli`:
+  - przyciski `Dodaj/Usuń` przeniesione pod `Tabela16`,
+  - dynamiczne kolumny `REBUY1..n` oraz kolumna `MOD` umieszczana po `REBUY12` (lub po ostatniej kolumnie REBUY, gdy mniej niż 12).
+- Panel `Faza grupowa`:
+  - `Tabela17` tylko 2 kolumny: `STACK GRACZA`, `REBUY/ADD-ON`.
+  - `Tabela17A` usunięta.

@@ -1954,3 +1954,28 @@ body.modal-open {
   font-weight: 700;
   margin: 8px 0 0;
 }
+
+
+#secondApp .admin-data-table th {
+  text-transform: uppercase;
+}
+
+#secondApp .admin-data-table th.table18-dynamic-header {
+  text-transform: none;
+}
+
+.t-warning {
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+.modal-header-close-right {
+  position: relative;
+  padding-right: 2.2rem;
+}
+
+.modal-header-close-right .icon-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+}

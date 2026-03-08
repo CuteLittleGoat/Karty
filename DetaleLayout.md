@@ -32,3 +32,8 @@
 - Dzięki skróceniu kolumny `Gracz` cała tabela rankingu mieści się w panelu bez poziomego przewijania w `Gry admina` i `Statystyki`.
 - Wysokość wiersza rankingu pozostaje zgodna z `--admin-games-panel-item-height`.
 - W widoku gracza (`Statystyki`) na desktopie panel `Ranking` jest po prawej stronie tabeli statystyk (osobna kolumna `34ch`), a na mobile wraca pod tabelę statystyk.
+
+## Modale i tabele – aktualne zasady
+- Klasa `modal-header-close-right` ustawia przycisk zamknięcia `X` w prawym górnym rogu okna modalnego.
+- W module Second nagłówki tabel są prezentowane uppercase, z wyjątkiem dynamicznych nagłówków stołów w `Tabela18`.
+- Ostrzeżenia walidacyjne i dystrybucji rebuy w module Second używają czerwonego stylu (`.t-warning`).

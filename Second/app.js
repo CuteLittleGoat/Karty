@@ -606,11 +606,13 @@ const createTournamentDefaultState = () => ({
   tableEntries: {},
   payments: {
     table10: { buyIn: "", rebuyAddOn: "", sum: "", rebuyCount: "" },
-    table11: { percent: "", rake: "", buyIn: "", rebuyAddOn: "", pot: "" }
+    table11: { percent: "", rake: "", buyIn: "", rebuyAddOn: "", pot: "" },
+    table12Rebuys: {}
   },
   pool: {
-    splits: [{ id: crypto.randomUUID(), buyIn: "", split: "" }],
-    mods: [{ id: crypto.randomUUID(), mod: "" }]
+    splits: [{ id: crypto.randomUUID(), split: "" }],
+    mods: [{ id: crypto.randomUUID(), mod: "" }],
+    rebuyValues: {}
   },
   group: {
     playerStacks: {},
@@ -729,6 +731,98 @@ const setupAdminTournament = (rootCard) => {
   let hasActiveEdit = false;
   let pendingLocalWrites = 0;
   let deferredSnapshotState = null;
+  let activeTable12RebuyPlayerId = "";
+
+  const table12RebuyModal = document.createElement("div");
+  table12RebuyModal.className = "modal-overlay";
+  table12RebuyModal.setAttribute("aria-hidden", "true");
+  table12RebuyModal.innerHTML = `
+    <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="secondTable12RebuyTitle">
+      <div class="modal-header modal-header-close-right">
+        <h3 id="secondTable12RebuyTitle">Rebuy gracza</h3>
+        <button type="button" class="icon-button" data-role="close-table12-rebuy" aria-label="Zamknij okno">×</button>
+      </div>
+      <div class="admin-table-scroll"><table class="admin-data-table" data-role="table12-rebuy-modal-table"></table></div>
+      <div class="admin-table-actions">
+        <button type="button" class="secondary" data-role="table12-rebuy-add">Dodaj Rebuy</button>
+        <button type="button" class="danger" data-role="table12-rebuy-remove">Usuń Rebuy</button>
+      </div>
+    </div>`;
+  document.body.appendChild(table12RebuyModal);
+
+  const closeTable12RebuyModal = () => {
+    activeTable12RebuyPlayerId = "";
+    table12RebuyModal.classList.remove("is-visible");
+    table12RebuyModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+
+  const renderTable12RebuyModal = () => {
+    const table = table12RebuyModal.querySelector('[data-role="table12-rebuy-modal-table"]');
+    if (!table || !activeTable12RebuyPlayerId) return;
+    tournamentState.payments.table12Rebuys = tournamentState.payments.table12Rebuys || {};
+    const state = tournamentState.payments.table12Rebuys[activeTable12RebuyPlayerId] || { values: [], indexes: [], nextIndex: 1 };
+    if (!Array.isArray(state.values)) state.values = [];
+    if (!Array.isArray(state.indexes) || state.indexes.length !== state.values.length) state.indexes = state.values.map((_, idx) => idx + 1);
+    if (typeof state.nextIndex !== 'number' || state.nextIndex < 1) state.nextIndex = (state.indexes[state.indexes.length - 1] || 0) + 1;
+    tournamentState.payments.table12Rebuys[activeTable12RebuyPlayerId] = state;
+
+    table.innerHTML = `<thead><tr>${state.indexes.map((idx) => `<th>REBUY${idx}</th>`).join("") || '<th>REBUY1</th>'}</tr></thead><tbody><tr>${(state.values.length ? state.values : [""]).map((value, index) => `<td><input class="admin-input" data-role="table12-rebuy-input" data-rebuy-index="${index}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${value || ""}"></td>`).join("")}</tr></tbody>`;
+  };
+
+  const openTable12RebuyModal = (playerId) => {
+    activeTable12RebuyPlayerId = playerId;
+    table12RebuyModal.classList.add("is-visible");
+    table12RebuyModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+    renderTable12RebuyModal();
+  };
+
+  table12RebuyModal.addEventListener('click', (event) => {
+    const role = event.target?.dataset?.role;
+    if (event.target === table12RebuyModal || role === 'close-table12-rebuy') {
+      closeTable12RebuyModal();
+    }
+  });
+
+  table12RebuyModal.addEventListener('input', (event) => {
+    const role = event.target?.dataset?.role;
+    if (role !== 'table12-rebuy-input' || !activeTable12RebuyPlayerId) return;
+    const rebuyState = tournamentState.payments.table12Rebuys?.[activeTable12RebuyPlayerId];
+    if (!rebuyState) return;
+    const idx = Number(event.target.dataset.rebuyIndex);
+    if (!Number.isInteger(idx) || idx < 0) return;
+    rebuyState.values[idx] = digitsOnly(event.target.value);
+    event.target.value = rebuyState.values[idx];
+  });
+
+  table12RebuyModal.addEventListener('click', async (event) => {
+    const role = event.target?.dataset?.role;
+    if (!activeTable12RebuyPlayerId) return;
+    const rebuyState = tournamentState.payments.table12Rebuys?.[activeTable12RebuyPlayerId];
+    if (!rebuyState) return;
+    if (role === 'table12-rebuy-add') {
+      rebuyState.values.push('');
+      rebuyState.indexes.push(rebuyState.nextIndex || 1);
+      rebuyState.nextIndex = (rebuyState.nextIndex || 1) + 1;
+      renderTable12RebuyModal();
+      await saveState();
+      render();
+    }
+    if (role === 'table12-rebuy-remove') {
+      rebuyState.values = rebuyState.values.slice(0, -1);
+      rebuyState.indexes = rebuyState.indexes.slice(0, rebuyState.values.length);
+      renderTable12RebuyModal();
+      await saveState();
+      render();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && table12RebuyModal.classList.contains('is-visible')) {
+      closeTable12RebuyModal();
+    }
+  });
 
   const esc = (v) => String(v ?? "")
     .replaceAll("&", "&amp;")
@@ -786,6 +880,41 @@ const setupAdminTournament = (rootCard) => {
     };
   };
 
+  const toNumber = (value) => {
+    const normalized = String(value ?? "").replace(",", ".").trim();
+    if (!normalized) return 0;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+  const toDigitsNumber = (value) => Number(digitsOnly(value));
+  const formatCellNumber = (value) => {
+    if (!Number.isFinite(value)) return "";
+    const rounded = Math.round(value * 100) / 100;
+    return Number.isInteger(rounded) ? String(rounded) : String(rounded.toFixed(2));
+  };
+  const toPercentText = (value) => `${Math.round((toNumber(value) * 100) * 100) / 100}%`;
+
+  const ensureTable12RebuyState = (playerId) => {
+    tournamentState.payments.table12Rebuys = tournamentState.payments.table12Rebuys || {};
+    if (!tournamentState.payments.table12Rebuys[playerId]) {
+      tournamentState.payments.table12Rebuys[playerId] = { values: [], indexes: [], nextIndex: 1 };
+    }
+    const entry = tournamentState.payments.table12Rebuys[playerId];
+    if (!Array.isArray(entry.values)) entry.values = [];
+    if (!Array.isArray(entry.indexes) || entry.indexes.length !== entry.values.length) {
+      entry.indexes = entry.values.map((_, idx) => idx + 1);
+    }
+    if (typeof entry.nextIndex !== "number" || entry.nextIndex < 1) {
+      entry.nextIndex = (entry.indexes[entry.indexes.length - 1] || 0) + 1;
+    }
+    return entry;
+  };
+
+  const getPlayerRebuyTotal = (playerId) => {
+    const state = ensureTable12RebuyState(playerId);
+    return state.values.reduce((sum, value) => sum + toDigitsNumber(value), 0);
+  };
+
   const buildGroupedRows = (assignments) => {
     const all = [];
     let lp = 1;
@@ -801,6 +930,59 @@ const setupAdminTournament = (rootCard) => {
 
   const render = () => {
     const focusState = getTournamentEditableFocusState(container);
+    const groupedDrawRows = buildGroupedRows(tournamentState.assignments);
+
+    const drawTotalsByTable = {};
+    tournamentState.tables.forEach((table) => {
+      const assignedPlayers = tournamentState.players.filter((player) => (tournamentState.assignments[player.id]?.tableId || "") === table.id);
+      const entries = tournamentState.tableEntries[table.id] || {};
+      drawTotalsByTable[table.id] = assignedPlayers.reduce((sum, player) => sum + toDigitsNumber(entries[player.id]), 0);
+    });
+    const totalBuyInFromDraw = Object.values(drawTotalsByTable).reduce((sum, value) => sum + value, 0);
+
+    const allRebuyValues = [];
+    groupedDrawRows.forEach((row) => {
+      const rebuyState = ensureTable12RebuyState(row.playerId);
+      rebuyState.values.forEach((value) => {
+        if (String(value ?? "").trim()) {
+          allRebuyValues.push(toDigitsNumber(value));
+        }
+      });
+    });
+    const rebuyCount = allRebuyValues.length;
+    const rebuyTotal = allRebuyValues.reduce((sum, value) => sum + value, 0);
+
+    const table10 = {
+      buyIn: toDigitsNumber(tournamentState.buyIn),
+      rebuyAddOn: toDigitsNumber(tournamentState.rebuyAddOn),
+      sum: totalBuyInFromDraw,
+      rebuyCount
+    };
+
+    const rakePercent = toDigitsNumber(tournamentState.rake) / 100;
+    const table11 = {
+      percent: rakePercent,
+      rake: table10.sum * rakePercent,
+      buyIn: table10.sum * (1 - rakePercent),
+      rebuyAddOn: rebuyTotal * (1 - rakePercent),
+      pot: 0
+    };
+    table11.pot = table11.buyIn + table11.rebuyAddOn;
+
+    tournamentState.payments.table10 = {
+      buyIn: formatCellNumber(table10.buyIn),
+      rebuyAddOn: formatCellNumber(table10.rebuyAddOn),
+      sum: formatCellNumber(table10.sum),
+      rebuyCount: formatCellNumber(table10.rebuyCount)
+    };
+    tournamentState.payments.table11 = {
+      percent: formatCellNumber(table11.percent),
+      rake: formatCellNumber(table11.rake),
+      buyIn: formatCellNumber(table11.buyIn),
+      rebuyAddOn: formatCellNumber(table11.rebuyAddOn),
+      pot: formatCellNumber(table11.pot)
+    };
+
     if (activeSection === "players") {
       const playersRows = tournamentState.players.map((player) => {
         const assignment = tournamentState.assignments[player.id] || { status: "Do zapłaty", tableId: "" };
@@ -839,7 +1021,7 @@ const setupAdminTournament = (rootCard) => {
           <label>REBUY/ADD-ON STACK <input class="admin-input" data-role="meta-rebuystack" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.rebuyStack)}"></label>
         </div>
         <p class="builder-info">Liczba dodanych graczy: ${tournamentState.players.length}</p>
-        <div class="admin-table-scroll"><table class="admin-data-table players-table"><thead><tr><th>Status</th><th>Nazwa</th><th>PIN</th><th>Uprawnienia</th><th>Akcje</th></tr></thead><tbody>${playersRows || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div>
+        <div class="admin-table-scroll"><table class="admin-data-table players-table"><thead><tr><th>STATUS</th><th>NAZWA</th><th>PIN</th><th>UPRAWNIENIA</th><th>AKCJE</th></tr></thead><tbody>${playersRows || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div>
         <button type="button" class="secondary t-inline-add-button" data-role="add-player">Dodaj gracza</button>
       `;
       restoreTournamentEditableFocusState(container, focusState);
@@ -856,37 +1038,97 @@ const setupAdminTournament = (rootCard) => {
       const perTableBlocks = tournamentState.tables.map((table) => {
         const assignedPlayers = tournamentState.players.filter((player) => (tournamentState.assignments[player.id]?.tableId || "") === table.id);
         const entries = tournamentState.tableEntries[table.id] || {};
-        const total = assignedPlayers.reduce((sum, player) => sum + Number(entries[player.id] || 0), 0);
-        return `<article class="admin-table-card"><div class="t-section-grid"><label>Nazwa <input class="admin-input" data-role="table-name" data-table-id="${table.id}" type="text" value="${esc(table.name)}"></label><label>Łączna Suma <input class="admin-input" readonly value="${total}"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Wpisowe</th></tr></thead><tbody>${assignedPlayers.map((player) => `<tr><td>${esc(player.name)}</td><td><input class="admin-input" type="tel" inputmode="numeric" pattern="[0-9]*" data-role="table-entry" data-table-id="${table.id}" data-player-id="${player.id}" value="${esc(entries[player.id] || "")}"></td></tr>`).join("") || '<tr><td colspan="2">Brak przypisanych graczy.</td></tr>'}</tbody></table></div><button type="button" class="danger admin-row-delete draw-table-delete" data-role="delete-table" data-table-id="${table.id}">Usuń</button></article>`;
+        const total = drawTotalsByTable[table.id] || 0;
+        return `<article class="admin-table-card"><div class="t-section-grid"><label>NAZWA <input class="admin-input" data-role="table-name" data-table-id="${table.id}" type="text" value="${esc(table.name)}"></label><label>ŁĄCZNA SUMA <input class="admin-input" readonly value="${formatCellNumber(total)}"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>GRACZ</th><th>BUY-IN</th></tr></thead><tbody>${assignedPlayers.map((player) => `<tr><td>${esc(player.name)}</td><td><input class="admin-input" type="tel" inputmode="numeric" pattern="[0-9]*" data-role="table-entry" data-table-id="${table.id}" data-player-id="${player.id}" value="${esc(entries[player.id] || "")}"></td></tr>`).join("") || '<tr><td colspan="2">Brak przypisanych graczy.</td></tr>'}</tbody></table></div><button type="button" class="danger admin-row-delete draw-table-delete" data-role="delete-table" data-table-id="${table.id}">Usuń</button></article>`;
       }).join("");
 
-      mount.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Status</th><th>Stół</th></tr></thead><tbody>${rows || '<tr><td colspan="3">Brak graczy.</td></tr>'}</tbody></table></div><div class="semi-tables">${perTableBlocks || "<p>Brak stołów.</p>"}</div><button type="button" class="secondary t-inline-add-button" data-role="add-table">Dodaj stół</button>`;
+      mount.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>GRACZ</th><th>STATUS</th><th>STÓŁ</th></tr></thead><tbody>${rows || '<tr><td colspan="3">Brak graczy.</td></tr>'}</tbody></table></div><div class="semi-tables">${perTableBlocks || "<p>Brak stołów.</p>"}</div><button type="button" class="secondary t-inline-add-button" data-role="add-table">Dodaj stół</button>`;
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
 
-    const groupedDrawRows = buildGroupedRows(tournamentState.assignments);
     if (activeSection === "payments") {
-      mount.innerHTML = `<h3>Tabela10</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Buy-in</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>licz. REBUY/ADD-ON</th></tr></thead><tbody><tr><td><input class="admin-input" data-role="pay-10-buyin" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table10.buyIn)}"></td><td><input class="admin-input" data-role="pay-10-rebuy" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table10.rebuyAddOn)}"></td><td><input class="admin-input" data-role="pay-10-sum" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table10.sum)}"></td><td><input class="admin-input" data-role="pay-10-count" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table10.rebuyCount)}"></td></tr></tbody></table></div><h3>Tabela11</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>Rake</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td><input class="admin-input" data-role="pay-11-percent" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table11.percent)}"></td><td><input class="admin-input" data-role="pay-11-rake" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table11.rake)}"></td><td><input class="admin-input" data-role="pay-11-buyin" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table11.buyIn)}"></td><td><input class="admin-input" data-role="pay-11-rebuy" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table11.rebuyAddOn)}"></td><td><input class="admin-input" data-role="pay-11-pot" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.payments.table11.pot)}"></td></tr></tbody></table></div><h3>Tabela12</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Stół</th><th>LP</th><th>Gracz</th><th>BUY-IN</th><th>REBUY/add-on</th><th>REBUY</th></tr></thead><tbody>${groupedDrawRows.map((row) => `<tr><td>${esc(row.tableName)}</td><td>${row.lp}</td><td>${esc(row.playerName)}</td><td></td><td></td><td></td></tr>`).join("") || '<tr><td colspan="6">Brak danych.</td></tr>'}</tbody></table></div>`;
+      mount.innerHTML = `<h3>TABELA10</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZ. REBUY/ADD-ON</th></tr></thead><tbody><tr><td><input class="admin-input" data-role="pay-10-buyin" readonly value="${formatCellNumber(table10.buyIn)}"></td><td><input class="admin-input" data-role="pay-10-rebuy" readonly value="${formatCellNumber(table10.rebuyAddOn)}"></td><td><input class="admin-input" data-role="pay-10-sum" readonly value="${formatCellNumber(table10.sum)}"></td><td><input class="admin-input" data-role="pay-10-count" readonly value="${formatCellNumber(table10.rebuyCount)}"></td></tr></tbody></table></div><h3>TABELA11</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td><input class="admin-input" data-role="pay-11-percent" readonly value="${formatCellNumber(table11.percent)}"></td><td><input class="admin-input" data-role="pay-11-rake" readonly value="${formatCellNumber(table11.rake)}"></td><td><input class="admin-input" data-role="pay-11-buyin" readonly value="${formatCellNumber(table11.buyIn)}"></td><td><input class="admin-input" data-role="pay-11-rebuy" readonly value="${formatCellNumber(table11.rebuyAddOn)}"></td><td><input class="admin-input" data-role="pay-11-pot" readonly value="${formatCellNumber(table11.pot)}"></td></tr></tbody></table></div><h3>TABELA12</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>STÓŁ</th><th>LP</th><th>GRACZ</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>REBUY</th></tr></thead><tbody>${groupedDrawRows.map((row) => `<tr><td>${esc(row.tableName)}</td><td>${row.lp}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(totalBuyInFromDraw)}</td><td>${esc(tournamentState.rebuyAddOn || "")}</td><td><button class="secondary" type="button" data-role="open-table12-rebuy" data-player-id="${row.playerId}">${formatCellNumber(getPlayerRebuyTotal(row.playerId))}</button></td></tr>`).join("") || '<tr><td colspan="6">Brak danych.</td></tr>'}</tbody></table></div>`;
+      restoreTournamentEditableFocusState(container, focusState);
       return;
     }
 
     if (activeSection === "pool") {
-      mount.innerHTML = `<h3>Tabela13</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZBA REBUY</th></tr></thead><tbody><tr><td>${esc(tournamentState.payments.table10.buyIn)}</td><td>${esc(tournamentState.payments.table10.rebuyAddOn)}</td><td>${esc(tournamentState.payments.table10.sum)}</td><td>${esc(tournamentState.payments.table10.rebuyCount)}</td></tr></tbody></table></div><h3>Tabela14</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>Rake</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${esc(tournamentState.payments.table11.percent)}</td><td>${esc(tournamentState.payments.table11.rake)}</td><td>${esc(tournamentState.payments.table11.buyIn)}</td><td>${esc(tournamentState.payments.table11.rebuyAddOn)}</td><td>${esc(tournamentState.payments.table11.pot)}</td></tr></tbody></table></div><h3>Tabela15</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>PODZIAŁ</th><th></th></tr></thead><tbody>${tournamentState.pool.splits.map((row, index) => `<tr><td><input class="admin-input" data-role="pool-buyin" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row.buyIn)}"></td><td><input class="admin-input" data-role="pool-split" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row.split)}"></td><td>${index === tournamentState.pool.splits.length - 1 ? `<button type="button" class="danger" data-role="remove-pool-row" data-id="${row.id}">Usuń</button>` : ""}</td></tr>`).join("")}</tbody></table></div><button class="secondary t-inline-add-button" type="button" data-role="add-pool-row">Dodaj</button><h3>Tabela16</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>Podział Puli</th><th>Kwota</th><th>Rebuy</th><th>Mod</th><th>Suma</th></tr></thead><tbody>${tournamentState.pool.mods.map((row, index) => `<tr><td>${index + 1}</td><td></td><td></td><td></td><td><input class="admin-input" data-role="pool-mod" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row.mod)}"></td><td></td></tr>`).join("")}</tbody></table></div>`;
+      tournamentState.pool.mods = Array.isArray(tournamentState.pool.mods) ? tournamentState.pool.mods : [];
+      while (tournamentState.pool.mods.length < 3) {
+        tournamentState.pool.mods.push({ id: crypto.randomUUID(), mod: "", split: "" });
+      }
+      const splitRows = tournamentState.pool.mods;
+      const splitValues = splitRows.map((row) => toNumber(row.split));
+      const sumFrom4th = splitValues.slice(3).reduce((sum, value) => sum + value, 0);
+      const table15Split = table11.buyIn - sumFrom4th;
+      const splitPercentSum = splitValues.reduce((sum, value) => sum + value, 0);
+      const splitWarning = Math.abs(splitPercentSum - 1) > 0.0001;
+
+      const adjustedRebuys = allRebuyValues.map((value) => value * (1 - rakePercent));
+      const rebuyLimit = 30;
+      const distributed = adjustedRebuys.slice(0, rebuyLimit);
+      const overflow = adjustedRebuys.slice(rebuyLimit).reduce((sum, value) => sum + value, 0);
+      const rebuyColumns = Math.max(12, distributed.length);
+      tournamentState.pool.rebuyValues = tournamentState.pool.rebuyValues || {};
+
+      const rebuyMatrix = splitRows.map(() => Array.from({ length: rebuyColumns }, () => ""));
+      distributed.forEach((value, idx) => {
+        const rowIdx = idx % splitRows.length;
+        const colIdx = idx;
+        rebuyMatrix[rowIdx][colIdx] = formatCellNumber(value);
+      });
+
+      splitRows.forEach((row, rowIdx) => {
+        const saved = tournamentState.pool.rebuyValues[row.id] || {};
+        Object.keys(saved).forEach((colKey) => {
+          const colIdx = Number(colKey);
+          if (Number.isInteger(colIdx) && colIdx >= 0 && colIdx < rebuyColumns) {
+            rebuyMatrix[rowIdx][colIdx] = saved[colKey];
+          }
+        });
+      });
+
+      const rowSums = splitRows.map((row, idx) => {
+        const split = splitValues[idx] || 0;
+        const amount = idx < 3 ? split * table15Split : split;
+        const rebuySumRow = rebuyMatrix[idx].reduce((sum, value) => sum + toNumber(value), 0);
+        return {
+          amount,
+          total: amount + rebuySumRow + toNumber(row.mod)
+        };
+      });
+
+      const userRebuySum = rebuyMatrix.flat().reduce((sum, value) => sum + toNumber(value), 0);
+      const undistributedRemainder = Math.max(0, overflow - Math.max(0, userRebuySum - distributed.reduce((sum, value) => sum + value, 0)));
+      const modColumnIndex = Math.min(12, rebuyColumns);
+
+      mount.innerHTML = `<h3>TABELA13</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZBA REBUY</th></tr></thead><tbody><tr><td>${formatCellNumber(table10.buyIn)}</td><td>${formatCellNumber(table10.rebuyAddOn)}</td><td>${formatCellNumber(table10.sum)}</td><td>${formatCellNumber(table10.rebuyCount)}</td></tr></tbody></table></div><h3>TABELA14</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${formatCellNumber(table11.percent)}</td><td>${formatCellNumber(table11.rake)}</td><td>${formatCellNumber(table11.buyIn)}</td><td>${formatCellNumber(table11.rebuyAddOn)}</td><td>${formatCellNumber(table11.pot)}</td></tr></tbody></table></div><h3>TABELA15</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>PODZIAŁ</th></tr></thead><tbody><tr><td>${formatCellNumber(table11.buyIn)}</td><td>${formatCellNumber(table15Split)}</td></tr></tbody></table></div>${splitWarning ? '<p class="builder-info t-warning">Suma wartości PODZIAŁ PULI musi wynosić 100%.</p>' : ''}${undistributedRemainder > 0 ? `<p class="builder-info t-warning">Rebuy do rozdysponowania ${formatCellNumber(undistributedRemainder)}</p>` : ''}<h3>TABELA16</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>PODZIAŁ PULI</th><th>KWOTA</th>${Array.from({ length: rebuyColumns }).map((_, idx) => `<th data-rebuy-column>REBUY${idx + 1}</th>`).join('')}<th>MOD</th><th>SUMA</th></tr></thead><tbody>${splitRows.map((row, index) => `<tr><td>${index + 1}</td><td><input class="admin-input" data-role="pool-split" data-id="${row.id}" value="${esc(row.split || (index === 0 ? '0.50' : index === 1 ? '0.30' : index === 2 ? '0.20' : ''))}" type="text">${index < 3 ? `<small>${toPercentText(row.split || (index === 0 ? '0.50' : index === 1 ? '0.30' : index === 2 ? '0.20' : '0'))}</small>` : ''}</td><td>${formatCellNumber(rowSums[index].amount)}</td>${Array.from({ length: rebuyColumns }).map((__, colIdx) => `<td data-rebuy-column><input class="admin-input" data-role="pool-rebuy-value" data-id="${row.id}" data-col-index="${colIdx}" type="text" value="${esc(rebuyMatrix[index][colIdx] || '')}"></td>`).join('')}<td><input class="admin-input" data-role="pool-mod" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row.mod)}"></td><td>${formatCellNumber(rowSums[index].total)}</td></tr>`).join('')}</tbody></table></div><div class="admin-table-actions"><button class="secondary t-inline-add-button" type="button" data-role="add-pool-mod-row">Dodaj</button><button class="danger t-inline-add-button" type="button" data-role="remove-pool-mod-row">Usuń</button></div>`;
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
 
     if (activeSection === "group") {
-      mount.innerHTML = `<h3>Tabela17</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>STACK GRACZA</th><th>REBUY/ADD-on(w żetonach na os)</th></tr></thead><tbody>${tournamentState.players.map((player) => `<tr><td><input class="admin-input" data-role="group-stack" data-player-id="${player.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.group.playerStacks[player.id] || "")}"></td><td></td></tr>`).join("") || '<tr><td colspan="2">Brak danych.</td></tr>'}</tbody></table></div><h3>Tabela17A</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>Gracz</th><th>Stack</th><th>%</th><th>Stół</th></tr></thead><tbody>${groupedDrawRows.map((row, idx) => `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td><input class="admin-input" data-role="group-stack" data-player-id="${row.playerId}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.group.playerStacks[row.playerId] || "")}"></td><td></td><td>${esc(row.tableName)}</td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div><h3>Tabela18</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr>${tournamentState.tables.map((table) => `<th>${esc(table.name)}</th>`).join("")}<th>ŁĄCZNY STACK</th></tr></thead><tbody><tr>${tournamentState.tables.map(() => "<td></td>").join("")}<td></td></tr></tbody></table></div><h3>Tabela19</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Stół</th><th>LP</th><th>Gracz</th><th>ELIMINATED</th><th>Stack</th><th>REBUY/add-on</th><th>REBUY</th></tr></thead><tbody>${groupedDrawRows.map((row) => `<tr><td>${esc(row.tableName)}</td><td>${row.lp}</td><td>${esc(row.playerName)}</td><td><input type="checkbox" data-role="group-eliminated" data-player-id="${row.playerId}" ${tournamentState.group.eliminated[row.playerId] ? "checked" : ""}></td><td></td><td></td><td></td></tr>`).join("") || '<tr><td colspan="7">Brak danych.</td></tr>'}</tbody></table></div>`;
+      const stackValue = toDigitsNumber(tournamentState.stack);
+      const rebuyStackValue = toDigitsNumber(tournamentState.rebuyStack);
+      const groupedByTable = tournamentState.tables.map((table) => {
+        const rowsForTable = groupedDrawRows.filter((row) => row.tableId === table.id);
+        return {
+          table,
+          stack: rowsForTable.length * stackValue
+        };
+      });
+      const totalGroupStack = groupedDrawRows.length * stackValue;
+
+      mount.innerHTML = `<h3>TABELA17</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>STACK GRACZA</th><th>REBUY/ADD-ON</th></tr></thead><tbody><tr><td>${formatCellNumber(stackValue)}</td><td>${formatCellNumber(rebuyStackValue)}</td></tr></tbody></table></div><h3>TABELA18</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr>${groupedByTable.map(({ table }) => `<th class="table18-dynamic-header">${esc(table.name)}</th>`).join("")}<th>ŁĄCZNY STACK</th></tr></thead><tbody><tr>${groupedByTable.map(({ stack }) => `<td>${formatCellNumber(stack)}</td>`).join("")}<td>${formatCellNumber(totalGroupStack)}</td></tr></tbody></table></div><h3>TABELA19</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>STÓŁ</th><th>LP</th><th>GRACZ</th><th>ELIMINATED</th><th>STACK</th><th>REBUY/ADD-ON</th><th>REBUY</th></tr></thead><tbody>${groupedDrawRows.map((row) => `<tr><td>${esc(row.tableName)}</td><td>${row.lp}</td><td>${esc(row.playerName)}</td><td><input type="checkbox" data-role="group-eliminated" data-player-id="${row.playerId}" ${tournamentState.group.eliminated[row.playerId] ? "checked" : ""}></td><td>${formatCellNumber(stackValue)}</td><td>${formatCellNumber(rebuyStackValue)}</td><td>${formatCellNumber(getPlayerRebuyTotal(row.playerId))}</td></tr>`).join("") || '<tr><td colspan="7">Brak danych.</td></tr>'}</tbody></table></div>`;
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
 
     if (activeSection === "semi") {
       const survivors = groupedDrawRows.filter((row) => !tournamentState.group.eliminated[row.playerId]);
-      const customTables = tournamentState.semi.customTables.map((table, index) => `<article class="admin-table-card"><h4>Stół Półfinałowy numer ${index + 1} <button type="button" class="danger" data-role="remove-semi-table" data-id="${table.id}">Usuń stół</button></h4><div class="t-section-grid"><label>Nazwa <input class="admin-input" data-role="semi-custom-name" data-id="${table.id}" type="text" value="${esc(table.name || "")}"></label><label>Łączny stack <input class="admin-input" readonly value="0"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>Gracz</th><th>Stack</th><th>Eliminated</th><th>%</th></tr></thead><tbody><tr><td>1</td><td></td><td><input class="admin-input" data-role="semi-custom-stack" data-id="${table.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(table.stack || "")}"></td><td><input type="checkbox"></td><td></td></tr></tbody></table></div></article>`).join("");
-      mount.innerHTML = `<h3>Tabela21</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>Gracz</th><th>STACK</th><th>%</th><th>Stół</th></tr></thead><tbody>${survivors.map((row, idx) => `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td></td><td></td><td>${esc(tableNameById(tournamentState.semi.assignments[row.playerId]?.tableId || ""))}</td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div><h3>Tabela22</h3><button type="button" class="secondary t-inline-add-button" data-role="add-semi-table">Dodaj nowy stół</button><div class="semi-tables">${customTables}</div><h3>Tabela Finałowa</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>STÓŁ</th><th>%</th></tr></thead><tbody>${survivors.map((row, idx) => `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td></td><td>${esc(tableNameById(tournamentState.semi.assignments[row.playerId]?.tableId || ""))}</td><td></td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div>`;
+      const customTables = tournamentState.semi.customTables.map((table, index) => `<article class="admin-table-card"><h4>STÓŁ PÓŁFINAŁOWY NUMER ${index + 1} <button type="button" class="danger" data-role="remove-semi-table" data-id="${table.id}">Usuń stół</button></h4><div class="t-section-grid"><label>NAZWA <input class="admin-input" data-role="semi-custom-name" data-id="${table.id}" type="text" value="${esc(table.name || "")}"></label><label>ŁĄCZNY STACK <input class="admin-input" readonly value="0"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>ELIMINATED</th><th>%</th></tr></thead><tbody><tr><td>1</td><td></td><td><input class="admin-input" data-role="semi-custom-stack" data-id="${table.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(table.stack || "")}"></td><td><input type="checkbox"></td><td></td></tr></tbody></table></div></article>`).join("");
+      mount.innerHTML = `<h3>TABELA21</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>STÓŁ</th></tr></thead><tbody>${survivors.map((row, idx) => `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td></td><td></td><td>${esc(tableNameById(tournamentState.semi.assignments[row.playerId]?.tableId || ""))}</td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA22</h3><button type="button" class="secondary t-inline-add-button" data-role="add-semi-table">Dodaj nowy stół</button><div class="semi-tables">${customTables}</div><h3>TABELA FINAŁOWA</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>STÓŁ</th><th>%</th></tr></thead><tbody>${survivors.map((row, idx) => `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td></td><td>${esc(tableNameById(tournamentState.semi.assignments[row.playerId]?.tableId || ""))}</td><td></td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div>`;
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
@@ -905,57 +1147,15 @@ const setupAdminTournament = (rootCard) => {
         const y = cy + Math.sin(angle) * (ry + 55);
         return `<text x="${x}" y="${y}" fill="#ededdf" text-anchor="middle" font-size="13">${esc(player.name || "Gracz")} (${esc(player.stack || 0)})</text>`;
       }).join("");
-      mount.innerHTML = `<h3>Tabela23</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>Eliminated</th></tr></thead><tbody>${finalPlayers.map((player, i) => `<tr><td>${i + 1}</td><td>${esc(player.name)}</td><td><input class="admin-input" data-role="final-stack" data-id="${player.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(player.stack)}"></td><td></td><td><input type="checkbox" data-role="final-eliminated" data-id="${player.id}" ${player.eliminated ? "checked" : ""}></td></tr>`).join("") || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div><p class="test-controls-note">Przyciski testowe do sprawdzenia poprawności wyświetlania stołu.</p><div class="test-buttons"><button class="danger" type="button" data-role="add-final-player">Dodaj gracza</button><button class="danger" type="button" data-role="remove-final-player">Usuń gracza</button></div><svg viewBox="0 0 ${width} ${height}" class="poker-table-svg"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0d5f3f" stroke="#d4af37" stroke-width="6"></ellipse>${labels}</svg>`;
-      return;
+      mount.innerHTML = `<h3>TABELA23</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>ELIMINATED</th></tr></thead><tbody>${finalPlayers.map((player, i) => `<tr><td>${i + 1}</td><td>${esc(player.name)}</td><td><input class="admin-input" data-role="final-stack" data-id="${player.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(player.stack)}"></td><td></td><td><input type="checkbox" data-role="final-eliminated" data-id="${player.id}" ${player.eliminated ? "checked" : ""}></td></tr>`).join("") || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div><p class="test-controls-note">Przyciski testowe do sprawdzenia poprawności wyświetlania stołu.</p><div class="test-buttons"><button class="danger" type="button" data-role="add-final-player">Dodaj gracza</button><button class="danger" type="button" data-role="remove-final-player">Usuń gracza</button></div><svg viewBox="0 0 ${width} ${height}" class="poker-table-svg"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0d5f3f" stroke="#d4af37" stroke-width="6"></ellipse>${labels}</svg>`;
     }
-
-    mount.innerHTML = `<h3>Tabela24</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>MIEJSCE</th><th>GRACZ</th><th>POCZĄTKOWA WYGRANA <input type="checkbox" data-role="toggle-payout-initial" ${tournamentState.payouts.showInitial ? "checked" : ""}></th><th>KOŃCOWA WYGRANA <input type="checkbox" data-role="toggle-payout-final" ${tournamentState.payouts.showFinal ? "checked" : ""}></th></tr></thead><tbody>${tournamentState.finalPlayers.map((player, index) => `<tr><td>${index + 1}</td><td>${esc(player.name)}</td><td></td><td></td></tr>`).join("") || '<tr><td colspan="4">Brak danych.</td></tr>'}</tbody></table></div>`;
-    restoreTournamentEditableFocusState(container, focusState);
   };
-
-  const commitDeferredSnapshotIfSafe = () => {
-    if (hasActiveEdit || pendingLocalWrites > 0 || !deferredSnapshotState) {
-      return;
-    }
-    tournamentState = deferredSnapshotState;
-    deferredSnapshotState = null;
-    tournamentStatusMessage = "";
-    render();
-  };
-
-  container.addEventListener("focusin", (event) => {
-    const target = event.target;
-    if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement)) {
-      return;
-    }
-    if (!target.dataset?.role) {
-      return;
-    }
-    hasActiveEdit = true;
-  });
-
-  container.addEventListener("focusout", () => {
-    window.setTimeout(() => {
-      const activeElement = document.activeElement;
-      const stillEditing = activeElement
-        && container.contains(activeElement)
-        && (activeElement instanceof HTMLInputElement || activeElement instanceof HTMLSelectElement || activeElement instanceof HTMLTextAreaElement)
-        && !!activeElement.dataset?.role;
-
-      if (stillEditing) {
-        return;
-      }
-
-      hasActiveEdit = false;
-      commitDeferredSnapshotIfSafe();
-    }, 0);
-  });
 
   container.addEventListener("input", async (event) => {
     const target = event.target;
     const role = target?.dataset?.role;
     if (!role) return;
-    if (["meta-buyin", "meta-rebuy", "meta-rake", "meta-stack", "meta-rebuystack", "player-pin", "table-entry", "group-stack", "final-stack", "pool-buyin", "pool-split", "pool-mod", "pay-10-buyin", "pay-10-rebuy", "pay-10-sum", "pay-10-count", "pay-11-percent", "pay-11-rake", "pay-11-buyin", "pay-11-rebuy", "pay-11-pot", "semi-custom-stack"].includes(role)) {
+    if (["meta-buyin", "meta-rebuy", "meta-rake", "meta-stack", "meta-rebuystack", "player-pin", "table-entry", "group-stack", "final-stack", "pool-split", "pool-mod", "pool-rebuy-value", "semi-custom-stack"].includes(role)) {
       target.value = digitsOnly(target.value);
     }
 
@@ -989,20 +1189,15 @@ const setupAdminTournament = (rootCard) => {
       tournamentState.tableEntries[target.dataset.tableId][target.dataset.playerId] = target.value;
       render();
     }
-    if (role === "pay-10-buyin") tournamentState.payments.table10.buyIn = target.value;
-    if (role === "pay-10-rebuy") tournamentState.payments.table10.rebuyAddOn = target.value;
-    if (role === "pay-10-sum") tournamentState.payments.table10.sum = target.value;
-    if (role === "pay-10-count") tournamentState.payments.table10.rebuyCount = target.value;
-    if (role === "pay-11-percent") tournamentState.payments.table11.percent = target.value;
-    if (role === "pay-11-rake") tournamentState.payments.table11.rake = target.value;
-    if (role === "pay-11-buyin") tournamentState.payments.table11.buyIn = target.value;
-    if (role === "pay-11-rebuy") tournamentState.payments.table11.rebuyAddOn = target.value;
-    if (role === "pay-11-pot") tournamentState.payments.table11.pot = target.value;
     if (role === "group-stack") tournamentState.group.playerStacks[target.dataset.playerId] = target.value;
     if (role === "final-stack") tournamentState.finalPlayers = tournamentState.finalPlayers.map((player) => player.id === target.dataset.id ? { ...player, stack: target.value } : player);
-    if (role === "pool-buyin") tournamentState.pool.splits = tournamentState.pool.splits.map((row) => row.id === target.dataset.id ? { ...row, buyIn: target.value } : row);
-    if (role === "pool-split") tournamentState.pool.splits = tournamentState.pool.splits.map((row) => row.id === target.dataset.id ? { ...row, split: target.value } : row);
+    if (role === "pool-split") tournamentState.pool.mods = tournamentState.pool.mods.map((row) => row.id === target.dataset.id ? { ...row, split: target.value } : row);
     if (role === "pool-mod") tournamentState.pool.mods = tournamentState.pool.mods.map((row) => row.id === target.dataset.id ? { ...row, mod: target.value } : row);
+    if (role === "pool-rebuy-value") {
+      tournamentState.pool.rebuyValues = tournamentState.pool.rebuyValues || {};
+      tournamentState.pool.rebuyValues[target.dataset.id] = tournamentState.pool.rebuyValues[target.dataset.id] || {};
+      tournamentState.pool.rebuyValues[target.dataset.id][target.dataset.colIndex] = target.value;
+    }
     if (role === "semi-custom-name") tournamentState.semi.customTables = tournamentState.semi.customTables.map((table) => table.id === target.dataset.id ? { ...table, name: target.value } : table);
     if (role === "semi-custom-stack") tournamentState.semi.customTables = tournamentState.semi.customTables.map((table) => table.id === target.dataset.id ? { ...table, stack: target.value } : table);
 
@@ -1061,8 +1256,9 @@ const setupAdminTournament = (rootCard) => {
     "delete-player",
     "add-table",
     "delete-table",
-    "add-pool-row",
-    "remove-pool-row",
+    "add-pool-mod-row",
+    "remove-pool-mod-row",
+    "open-table12-rebuy",
     "add-semi-table",
     "remove-semi-table",
     "add-final-player",
@@ -1120,8 +1316,12 @@ const setupAdminTournament = (rootCard) => {
         if (tournamentState.semi.assignments[key]?.tableId === tableId) tournamentState.semi.assignments[key].tableId = "";
       });
     }
-    if (role === "add-pool-row") tournamentState.pool.splits.push({ id: crypto.randomUUID(), buyIn: "", split: "" });
-    if (role === "remove-pool-row") tournamentState.pool.splits = tournamentState.pool.splits.filter((row) => row.id !== target.dataset.id);
+    if (role === "open-table12-rebuy") {
+      openTable12RebuyModal(target.dataset.playerId || "");
+      return;
+    }
+    if (role === "add-pool-mod-row") tournamentState.pool.mods.push({ id: crypto.randomUUID(), mod: "", split: "" });
+    if (role === "remove-pool-mod-row" && tournamentState.pool.mods.length > 1) tournamentState.pool.mods = tournamentState.pool.mods.slice(0, -1);
     if (role === "add-semi-table") tournamentState.semi.customTables.push({ id: crypto.randomUUID(), name: "" });
     if (role === "remove-semi-table") tournamentState.semi.customTables = tournamentState.semi.customTables.filter((table) => table.id !== target.dataset.id);
     if (role === "add-final-player") tournamentState.finalPlayers.push({ id: crypto.randomUUID(), name: `Gracz ${tournamentState.finalPlayers.length + 1}`, stack: "", eliminated: false });
