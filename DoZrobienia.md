@@ -14,6 +14,7 @@ Kolumna "Nazwa" - pole tekstowe. Każdy dodany stół automatycznie będzie mia�
 _gotowe_
 
 Kolumna "Łączna Suma" - pole obliczalne. Suma wartości z kolumny "Wpisowe" w danym stole.
+_gotowe_
 
 Panel "Wpłaty"
 Tabela 10 
