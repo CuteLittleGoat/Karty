@@ -123,3 +123,9 @@ Efekt techniczny:
 - stabilny układ kolumn niezależnie od długości danych,
 - lepsza przewidywalność renderowania przycisków i pól,
 - pełna obsługa przepełnienia danych przez scroll lokalny bez zmiany szerokości paneli bocznych.
+
+## Modal Rebuy gracza – układ nagłówka
+- Nagłówek modala `Rebuy gracza` używa klasy `modal-header-close-right`.
+- Klasa ustawia przycisk zamknięcia `X` absolutnie w prawym górnym rogu:
+  - `position: relative` na kontenerze nagłówka,
+  - `position: absolute; top: 0; right: 0` na przycisku.

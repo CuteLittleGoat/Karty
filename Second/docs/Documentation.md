@@ -127,3 +127,48 @@
 
 ### Ręczne odświeżanie
 - Przycisk `#userPanelRefresh` dla aktywnej zakładki `tournamentTab` wykonuje `get({ source: "server" })` dla `second_tournament/state`, co wymusza pobranie najnowszych danych z Firestore.
+
+## Tournament of Poker – logika techniczna (Second)
+
+### Kluczowe rozszerzenia stanu
+- `payments.table12Rebuys` – przechowuje per-gracz listę rebuy (`values`, `indexes`, `nextIndex`).
+- `pool.rebuyValues` – przechowuje ręczne korekty komórek REBUY w `Tabela16`.
+- `pool.mods[]` – wiersze `Tabela16` (split/mod/suma).
+
+### Automatyczne przeliczenia
+- `Tabela10`:
+  - `BUY-IN` z metadanych turnieju (Losowanie graczy),
+  - `REBUY/ADD-ON` z metadanych turnieju,
+  - `SUMA` jako suma `BUY-IN` z przypisanych stołów,
+  - `LICZ. REBUY/ADD-ON` jako liczba uzupełnionych pól rebuy w `Tabela12`.
+- `Tabela11`:
+  - `%` z pola `RAKE` (konwersja do ułamka),
+  - `RAKE` = `Tabela10.SUMA * %`,
+  - `BUY-IN` = suma `BUY-IN` pomniejszona o rake,
+  - `REBUY/ADD-ON` = suma rebuy pomniejszona o rake,
+  - `POT` = `BUY-IN + REBUY/ADD-ON`.
+
+### Modal „Rebuy gracza” (Second)
+- Nowy modal tworzony dynamicznie przy inicjalizacji turnieju.
+- Otwierany z `Tabela12` (kolumna `REBUY`).
+- Obsługuje dodawanie/usuwanie kolejnych pól `REBUY1..n` oraz zapis do Firestore.
+- Przycisk zamknięcia `X` ustawiony w prawym górnym rogu.
+
+### Podział puli (Tabela16)
+- Domyślne wartości `PODZIAŁ PULI`: 0.50/0.30/0.20 dla pierwszych 3 wierszy.
+- `KWOTA`:
+  - wiersze 1–3: `podział * Tabela15.PODZIAŁ`,
+  - od wiersza 4: wartość bezpośrednio z `PODZIAŁ PULI`.
+- Dynamiczne kolumny `REBUY1..` powstają z listy rebuy i są mapowane do wierszy cyklicznie.
+- Dystrybucja automatyczna kończy się po 30 rebuy; nadwyżka sygnalizowana czerwonym ostrzeżeniem.
+- `SUMA` = `KWOTA + wszystkie REBUY + MOD`.
+
+### Faza grupowa
+- `Tabela17` zredukowana do jednego wiersza.
+- `Tabela17A` usunięta.
+- `Tabela18` wylicza stack per stół i `ŁĄCZNY STACK`.
+- `Tabela19` pobiera dane readonly z `Losowanie graczy` i `Wpłaty`.
+
+### Nagłówki kolumn
+- Dodano globalne wymuszenie uppercase dla nagłówków tabel (`th`) w module Second.
+- Wyjątek realizowany przez klasę `table18-dynamic-header` (bez transformacji).

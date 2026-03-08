@@ -2788,7 +2788,7 @@ const initUserGamesManager = ({
   detailRebuyModal.setAttribute("aria-hidden", "true");
   detailRebuyModal.innerHTML = `
     <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="gameDetailsRebuyTitle">
-      <div class="modal-card-header">
+      <div class="modal-card-header modal-header-close-right">
         <h3 id="gameDetailsRebuyTitle">Rebuy gracza</h3>
         <button type="button" class="icon-button" data-game-rebuy-close aria-label="Zamknij okno">×</button>
       </div>
@@ -7003,7 +7003,7 @@ const initAdminGames = () => {
   detailRebuyModal.setAttribute("aria-hidden", "true");
   detailRebuyModal.innerHTML = `
     <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="gameDetailsAdminRebuyTitle">
-      <div class="modal-card-header">
+      <div class="modal-card-header modal-header-close-right">
         <h3 id="gameDetailsAdminRebuyTitle">Rebuy gracza</h3>
         <button type="button" class="icon-button" data-game-rebuy-close aria-label="Zamknij okno">×</button>
       </div>

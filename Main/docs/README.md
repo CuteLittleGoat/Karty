@@ -558,3 +558,7 @@ Jak to działa w praktyce dla użytkownika:
 Wskazówka użycia:
 - Na telefonie przewijaj tabelę ruchem poziomym w obrębie jej kontenera.
 - Na komputerze możesz korzystać z poziomego i pionowego scrolla bez wychodzenia poza aktualną sekcję.
+
+## Rebuy gracza – pozycja przycisku zamknięcia
+- W modalu **Rebuy gracza** przycisk `X` znajduje się w prawym górnym rogu okna.
+- Dotyczy to widoków, gdzie otwierany jest modal szczegółów rebuy.
