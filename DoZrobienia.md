@@ -20,24 +20,26 @@ Panel "Wpłaty"
 Tabela 10 
 
 kolumna "Buy-in" -  pole liczbowe. Zaciąga się z zakładki "lista graczy" pozycja buy-in
+_sprawdzić_
 
 kolumna "Rebuy/add-on" - pole liczbowe. Zaciąga się z zakładki "lista graczy" pozycja rebuy
+_sprawdzić_
 
 kolumna "Suma" - pole obliczalne. Suma wartości z kolumny "buy-in" Tabela 12 panel "wpłaty"
+_sprawdzić_
 
 kolumna " Liczba rebuy/add-on" - pole obliczalne. suma wartości podawana  łącznie w sztukach- ile jest rebay przez całą grę ) zależy od ilości wypełnionych rebuy w tabeli 12 panel "wpłaty"
+_sprawdzić_
 
 Tabela 11
-Kolumna "%" - pole liczbowe. Zaciąga się z panelu "gracze" kolumna "rake"  
+Kolumna "%" - pole liczbowe. Zaciąga się z panelu "gracze" kolumna "rake" 
+_sprawdzić_
 
-Kolumna "Rake" - pole obliczalne. Iloczyn wartości panel "wpłaty" tabela10 kolumna "suma" oraz panel "wpłaty" tabela11 
-
-kolumna "%" 
+Kolumna "Rake" - pole obliczalne. Iloczyn wartości panel "wpłaty" tabela10 kolumna "suma" oraz panel "wpłaty" tabela11 kolumna "%" 
+_dokładnie sprawdzić bo nie wiem co dokładnie jest w kolumnie % i jak to się przeliczy_
 
 Kolumna "Buy-in" - pole obliczalne. Suma wartości z kolumny buy-in panel "wpłaty" tabela 12. pomniejszona o kolumnę "%" panel "wpłaty" tabela 11
-
 Kolumna "Rebuy" - pole obliczalne. Suma wartości z kolumny rebuy panel "wpłaty" tabela 12. pomniejszona o kolumnę "%" panel "wpłaty" tabela 11
-
 Kolumna "Pot" - pole obliczalne. suma wartości z kolumny "buy-in" oraz "rebuy" tabela 11
 
 Tabela 12 
