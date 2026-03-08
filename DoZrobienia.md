@@ -61,16 +61,21 @@ Kolumna "GRACZE" muszą być odpowiednio przypisani do swoich "STOŁÓW"
 _gotowe_
 
 Kolumna 'Buy-in" - pole liczbowe. zaciąga się z panelu  "losowanie stołu" dodane z wszystkich dodanych stołów kolumna "buy-in"
+_sprawdzić_
 
 Kolumna "rebuy/add-on" - pole liczbowe, do uzupełniena. Możliwość dodania kolejnego ("przycisk" jeżeli gracz postanowi więcej razy się dokupić)
+_sprawdzić_
 
 Panel "podział puli"
 Tabela 13
 Kolumna "Buy-in" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 10  kolumna "buy-in" 
+_sprawdzić_
 
 Kolumna "Rebuy/add-on" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 10  kolumna "rebuy/add-on" 
+_sprawdzić_
 
 Kolumna "Suma" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 10  kolumna "suma"
+_sprawdzić_
 
 Kolumna "liczba rebuy" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 10  kolumna "liczba rebuy"
 
