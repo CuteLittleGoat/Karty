@@ -1,83 +1,84 @@
 w panelu "losowanie stołu" po dodaniu nowego stołu zmienić nazwę kolumny z "wpisowe" na "buy-in"  
-_Sprawdzić_
+_//Sprawdzić_
 
 
 Zakładka "Tournament of Poker"
 Panel "Losowanie Stołów".
 Kolumna "status" - pole tekstowe. Zaciąga się z panelu "losowanie graczy" kolumna "status"
-_gotowe - są kolorowe pigułkiy_
+_//gotowe - są kolorowe pigułkiy_
 
 kolumna "stół" pole tekstowe. utworzona lista stołów. stoły mają się nazywać stół 1,2,3 itd. Do 20
-_jest pole rozwijane. Zaciąga się taka nazwa jak w utworzonych stołach. nie ma limitu_
+_//jest pole rozwijane. Zaciąga się taka nazwa jak w utworzonych stołach. nie ma limitu_
 
 Kolumna "Nazwa" - pole tekstowe. Każdy dodany stół automatycznie będzie miał nadaną nazwę stół 1, stół 2 itd.
-_gotowe_
+_//gotowe_
 
 Kolumna "Łączna Suma" - pole obliczalne. Suma wartości z kolumny "Wpisowe" w danym stole.
-_gotowe_
+_//gotowe_
 
 Panel "Wpłaty"
 Tabela 10 
 
 kolumna "Buy-in" -  pole liczbowe. Zaciąga się z zakładki "lista graczy" pozycja buy-in
-_sprawdzić_
+_//sprawdzić_
 
 kolumna "Rebuy/add-on" - pole liczbowe. Zaciąga się z zakładki "lista graczy" pozycja rebuy
-_sprawdzić_
+_//sprawdzić_
 
 kolumna "Suma" - pole obliczalne. Suma wartości z kolumny "buy-in" Tabela 12 panel "wpłaty"
-_sprawdzić_
+_//sprawdzić_
 
 kolumna " Liczba rebuy/add-on" - pole obliczalne. suma wartości podawana  łącznie w sztukach- ile jest rebay przez całą grę ) zależy od ilości wypełnionych rebuy w tabeli 12 panel "wpłaty"
-_sprawdzić_
+_//sprawdzić_
 
 Tabela 11
 Kolumna "%" - pole liczbowe. Zaciąga się z panelu "gracze" kolumna "rake" 
-_sprawdzić_
+_//sprawdzić_
 
 Kolumna "Rake" - pole obliczalne. Iloczyn wartości panel "wpłaty" tabela10 kolumna "suma" oraz panel "wpłaty" tabela11 kolumna "%" 
-_dokładnie sprawdzić bo nie wiem co dokładnie jest w kolumnie % i jak to się przeliczy_
+_//dokładnie sprawdzić bo nie wiem co dokładnie jest w kolumnie % i jak to się przeliczy_
 
 Kolumna "Buy-in" - pole obliczalne. Suma wartości z kolumny buy-in panel "wpłaty" tabela 12. pomniejszona o kolumnę "%" panel "wpłaty" tabela 11
-_dokładnie sprawdzić bo nie wiem co dokładnie jest w kolumnie % i jak to się przeliczy_
+_//dokładnie sprawdzić bo nie wiem co dokładnie jest w kolumnie % i jak to się przeliczy_
 
 Kolumna "Rebuy" - pole obliczalne. Suma wartości z kolumny rebuy panel "wpłaty" tabela 12. pomniejszona o kolumnę "%" panel "wpłaty" tabela 11
-_dokładnie sprawdzić bo nie wiem co dokładnie jest w kolumnie % i jak to się przeliczy_
+_//dokładnie sprawdzić bo nie wiem co dokładnie jest w kolumnie % i jak to się przeliczy_
 
 Kolumna "Pot" - pole obliczalne. suma wartości z kolumny "buy-in" oraz "rebuy" tabela 11
-_dokładnie sprawdzić_
+_//dokładnie sprawdzić_
 
 Tabela 12 
 Kolumna "Stół" - pola tekstowe. Zaciąga się z panelu "Losowanie stołów" z dodanych do gry stołów kolumna "nazwa".
-_zaciągnie się jeżeli do stołu jest przypisany przynajmniej jeden gracz_
+_//zaciągnie się jeżeli do stołu jest przypisany przynajmniej jeden gracz_
 
 Kolumna "lp" - pole liczbowe. numeryczne- tyle ilu jest graczy.
-_gotowe_
+_//gotowe_
 
 Kolumna "Gracz" - pole tekstowe. Zaciąga się z panelu "Losowanie stołów" z dodanych do gry stołów kolumna "gracz".
-_gotowe_
+_//gotowe_
 
 Kolumna "GRACZE" muszą być odpowiednio przypisani do swoich "STOŁÓW"
-_gotowe_
+_//gotowe_
 
 Kolumna 'Buy-in" - pole liczbowe. zaciąga się z panelu  "losowanie stołu" dodane z wszystkich dodanych stołów kolumna "buy-in"
-_sprawdzić_
+_//sprawdzić_
 
 Kolumna "rebuy/add-on" - pole liczbowe, do uzupełniena. Możliwość dodania kolejnego ("przycisk" jeżeli gracz postanowi więcej razy się dokupić)
-_sprawdzić_
+_//sprawdzić_
 
 Panel "podział puli"
 Tabela 13
 Kolumna "Buy-in" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 10  kolumna "buy-in" 
-_sprawdzić_
+_//sprawdzić_
 
 Kolumna "Rebuy/add-on" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 10  kolumna "rebuy/add-on" 
-_sprawdzić_
+_//sprawdzić_
 
 Kolumna "Suma" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 10  kolumna "suma"
-_sprawdzić_
+_//sprawdzić_
 
 Kolumna "liczba rebuy" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 10  kolumna "liczba rebuy"
+_//sprawdzić_
 
 Tabela 14
 Kolumna "%" - pole liczbowe. Zaciąga się z panelu "wpłaty" tabela 11  kolumna "%" 
