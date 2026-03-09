@@ -1449,6 +1449,11 @@ body:not(.is-admin) .user-card::before {
   width: 100%;
 }
 
+body:not(.is-admin) .player-zone-layout {
+  width: calc(100% + 46px);
+  margin-inline: -23px;
+}
+
 .player-zone-button {
   font-size: clamp(9px, 0.95vw, 12px);
   letter-spacing: clamp(0.08em, 0.18vw, 0.18em);
@@ -1884,6 +1889,11 @@ body.modal-open {
   .chat-messages {
     min-height: 180px;
     max-height: 300px;
+  }
+
+  .player-zone-button {
+    font-size: 14px;
+    letter-spacing: 0.12em;
   }
 }
 

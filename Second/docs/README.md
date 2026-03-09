@@ -132,3 +132,7 @@
 ### Nagłówki kolumn
 - W module Second nagłówki tabel są wyświetlane wielkimi literami.
 - Wyjątek: dynamiczne nazwy stołów w `Tabela18` pozostają w formacie wpisanym przez użytkownika.
+
+## Aktualny układ ramek w widoku użytkownika
+1. W trybie użytkownika ciemno-zielone panele wewnątrz głównej karty są dosunięte do szerokości karty.
+2. Każdy taki panel zaczyna się 1 px od lewej krawędzi zewnętrznej zielonej ramki i kończy 1 px przed prawą krawędzią.

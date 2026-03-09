@@ -176,3 +176,7 @@
 ### Nagłówki kolumn
 - Dodano globalne wymuszenie uppercase dla nagłówków tabel (`th`) w module Second.
 - Wyjątek realizowany przez klasę `table18-dynamic-header` (bez transformacji).
+
+## Aktualny layout paneli użytkownika (Second)
+- W trybie użytkownika kontener `.player-zone-layout` używa `width: calc(100% + 46px)` oraz `margin-inline: -23px`.
+- Zapewnia to wyrównanie wewnętrznych ciemno-zielonych paneli do 1 px od lewej i prawej strony zewnętrznej zielonej karty.
