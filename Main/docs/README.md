@@ -563,3 +563,8 @@ Wskazówka użycia:
 ## Rebuy gracza – pozycja przycisku zamknięcia
 - W modalu **Rebuy gracza** przycisk `X` znajduje się w prawym górnym rogu okna.
 - Dotyczy to widoków, gdzie otwierany jest modal szczegółów rebuy.
+
+## 18. Aktualny układ ramek i przycisków (mobile)
+1. W widoku użytkownika wejdź w **Strefa Gracza**.
+2. Ciemno-zielone panele sekcji (lewy panel przycisków i prawy panel treści) są dosunięte do szerokości karty: zaczynają się 1 px od lewej krawędzi zielonej ramki i kończą 1 px przed prawą krawędzią.
+3. Na telefonie napisy na przyciskach sekcji w **Strefa Gracza** (np. „Najbliższa Gra”, „Czat”, „Gry do Potwierdzenia”) są większe niż na desktopie, żeby były czytelniejsze.

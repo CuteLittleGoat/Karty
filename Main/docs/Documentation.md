@@ -131,3 +131,8 @@ Efekt techniczny:
 - Klasa ustawia przycisk zamknięcia `X` absolutnie w prawym górnym rogu:
   - `position: relative` na kontenerze nagłówka,
   - `position: absolute; top: 0; right: 0` na przycisku.
+
+## Aktualny layout Strefy Gracza (Main)
+- W trybie użytkownika kontener `.player-zone-layout` ma rozszerzoną szerokość (`width: calc(100% + 46px)`) oraz ujemny margines poziomy (`margin-inline: -23px`).
+- Dzięki temu wewnętrzne ciemno-zielone ramki (`.admin-games-sidebar` i `.admin-games-content`) są wyrównane do 1 px od lewej i prawej krawędzi zewnętrznej zielonej karty.
+- W breakpointcie mobile (`@media (max-width: 720px)`) przyciski sekcji Strefy Gracza (`.player-zone-button`) mają zwiększony rozmiar pisma do `14px` i `letter-spacing: 0.12em`.

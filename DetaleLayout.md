@@ -39,3 +39,5 @@
 - Klasa `modal-header-close-right` ustawia przycisk zamknięcia `X` w prawym górnym rogu okna modalnego.
 - W module Second nagłówki tabel są prezentowane uppercase, z wyjątkiem dynamicznych nagłówków stołów w `Tabela18`.
 - Ostrzeżenia walidacyjne i dystrybucji rebuy w module Second używają czerwonego stylu (`.t-warning`).
+- W obu modułach (`Main`, `Second`) kontener `.player-zone-layout` rozszerza sekcję z ciemno-zielonymi panelami na pełną szerokość wnętrza karty (1 px luzu od lewej i prawej krawędzi zewnętrznej ramki).
+- W module `Main` na mobile (`max-width: 720px`) przyciski nawigacyjne sekcji `Strefa Gracza` (`.player-zone-button`) mają większy font (`14px`) i ciaśniej kontrolowany odstęp liter (`0.12em`) dla lepszej czytelności.
