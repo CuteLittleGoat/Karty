@@ -78,6 +78,12 @@ body::before {
   z-index: 1;
 }
 
+body:not(.is-admin) .page {
+  width: calc(100% - 2px);
+  max-width: none;
+  padding-inline: 1px;
+}
+
 .page-header {
   display: flex;
   flex-wrap: wrap;
@@ -1344,6 +1350,15 @@ button.danger {
   grid-column: 1 / -1;
 }
 
+body:not(.is-admin) .user-card {
+  border-left-width: 1px;
+  border-right-width: 1px;
+}
+
+body:not(.is-admin) .user-card::before {
+  display: none;
+}
+
 .user-panel {
   width: 100%;
   display: flex;
@@ -1803,6 +1818,10 @@ body.modal-open {
 @media (max-width: 720px) {
   .page {
     padding: 24px 16px 60px;
+  }
+
+  body:not(.is-admin) .page {
+    padding-inline: 1px;
   }
 
   .admin-calculator-layout {

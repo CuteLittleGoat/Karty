@@ -1,5 +1,9 @@
 # Second — dokumentacja techniczna
 
+## Widok użytkownika — szerokość zewnętrznej ramki
+- W widoku użytkownika (`body` bez klasy `is-admin`) kontener `.page` ma szerokość `calc(100% - 2px)` i `padding-inline: 1px`, więc panel zewnętrzny dochodzi do 1 px od lewej i prawej krawędzi ekranu.
+- Dla `.user-card` pozostawiono lewy i prawy border o grubości `1px`, a pseudo-element `.user-card::before` jest wyłączony, aby pierwsza zielona ramka miała dokładnie 1 px po bokach.
+
 ## Nagłówek i przycisk instrukcji
 - W `Second/index.html` sekcja `.header-controls` zawiera ikonę `<img class="header-icon" src="../Pliki/Ikona.png">` oraz przycisk `#secondInstructionButton` w tej samej linii.
 - Ikona i układ są celowo spójne z modułem Main (ta sama grafika i ten sam wzorzec pozycjonowania: ikona po lewej, przycisk po prawej).
