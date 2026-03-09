@@ -18,6 +18,7 @@ Instrukcja jest podzielona na dwie części:
    - **Panel Administratora** (duża karta z wieloma zakładkami),
    - **Panel użytkownika** (zakładki: Aktualności, Regulamin, Strefa Gracza).
 5. Kliknięcie **Instrukcja** otwiera okno modalne z instrukcją; zamkniesz je przyciskiem `×`.
+6. W trybie użytkownika główna zielona ramka panelu jest rozciągnięta niemal na pełną szerokość ekranu: zaczyna się 1 px od lewej i kończy 1 px przed prawą krawędzią.
 
 ---
 
