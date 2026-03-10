@@ -5,7 +5,7 @@
 ## Moduł Second — Tournament of Poker
 - W nagłówku modułu `Second` po prawej stronie widoczna jest ta sama ikona `Pliki/Ikona.png` co w module `Main`, ustawiona po lewej stronie przycisku **Instrukcja** (układ poziomy w `.header-controls`).
 - Sekcja `Losowanie graczy` ma układ metadanych w siatce `.t-section-grid` oraz tabelę `players-table`.
-- W polu `RAKE` usunięto statyczny znak `%` pod inputem; podgląd wartości procentowej jest generowany dynamicznie na podstawie wpisanej liczby (np. `12%`).
+- W polu `RAKE` zastosowano format procentowy jak w module Main: użytkownik wpisuje liczbę, a kontrolka wyświetla wartość z dopisanym `%` (np. `12%`) bez dodatkowego pomocniczego `<small>`.
 - Kolumna `PIN` używa kontrolki `.pin-control`:
   - pole wejściowe ma poszerzoną szerokość (`8ch`, min. `8ch`, max. `9ch`), aby mieścić pełne 5 cyfr PIN z zapasem wizualnym,
   - obok pola znajduje się przycisk `Losuj` (`.admin-pin-random`).
@@ -36,7 +36,7 @@
 - W widoku gracza (`Statystyki`) na desktopie panel `Ranking` jest po prawej stronie tabeli statystyk (osobna kolumna `34ch`), a na mobile wraca pod tabelę statystyk.
 
 ## Modale i tabele – aktualne zasady
-- Klasa `modal-header-close-right` ustawia przycisk zamknięcia `X` w prawym górnym rogu okna modalnego.
+- Modal `Rebuy gracza` w module Second używa układu `modal-header` + `modal-body` identycznego jak w Main, wraz z tymi samymi proporcjami sekcji tabeli i akcji.
 - W module Second nagłówki tabel są prezentowane uppercase, z wyjątkiem dynamicznych nagłówków stołów w `Tabela18`.
 - Ostrzeżenia walidacyjne i dystrybucji rebuy w module Second używają czerwonego stylu (`.t-warning`).
 - W obu modułach (`Main`, `Second`) kontener `.player-zone-layout` rozszerza sekcję z ciemno-zielonymi panelami na pełną szerokość wnętrza karty (1 px luzu od lewej i prawej krawędzi zewnętrznej ramki).

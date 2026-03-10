@@ -43,9 +43,7 @@
 
 ### Losowanie graczy — aktualny render
 - Nagłówek metadanych turnieju: grid `.t-section-grid`.
-- Pole `RAKE`:
-  - wejście tylko cyfrowe,
-  - podgląd z automatycznym `%` renderowany jako `<small>` (np. `15%`).
+- Pole `RAKE` działa w formacie procentowym zgodnym z modułem Main: użytkownik wpisuje wartość liczbową, a pole renderuje `wartość%`; obliczenia używają ułamka dziesiętnego (`10` => `0.10`).
 - Nad tabelą renderowany licznik: `Liczba dodanych graczy: X`.
 - Tabela `players-table` ma kolumny:
   1. `Status` (przycisk `.payment-status-toggle` z ukrytym checkboxem sterującym statusem płatności; wariant kompaktowy dopasowany wysokością do pól formularza):
@@ -71,11 +69,12 @@
 - Przycisk `Edytuj` otwiera `prompt` i zapisuje listę uprawnień oddzieloną przecinkami do pola `permissions`.
 
 ### Usuwanie gracza
-- `delete-player` usuwa rekord gracza z `players` oraz czyści powiązane dane (`assignments`, `tableEntries`, `group`, `semi`).
+- `delete-player` usuwa rekord gracza z `players` oraz czyści powiązane dane (`assignments`, `group`, `semi`).
 
 ### Losowanie stołów — status i wybór stołu
 - Usunięto górny, zbiorczy blok z polami `Nazwa` i `Łączna Suma` nad tabelą przypisań.
-- Bloki pojedynczych stołów (tworzone po `Dodaj stół`) nadal mają nagłówek `Nazwa` + `Łączna Suma` i tabelę `Gracz/Wpisowe`; nowy stół otrzymuje nazwę `Stół${n}` (numerowanie od 1).
+- Bloki pojedynczych stołów (tworzone po `Dodaj stół`) mają nagłówek `Nazwa` + `Łączna Suma` i tabelę `Gracz/BUY-IN`; nowy stół otrzymuje nazwę `Stół${n}` (numerowanie od 1).
+- Kolumna `BUY-IN` w bloku stołu jest tylko do odczytu i pokazuje wartość z metadanych turnieju (`buyIn`) dla każdego przypisanego gracza.
 - Sekcja `draw` (`Losowanie stołów`) renderuje status gracza jako nieedytowalną pigułkę `.payment-status-label` (bez przycisku zmiany).
 - Zmiana statusu płatności odbywa się w sekcji `players` przez checkbox `data-role="player-payment-status"`.
 - Styl statusu:
@@ -135,7 +134,7 @@
 ## Tournament of Poker – logika techniczna (Second)
 
 ### Kluczowe rozszerzenia stanu
-- `payments.table12Rebuys` – przechowuje per-gracz listę rebuy (`values`, `indexes`, `nextIndex`).
+- `payments.table12Rebuys` – przechowuje per-gracz listę rebuy (`values[]`).
 - `pool.rebuyValues` – przechowuje ręczne korekty komórek REBUY w `Tabela16`.
 - `pool.mods[]` – wiersze `Tabela16` (split/mod/suma).
 
@@ -143,8 +142,8 @@
 - `Tabela10`:
   - `BUY-IN` z metadanych turnieju (Losowanie graczy),
   - `REBUY/ADD-ON` z metadanych turnieju,
-  - `SUMA` jako suma `BUY-IN` z przypisanych stołów,
-  - `LICZ. REBUY/ADD-ON` jako liczba uzupełnionych pól rebuy w `Tabela12`.
+  - `SUMA` jako suma BUY-IN przypisanych graczy (na podstawie stołów),
+  - `LICZ. REBUY/ADD-ON` jako liczba uzupełnionych pól rebuy w modalach `Rebuy gracza` (bez sumowania wartości).
 - `Tabela11`:
   - `%` z pola `RAKE` (konwersja do ułamka),
   - `RAKE` = `Tabela10.SUMA * %`,
@@ -155,11 +154,12 @@
 ### Modal „Rebuy gracza” (Second)
 - Nowy modal tworzony dynamicznie przy inicjalizacji turnieju.
 - Otwierany z `Tabela12` (kolumna `REBUY`).
-- Obsługuje dodawanie/usuwanie kolejnych pól `REBUY1..n` oraz zapis do Firestore.
-- Przycisk zamknięcia `X` ustawiony w prawym górnym rogu.
+- Obsługuje dodawanie/usuwanie kolejnych pól `Rebuy` oraz zapis do Firestore.
+- Numeracja nagłówków (`Rebuy1..n`) jest globalna względem kolejności graczy w `Tabela12` (jak w module Main).
+- Układ modala (`modal-header` + `modal-body`) jest spójny z modalem z modułu Main.
 
 ### Podział puli (Tabela16)
-- Domyślne wartości `PODZIAŁ PULI`: 0.50/0.30/0.20 dla pierwszych 3 wierszy.
+- Domyślne wartości `PODZIAŁ PULI`: 50% / 30% / 20% dla pierwszych 3 wierszy (do obliczeń konwersja do 0.50/0.30/0.20).
 - `KWOTA`:
   - wiersze 1–3: `podział * Tabela15.PODZIAŁ`,
   - od wiersza 4: wartość bezpośrednio z `PODZIAŁ PULI`.

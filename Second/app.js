@@ -738,14 +738,16 @@ const setupAdminTournament = (rootCard) => {
   table12RebuyModal.setAttribute("aria-hidden", "true");
   table12RebuyModal.innerHTML = `
     <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="secondTable12RebuyTitle">
-      <div class="modal-header modal-header-close-right">
+      <div class="modal-header">
         <h3 id="secondTable12RebuyTitle">Rebuy gracza</h3>
         <button type="button" class="icon-button" data-role="close-table12-rebuy" aria-label="Zamknij okno">×</button>
       </div>
-      <div class="admin-table-scroll"><table class="admin-data-table" data-role="table12-rebuy-modal-table"></table></div>
-      <div class="admin-table-actions">
-        <button type="button" class="secondary" data-role="table12-rebuy-add">Dodaj Rebuy</button>
-        <button type="button" class="danger" data-role="table12-rebuy-remove">Usuń Rebuy</button>
+      <div class="modal-body">
+        <div class="admin-table-scroll"><table class="admin-data-table" data-role="table12-rebuy-modal-table"></table></div>
+        <div class="admin-table-actions">
+          <button type="button" class="secondary" data-role="table12-rebuy-add">Dodaj Rebuy</button>
+          <button type="button" class="danger" data-role="table12-rebuy-remove">Usuń Rebuy</button>
+        </div>
       </div>
     </div>`;
   document.body.appendChild(table12RebuyModal);
@@ -760,14 +762,16 @@ const setupAdminTournament = (rootCard) => {
   const renderTable12RebuyModal = () => {
     const table = table12RebuyModal.querySelector('[data-role="table12-rebuy-modal-table"]');
     if (!table || !activeTable12RebuyPlayerId) return;
+    const groupedRows = buildGroupedRows(tournamentState.assignments);
+    const activeIndex = groupedRows.findIndex((row) => row.playerId === activeTable12RebuyPlayerId);
+    const previousRows = activeIndex > 0 ? groupedRows.slice(0, activeIndex) : [];
+    const rebuyOffset = previousRows.reduce((count, row) => count + ensureTable12RebuyState(row.playerId).values.length, 0);
     tournamentState.payments.table12Rebuys = tournamentState.payments.table12Rebuys || {};
-    const state = tournamentState.payments.table12Rebuys[activeTable12RebuyPlayerId] || { values: [], indexes: [], nextIndex: 1 };
+    const state = tournamentState.payments.table12Rebuys[activeTable12RebuyPlayerId] || { values: [] };
     if (!Array.isArray(state.values)) state.values = [];
-    if (!Array.isArray(state.indexes) || state.indexes.length !== state.values.length) state.indexes = state.values.map((_, idx) => idx + 1);
-    if (typeof state.nextIndex !== 'number' || state.nextIndex < 1) state.nextIndex = (state.indexes[state.indexes.length - 1] || 0) + 1;
     tournamentState.payments.table12Rebuys[activeTable12RebuyPlayerId] = state;
 
-    table.innerHTML = `<thead><tr>${state.indexes.map((idx) => `<th>REBUY${idx}</th>`).join("") || '<th>REBUY1</th>'}</tr></thead><tbody><tr>${(state.values.length ? state.values : [""]).map((value, index) => `<td><input class="admin-input" data-role="table12-rebuy-input" data-rebuy-index="${index}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${value || ""}"></td>`).join("")}</tr></tbody>`;
+    table.innerHTML = `<thead><tr>${(state.values.length ? state.values : [""]).map((_, index) => `<th>Rebuy${rebuyOffset + index + 1}</th>`).join("")}</tr></thead><tbody><tr>${(state.values.length ? state.values : [""]).map((value, index) => `<td><input class="admin-input" data-role="table12-rebuy-input" data-rebuy-index="${index}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${value || ""}"></td>`).join("")}</tr></tbody>`;
   };
 
   const openTable12RebuyModal = (playerId) => {
@@ -803,15 +807,12 @@ const setupAdminTournament = (rootCard) => {
     if (!rebuyState) return;
     if (role === 'table12-rebuy-add') {
       rebuyState.values.push('');
-      rebuyState.indexes.push(rebuyState.nextIndex || 1);
-      rebuyState.nextIndex = (rebuyState.nextIndex || 1) + 1;
       renderTable12RebuyModal();
       await saveState();
       render();
     }
     if (role === 'table12-rebuy-remove') {
       rebuyState.values = rebuyState.values.slice(0, -1);
-      rebuyState.indexes = rebuyState.indexes.slice(0, rebuyState.values.length);
       renderTable12RebuyModal();
       await saveState();
       render();
@@ -887,6 +888,26 @@ const setupAdminTournament = (rootCard) => {
     return Number.isFinite(parsed) ? parsed : 0;
   };
   const toDigitsNumber = (value) => Number(digitsOnly(value));
+  const toPercentDigits = (value) => {
+    const normalized = digitsOnly(value).replace(/^0+(?=\d)/, "");
+    return normalized || "0";
+  };
+  const percentInputToDecimal = (value) => {
+    const normalized = String(value ?? "").replace(",", ".").trim();
+    if (!normalized) return 0;
+    if (/^\d+(\.\d+)?$/.test(normalized) && normalized.includes(".")) {
+      const parsedLegacy = Number(normalized);
+      if (Number.isFinite(parsedLegacy) && parsedLegacy <= 1) {
+        return parsedLegacy;
+      }
+    }
+    return toDigitsNumber(normalized) / 100;
+  };
+  const formatPercentDisplay = (value) => {
+    const rawDigits = digitsOnly(value);
+    if (!rawDigits) return "";
+    return `${toPercentDigits(rawDigits)}%`;
+  };
   const formatCellNumber = (value) => {
     if (!Number.isFinite(value)) return "";
     const rounded = Math.round(value * 100) / 100;
@@ -897,16 +918,10 @@ const setupAdminTournament = (rootCard) => {
   const ensureTable12RebuyState = (playerId) => {
     tournamentState.payments.table12Rebuys = tournamentState.payments.table12Rebuys || {};
     if (!tournamentState.payments.table12Rebuys[playerId]) {
-      tournamentState.payments.table12Rebuys[playerId] = { values: [], indexes: [], nextIndex: 1 };
+      tournamentState.payments.table12Rebuys[playerId] = { values: [] };
     }
     const entry = tournamentState.payments.table12Rebuys[playerId];
     if (!Array.isArray(entry.values)) entry.values = [];
-    if (!Array.isArray(entry.indexes) || entry.indexes.length !== entry.values.length) {
-      entry.indexes = entry.values.map((_, idx) => idx + 1);
-    }
-    if (typeof entry.nextIndex !== "number" || entry.nextIndex < 1) {
-      entry.nextIndex = (entry.indexes[entry.indexes.length - 1] || 0) + 1;
-    }
     return entry;
   };
 
@@ -932,11 +947,15 @@ const setupAdminTournament = (rootCard) => {
     const focusState = getTournamentEditableFocusState(container);
     const groupedDrawRows = buildGroupedRows(tournamentState.assignments);
 
+    const buyInValue = toDigitsNumber(tournamentState.buyIn);
     const drawTotalsByTable = {};
+    const playerBuyInById = {};
     tournamentState.tables.forEach((table) => {
       const assignedPlayers = tournamentState.players.filter((player) => (tournamentState.assignments[player.id]?.tableId || "") === table.id);
-      const entries = tournamentState.tableEntries[table.id] || {};
-      drawTotalsByTable[table.id] = assignedPlayers.reduce((sum, player) => sum + toDigitsNumber(entries[player.id]), 0);
+      drawTotalsByTable[table.id] = assignedPlayers.length * buyInValue;
+      assignedPlayers.forEach((player) => {
+        playerBuyInById[player.id] = buyInValue;
+      });
     });
     const totalBuyInFromDraw = Object.values(drawTotalsByTable).reduce((sum, value) => sum + value, 0);
 
@@ -959,7 +978,7 @@ const setupAdminTournament = (rootCard) => {
       rebuyCount
     };
 
-    const rakePercent = toDigitsNumber(tournamentState.rake) / 100;
+    const rakePercent = percentInputToDecimal(tournamentState.rake);
     const table11 = {
       percent: rakePercent,
       rake: table10.sum * rakePercent,
@@ -1007,16 +1026,13 @@ const setupAdminTournament = (rootCard) => {
       `;
       }).join("");
 
-      const rakeValue = digitsOnly(tournamentState.rake);
-      const rakeLabel = rakeValue ? `${rakeValue}%` : "";
-
       mount.innerHTML = `
         ${tournamentStatusMessage ? `<p class="builder-info">${esc(tournamentStatusMessage)}</p>` : ""}
         <div class="t-section-grid">
           <label>ORGANIZATOR <input class="admin-input" data-role="meta-organizer" type="text" value="${esc(tournamentState.organizer)}"></label>
           <label>BUY-IN <input class="admin-input" data-role="meta-buyin" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.buyIn)}"></label>
           <label>REBUY/ADD-ON <input class="admin-input" data-role="meta-rebuy" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.rebuyAddOn)}"></label>
-          <label>RAKE <input class="admin-input" data-role="meta-rake" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.rake)}">${rakeLabel ? `<small>${esc(rakeLabel)}</small>` : ""}</label>
+          <label>RAKE <input class="admin-input" data-role="meta-rake" type="text" inputmode="numeric" value="${esc(formatPercentDisplay(tournamentState.rake))}"></label>
           <label>STACK <input class="admin-input" data-role="meta-stack" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.stack)}"></label>
           <label>REBUY/ADD-ON STACK <input class="admin-input" data-role="meta-rebuystack" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.rebuyStack)}"></label>
         </div>
@@ -1037,9 +1053,8 @@ const setupAdminTournament = (rootCard) => {
 
       const perTableBlocks = tournamentState.tables.map((table) => {
         const assignedPlayers = tournamentState.players.filter((player) => (tournamentState.assignments[player.id]?.tableId || "") === table.id);
-        const entries = tournamentState.tableEntries[table.id] || {};
         const total = drawTotalsByTable[table.id] || 0;
-        return `<article class="admin-table-card"><div class="t-section-grid"><label>NAZWA <input class="admin-input" data-role="table-name" data-table-id="${table.id}" type="text" value="${esc(table.name)}"></label><label>ŁĄCZNA SUMA <input class="admin-input" readonly value="${formatCellNumber(total)}"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>GRACZ</th><th>BUY-IN</th></tr></thead><tbody>${assignedPlayers.map((player) => `<tr><td>${esc(player.name)}</td><td><input class="admin-input" type="tel" inputmode="numeric" pattern="[0-9]*" data-role="table-entry" data-table-id="${table.id}" data-player-id="${player.id}" value="${esc(entries[player.id] || "")}"></td></tr>`).join("") || '<tr><td colspan="2">Brak przypisanych graczy.</td></tr>'}</tbody></table></div><button type="button" class="danger admin-row-delete draw-table-delete" data-role="delete-table" data-table-id="${table.id}">Usuń</button></article>`;
+        return `<article class="admin-table-card"><div class="t-section-grid"><label>NAZWA <input class="admin-input" data-role="table-name" data-table-id="${table.id}" type="text" value="${esc(table.name)}"></label><label>ŁĄCZNA SUMA <input class="admin-input" readonly value="${formatCellNumber(total)}"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>GRACZ</th><th>BUY-IN</th></tr></thead><tbody>${assignedPlayers.map((player) => `<tr><td>${esc(player.name)}</td><td>${formatCellNumber(buyInValue)}</td></tr>`).join("") || '<tr><td colspan="2">Brak przypisanych graczy.</td></tr>'}</tbody></table></div><button type="button" class="danger admin-row-delete draw-table-delete" data-role="delete-table" data-table-id="${table.id}">Usuń</button></article>`;
       }).join("");
 
       mount.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>GRACZ</th><th>STATUS</th><th>STÓŁ</th></tr></thead><tbody>${rows || '<tr><td colspan="3">Brak graczy.</td></tr>'}</tbody></table></div><div class="semi-tables">${perTableBlocks || "<p>Brak stołów.</p>"}</div><button type="button" class="secondary t-inline-add-button" data-role="add-table">Dodaj stół</button>`;
@@ -1048,7 +1063,7 @@ const setupAdminTournament = (rootCard) => {
     }
 
     if (activeSection === "payments") {
-      mount.innerHTML = `<h3>TABELA10</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZ. REBUY/ADD-ON</th></tr></thead><tbody><tr><td><input class="admin-input" data-role="pay-10-buyin" readonly value="${formatCellNumber(table10.buyIn)}"></td><td><input class="admin-input" data-role="pay-10-rebuy" readonly value="${formatCellNumber(table10.rebuyAddOn)}"></td><td><input class="admin-input" data-role="pay-10-sum" readonly value="${formatCellNumber(table10.sum)}"></td><td><input class="admin-input" data-role="pay-10-count" readonly value="${formatCellNumber(table10.rebuyCount)}"></td></tr></tbody></table></div><h3>TABELA11</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td><input class="admin-input" data-role="pay-11-percent" readonly value="${formatCellNumber(table11.percent)}"></td><td><input class="admin-input" data-role="pay-11-rake" readonly value="${formatCellNumber(table11.rake)}"></td><td><input class="admin-input" data-role="pay-11-buyin" readonly value="${formatCellNumber(table11.buyIn)}"></td><td><input class="admin-input" data-role="pay-11-rebuy" readonly value="${formatCellNumber(table11.rebuyAddOn)}"></td><td><input class="admin-input" data-role="pay-11-pot" readonly value="${formatCellNumber(table11.pot)}"></td></tr></tbody></table></div><h3>TABELA12</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>STÓŁ</th><th>LP</th><th>GRACZ</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>REBUY</th></tr></thead><tbody>${groupedDrawRows.map((row) => `<tr><td>${esc(row.tableName)}</td><td>${row.lp}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(totalBuyInFromDraw)}</td><td>${esc(tournamentState.rebuyAddOn || "")}</td><td><button class="secondary" type="button" data-role="open-table12-rebuy" data-player-id="${row.playerId}">${formatCellNumber(getPlayerRebuyTotal(row.playerId))}</button></td></tr>`).join("") || '<tr><td colspan="6">Brak danych.</td></tr>'}</tbody></table></div>`;
+      mount.innerHTML = `<h3>TABELA10</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZ. REBUY/ADD-ON</th></tr></thead><tbody><tr><td>${formatCellNumber(table10.buyIn)}</td><td>${formatCellNumber(table10.rebuyAddOn)}</td><td>${formatCellNumber(table10.sum)}</td><td>${formatCellNumber(table10.rebuyCount)}</td></tr></tbody></table></div><h3>TABELA11</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${toPercentText(table11.percent)}</td><td>${formatCellNumber(table11.rake)}</td><td>${formatCellNumber(table11.buyIn)}</td><td>${formatCellNumber(table11.rebuyAddOn)}</td><td>${formatCellNumber(table11.pot)}</td></tr></tbody></table></div><h3>TABELA12</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>STÓŁ</th><th>LP</th><th>GRACZ</th><th>BUY-IN</th><th>REBUY</th></tr></thead><tbody>${groupedDrawRows.map((row) => `<tr><td>${esc(row.tableName)}</td><td>${row.lp}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(playerBuyInById[row.playerId] || 0)}</td><td><button class="secondary" type="button" data-role="open-table12-rebuy" data-player-id="${row.playerId}">${formatCellNumber(getPlayerRebuyTotal(row.playerId))}</button></td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div>`;
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
@@ -1059,7 +1074,7 @@ const setupAdminTournament = (rootCard) => {
         tournamentState.pool.mods.push({ id: crypto.randomUUID(), mod: "", split: "" });
       }
       const splitRows = tournamentState.pool.mods;
-      const splitValues = splitRows.map((row) => toNumber(row.split));
+      const splitValues = splitRows.map((row) => percentInputToDecimal(row.split));
       const sumFrom4th = splitValues.slice(3).reduce((sum, value) => sum + value, 0);
       const table15Split = table11.buyIn - sumFrom4th;
       const splitPercentSum = splitValues.reduce((sum, value) => sum + value, 0);
@@ -1103,7 +1118,7 @@ const setupAdminTournament = (rootCard) => {
       const undistributedRemainder = Math.max(0, overflow - Math.max(0, userRebuySum - distributed.reduce((sum, value) => sum + value, 0)));
       const modColumnIndex = Math.min(12, rebuyColumns);
 
-      mount.innerHTML = `<h3>TABELA13</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZBA REBUY</th></tr></thead><tbody><tr><td>${formatCellNumber(table10.buyIn)}</td><td>${formatCellNumber(table10.rebuyAddOn)}</td><td>${formatCellNumber(table10.sum)}</td><td>${formatCellNumber(table10.rebuyCount)}</td></tr></tbody></table></div><h3>TABELA14</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${formatCellNumber(table11.percent)}</td><td>${formatCellNumber(table11.rake)}</td><td>${formatCellNumber(table11.buyIn)}</td><td>${formatCellNumber(table11.rebuyAddOn)}</td><td>${formatCellNumber(table11.pot)}</td></tr></tbody></table></div><h3>TABELA15</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>PODZIAŁ</th></tr></thead><tbody><tr><td>${formatCellNumber(table11.buyIn)}</td><td>${formatCellNumber(table15Split)}</td></tr></tbody></table></div>${splitWarning ? '<p class="builder-info t-warning">Suma wartości PODZIAŁ PULI musi wynosić 100%.</p>' : ''}${undistributedRemainder > 0 ? `<p class="builder-info t-warning">Rebuy do rozdysponowania ${formatCellNumber(undistributedRemainder)}</p>` : ''}<h3>TABELA16</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>PODZIAŁ PULI</th><th>KWOTA</th>${Array.from({ length: rebuyColumns }).map((_, idx) => `<th data-rebuy-column>REBUY${idx + 1}</th>`).join('')}<th>MOD</th><th>SUMA</th></tr></thead><tbody>${splitRows.map((row, index) => `<tr><td>${index + 1}</td><td><input class="admin-input" data-role="pool-split" data-id="${row.id}" value="${esc(row.split || (index === 0 ? '0.50' : index === 1 ? '0.30' : index === 2 ? '0.20' : ''))}" type="text">${index < 3 ? `<small>${toPercentText(row.split || (index === 0 ? '0.50' : index === 1 ? '0.30' : index === 2 ? '0.20' : '0'))}</small>` : ''}</td><td>${formatCellNumber(rowSums[index].amount)}</td>${Array.from({ length: rebuyColumns }).map((__, colIdx) => `<td data-rebuy-column><input class="admin-input" data-role="pool-rebuy-value" data-id="${row.id}" data-col-index="${colIdx}" type="text" value="${esc(rebuyMatrix[index][colIdx] || '')}"></td>`).join('')}<td><input class="admin-input" data-role="pool-mod" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row.mod)}"></td><td>${formatCellNumber(rowSums[index].total)}</td></tr>`).join('')}</tbody></table></div><div class="admin-table-actions"><button class="secondary t-inline-add-button" type="button" data-role="add-pool-mod-row">Dodaj</button><button class="danger t-inline-add-button" type="button" data-role="remove-pool-mod-row">Usuń</button></div>`;
+      mount.innerHTML = `<h3>TABELA13</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZBA REBUY</th></tr></thead><tbody><tr><td>${formatCellNumber(table10.buyIn)}</td><td>${formatCellNumber(table10.rebuyAddOn)}</td><td>${formatCellNumber(table10.sum)}</td><td>${formatCellNumber(table10.rebuyCount)}</td></tr></tbody></table></div><h3>TABELA14</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${toPercentText(table11.percent)}</td><td>${formatCellNumber(table11.rake)}</td><td>${formatCellNumber(table11.buyIn)}</td><td>${formatCellNumber(table11.rebuyAddOn)}</td><td>${formatCellNumber(table11.pot)}</td></tr></tbody></table></div><h3>TABELA15</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>PODZIAŁ</th></tr></thead><tbody><tr><td>${formatCellNumber(table11.buyIn)}</td><td>${formatCellNumber(table15Split)}</td></tr></tbody></table></div>${splitWarning ? '<p class="builder-info t-warning">Suma wartości PODZIAŁ PULI musi wynosić 100%.</p>' : ''}${undistributedRemainder > 0 ? `<p class="builder-info t-warning">Rebuy do rozdysponowania ${formatCellNumber(undistributedRemainder)}</p>` : ''}<h3>TABELA16</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>PODZIAŁ PULI</th><th>KWOTA</th>${Array.from({ length: rebuyColumns }).map((_, idx) => `<th data-rebuy-column>REBUY${idx + 1}</th>`).join('')}<th>MOD</th><th>SUMA</th></tr></thead><tbody>${splitRows.map((row, index) => `<tr><td>${index + 1}</td><td><input class="admin-input" data-role="pool-split" data-id="${row.id}" value="${esc(formatPercentDisplay(row.split || (index === 0 ? '50' : index === 1 ? '30' : index === 2 ? '20' : '')))}" type="text" inputmode="numeric"></td><td>${formatCellNumber(rowSums[index].amount)}</td>${Array.from({ length: rebuyColumns }).map((__, colIdx) => `<td data-rebuy-column><input class="admin-input" data-role="pool-rebuy-value" data-id="${row.id}" data-col-index="${colIdx}" type="text" value="${esc(rebuyMatrix[index][colIdx] || '')}"></td>`).join('')}<td><input class="admin-input" data-role="pool-mod" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row.mod)}"></td><td>${formatCellNumber(rowSums[index].total)}</td></tr>`).join('')}</tbody></table></div><div class="admin-table-actions"><button class="secondary t-inline-add-button" type="button" data-role="add-pool-mod-row">Dodaj</button><button class="danger t-inline-add-button" type="button" data-role="remove-pool-mod-row">Usuń</button></div>`;
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
