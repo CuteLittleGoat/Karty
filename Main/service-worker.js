@@ -1,4 +1,4 @@
-const CACHE_NAME = "karty-main-pwa-v1";
+const CACHE_NAME = "karty-main-pwa-v2";
 const APP_SHELL_ASSETS = [
   "./",
   "./index.html",
