@@ -148,3 +148,7 @@ Efekt techniczny:
 - Skrypt `pwa-bootstrap.js` podmienia plik manifestu zgodnie z profilem i rejestruje `service-worker.js`.
 - Uruchomienie z konfiguracji PWA (`?pwa=1&view=user`) wymusza tryb użytkownika: `getAdminMode()` zawsze zwraca `false` dla takiego startu.
 - Obecna konfiguracja startowa PWA używa wariantu pionowego (`manifest-portrait.webmanifest`).
+- Tytuł dokumentu (`<title>`) w `index.html` ustawiono na `Poker - rozgrywki`.
+- Wszystkie manifesty ustawiają nazwę instalowanej aplikacji na `Poker - rozgrywki` (`short_name`: `Poker`).
+- `start_url` w manifestach jest relatywny (`./index.html?...`), a `scope` ustawiony na `./`, co zapobiega błędom 404 dla hostingu pod prefiksem repozytorium.
+- Service Worker używa cache `karty-main-pwa-v2`, aby wymusić pobranie nowej konfiguracji PWA po wdrożeniu.
