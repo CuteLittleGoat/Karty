@@ -166,6 +166,8 @@ const SECOND_APP_SETTINGS_COLLECTION = "second_app_settings";
 const RULES_DOCUMENT = "rules";
 const SECOND_TOURNAMENT_COLLECTION = "second_tournament";
 const SECOND_TOURNAMENT_DOCUMENT = "state";
+const SECOND_CHAT_PIN_STORAGE_KEY = "secondChatPinVerified";
+const SECOND_CHAT_PLAYER_STORAGE_KEY = "secondChatPlayerId";
 
 const shouldRequestAdminAccess = () => new URLSearchParams(window.location.search).get("admin") === "1";
 
@@ -658,10 +660,23 @@ const normalizeTournamentPermissions = (value) => {
 };
 
 const SECOND_AVAILABLE_PLAYER_PERMISSIONS = [
-  { key: "tab1", label: "Zakładka1" },
-  { key: "tab2", label: "Zakładka2" },
-  { key: "tab3", label: "Zakładka3" }
+  { key: "chatTab", label: "Czat" }
 ];
+
+const getSecondChatPinGateState = () => sessionStorage.getItem(SECOND_CHAT_PIN_STORAGE_KEY) === "1";
+const setSecondChatPinGateState = (isVerified) => {
+  sessionStorage.setItem(SECOND_CHAT_PIN_STORAGE_KEY, isVerified ? "1" : "0");
+};
+const setSecondChatVerifiedPlayerId = (playerId) => {
+  const normalized = String(playerId ?? "").trim();
+  if (normalized) {
+    sessionStorage.setItem(SECOND_CHAT_PLAYER_STORAGE_KEY, normalized);
+    return;
+  }
+  sessionStorage.removeItem(SECOND_CHAT_PLAYER_STORAGE_KEY);
+};
+const getSecondChatVerifiedPlayerId = () => sessionStorage.getItem(SECOND_CHAT_PLAYER_STORAGE_KEY) || "";
+const isSecondPlayerAllowedForChat = (player) => normalizeTournamentPermissions(player?.permissions).includes("Czat");
 
 const getTournamentEditableFocusState = (container) => {
   const activeElement = document.activeElement;
@@ -732,6 +747,7 @@ const setupAdminTournament = (rootCard) => {
   let pendingLocalWrites = 0;
   let deferredSnapshotState = null;
   let activeTable12RebuyPlayerId = "";
+  let table12RebuyDirty = false;
 
   const table12RebuyModal = document.createElement("div");
   table12RebuyModal.className = "modal-overlay";
@@ -743,7 +759,7 @@ const setupAdminTournament = (rootCard) => {
         <button type="button" class="icon-button" data-role="close-table12-rebuy" aria-label="Zamknij okno">×</button>
       </div>
       <div class="modal-body">
-        <div class="admin-table-scroll"><table class="admin-data-table" data-role="table12-rebuy-modal-table"></table></div>
+        <div class="admin-table-scroll"><table class="admin-data-table game-details-rebuy-table" data-role="table12-rebuy-modal-table"></table></div>
         <div class="admin-table-actions">
           <button type="button" class="secondary" data-role="table12-rebuy-add">Dodaj Rebuy</button>
           <button type="button" class="danger" data-role="table12-rebuy-remove">Usuń Rebuy</button>
@@ -752,7 +768,23 @@ const setupAdminTournament = (rootCard) => {
     </div>`;
   document.body.appendChild(table12RebuyModal);
 
-  const closeTable12RebuyModal = () => {
+  const persistTable12RebuyChanges = async () => {
+    if (!table12RebuyDirty) {
+      return;
+    }
+    pendingLocalWrites += 1;
+    try {
+      await saveState();
+    } finally {
+      pendingLocalWrites = Math.max(0, pendingLocalWrites - 1);
+      commitDeferredSnapshotIfSafe();
+      table12RebuyDirty = false;
+    }
+    render();
+  };
+
+  const closeTable12RebuyModal = async () => {
+    await persistTable12RebuyChanges();
     activeTable12RebuyPlayerId = "";
     table12RebuyModal.classList.remove("is-visible");
     table12RebuyModal.setAttribute("aria-hidden", "true");
@@ -776,16 +808,17 @@ const setupAdminTournament = (rootCard) => {
 
   const openTable12RebuyModal = (playerId) => {
     activeTable12RebuyPlayerId = playerId;
+    table12RebuyDirty = false;
     table12RebuyModal.classList.add("is-visible");
     table12RebuyModal.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
     renderTable12RebuyModal();
   };
 
-  table12RebuyModal.addEventListener('click', (event) => {
+  table12RebuyModal.addEventListener('click', async (event) => {
     const role = event.target?.dataset?.role;
     if (event.target === table12RebuyModal || role === 'close-table12-rebuy') {
-      closeTable12RebuyModal();
+      await closeTable12RebuyModal();
     }
   });
 
@@ -798,6 +831,8 @@ const setupAdminTournament = (rootCard) => {
     if (!Number.isInteger(idx) || idx < 0) return;
     rebuyState.values[idx] = digitsOnly(event.target.value);
     event.target.value = rebuyState.values[idx];
+    table12RebuyDirty = true;
+    render();
   });
 
   table12RebuyModal.addEventListener('click', async (event) => {
@@ -807,21 +842,21 @@ const setupAdminTournament = (rootCard) => {
     if (!rebuyState) return;
     if (role === 'table12-rebuy-add') {
       rebuyState.values.push('');
+      table12RebuyDirty = true;
       renderTable12RebuyModal();
-      await saveState();
-      render();
+      await persistTable12RebuyChanges();
     }
     if (role === 'table12-rebuy-remove') {
       rebuyState.values = rebuyState.values.slice(0, -1);
+      table12RebuyDirty = true;
       renderTable12RebuyModal();
-      await saveState();
-      render();
+      await persistTable12RebuyChanges();
     }
   });
 
-  document.addEventListener('keydown', (event) => {
+  document.addEventListener('keydown', async (event) => {
     if (event.key === 'Escape' && table12RebuyModal.classList.contains('is-visible')) {
-      closeTable12RebuyModal();
+      await closeTable12RebuyModal();
     }
   });
 
@@ -1401,6 +1436,11 @@ const setupUserView = (root) => {
   const chatInput = root.querySelector("#chatMessageInput");
   const chatSendButton = root.querySelector("#chatSendButton");
   const chatStatus = root.querySelector("#chatStatus");
+  const chatPinInput = root.querySelector("#chatPinInput");
+  const chatPinOpenButton = root.querySelector("#chatPinOpenButton");
+  const chatPinStatus = root.querySelector("#chatPinStatus");
+  const chatGate = root.querySelector("#chatTab .pin-gate");
+  const chatContent = root.querySelector("#chatTab .chat-content");
   const tournamentSection = root.querySelector("#tournamentTab .admin-games-section");
   const userPanelRefreshButton = root.querySelector("#userPanelRefresh");
   const userPanelRefreshStatus = root.querySelector("#userPanelRefreshStatus");
@@ -1408,6 +1448,40 @@ const setupUserView = (root) => {
 
   let userTournamentState = createTournamentDefaultState();
   let userTournamentSection = "players";
+
+  const getTournamentPlayerById = (playerId) => userTournamentState.players.find((player) => player.id === playerId) || null;
+  const getTournamentPlayerByPin = (pin) => {
+    const normalizedPin = digitsOnly(pin).slice(0, 5);
+    if (normalizedPin.length !== 5) {
+      return null;
+    }
+    return userTournamentState.players.find((player) => digitsOnly(player.pin).slice(0, 5) === normalizedPin) || null;
+  };
+  const getVerifiedChatPlayer = () => {
+    const playerId = getSecondChatVerifiedPlayerId();
+    if (!playerId) {
+      return null;
+    }
+    return getTournamentPlayerById(playerId);
+  };
+  const updateSecondChatVisibility = () => {
+    const verifiedPlayer = getVerifiedChatPlayer();
+    const isAllowed = getSecondChatPinGateState() && Boolean(verifiedPlayer) && isSecondPlayerAllowedForChat(verifiedPlayer);
+    if (chatGate) {
+      chatGate.classList.toggle("is-hidden", isAllowed);
+      chatGate.hidden = isAllowed;
+    }
+    if (chatContent) {
+      chatContent.classList.toggle("is-visible", isAllowed);
+    }
+    if (chatInput) {
+      chatInput.disabled = !isAllowed;
+    }
+    if (chatSendButton) {
+      chatSendButton.disabled = !isAllowed;
+    }
+    return isAllowed;
+  };
 
   const renderUserTournament = () => {
     if (!tournamentSection) {
@@ -1513,6 +1587,9 @@ const setupUserView = (root) => {
     if (chatStatus) {
       chatStatus.textContent = "Uzupełnij konfigurację Firebase, aby używać czatu.";
     }
+    if (chatPinOpenButton) {
+      chatPinOpenButton.disabled = true;
+    }
     if (chatInput) {
       chatInput.disabled = true;
     }
@@ -1523,6 +1600,47 @@ const setupUserView = (root) => {
   }
 
   const db = firebaseApp.firestore();
+
+  if (chatPinInput) {
+    chatPinInput.addEventListener("input", () => {
+      chatPinInput.value = digitsOnly(chatPinInput.value).slice(0, 5);
+    });
+  }
+
+  const verifyChatPin = () => {
+    const pin = digitsOnly(chatPinInput?.value || "").slice(0, 5);
+    if (pin.length !== 5) {
+      if (chatPinStatus) {
+        chatPinStatus.textContent = "Wpisz pełny PIN (5 cyfr).";
+      }
+      return;
+    }
+
+    const matchedPlayer = getTournamentPlayerByPin(pin);
+    if (!matchedPlayer || !isSecondPlayerAllowedForChat(matchedPlayer)) {
+      if (chatPinStatus) {
+        chatPinStatus.textContent = "Błędny PIN lub brak uprawnień do zakładki Czat.";
+      }
+      setSecondChatPinGateState(false);
+      setSecondChatVerifiedPlayerId("");
+      updateSecondChatVisibility();
+      return;
+    }
+
+    setSecondChatPinGateState(true);
+    setSecondChatVerifiedPlayerId(matchedPlayer.id);
+    if (chatPinStatus) {
+      chatPinStatus.textContent = `PIN poprawny. Witaj ${matchedPlayer.name || "graczu"}.`;
+    }
+    updateSecondChatVisibility();
+  };
+
+  chatPinOpenButton?.addEventListener("click", verifyChatPin);
+  chatPinInput?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      verifyChatPin();
+    }
+  });
 
   db.collection(SECOND_ADMIN_MESSAGES_COLLECTION).doc(SECOND_ADMIN_MESSAGES_DOCUMENT).onSnapshot(
     (snapshot) => {
@@ -1605,6 +1723,15 @@ const setupUserView = (root) => {
   db.collection(SECOND_TOURNAMENT_COLLECTION).doc(SECOND_TOURNAMENT_DOCUMENT).onSnapshot(
     (snapshot) => {
       userTournamentState = normalizeTournamentState(snapshot.data());
+      const verifiedPlayer = getVerifiedChatPlayer();
+      if (!verifiedPlayer || !isSecondPlayerAllowedForChat(verifiedPlayer)) {
+        setSecondChatPinGateState(false);
+        setSecondChatVerifiedPlayerId("");
+        if (chatPinStatus) {
+          chatPinStatus.textContent = "Wpisz PIN z uprawnieniem Czat, aby odblokować wysyłanie wiadomości.";
+        }
+      }
+      updateSecondChatVisibility();
       renderUserTournament();
     },
     () => {
@@ -1615,6 +1742,17 @@ const setupUserView = (root) => {
   );
 
   chatSendButton?.addEventListener("click", async () => {
+    const verifiedPlayer = getVerifiedChatPlayer();
+    if (!getSecondChatPinGateState() || !verifiedPlayer || !isSecondPlayerAllowedForChat(verifiedPlayer)) {
+      if (chatStatus) {
+        chatStatus.textContent = "Najpierw odblokuj czat PIN-em z uprawnieniem Czat.";
+      }
+      setSecondChatPinGateState(false);
+      setSecondChatVerifiedPlayerId("");
+      updateSecondChatVisibility();
+      return;
+    }
+
     const message = typeof chatInput?.value === "string" ? chatInput.value.trim() : "";
     if (!message) {
       if (chatStatus) {
@@ -1633,7 +1771,7 @@ const setupUserView = (root) => {
     try {
       await db.collection(SECOND_CHAT_COLLECTION).add({
         text: message,
-        authorName: "Gracz",
+        authorName: verifiedPlayer.name || "Gracz",
         createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
         expireAt: firebaseApp.firestore.Timestamp.fromDate(new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)))
       });
@@ -1653,6 +1791,14 @@ const setupUserView = (root) => {
       }
     }
   });
+
+  if (chatPinStatus && getSecondChatPinGateState() && getVerifiedChatPlayer()) {
+    const verifiedPlayer = getVerifiedChatPlayer();
+    chatPinStatus.textContent = `PIN poprawny. Witaj ${verifiedPlayer?.name || "graczu"}.`;
+  } else if (chatPinStatus) {
+    chatPinStatus.textContent = "Wpisz PIN z uprawnieniem Czat, aby odblokować wysyłanie wiadomości.";
+  }
+  updateSecondChatVisibility();
 };
 
 const createUserViewNode = ({ withWrapperCard = true } = {}) => {

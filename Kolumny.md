@@ -89,3 +89,8 @@ Dodatkowo dla każdego stołu:
 - Panel `Faza grupowa`:
   - `Tabela17` tylko 2 kolumny: `STACK GRACZA`, `REBUY/ADD-ON`.
   - `Tabela17A` usunięta.
+
+
+### Modal „Rebuy gracza” (Second)
+- Kolumny dynamiczne: `Rebuy1..n` (numeracja globalna względem kolejności graczy w Tabela12).
+- Szerokość każdej kolumny: `8ch` (jak w module Main).
