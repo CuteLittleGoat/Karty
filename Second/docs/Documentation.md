@@ -17,7 +17,7 @@
 ### Edycja uprawnień gracza (modal)
 - Zamiast `window.prompt` używany jest dedykowany modal: `#secondPlayerPermissionsModal` w `Second/index.html`.
 - Inicjalizacja i obsługa: `initSecondPlayerPermissionsModal(...)` w `Second/app.js`.
-- Aktualna lista placeholderów uprawnień (`SECOND_AVAILABLE_PLAYER_PERMISSIONS`): `Zakładka1`, `Zakładka2`, `Zakładka3`.
+- Aktualna lista uprawnień (`SECOND_AVAILABLE_PLAYER_PERMISSIONS`): `Czat`.
 - Każdy checkbox aktualizuje `player.permissions` jako tablicę unikalnych etykiet i natychmiast zapisuje zmiany do `second_tournament/state`.
 - Modal wspiera trzy sposoby zamknięcia: przycisk `✕`, kliknięcie w overlay i klawisz `Escape`.
 - Widok tabeli graczy renderuje wybrane uprawnienia jako badge (`.permission-badge`) w kolumnie `Uprawnienia`.
@@ -180,3 +180,17 @@
 ## Aktualny layout paneli użytkownika (Second)
 - W trybie użytkownika kontener `.player-zone-layout` używa `width: calc(100% + 46px)` oraz `margin-inline: -23px`.
 - Zapewnia to wyrównanie wewnętrznych ciemno-zielonych paneli do 1 px od lewej i prawej strony zewnętrznej zielonej karty.
+
+
+### Czat użytkownika — PIN i uprawnienia
+- Wejście PIN: `#chatPinInput`, akcja: `#chatPinOpenButton`, status: `#chatPinStatus`.
+- Weryfikacja PIN porównuje 5-cyfrową wartość z `players[].pin` w stanie `second_tournament/state`.
+- Dostęp jest nadawany tylko graczom z uprawnieniem `Czat` (pole `players[].permissions`).
+- Stan weryfikacji sesji jest zapisywany w `sessionStorage` (`secondChatPinVerified`, `secondChatPlayerId`), dzięki czemu użytkownik wpisuje PIN raz na sesję przeglądarki.
+- Wysyłka wiadomości do `second_chat_messages` zapisuje `authorName` z `players[].name` zweryfikowanego gracza.
+
+### Modal „Rebuy gracza” — zapis i odświeżanie
+- Tabela modala używa klasy `.game-details-rebuy-table` i ma stałe kolumny `8ch` (spójność z Main).
+- Zmiana w polu rebuy ustawia flagę brudnych danych i natychmiast odświeża tabelę Tabela12 w tle.
+- Zamknięcie modala (`X`, klik poza modalem, ESC) wykonuje zapis `saveState()` gdy są zmiany, więc wartości nie giną po zamknięciu okna.
+- Akcje `Dodaj Rebuy` i `Usuń Rebuy` również zapisują stan i odświeżają widok po wykonaniu.

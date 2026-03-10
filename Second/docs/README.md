@@ -138,3 +138,12 @@
 ## Aktualny układ ramek w widoku użytkownika
 1. W trybie użytkownika ciemno-zielone panele wewnątrz głównej karty są dosunięte do szerokości karty.
 2. Każdy taki panel zaczyna się 1 px od lewej krawędzi zewnętrznej zielonej ramki i kończy 1 px przed prawą krawędzią.
+
+
+## Odblokowanie czatu PIN-em (widok użytkownika)
+1. Wejdź do zakładki **Czat**.
+2. W polu PIN wpisz dokładnie 5 cyfr przypisanych do gracza.
+3. Kliknij **Otwórz** (lub naciśnij Enter).
+4. Jeżeli PIN jest poprawny i gracz ma uprawnienie **Czat** nadane przez admina w sekcji **Losowanie graczy**, ukryje się panel PIN i pojawi się formularz wysyłki wiadomości.
+5. Po poprawnej weryfikacji PIN nie musi być wpisywany ponownie do odświeżenia/resetu strony.
+6. Wysłane wiadomości publikują się z nazwą gracza skonfigurowaną przez admina.
