@@ -24,7 +24,8 @@ Instrukcja jest podzielona na dwie części:
    - `?pwaOrientation=portrait` — pion,
    - `?pwaOrientation=landscape` — poziom,
    - `?pwaOrientation=any` — decyzja urządzenia.
-
+9. Nazwa karty w przeglądarce dla modułu Main to **"Poker - rozgrywki"**.
+10. Po instalacji PWA aplikacja na urządzeniu również wyświetla nazwę **"Poker - rozgrywki"**.
 
 ---
 
