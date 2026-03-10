@@ -52,6 +52,7 @@
 - **Tabela12**: Stół, LP, Gracz, BUY-IN, REBUY.
   - kolumna `BUY-IN` pobiera wartość przypisaną graczowi w sekcji **Losowanie stołów**,
   - kolumna `REBUY` otwiera modal **Rebuy gracza**,
+  - modal **Rebuy gracza** możesz zawsze zamknąć przez `×`, kliknięcie poza oknem lub klawisz `Esc` — także po edycji pól,
   - licznik `LICZ. REBUY/ADD-ON` w Tabela10 zlicza liczbę uzupełnionych pól `Rebuy` u wszystkich graczy (nie sumę kwot).
 
 ### Podział puli
