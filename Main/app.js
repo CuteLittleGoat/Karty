@@ -776,8 +776,22 @@ const registerAdminRefreshHandler = (tabId, handler) => {
   adminRefreshHandlers.set(tabId, handler);
 };
 
+const getRuntimeMode = () => {
+  const params = new URLSearchParams(window.location.search);
+  const isPwaLaunch = params.get("pwa") === "1";
+  const isUserView = params.get("view") === "user";
+  return {
+    isPwaLaunch,
+    isUserView,
+    isPwaUserOnly: isPwaLaunch && isUserView
+  };
+};
+
 const getAdminMode = () => {
   const params = new URLSearchParams(window.location.search);
+  if (getRuntimeMode().isPwaUserOnly) {
+    return false;
+  }
   return params.get("admin") === "1";
 };
 
