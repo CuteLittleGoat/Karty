@@ -9,8 +9,7 @@
 
 ### Losowanie graczy — pełna obsługa
 1. Nad tabelą uzupełnij pola: **ORGANIZATOR**, **BUY-IN**, **REBUY/ADD-ON**, **RAKE**, **STACK**, **REBUY/ADD-ON STACK**.
-2. W polu **RAKE** wpisz samą liczbę (np. `10`).
-   - Pod polem pojawi się podgląd wartości jako `10%`.
+2. W polu **RAKE** wpisz wartość liczbową (np. `10`) — pole wyświetla ją jako `10%` i taka wartość procentowa jest używana w obliczeniach.
 3. Sprawdź licznik nad tabelą: **Liczba dodanych graczy: X**.
 4. Kliknij **Dodaj gracza**, aby utworzyć nowy wiersz.
    - Przycisk ma teraz krótki format i jest wyrównany do lewej strony (jak w module Main).
@@ -43,14 +42,17 @@
    - Przycisk ma krótki format i nie rozciąga się na pełną szerokość sekcji.
    - Nowy stół dostaje domyślną nazwę w formacie **Stół1, Stół2, Stół3...**.
 4. Dla każdego dodanego stołu pojawia się osobny blok z tabelą i nagłówkiem: **Nazwa** + **Łączna Suma**.
-5. W tabeli stołu wpisz **Wpisowe** przypisanych graczy.
+5. W tabeli stołu kolumna **BUY-IN** jest automatyczna i pobiera wartość z sekcji **Losowanie graczy** (pole `BUY-IN`) dla każdego przypisanego gracza — brak edycji w tej tabeli.
 6. Kliknij **Usuń** przy wybranym stole, aby go usunąć.
    - Czerwony przycisk **Usuń** jest kompaktowy i wyrównany do prawej krawędzi bloku (spójny wizualnie z przyciskami **Usuń** w sekcji **Losowanie graczy**).
 
 ### Wpłaty
-- **Tabela10**: Buy-in, REBUY/ADD-ON, SUMA, licz. REBUY/ADD-ON.
-- **Tabela11**: %, Rake, BUY-IN, REBUY/ADD-ON, POT.
-- **Tabela12**: zestawienie graczy wg stołów.
+- **Tabela10**: Buy-in, REBUY/ADD-ON, SUMA, licz. REBUY/ADD-ON (wszystkie pola tylko do odczytu, bez klikalnych inputów).
+- **Tabela11**: %, Rake, BUY-IN, REBUY/ADD-ON, POT (wszystkie pola tylko do odczytu, bez klikalnych inputów).
+- **Tabela12**: Stół, LP, Gracz, BUY-IN, REBUY.
+  - kolumna `BUY-IN` pobiera wartość przypisaną graczowi w sekcji **Losowanie stołów**,
+  - kolumna `REBUY` otwiera modal **Rebuy gracza**,
+  - licznik `LICZ. REBUY/ADD-ON` w Tabela10 zlicza liczbę uzupełnionych pól `Rebuy` u wszystkich graczy (nie sumę kwot).
 
 ### Podział puli
 - **Tabela13**, **Tabela14**, **Tabela15**, **Tabela16**.
@@ -115,7 +117,7 @@
 1. `Tabela13` i `Tabela14` pobierają dane automatycznie z panelu `Wpłaty`.
 2. `Tabela15` pokazuje automatyczny BUY-IN i wartość `PODZIAŁ`.
 3. `Tabela16`:
-   - kolumna `PODZIAŁ PULI` ma domyślne wartości 0.50, 0.30, 0.20 dla pierwszych 3 wierszy,
+   - kolumna `PODZIAŁ PULI` działa w formacie procentowym jak w Main (np. wpisujesz `50`, wyświetla się `50%`, do obliczeń trafia `0.50`),
    - przyciski **Dodaj**/**Usuń** są pod `Tabela16`,
    - kolumny `REBUY1..` budują się automatycznie na podstawie rebuy,
    - kolumna `MOD` jest edytowalna,

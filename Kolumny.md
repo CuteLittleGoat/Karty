@@ -16,12 +16,12 @@
 
 Dodatkowo dla każdego stołu:
 - Gracz
-- Wpisowe
+- BUY-IN (tylko odczyt, wartość z sekcji Losowanie graczy)
 
 ### Wpłaty
 - Tabela10: Buy-in, REBUY/ADD-ON, SUMA, licz. REBUY/ADD-ON
 - Tabela11: %, Rake, BUY-IN, REBUY/ADD-ON, POT
-- Tabela12: Stół, LP, Gracz, BUY-IN, REBUY/add-on, REBUY
+- Tabela12: Stół, LP, Gracz, BUY-IN, REBUY
 
 ### Podział puli
 - Tabela13: BUY-IN, REBUY/ADD-ON, SUMA, LICZBA REBUY
@@ -80,8 +80,8 @@ Dodatkowo dla każdego stołu:
 ## Tournament of Poker (Second) – kolumny
 - Panel `Losowanie stołów`: kolumna `Wpisowe` została zastąpiona przez `BUY-IN`.
 - Panel `Wpłaty`:
-  - `Tabela10`: pola readonly (`BUY-IN`, `REBUY/ADD-ON`, `SUMA`, `LICZ. REBUY/ADD-ON`).
-  - `Tabela11`: pola readonly (`%`, `RAKE`, `BUY-IN`, `REBUY/ADD-ON`, `POT`).
+  - `Tabela10`: nieedytowalne komórki obliczane (`BUY-IN`, `REBUY/ADD-ON`, `SUMA`, `LICZ. REBUY/ADD-ON`).
+  - `Tabela11`: nieedytowalne komórki obliczane (`%`, `RAKE`, `BUY-IN`, `REBUY/ADD-ON`, `POT`).
   - `Tabela12`: kolumna `REBUY` jako przycisk otwierający modal.
 - Panel `Podział puli`:
   - przyciski `Dodaj/Usuń` przeniesione pod `Tabela16`,
