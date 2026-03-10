@@ -784,11 +784,11 @@ const setupAdminTournament = (rootCard) => {
   };
 
   const closeTable12RebuyModal = async () => {
-    await persistTable12RebuyChanges();
     activeTable12RebuyPlayerId = "";
     table12RebuyModal.classList.remove("is-visible");
     table12RebuyModal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
+    await persistTable12RebuyChanges();
   };
 
   const renderTable12RebuyModal = () => {
