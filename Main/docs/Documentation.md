@@ -4,6 +4,10 @@
 - `Main/index.html` — pełny układ widoku użytkownika i administratora oraz modal instrukcji.
 - `Main/styles.css` — motyw, layout kart, tabele i style modali.
 - `Main/app.js` — logika Firebase, zakładek, panelu admina, strefy gracza, kalkulatora i modali.
+- `Main/pwa-config.js` — konfiguracja profili orientacji PWA (`portrait`, `landscape`, `any`) i wybór aktywnego profilu (query/localStorage).
+- `Main/pwa-bootstrap.js` — podmiana aktywnego manifestu na podstawie profilu oraz rejestracja Service Workera.
+- `Main/manifest-portrait.webmanifest`, `Main/manifest-landscape.webmanifest`, `Main/manifest-any.webmanifest` — trzy warianty manifestu do łatwego sterowania blokadą orientacji.
+- `Main/service-worker.js` — podstawowy cache app-shell dla uruchamiania PWA i pracy offline dla statycznych zasobów.
 
 ## 2. Aktualny zakres funkcjonalny tej wersji
 - W widoku użytkownika (`body` bez klasy `is-admin`) kontener `.page` ma szerokość `calc(100% - 2px)` oraz `padding-inline: 1px`, dzięki czemu zewnętrzna zielona ramka karty użytkownika jest odsunięta dokładnie o 1 px od lewej i prawej krawędzi ekranu.
@@ -136,3 +140,11 @@ Efekt techniczny:
 - W trybie użytkownika kontener `.player-zone-layout` ma rozszerzoną szerokość (`width: calc(100% + 46px)`) oraz ujemny margines poziomy (`margin-inline: -23px`).
 - Dzięki temu wewnętrzne ciemno-zielone ramki (`.admin-games-sidebar` i `.admin-games-content`) są wyrównane do 1 px od lewej i prawej krawędzi zewnętrznej zielonej karty.
 - W breakpointcie mobile (`@media (max-width: 720px)`) przyciski sekcji Strefy Gracza (`.player-zone-button`) mają zwiększony rozmiar pisma do `14px` i `letter-spacing: 0.12em`.
+
+
+## PWA (Main-only)
+- `index.html` zawiera link `<link rel="manifest">` z identyfikatorem `pwaManifestLink`; domyślnie wskazuje profil `portrait`.
+- Skrypt `pwa-config.js` wybiera profil orientacji wg kolejności: `pwaOrientation` w URL -> `localStorage` -> domyślnie `portrait`.
+- Skrypt `pwa-bootstrap.js` podmienia plik manifestu zgodnie z profilem i rejestruje `service-worker.js`.
+- Uruchomienie z konfiguracji PWA (`?pwa=1&view=user`) wymusza tryb użytkownika: `getAdminMode()` zawsze zwraca `false` dla takiego startu.
+- Obecna konfiguracja startowa PWA używa wariantu pionowego (`manifest-portrait.webmanifest`).
