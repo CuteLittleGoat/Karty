@@ -785,29 +785,28 @@ const setupAdminTournament = (rootCard) => {
   let pendingLocalWrites = 0;
   let deferredSnapshotState = null;
   let activeTable12RebuyPlayerId = "";
-  let table12RebuyDirty = false;
 
   const table12RebuyModal = document.createElement("div");
   table12RebuyModal.className = "modal-overlay";
   table12RebuyModal.setAttribute("aria-hidden", "true");
   table12RebuyModal.innerHTML = `
     <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="secondTable12RebuyTitle">
-      <div class="modal-header">
+      <div class="modal-card-header modal-header-close-right">
         <h3 id="secondTable12RebuyTitle">Rebuy gracza</h3>
-        <button type="button" class="icon-button" data-role="close-table12-rebuy" aria-label="Zamknij okno">×</button>
+        <button type="button" class="icon-button" data-game-rebuy-close aria-label="Zamknij okno">×</button>
       </div>
-      <div class="modal-body">
-        <div class="admin-table-scroll"><table class="admin-data-table game-details-rebuy-table" data-role="table12-rebuy-modal-table"></table></div>
-        <div class="admin-table-actions">
-          <button type="button" class="secondary" data-role="table12-rebuy-add">Dodaj Rebuy</button>
-          <button type="button" class="danger" data-role="table12-rebuy-remove">Usuń Rebuy</button>
-        </div>
+      <div class="admin-table-scroll">
+        <table class="admin-data-table game-details-rebuy-table" data-game-rebuy-table></table>
       </div>
+      <div class="admin-table-actions" data-game-rebuy-actions></div>
     </div>`;
   document.body.appendChild(table12RebuyModal);
+  const table12RebuyModalTable = table12RebuyModal.querySelector("[data-game-rebuy-table]");
+  const table12RebuyModalActions = table12RebuyModal.querySelector("[data-game-rebuy-actions]");
+  const table12RebuyModalClose = table12RebuyModal.querySelector("[data-game-rebuy-close]");
 
   const persistTable12RebuyChanges = async () => {
-    if (!table12RebuyDirty) {
+    if (!activeTable12RebuyPlayerId) {
       return;
     }
     pendingLocalWrites += 1;
@@ -816,94 +815,103 @@ const setupAdminTournament = (rootCard) => {
     } finally {
       pendingLocalWrites = Math.max(0, pendingLocalWrites - 1);
       commitDeferredSnapshotIfSafe();
-      table12RebuyDirty = false;
     }
-    render();
   };
 
-  const closeTable12RebuyModal = async () => {
+  const closeTable12RebuyModal = () => {
     activeTable12RebuyPlayerId = "";
     table12RebuyModal.classList.remove("is-visible");
     table12RebuyModal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
-    await persistTable12RebuyChanges();
   };
 
   const renderTable12RebuyModal = () => {
-    const table = table12RebuyModal.querySelector('[data-role="table12-rebuy-modal-table"]');
-    if (!table || !activeTable12RebuyPlayerId) return;
+    if (!table12RebuyModalTable || !table12RebuyModalActions || !activeTable12RebuyPlayerId) return;
     tournamentState.payments.table12Rebuys = tournamentState.payments.table12Rebuys || {};
-    const state = ensureTable12RebuyState(activeTable12RebuyPlayerId);
-    tournamentState.payments.table12Rebuys[activeTable12RebuyPlayerId] = state;
+    const rebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
+    tournamentState.payments.table12Rebuys[activeTable12RebuyPlayerId] = rebuyState;
 
-    table.innerHTML = `<thead><tr>${state.values.map((_, index) => `<th>Rebuy${state.indexes[index]}</th>`).join("")}</tr></thead><tbody><tr>${state.values.map((value, index) => `<td><input class="admin-input" data-role="table12-rebuy-input" data-rebuy-index="${index}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${value || ""}"></td>`).join("")}</tr></tbody>`;
+    let headerHtml = "<thead><tr>";
+    rebuyState.indexes.forEach((columnIndex) => {
+      headerHtml += `<th>Rebuy${columnIndex}</th>`;
+    });
+    headerHtml += "</tr></thead>";
+    table12RebuyModalTable.innerHTML = headerHtml;
+
+    const tbody = document.createElement("tbody");
+    const tr = document.createElement("tr");
+    rebuyState.values.forEach((value, index) => {
+      const td = document.createElement("td");
+      const input = document.createElement("input");
+      input.className = "admin-input";
+      input.type = "tel";
+      input.inputMode = "numeric";
+      input.pattern = "[0-9]*";
+      input.value = value;
+      input.addEventListener("input", async () => {
+        rebuyState.values[index] = digitsOnly(input.value);
+        input.value = rebuyState.values[index];
+        await persistTable12RebuyChanges();
+        render();
+      });
+      td.appendChild(input);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+    table12RebuyModalTable.appendChild(tbody);
+
+    table12RebuyModalActions.innerHTML = "";
+    const addButton = document.createElement("button");
+    addButton.type = "button";
+    addButton.className = "secondary";
+    addButton.textContent = "Dodaj Rebuy";
+    addButton.addEventListener("click", async () => {
+      const nextIndex = getNextGlobalTable12RebuyIndex();
+      rebuyState.values.push("");
+      rebuyState.indexes.push(nextIndex);
+      await persistTable12RebuyChanges();
+      render();
+      renderTable12RebuyModal();
+    });
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "danger";
+    removeButton.textContent = "Usuń Rebuy";
+    removeButton.disabled = rebuyState.values.length === 0;
+    removeButton.addEventListener("click", async () => {
+      if (!rebuyState.values.length) {
+        return;
+      }
+      const removedIndex = rebuyState.indexes[rebuyState.indexes.length - 1];
+      rebuyState.values = rebuyState.values.slice(0, -1);
+      rebuyState.indexes = rebuyState.indexes.slice(0, -1);
+      compactTable12RebuyIndexesAfterRemoval(removedIndex);
+      await persistTable12RebuyChanges();
+      render();
+      renderTable12RebuyModal();
+    });
+
+    table12RebuyModalActions.append(addButton, removeButton);
   };
 
   const openTable12RebuyModal = (playerId) => {
     activeTable12RebuyPlayerId = playerId;
-    table12RebuyDirty = false;
     table12RebuyModal.classList.add("is-visible");
     table12RebuyModal.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
     renderTable12RebuyModal();
   };
-
-  const addTable12RebuyColumn = async () => {
-    if (!activeTable12RebuyPlayerId) return;
-    const rebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
-    const nextIndex = getNextGlobalTable12RebuyIndex();
-    rebuyState.values.push('');
-    rebuyState.indexes.push(nextIndex);
-    table12RebuyDirty = true;
-    renderTable12RebuyModal();
-    await persistTable12RebuyChanges();
-  };
-
-  const removeTable12RebuyColumn = async () => {
-    if (!activeTable12RebuyPlayerId) return;
-    const rebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
-    if (rebuyState.values.length === 0) return;
-    const removedIndex = rebuyState.indexes[rebuyState.indexes.length - 1];
-    rebuyState.values = rebuyState.values.slice(0, -1);
-    rebuyState.indexes = rebuyState.indexes.slice(0, -1);
-    compactTable12RebuyIndexesAfterRemoval(removedIndex);
-    table12RebuyDirty = true;
-    renderTable12RebuyModal();
-    await persistTable12RebuyChanges();
-  };
-
-  table12RebuyModal.addEventListener('click', async (event) => {
-    const clickedElement = event.target instanceof Element ? event.target.closest('[data-role]') : null;
-    const role = clickedElement?.dataset?.role;
-
-    if (event.target === table12RebuyModal || role === 'close-table12-rebuy') {
-      await closeTable12RebuyModal();
-      return;
-    }
-    if (role === 'table12-rebuy-add') {
-      await addTable12RebuyColumn();
-      return;
-    }
-    if (role === 'table12-rebuy-remove') {
-      await removeTable12RebuyColumn();
+  table12RebuyModalClose?.addEventListener("click", closeTable12RebuyModal);
+  table12RebuyModal.addEventListener("click", (event) => {
+    if (event.target === table12RebuyModal) {
+      closeTable12RebuyModal();
     }
   });
 
-  table12RebuyModal.addEventListener('input', (event) => {
-    const role = event.target?.dataset?.role;
-    if (role !== 'table12-rebuy-input' || !activeTable12RebuyPlayerId) return;
-    const rebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
-    const idx = Number(event.target.dataset.rebuyIndex);
-    if (!Number.isInteger(idx) || idx < 0) return;
-    rebuyState.values[idx] = digitsOnly(event.target.value);
-    event.target.value = rebuyState.values[idx];
-    table12RebuyDirty = true;
-    render();
-  });
-
-  document.addEventListener('keydown', async (event) => {
-    if (event.key === 'Escape' && table12RebuyModal.classList.contains('is-visible')) {
-      await closeTable12RebuyModal();
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && table12RebuyModal.classList.contains("is-visible")) {
+      closeTable12RebuyModal();
     }
   });
 
@@ -1238,7 +1246,7 @@ const setupAdminTournament = (rootCard) => {
         const saved = tournamentState.pool.rebuyValues[row.id] || {};
         Object.keys(saved).forEach((colKey) => {
           const colIdx = Number(colKey);
-          if (Number.isInteger(colIdx) && colIdx >= 0 && colIdx < rebuyColumns) {
+          if (Number.isInteger(colIdx) && colIdx >= 30 && colIdx < rebuyColumns) {
             rebuyMatrix[rowIdx][colIdx] = saved[colKey];
           }
         });
@@ -1269,7 +1277,7 @@ const setupAdminTournament = (rootCard) => {
       const renderRebuyColumn = (row, rowIndex, colIdx) => {
         const rebuyNumber = colIdx + 1;
         const mappedRowIndex = rebuyNumber <= 30 ? (rebuyRowMapping[colIdx] - 1) : -1;
-        const isAutoAssignedCell = mappedRowIndex === rowIndex;
+        const isAutoAssignedCell = rebuyNumber <= 30 ? mappedRowIndex === rowIndex : false;
         return `<td data-rebuy-column><input class="admin-input" data-role="pool-rebuy-value" data-id="${row.id}" data-col-index="${colIdx}" type="text" value="${esc(rebuyMatrix[rowIndex][colIdx] || '')}" ${isAutoAssignedCell ? "readonly" : ""}></td>`;
       };
 
