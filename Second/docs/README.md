@@ -117,7 +117,7 @@
 
 ### Podział puli
 1. `Tabela13` i `Tabela14` pobierają dane automatycznie z panelu `Wpłaty`.
-2. `Tabela15` pokazuje `POT` (z `Tabela14`) oraz `PODZIAŁ = suma PODZIAŁ PULI od wiersza 4 - POT`.
+2. `Tabela15` pokazuje `POT` (z `Tabela14`) oraz `PODZIAŁ = POT - suma PODZIAŁ PULI od wiersza 4`.
 3. `Tabela16`:
    - kolumna `PODZIAŁ PULI`: wiersze 1–3 działają procentowo (`50` => `50%`, do obliczeń `0.5`), od wiersza 4 wpisy są liczbami bez `%` i bez dzielenia przez 100,
    - kolumna `KWOTA`: wiersze 1–3 = procent × `Tabela15.PODZIAŁ`, od wiersza 4 = przepisana wartość z `PODZIAŁ PULI`,

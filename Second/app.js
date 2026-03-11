@@ -1123,7 +1123,7 @@ const setupAdminTournament = (rootCard) => {
       const splitValues = splitRows.map((row, idx) => idx < 3 ? percentInputToDecimal(row.split) : toNumber(row.split));
       const sumFrom4th = splitValues.slice(3).reduce((sum, value) => sum + value, 0);
       const table15Pot = table11.pot;
-      const table15Split = sumFrom4th - table15Pot;
+      const table15Split = table15Pot - sumFrom4th;
 
       const rebuyLimit = 30;
       const distributed = allRebuyValues.slice(0, rebuyLimit);

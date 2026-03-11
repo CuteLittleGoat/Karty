@@ -162,7 +162,7 @@
 ### Podział puli (Tabela15/Tabela16)
 - `Tabela15` ma kolumny: `POT` i `PODZIAŁ`.
 - `Tabela15.POT` pobiera wartość z `Tabela14.POT`.
-- `Tabela15.PODZIAŁ` jest liczone jako: suma `PODZIAŁ PULI` od wiersza 4 do końca minus `Tabela15.POT`.
+- `Tabela15.PODZIAŁ` jest liczone jako: `Tabela15.POT` minus suma `PODZIAŁ PULI` od wiersza 4 do końca.
 - W `Tabela16` kolumna `PODZIAŁ PULI` ma tryb mieszany:
   - wiersze 1–3: wejście procentowe (`50` => render `50%`, obliczenia `0.5`),
   - wiersze 4+: wejście liczbowe bez `%` (`10` => obliczenia `10`).
