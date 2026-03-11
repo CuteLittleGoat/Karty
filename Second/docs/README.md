@@ -120,8 +120,9 @@
 3. `Tabela16`:
    - kolumna `PODZIAŁ PULI`: wiersze 1–3 działają procentowo (`50` => `50%`, do obliczeń `0.5`), od wiersza 4 wpisy są liczbami bez `%` i bez dzielenia przez 100,
    - kolumna `KWOTA`: wiersze 1–3 = procent × `Tabela15.PODZIAŁ`, od wiersza 4 = przepisana wartość z `PODZIAŁ PULI`,
-   - kolumny `REBUY1..REBUY30` mają przypisanie do konkretnych wierszy i przypisane komórki są tylko do odczytu; kolumny powyżej 30 pozostają puste i edytowalne,
-   - kolumny `MOD` są dynamiczne: do 12 rebuy jest `MOD1` przed `SUMA`, powyżej 12 dochodzi `MOD2`, a powyżej 20 dochodzi `MOD3`,
+   - liczba kolumn `REBUY` jest dynamiczna i zależy od liczby uzupełnionych pól `Rebuy` w modalach `Rebuy gracza` (jeśli brak rebuy, kolumn `REBUY` nie ma),
+   - komórki `REBUY` pokazują wartości wpisane w modalach `Rebuy gracza` i nie są nadpisywane przez wartości z `PODZIAŁ PULI`,
+   - kolumny `MOD` są dynamiczne: dla `0..12` rebuy jest `MOD1` przed `SUMA`, dla `13..20` dochodzi `MOD2`, a powyżej 20 dochodzi `MOD3`,
    - kolumna `SUMA` liczy się automatycznie.
 
 ### Faza grupowa

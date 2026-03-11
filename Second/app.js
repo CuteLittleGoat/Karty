@@ -1125,11 +1125,10 @@ const setupAdminTournament = (rootCard) => {
       const table15Pot = table11.pot;
       const table15Split = sumFrom4th - table15Pot;
 
-      const adjustedRebuys = allRebuyValues.map((value) => value * (1 - rakePercent));
       const rebuyLimit = 30;
-      const distributed = adjustedRebuys.slice(0, rebuyLimit);
-      const overflow = adjustedRebuys.slice(rebuyLimit).reduce((sum, value) => sum + value, 0);
-      const rebuyColumns = Math.max(12, distributed.length);
+      const distributed = allRebuyValues.slice(0, rebuyLimit);
+      const overflow = allRebuyValues.slice(rebuyLimit).reduce((sum, value) => sum + value, 0);
+      const rebuyColumns = distributed.length;
       tournamentState.pool.rebuyValues = tournamentState.pool.rebuyValues || {};
 
       const rebuyMatrix = splitRows.map(() => Array.from({ length: rebuyColumns }, () => ""));
@@ -1143,9 +1142,7 @@ const setupAdminTournament = (rootCard) => {
       for (let colIdx = 0; colIdx < Math.min(30, rebuyColumns); colIdx += 1) {
         const mappedRow = rebuyRowMapping[colIdx] - 1;
         if (mappedRow >= 0 && mappedRow < splitRows.length) {
-          const split = splitValues[mappedRow] || 0;
-          const mappedValue = mappedRow < 3 ? split * table15Split : split;
-          rebuyMatrix[mappedRow][colIdx] = formatCellNumber(mappedValue);
+          rebuyMatrix[mappedRow][colIdx] = formatCellNumber(distributed[colIdx]);
         }
       }
 
