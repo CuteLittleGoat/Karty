@@ -112,7 +112,7 @@
 3. W `Tabela12` kolumna **REBUY** to przycisk per gracz:
    - kliknij przycisk, aby otworzyć modal **Rebuy gracza**,
    - po otwarciu pustego modala nie ma żadnej kolumny (zgodnie z Main),
-   - użyj **Dodaj Rebuy** / **Usuń Rebuy** — pierwsza kolumna pojawia się dopiero po kliknięciu **Dodaj Rebuy**,
+   - użyj **Dodaj Rebuy** / **Usuń Rebuy** — przyciski działają od razu po otwarciu modala, a pierwsza kolumna pojawia się po kliknięciu **Dodaj Rebuy**,
    - numeracja `RebuyX` jest globalna dla całej `Tabela12` (wszyscy gracze) i przy dodawaniu zawsze dostaje kolejny numer globalny,
    - po usunięciu kolumny aplikacja kompaktuje numerację globalnie (numery większe od usuniętego przesuwają się o `-1`),
    - wpisane wartości sumują się na przycisku w tabeli.
