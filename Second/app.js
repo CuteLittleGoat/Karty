@@ -814,7 +814,7 @@ const setupAdminTournament = (rootCard) => {
     if (!Array.isArray(state.values)) state.values = [];
     tournamentState.payments.table12Rebuys[activeTable12RebuyPlayerId] = state;
 
-    table.innerHTML = `<thead><tr>${(state.values.length ? state.values : [""]).map((_, index) => `<th>Rebuy${rebuyOffset + index + 1}</th>`).join("")}</tr></thead><tbody><tr>${(state.values.length ? state.values : [""]).map((value, index) => `<td><input class="admin-input" data-role="table12-rebuy-input" data-rebuy-index="${index}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${value || ""}"></td>`).join("")}</tr></tbody>`;
+    table.innerHTML = `<thead><tr>${state.values.map((_, index) => `<th>Rebuy${rebuyOffset + index + 1}</th>`).join("")}</tr></thead><tbody><tr>${state.values.map((value, index) => `<td><input class="admin-input" data-role="table12-rebuy-input" data-rebuy-index="${index}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${value || ""}"></td>`).join("")}</tr></tbody>`;
   };
 
   const openTable12RebuyModal = (playerId) => {
