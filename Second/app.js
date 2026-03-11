@@ -785,6 +785,7 @@ const setupAdminTournament = (rootCard) => {
   let pendingLocalWrites = 0;
   let deferredSnapshotState = null;
   let activeTable12RebuyPlayerId = "";
+  let table12RebuyActionInProgress = false;
 
   const table12RebuyModal = document.createElement("div");
   table12RebuyModal.className = "modal-overlay";
@@ -818,7 +819,21 @@ const setupAdminTournament = (rootCard) => {
     table12RebuyModalStatus.hidden = !normalizedMessage;
   };
 
-  const persistTable12RebuyChanges = async () => {
+  const getFirebaseErrorDetails = (error) => {
+    if (!error) {
+      return "Brak szczegółów błędu.";
+    }
+    const parts = [];
+    if (typeof error.code === "string" && error.code.trim()) {
+      parts.push(`kod: ${error.code.trim()}`);
+    }
+    if (typeof error.message === "string" && error.message.trim()) {
+      parts.push(`opis: ${error.message.trim()}`);
+    }
+    return parts.join(" | ") || "Brak szczegółów błędu.";
+  };
+
+  const persistTable12RebuyChanges = async (operationLabel = "zapis") => {
     if (!activeTable12RebuyPlayerId) {
       setTable12RebuyModalStatus("Nie można zapisać zmian: brak wskazanego gracza.");
       return false;
@@ -827,7 +842,8 @@ const setupAdminTournament = (rootCard) => {
     try {
       const saved = await saveState();
       if (!saved) {
-        setTable12RebuyModalStatus("Nie udało się zapisać zmian Rebuy. Sprawdź połączenie i uprawnienia.");
+        const reason = getFirebaseErrorDetails(saveState.lastError);
+        setTable12RebuyModalStatus(`Nie udało się wykonać operacji \"${operationLabel}\". ${reason}`);
         return false;
       }
       setTable12RebuyModalStatus("");
@@ -886,46 +902,82 @@ const setupAdminTournament = (rootCard) => {
     addButton.type = "button";
     addButton.className = "secondary";
     addButton.textContent = "Dodaj Rebuy";
+    addButton.disabled = table12RebuyActionInProgress;
     addButton.addEventListener("click", async () => {
+      if (table12RebuyActionInProgress) {
+        setTable12RebuyModalStatus("Operacja jest już wykonywana. Poczekaj na zakończenie poprzedniego zapisu.");
+        return;
+      }
+      table12RebuyActionInProgress = true;
+      renderTable12RebuyModal();
       const nextIndex = getNextGlobalTable12RebuyIndex();
       rebuyState.values.push("");
       rebuyState.indexes.push(nextIndex);
-      const saved = await persistTable12RebuyChanges();
-      if (!saved) {
+      try {
+        const saved = await persistTable12RebuyChanges("Dodaj Rebuy");
+        if (!saved) {
+          rebuyState.values.pop();
+          rebuyState.indexes.pop();
+          renderTable12RebuyModal();
+          return;
+        }
+        render();
+        renderTable12RebuyModal();
+      } catch (error) {
         rebuyState.values.pop();
         rebuyState.indexes.pop();
+        setTable12RebuyModalStatus(`Wystąpił nieoczekiwany błąd przy operacji \"Dodaj Rebuy\". ${getFirebaseErrorDetails(error)}`);
+        console.error("[Second][Table12Rebuy] Błąd podczas dodawania Rebuy", error);
         renderTable12RebuyModal();
-        return;
+      } finally {
+        table12RebuyActionInProgress = false;
+        renderTable12RebuyModal();
       }
-      render();
-      renderTable12RebuyModal();
     });
 
     const removeButton = document.createElement("button");
     removeButton.type = "button";
     removeButton.className = "danger";
     removeButton.textContent = "Usuń Rebuy";
-    removeButton.disabled = rebuyState.values.length === 0;
+    removeButton.disabled = rebuyState.values.length === 0 || table12RebuyActionInProgress;
     removeButton.addEventListener("click", async () => {
+      if (table12RebuyActionInProgress) {
+        setTable12RebuyModalStatus("Operacja jest już wykonywana. Poczekaj na zakończenie poprzedniego zapisu.");
+        return;
+      }
       if (!rebuyState.values.length) {
         return;
       }
+      table12RebuyActionInProgress = true;
+      renderTable12RebuyModal();
       const backupTable12Rebuys = JSON.parse(JSON.stringify(tournamentState.payments.table12Rebuys || {}));
       const backupPoolRebuyValues = JSON.parse(JSON.stringify(tournamentState.pool?.rebuyValues || {}));
       const removedIndex = rebuyState.indexes[rebuyState.indexes.length - 1];
       rebuyState.values = rebuyState.values.slice(0, -1);
       rebuyState.indexes = rebuyState.indexes.slice(0, -1);
       compactTable12RebuyIndexesAfterRemoval(removedIndex);
-      const saved = await persistTable12RebuyChanges();
-      if (!saved) {
+      try {
+        const saved = await persistTable12RebuyChanges("Usuń Rebuy");
+        if (!saved) {
+          tournamentState.payments.table12Rebuys = backupTable12Rebuys;
+          tournamentState.pool = tournamentState.pool || {};
+          tournamentState.pool.rebuyValues = backupPoolRebuyValues;
+          renderTable12RebuyModal();
+          return;
+        }
+        render();
+        renderTable12RebuyModal();
+      } catch (error) {
         tournamentState.payments.table12Rebuys = backupTable12Rebuys;
         tournamentState.pool = tournamentState.pool || {};
         tournamentState.pool.rebuyValues = backupPoolRebuyValues;
+        setTable12RebuyModalStatus(`Wystąpił nieoczekiwany błąd przy operacji \"Usuń Rebuy\". ${getFirebaseErrorDetails(error)}`);
+        console.error("[Second][Table12Rebuy] Błąd podczas usuwania Rebuy", error);
         renderTable12RebuyModal();
-        return;
+      } finally {
+        table12RebuyActionInProgress = false;
+        renderTable12RebuyModal();
       }
-      render();
-      renderTable12RebuyModal();
     });
 
     table12RebuyModalActions.append(addButton, removeButton);
@@ -972,12 +1024,16 @@ const setupAdminTournament = (rootCard) => {
     try {
       await docRef.set({ ...tournamentState, updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp() }, { merge: true });
       tournamentStatusMessage = "";
+      saveState.lastError = null;
       return true;
     } catch (error) {
-      tournamentStatusMessage = "Nie udało się zapisać danych turnieju do Firebase. Sprawdź konfigurację i uprawnienia.";
+      saveState.lastError = error;
+      tournamentStatusMessage = `Nie udało się zapisać danych turnieju do Firebase. ${getFirebaseErrorDetails(error)}`;
+      console.error("[Second] saveState error", error);
       return false;
     }
   };
+  saveState.lastError = null;
 
   const generateUniquePin = (playerId) => {
     const usedPins = new Set(
