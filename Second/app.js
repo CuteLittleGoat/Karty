@@ -850,34 +850,44 @@ const setupAdminTournament = (rootCard) => {
     renderTable12RebuyModal();
   };
 
+  const addTable12RebuyColumn = async () => {
+    if (!activeTable12RebuyPlayerId) return;
+    const rebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
+    const nextIndex = getNextGlobalTable12RebuyIndex();
+    rebuyState.values.push('');
+    rebuyState.indexes.push(nextIndex);
+    table12RebuyDirty = true;
+    renderTable12RebuyModal();
+    await persistTable12RebuyChanges();
+  };
+
+  const removeTable12RebuyColumn = async () => {
+    if (!activeTable12RebuyPlayerId) return;
+    const rebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
+    if (rebuyState.values.length === 0) return;
+    const removedIndex = rebuyState.indexes[rebuyState.indexes.length - 1];
+    rebuyState.values = rebuyState.values.slice(0, -1);
+    rebuyState.indexes = rebuyState.indexes.slice(0, -1);
+    compactTable12RebuyIndexesAfterRemoval(removedIndex);
+    table12RebuyDirty = true;
+    renderTable12RebuyModal();
+    await persistTable12RebuyChanges();
+  };
+
   table12RebuyModal.addEventListener('click', async (event) => {
-    const role = event.target?.dataset?.role;
+    const clickedElement = event.target instanceof Element ? event.target.closest('[data-role]') : null;
+    const role = clickedElement?.dataset?.role;
     if (event.target === table12RebuyModal || role === 'close-table12-rebuy') {
       await closeTable12RebuyModal();
-      return;
     }
-    if (!activeTable12RebuyPlayerId) return;
-    if (role === 'table12-rebuy-add') {
-      const rebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
-      const nextIndex = getNextGlobalTable12RebuyIndex();
-      rebuyState.values.push('');
-      rebuyState.indexes.push(nextIndex);
-      table12RebuyDirty = true;
-      renderTable12RebuyModal();
-      await persistTable12RebuyChanges();
-      return;
-    }
-    if (role === 'table12-rebuy-remove') {
-      const rebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
-      if (rebuyState.values.length === 0) return;
-      const removedIndex = rebuyState.indexes[rebuyState.indexes.length - 1];
-      rebuyState.values = rebuyState.values.slice(0, -1);
-      rebuyState.indexes = rebuyState.indexes.slice(0, -1);
-      compactTable12RebuyIndexesAfterRemoval(removedIndex);
-      table12RebuyDirty = true;
-      renderTable12RebuyModal();
-      await persistTable12RebuyChanges();
-    }
+  });
+
+  table12RebuyAddButton?.addEventListener('click', async () => {
+    await addTable12RebuyColumn();
+  });
+
+  table12RebuyRemoveButton?.addEventListener('click', async () => {
+    await removeTable12RebuyColumn();
   });
 
   table12RebuyModal.addEventListener('input', (event) => {
