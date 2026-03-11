@@ -26,8 +26,8 @@ Dodatkowo dla każdego stołu:
 ### Podział puli
 - Tabela13: BUY-IN, REBUY/ADD-ON, SUMA, LICZBA REBUY
 - Tabela14: %, Rake, BUY-IN, REBUY/ADD-ON, POT
-- Tabela15: BUY-IN, PODZIAŁ
-- Tabela16: LP, Podział Puli, Kwota, Rebuy, Mod, Suma
+- Tabela15: POT, PODZIAŁ
+- Tabela16: LP, PODZIAŁ PULI, KWOTA, REBUY1..n, MOD1..MOD3, SUMA
 
 ### Faza grupowa
 - Tabela17: STACK GRACZA, REBUY/ADD-on(w żetonach na os)
@@ -84,8 +84,12 @@ Dodatkowo dla każdego stołu:
   - `Tabela11`: nieedytowalne komórki obliczane (`%`, `RAKE`, `BUY-IN`, `REBUY/ADD-ON`, `POT`).
   - `Tabela12`: kolumna `REBUY` jako przycisk otwierający modal.
 - Panel `Podział puli`:
-  - przyciski `Dodaj/Usuń` przeniesione pod `Tabela16`,
-  - dynamiczne kolumny `REBUY1..n` oraz kolumna `MOD` umieszczana po `REBUY12` (lub po ostatniej kolumnie REBUY, gdy mniej niż 12).
+  - przyciski `Dodaj/Usuń` są pod `Tabela16`,
+  - `Tabela15` pokazuje kolumny `POT` i `PODZIAŁ`,
+  - `Tabela16` ma `PODZIAŁ PULI` (wiersze 1–3 procentowo, od 4 liczbowo),
+  - `REBUY1..REBUY30` mają stałe przypisanie do wierszy i przypisane komórki readonly,
+  - `REBUY31+` pozostają puste i edytowalne,
+  - kolumny `MOD` są dynamiczne (`MOD1`, `MOD2`, `MOD3`) zależnie od liczby kolumn `REBUY`.
 - Panel `Faza grupowa`:
   - `Tabela17` tylko 2 kolumny: `STACK GRACZA`, `REBUY/ADD-ON`.
   - `Tabela17A` usunięta.

@@ -613,7 +613,7 @@ const createTournamentDefaultState = () => ({
   },
   pool: {
     splits: [{ id: crypto.randomUUID(), split: "" }],
-    mods: [{ id: crypto.randomUUID(), mod: "" }],
+    mods: [{ id: crypto.randomUUID(), mod1: "", mod2: "", mod3: "" }],
     rebuyValues: {}
   },
   group: {
@@ -643,8 +643,19 @@ const normalizeTournamentState = (value) => {
   }
   if (!Array.isArray(state.pool?.mods) || !state.pool.mods.length) {
     state.pool = state.pool || {};
-    state.pool.mods = [{ id: crypto.randomUUID(), mod: "" }];
+    state.pool.mods = [{ id: crypto.randomUUID(), mod1: "", mod2: "", mod3: "" }];
   }
+  state.pool.mods = state.pool.mods.map((row) => {
+    if (row && typeof row === "object") {
+      return {
+        ...row,
+        mod1: row.mod1 ?? row.mod ?? "",
+        mod2: row.mod2 ?? "",
+        mod3: row.mod3 ?? ""
+      };
+    }
+    return { id: crypto.randomUUID(), split: "", mod1: "", mod2: "", mod3: "" };
+  });
   return state;
 };
 
@@ -1106,14 +1117,13 @@ const setupAdminTournament = (rootCard) => {
     if (activeSection === "pool") {
       tournamentState.pool.mods = Array.isArray(tournamentState.pool.mods) ? tournamentState.pool.mods : [];
       while (tournamentState.pool.mods.length < 3) {
-        tournamentState.pool.mods.push({ id: crypto.randomUUID(), mod: "", split: "" });
+        tournamentState.pool.mods.push({ id: crypto.randomUUID(), split: "", mod1: "", mod2: "", mod3: "" });
       }
       const splitRows = tournamentState.pool.mods;
-      const splitValues = splitRows.map((row) => percentInputToDecimal(row.split));
+      const splitValues = splitRows.map((row, idx) => idx < 3 ? percentInputToDecimal(row.split) : toNumber(row.split));
       const sumFrom4th = splitValues.slice(3).reduce((sum, value) => sum + value, 0);
-      const table15Split = table11.buyIn - sumFrom4th;
-      const splitPercentSum = splitValues.reduce((sum, value) => sum + value, 0);
-      const splitWarning = Math.abs(splitPercentSum - 1) > 0.0001;
+      const table15Pot = table11.pot;
+      const table15Split = sumFrom4th - table15Pot;
 
       const adjustedRebuys = allRebuyValues.map((value) => value * (1 - rakePercent));
       const rebuyLimit = 30;
@@ -1123,11 +1133,21 @@ const setupAdminTournament = (rootCard) => {
       tournamentState.pool.rebuyValues = tournamentState.pool.rebuyValues || {};
 
       const rebuyMatrix = splitRows.map(() => Array.from({ length: rebuyColumns }, () => ""));
-      distributed.forEach((value, idx) => {
-        const rowIdx = idx % splitRows.length;
-        const colIdx = idx;
-        rebuyMatrix[rowIdx][colIdx] = formatCellNumber(value);
-      });
+
+      const rebuyRowMapping = [
+        1, 2, 3, 4, 1, 2, 3, 4, 5, 1,
+        2, 3, 4, 5, 6, 1, 2, 3, 4, 5,
+        6, 7, 1, 2, 3, 4, 5, 6, 7, 8
+      ];
+
+      for (let colIdx = 0; colIdx < Math.min(30, rebuyColumns); colIdx += 1) {
+        const mappedRow = rebuyRowMapping[colIdx] - 1;
+        if (mappedRow >= 0 && mappedRow < splitRows.length) {
+          const split = splitValues[mappedRow] || 0;
+          const mappedValue = mappedRow < 3 ? split * table15Split : split;
+          rebuyMatrix[mappedRow][colIdx] = formatCellNumber(mappedValue);
+        }
+      }
 
       splitRows.forEach((row, rowIdx) => {
         const saved = tournamentState.pool.rebuyValues[row.id] || {};
@@ -1143,17 +1163,60 @@ const setupAdminTournament = (rootCard) => {
         const split = splitValues[idx] || 0;
         const amount = idx < 3 ? split * table15Split : split;
         const rebuySumRow = rebuyMatrix[idx].reduce((sum, value) => sum + toNumber(value), 0);
+        const mod1 = toNumber(row.mod1);
+        const mod2 = toNumber(row.mod2);
+        const mod3 = toNumber(row.mod3);
         return {
           amount,
-          total: amount + rebuySumRow + toNumber(row.mod)
+          total: amount + rebuySumRow + mod1 + mod2 + mod3
         };
       });
 
       const userRebuySum = rebuyMatrix.flat().reduce((sum, value) => sum + toNumber(value), 0);
       const undistributedRemainder = Math.max(0, overflow - Math.max(0, userRebuySum - distributed.reduce((sum, value) => sum + value, 0)));
-      const modColumnIndex = Math.min(12, rebuyColumns);
+      const modColumns = rebuyColumns > 20 ? ["mod1", "mod2", "mod3"] : rebuyColumns > 12 ? ["mod1", "mod2"] : ["mod1"];
+      const getPoolSplitDisplay = (row, index) => {
+        const fallback = index === 0 ? "50" : index === 1 ? "30" : index === 2 ? "20" : "";
+        const value = row.split || fallback;
+        return index < 3 ? formatPercentDisplay(value) : digitsOnly(value);
+      };
+      const renderModInput = (row, modKey) => `<td><input class="admin-input" data-role="pool-mod" data-mod-key="${modKey}" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row[modKey] || "")}"></td>`;
+      const renderRebuyColumn = (row, rowIndex, colIdx) => {
+        const rebuyNumber = colIdx + 1;
+        const mappedRowIndex = rebuyNumber <= 30 ? (rebuyRowMapping[colIdx] - 1) : -1;
+        const isAutoAssignedCell = mappedRowIndex === rowIndex;
+        return `<td data-rebuy-column><input class="admin-input" data-role="pool-rebuy-value" data-id="${row.id}" data-col-index="${colIdx}" type="text" value="${esc(rebuyMatrix[rowIndex][colIdx] || '')}" ${isAutoAssignedCell ? "readonly" : ""}></td>`;
+      };
 
-      mount.innerHTML = `<h3>TABELA13</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZBA REBUY</th></tr></thead><tbody><tr><td>${formatCellNumber(table10.buyIn)}</td><td>${formatCellNumber(table10.rebuyAddOn)}</td><td>${formatCellNumber(table10.sum)}</td><td>${formatCellNumber(table10.rebuyCount)}</td></tr></tbody></table></div><h3>TABELA14</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${toPercentText(table11.percent)}</td><td>${formatCellNumber(table11.rake)}</td><td>${formatCellNumber(table11.buyIn)}</td><td>${formatCellNumber(table11.rebuyAddOn)}</td><td>${formatCellNumber(table11.pot)}</td></tr></tbody></table></div><h3>TABELA15</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>PODZIAŁ</th></tr></thead><tbody><tr><td>${formatCellNumber(table11.buyIn)}</td><td>${formatCellNumber(table15Split)}</td></tr></tbody></table></div>${splitWarning ? '<p class="builder-info t-warning">Suma wartości PODZIAŁ PULI musi wynosić 100%.</p>' : ''}${undistributedRemainder > 0 ? `<p class="builder-info t-warning">Rebuy do rozdysponowania ${formatCellNumber(undistributedRemainder)}</p>` : ''}<h3>TABELA16</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>PODZIAŁ PULI</th><th>KWOTA</th>${Array.from({ length: rebuyColumns }).map((_, idx) => `<th data-rebuy-column>REBUY${idx + 1}</th>`).join('')}<th>MOD</th><th>SUMA</th></tr></thead><tbody>${splitRows.map((row, index) => `<tr><td>${index + 1}</td><td><input class="admin-input" data-role="pool-split" data-id="${row.id}" value="${esc(formatPercentDisplay(row.split || (index === 0 ? '50' : index === 1 ? '30' : index === 2 ? '20' : '')))}" type="text" inputmode="numeric"></td><td>${formatCellNumber(rowSums[index].amount)}</td>${Array.from({ length: rebuyColumns }).map((__, colIdx) => `<td data-rebuy-column><input class="admin-input" data-role="pool-rebuy-value" data-id="${row.id}" data-col-index="${colIdx}" type="text" value="${esc(rebuyMatrix[index][colIdx] || '')}"></td>`).join('')}<td><input class="admin-input" data-role="pool-mod" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row.mod)}"></td><td>${formatCellNumber(rowSums[index].total)}</td></tr>`).join('')}</tbody></table></div><div class="admin-table-actions"><button class="secondary t-inline-add-button" type="button" data-role="add-pool-mod-row">Dodaj</button><button class="danger t-inline-add-button" type="button" data-role="remove-pool-mod-row">Usuń</button></div>`;
+      const renderTable16Header = () => {
+        const cells = ['<th>LP</th>', '<th>PODZIAŁ PULI</th>', '<th>KWOTA</th>'];
+        for (let idx = 0; idx < rebuyColumns; idx += 1) {
+          cells.push(`<th data-rebuy-column>REBUY${idx + 1}</th>`);
+          if (idx === 11 && modColumns.includes("mod1") && rebuyColumns > 12) cells.push('<th>MOD1</th>');
+          if (idx === 19 && modColumns.includes("mod2") && rebuyColumns > 20) cells.push('<th>MOD2</th>');
+        }
+        if (rebuyColumns <= 12) cells.push('<th>MOD1</th>');
+        if (rebuyColumns > 12 && rebuyColumns <= 20) cells.push('<th>MOD2</th>');
+        if (rebuyColumns > 20) cells.push('<th>MOD3</th>');
+        cells.push('<th>SUMA</th>');
+        return cells.join('');
+      };
+
+      const renderTable16Row = (row, index) => {
+        const cells = [`<td>${index + 1}</td>`, `<td><input class="admin-input" data-role="pool-split" data-id="${row.id}" value="${esc(getPoolSplitDisplay(row, index))}" type="text" inputmode="numeric"></td>`, `<td>${formatCellNumber(rowSums[index].amount)}</td>`];
+        for (let colIdx = 0; colIdx < rebuyColumns; colIdx += 1) {
+          cells.push(renderRebuyColumn(row, index, colIdx));
+          if (colIdx === 11 && modColumns.includes("mod1") && rebuyColumns > 12) cells.push(renderModInput(row, "mod1"));
+          if (colIdx === 19 && modColumns.includes("mod2") && rebuyColumns > 20) cells.push(renderModInput(row, "mod2"));
+        }
+        if (rebuyColumns <= 12) cells.push(renderModInput(row, "mod1"));
+        if (rebuyColumns > 12 && rebuyColumns <= 20) cells.push(renderModInput(row, "mod2"));
+        if (rebuyColumns > 20) cells.push(renderModInput(row, "mod3"));
+        cells.push(`<td>${formatCellNumber(rowSums[index].total)}</td>`);
+        return `<tr>${cells.join("")}</tr>`;
+      };
+
+      mount.innerHTML = `<h3>TABELA13</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZBA REBUY</th></tr></thead><tbody><tr><td>${formatCellNumber(table10.buyIn)}</td><td>${formatCellNumber(table10.rebuyAddOn)}</td><td>${formatCellNumber(table10.sum)}</td><td>${formatCellNumber(table10.rebuyCount)}</td></tr></tbody></table></div><h3>TABELA14</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${toPercentText(table11.percent)}</td><td>${formatCellNumber(table11.rake)}</td><td>${formatCellNumber(table11.buyIn)}</td><td>${formatCellNumber(table11.rebuyAddOn)}</td><td>${formatCellNumber(table11.pot)}</td></tr></tbody></table></div><h3>TABELA15</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>POT</th><th>PODZIAŁ</th></tr></thead><tbody><tr><td>${formatCellNumber(table15Pot)}</td><td>${formatCellNumber(table15Split)}</td></tr></tbody></table></div>${undistributedRemainder > 0 ? `<p class="builder-info t-warning">Rebuy do rozdysponowania ${formatCellNumber(undistributedRemainder)}</p>` : ''}<h3>TABELA16</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr>${renderTable16Header()}</tr></thead><tbody>${splitRows.map((row, index) => renderTable16Row(row, index)).join('')}</tbody></table></div><div class="admin-table-actions"><button class="secondary t-inline-add-button" type="button" data-role="add-pool-mod-row">Dodaj</button><button class="danger t-inline-add-button" type="button" data-role="remove-pool-mod-row">Usuń</button></div>`;
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
@@ -1242,7 +1305,10 @@ const setupAdminTournament = (rootCard) => {
     if (role === "group-stack") tournamentState.group.playerStacks[target.dataset.playerId] = target.value;
     if (role === "final-stack") tournamentState.finalPlayers = tournamentState.finalPlayers.map((player) => player.id === target.dataset.id ? { ...player, stack: target.value } : player);
     if (role === "pool-split") tournamentState.pool.mods = tournamentState.pool.mods.map((row) => row.id === target.dataset.id ? { ...row, split: target.value } : row);
-    if (role === "pool-mod") tournamentState.pool.mods = tournamentState.pool.mods.map((row) => row.id === target.dataset.id ? { ...row, mod: target.value } : row);
+    if (role === "pool-mod") {
+      const modKey = target.dataset.modKey || "mod1";
+      tournamentState.pool.mods = tournamentState.pool.mods.map((row) => row.id === target.dataset.id ? { ...row, [modKey]: target.value } : row);
+    }
     if (role === "pool-rebuy-value") {
       tournamentState.pool.rebuyValues = tournamentState.pool.rebuyValues || {};
       tournamentState.pool.rebuyValues[target.dataset.id] = tournamentState.pool.rebuyValues[target.dataset.id] || {};
@@ -1370,7 +1436,7 @@ const setupAdminTournament = (rootCard) => {
       openTable12RebuyModal(target.dataset.playerId || "");
       return;
     }
-    if (role === "add-pool-mod-row") tournamentState.pool.mods.push({ id: crypto.randomUUID(), mod: "", split: "" });
+    if (role === "add-pool-mod-row") tournamentState.pool.mods.push({ id: crypto.randomUUID(), split: "", mod1: "", mod2: "", mod3: "" });
     if (role === "remove-pool-mod-row" && tournamentState.pool.mods.length > 1) tournamentState.pool.mods = tournamentState.pool.mods.slice(0, -1);
     if (role === "add-semi-table") tournamentState.semi.customTables.push({ id: crypto.randomUUID(), name: "" });
     if (role === "remove-semi-table") tournamentState.semi.customTables = tournamentState.semi.customTables.filter((table) => table.id !== target.dataset.id);
