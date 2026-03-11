@@ -469,6 +469,8 @@ W zależności od trybu dostępne są przyciski w wierszach:
 ### 15.3. Modal rebuy
 Przycisk:
 - **×** (prawy górny róg) — zamyka okno zarządzania rebuy.
+- Numeracja `RebuyX` jest **globalna** dla aktywnego trybu kalkulatora (Tournament1/Tournament2/Cash): każde nowe pole dostaje kolejny numer względem wszystkich graczy w tym trybie.
+- Po usunięciu ostatniego rebuy u wybranego gracza aplikacja wykonuje globalną kompaktację numerów (`Rebuy` o numerach większych od usuniętego przesuwają się o `-1`), więc numeracja pozostaje bez luk.
 
 ### 15.4. Cash — sposób liczenia Rake w Tabela8
 - W trybie **Cash** kolumna **Rake** w **Tabela8** jest liczona ze wzoru:

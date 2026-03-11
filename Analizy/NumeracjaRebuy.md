@@ -236,3 +236,159 @@ Wdrożyć zmianę dwuetapowo:
 2. **Etap B (agregacje)**: przepiąć Tabelę5 (Main) oraz allRebuyValues + Tabela16/pool (Second) na indeksy globalne.
 
 Dopiero po obu etapach numeracja i przypisanie wartości do `RebuyX` będą spójne z oczekiwanym scenariuszem.
+
+## 9) Zrealizowana poprawka — dokładny opis zmian (stan przed/po)
+
+### 9.1 Main/app.js
+
+#### A) Model danych kalkulatora (Tournament + Cash)
+**Przed zmianą:**
+- Wiersze kalkulatora przechowywały tylko `rebuys: []`.
+- Brak trwałego mapowania numeru `RebuyX` do konkretnej kolumny.
+
+**Po zmianie:**
+- Wiersze przechowują parę: `rebuys: []` oraz `rebuyIndexes: []`.
+- Dotyczy to:
+  - stanu początkowego (`createInitialState.table2Rows`),
+  - stanu początkowego cash (`createInitialCashState.table9Rows`),
+  - nowych wierszy dodawanych przyciskiem `Dodaj`,
+  - fallbacku po usunięciu ostatniego wiersza.
+
+#### B) Normalizacja i serializacja stanu
+**Przed zmianą:**
+- Przy odczycie/zapisie normalizowane były tylko `rebuys`.
+- Dane historyczne bez indeksów nie miały osobnego mechanizmu migracji.
+
+**Po zmianie:**
+- Dodano `normalizeRebuyIndexes(rawIndexes, valuesLength)`.
+- Przy odczycie (`normalizeCalculatorModeState`) oraz zapisie (`serializeCalculatorModeState`) utrzymywane są zarówno `rebuys`, jak i `rebuyIndexes`.
+- Dla starych rekordów bez indeksów tworzona jest domyślna numeracja `1..N`.
+
+#### C) Algorytm globalnej numeracji i kompaktacji
+**Przed zmianą:**
+- Numeracja w modalu była liczona offsetowo: `rowGlobalOffset + index + 1`.
+- Dodanie: `row.rebuys.push("")`.
+- Usunięcie: `row.rebuys.pop()`.
+- Brak globalnej kompaktacji po usunięciu.
+
+**Po zmianie:**
+- Dodano funkcje:
+  - `ensureRowRebuyIndexes`,
+  - `ensureModeRebuyIndexes`,
+  - `getAllRebuyEntriesForMode`,
+  - `getNextGlobalRebuyIndex`,
+  - `compactRebuyIndexesAfterRemoval`.
+- Dodanie rebuy:
+  - wylicza `nextIndex = max(globalnych indeksów) + 1`,
+  - dopisuje jednocześnie `rebuys.push("")` i `rebuyIndexes.push(nextIndex)`.
+- Usunięcie rebuy:
+  - usuwa parę `(wartość, indeks)` z końca wybranego gracza,
+  - globalnie przesuwa wszystkie indeksy większe od usuniętego o `-1`.
+
+#### D) Render modala rebuy
+**Przed zmianą:**
+- Nagłówki w modalu: `Rebuy${rowGlobalOffset + index + 1}`.
+
+**Po zmianie:**
+- Nagłówki w modalu: `Rebuy${row.rebuyIndexes[index]}`.
+- Numeracja jest oparta o trwałe indeksy kolumn, a nie o offset długości tablic.
+
+#### E) Tabela5 (mapowanie globalnych rebuy)
+**Przed zmianą:**
+- `getVisibleGlobalRebuyValues` brało dane przez `flatMap(row.rebuys)`.
+- Kolejność wynikała z układu graczy i pozycji w tablicach.
+- `rebuyColumnsCount` liczony był przez sumę niepustych `rebuys` per wiersz.
+
+**Po zmianie:**
+- `getVisibleGlobalRebuyValues` korzysta z globalnej listy wpisów sortowanej po `rebuyIndexes`.
+- `rebuyColumnsCount` liczone jest z tej samej globalnej listy (po niepustych wartościach).
+- Dzięki temu kolumny `RebuyX` w Tabela5 odpowiadają numerom globalnym po kompaktacji.
+
+---
+
+### 9.2 Second/app.js
+
+#### A) Model danych `payments.table12Rebuys`
+**Przed zmianą:**
+- Stan per gracz: `{ values: [] }`.
+- Brak trwałych indeksów kolumn.
+
+**Po zmianie:**
+- Stan per gracz: `{ values: [], indexes: [] }`.
+- Dodano normalizację dla danych historycznych:
+  - `normalizeTournamentState` uzupełnia brakujące `indexes` do `1..N`,
+  - `ensureTable12RebuyEntryShape` pilnuje spójności `values/indexes`.
+
+#### B) Modal Tabela12 Rebuy
+**Przed zmianą:**
+- Nagłówki liczone offsetowo: `rebuyOffset + index + 1`.
+- Dodanie: `values.push('')`.
+- Usunięcie: `values = values.slice(0, -1)`.
+
+**Po zmianie:**
+- Nagłówki renderowane z trwałych indeksów: `indexes[index]`.
+- Dodanie:
+  - `nextIndex = max(globalnych indeksów) + 1`,
+  - `values.push('')` i `indexes.push(nextIndex)`.
+- Usunięcie:
+  - usuwa ostatnią parę `(value, index)` u gracza,
+  - globalnie kompaktuje indeksy we wszystkich `table12Rebuys`.
+
+#### C) Agregacja rebuy do obliczeń
+**Przed zmianą:**
+- `allRebuyValues` tworzone z iteracji po graczach i `values`, bez indeksów.
+
+**Po zmianie:**
+- Dodano `getAllTable12RebuyEntries(groupedRows)`:
+  - zbiera pary `(index, value)` ze wszystkich graczy,
+  - sortuje globalnie po `index`.
+- `allRebuyValues` budowane jest z tej posortowanej listy.
+
+#### D) Spójność `pool.rebuyValues` (Tabela16) po usunięciu
+**Przed zmianą:**
+- Przy usunięciu rebuy brak przenumerowania ręcznych nadpisań `pool.rebuyValues`.
+- Ryzyko przesunięcia danych względem `RebuyX`.
+
+**Po zmianie:**
+- Dodano `remapPoolRebuyValuesAfterRemoval(removedIndex)`.
+- Po globalnej kompaktacji rebuy wykonywane jest przenumerowanie kluczy kolumn (`colIndex`) w `pool.rebuyValues`, aby zachować zgodność ręcznych wpisów z aktualną numeracją `RebuyX`.
+
+---
+
+### 9.3 Main/docs/README.md
+
+**Przed zmianą:**
+- Sekcja modala rebuy nie opisywała globalnej numeracji i kompaktacji w kalkulatorze.
+
+**Po zmianie:**
+- Dodano opis, że numeracja `RebuyX` w kalkulatorze jest globalna w obrębie aktywnego trybu.
+- Dodano opis globalnej kompaktacji numerów po usunięciu kolumny.
+
+### 9.4 Main/docs/Documentation.md
+
+**Przed zmianą:**
+- Brak szczegółowego opisu, że kalkulator używa `rebuyIndexes` globalnie i że Tabela5 mapuje po indeksach.
+
+**Po zmianie:**
+- Dodano opis modelu `rebuys[] + rebuyIndexes[]` w kalkulatorze.
+- Dodano opis globalnego `max+1` przy dodawaniu, kompaktacji po usunięciu oraz mapowania Tabela5 po posortowanych indeksach.
+
+### 9.5 Second/docs/README.md
+
+**Przed zmianą:**
+- Instrukcja Wpłat opisywała modal rebuy bez informacji o globalnym `nextIndex` i kompaktacji.
+
+**Po zmianie:**
+- Dodano kroki opisujące:
+  - globalną numerację `RebuyX` dla całej Tabela12,
+  - kompaktację globalną po usunięciu kolumny.
+
+### 9.6 Second/docs/Documentation.md
+
+**Przed zmianą:**
+- Opis stanu i modala rebuy nie uwzględniał `indexes[]` ani przenumerowania `pool.rebuyValues`.
+
+**Po zmianie:**
+- Zaktualizowano model danych `payments.table12Rebuys` na `values[] + indexes[]`.
+- Doprecyzowano, że numeracja nagłówków używa trwałych indeksów.
+- Dodano opis globalnego `max+1`, kompaktacji i przenumerowania `pool.rebuyValues`.

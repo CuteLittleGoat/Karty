@@ -4332,7 +4332,7 @@ const initAdminCalculator = () => {
 
   const createInitialState = () => ({
     table1Row: { id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" },
-    table2Rows: [{ id: `table2-${Date.now()}-0`, playerId: "", playerName: "", eliminated: false, rebuys: [] }],
+    table2Rows: [{ id: `table2-${Date.now()}-0`, playerId: "", playerName: "", eliminated: false, rebuys: [], rebuyIndexes: [] }],
     table3Row: { percent: "" },
     table5SplitPercents: [],
     table5Mods: [],
@@ -4341,7 +4341,7 @@ const initAdminCalculator = () => {
 
   const createInitialCashState = () => ({
     table8Row: { rake: "" },
-    table9Rows: [{ id: `table9-${Date.now()}-0`, playerId: "", playerName: "", buyIn: "0", payout: "0", rebuys: [] }]
+    table9Rows: [{ id: `table9-${Date.now()}-0`, playerId: "", playerName: "", buyIn: "0", payout: "0", rebuys: [], rebuyIndexes: [] }]
   });
 
   const state = {
@@ -4391,6 +4391,16 @@ const initAdminCalculator = () => {
     return normalized ? `${normalized}%` : "";
   };
 
+  const normalizeRebuyIndexes = (rawIndexes, valuesLength) => {
+    if (Array.isArray(rawIndexes) && rawIndexes.length === valuesLength) {
+      return rawIndexes.map((value, index) => {
+        const parsed = Number.parseInt(String(value ?? ""), 10);
+        return Number.isInteger(parsed) && parsed > 0 ? parsed : index + 1;
+      });
+    }
+    return Array.from({ length: valuesLength }, (_, index) => index + 1);
+  };
+
   const normalizeCalculatorModeState = (mode, rawState) => {
     if (mode === "cash") {
       const baseCashState = createInitialCashState();
@@ -4412,7 +4422,8 @@ const initAdminCalculator = () => {
               playerName: typeof rowSource.playerName === "string" ? rowSource.playerName : "",
               buyIn: sanitizeInteger(rowSource.buyIn),
               payout: sanitizeInteger(rowSource.payout),
-              rebuys: normalizedRebuys
+              rebuys: normalizedRebuys,
+              rebuyIndexes: normalizeRebuyIndexes(rowSource.rebuyIndexes, normalizedRebuys.length)
             };
           })
           .filter((row) => row.id)
@@ -4445,7 +4456,8 @@ const initAdminCalculator = () => {
             playerId: typeof rowSource.playerId === "string" ? rowSource.playerId : "",
             playerName: typeof rowSource.playerName === "string" ? rowSource.playerName : "",
             eliminated: Boolean(rowSource.eliminated),
-            rebuys: normalizedRebuys
+            rebuys: normalizedRebuys,
+            rebuyIndexes: normalizeRebuyIndexes(rowSource.rebuyIndexes, normalizedRebuys.length)
           };
         })
         .filter((row) => row.id)
@@ -4489,7 +4501,8 @@ const initAdminCalculator = () => {
             playerName: typeof row.playerName === "string" ? row.playerName : "",
             buyIn: sanitizeInteger(row.buyIn),
             payout: sanitizeInteger(row.payout),
-            rebuys: Array.isArray(row.rebuys) ? row.rebuys.map((value) => sanitizeInteger(value)) : []
+            rebuys: Array.isArray(row.rebuys) ? row.rebuys.map((value) => sanitizeInteger(value)) : [],
+            rebuyIndexes: normalizeRebuyIndexes(row.rebuyIndexes, Array.isArray(row.rebuys) ? row.rebuys.length : 0)
           }))
           : []
       };
@@ -4505,7 +4518,8 @@ const initAdminCalculator = () => {
         playerId: typeof row.playerId === "string" ? row.playerId : "",
         playerName: typeof row.playerName === "string" ? row.playerName : "",
         eliminated: Boolean(row.eliminated),
-        rebuys: Array.isArray(row.rebuys) ? row.rebuys.map((value) => sanitizeInteger(value)) : []
+        rebuys: Array.isArray(row.rebuys) ? row.rebuys.map((value) => sanitizeInteger(value)) : [],
+        rebuyIndexes: normalizeRebuyIndexes(row.rebuyIndexes, Array.isArray(row.rebuys) ? row.rebuys.length : 0)
       })),
       table3Row: {
         percent: sanitizeInteger(modeState.table3Row.percent)
@@ -4589,18 +4603,58 @@ const initAdminCalculator = () => {
     return rows.find((row) => row.id === state.rebuyModal.rowId) ?? null;
   };
 
-  const getRowRebuySum = (row) => row.rebuys.reduce((sum, value) => sum + parseInteger(value), 0);
-  const getRowRebuyCount = (row) => row.rebuys.filter((value) => sanitizeInteger(value) !== "").length;
-  const getRowRebuyGlobalOffset = (modeState, rowId) => {
-    const rows = getRebuyRowsForMode(modeState, state.rebuyModal.mode);
-    let offset = 0;
-    for (const row of rows) {
-      if (row.id === rowId) {
-        return offset;
-      }
-      offset += row.rebuys.length;
+  const ensureRowRebuyIndexes = (row) => {
+    row.rebuys = Array.isArray(row.rebuys) ? row.rebuys : [];
+    row.rebuyIndexes = normalizeRebuyIndexes(row.rebuyIndexes, row.rebuys.length);
+    if (row.rebuyIndexes.length !== row.rebuys.length) {
+      row.rebuyIndexes = normalizeRebuyIndexes([], row.rebuys.length);
     }
-    return offset;
+    return row.rebuyIndexes;
+  };
+
+  const ensureModeRebuyIndexes = (modeState, mode) => {
+    const rows = getRebuyRowsForMode(modeState, mode);
+    rows.forEach((row) => {
+      ensureRowRebuyIndexes(row);
+    });
+  };
+
+  const getAllRebuyEntriesForMode = (modeState, mode) => {
+    ensureModeRebuyIndexes(modeState, mode);
+    return getRebuyRowsForMode(modeState, mode)
+      .flatMap((row) => row.rebuys.map((value, index) => ({
+        rowId: row.id,
+        index: row.rebuyIndexes[index],
+        value: sanitizeInteger(value)
+      })))
+      .filter((entry) => Number.isInteger(entry.index) && entry.index > 0)
+      .sort((a, b) => a.index - b.index);
+  };
+
+  const getNextGlobalRebuyIndex = (modeState, mode) => {
+    const entries = getAllRebuyEntriesForMode(modeState, mode);
+    const maxIndex = entries.reduce((max, entry) => Math.max(max, entry.index), 0);
+    return maxIndex + 1;
+  };
+
+  const compactRebuyIndexesAfterRemoval = (modeState, mode, removedIndex) => {
+    if (!Number.isInteger(removedIndex) || removedIndex <= 0) {
+      return;
+    }
+    const rows = getRebuyRowsForMode(modeState, mode);
+    rows.forEach((row) => {
+      ensureRowRebuyIndexes(row);
+      row.rebuyIndexes = row.rebuyIndexes.map((index) => (index > removedIndex ? index - 1 : index));
+    });
+  };
+
+  const getRowRebuySum = (row) => {
+    ensureRowRebuyIndexes(row);
+    return row.rebuys.reduce((sum, value) => sum + parseInteger(value), 0);
+  };
+  const getRowRebuyCount = (row) => {
+    ensureRowRebuyIndexes(row);
+    return row.rebuys.filter((value) => sanitizeInteger(value) !== "").length;
   };
 
   const getCalculatorMetrics = () => {
@@ -4670,12 +4724,10 @@ const initAdminCalculator = () => {
 
   const getTable5ModValue = (modeState, index) => sanitizeSignedInteger(modeState.table5Mods[index]);
 
-  const getVisibleGlobalRebuyValues = (modeState, percentDecimal) => modeState.table2Rows
-    .flatMap((row) => row.rebuys)
-    .map((value) => sanitizeInteger(value))
-    .filter((value) => value !== "")
-    .map((value) => {
-      const rebuyValue = parseInteger(value);
+  const getVisibleGlobalRebuyValues = (modeState, percentDecimal) => getAllRebuyEntriesForMode(modeState, state.mode)
+    .filter((entry) => entry.value !== "")
+    .map((entry) => {
+      const rebuyValue = parseInteger(entry.value);
       return rebuyValue - (rebuyValue * percentDecimal);
     });
 
@@ -4848,11 +4900,12 @@ const initAdminCalculator = () => {
     const focusState = getFocusedAdminInputState(rebuyModal);
 
     const modeState = state.rebuyModal.mode === "cash" ? state.cash : state[state.rebuyModal.mode];
-    const rowGlobalOffset = getRowRebuyGlobalOffset(modeState, row.id);
+    ensureModeRebuyIndexes(modeState, state.rebuyModal.mode);
+    ensureRowRebuyIndexes(row);
 
     let headerHtml = "<thead><tr>";
     row.rebuys.forEach((_, index) => {
-      headerHtml += `<th>Rebuy${rowGlobalOffset + index + 1}</th>`;
+      headerHtml += `<th>Rebuy${row.rebuyIndexes[index]}</th>`;
     });
     headerHtml += "</tr></thead>";
     rebuyModalTable.innerHTML = headerHtml;
@@ -4889,7 +4942,9 @@ const initAdminCalculator = () => {
     addButton.className = "secondary";
     addButton.textContent = "Dodaj Rebuy";
     addButton.addEventListener("click", () => {
+      const nextIndex = getNextGlobalRebuyIndex(modeState, state.rebuyModal.mode);
       row.rebuys.push("");
+      row.rebuyIndexes.push(nextIndex);
       renderRebuyModal();
       render();
       schedulePersistCalculatorModeState(state.rebuyModal.mode ?? state.mode);
@@ -4904,7 +4959,9 @@ const initAdminCalculator = () => {
       if (row.rebuys.length === 0) {
         return;
       }
+      const removedIndex = row.rebuyIndexes.pop();
       row.rebuys.pop();
+      compactRebuyIndexesAfterRemoval(modeState, state.rebuyModal.mode, removedIndex);
       renderRebuyModal();
       render();
       schedulePersistCalculatorModeState(state.rebuyModal.mode ?? state.mode);
@@ -5089,7 +5146,8 @@ const initAdminCalculator = () => {
             playerId: "",
             playerName: "",
             eliminated: false,
-            rebuys: []
+            rebuys: [],
+            rebuyIndexes: []
           });
           render();
           schedulePersistCalculatorModeState(state.mode);
@@ -5106,7 +5164,7 @@ const initAdminCalculator = () => {
         modeState.table2Rows = modeState.table2Rows.filter((entry) => entry.id !== row.id);
         modeState.eliminatedOrder = modeState.eliminatedOrder.filter((id) => id !== row.id);
         if (!modeState.table2Rows.length) {
-          modeState.table2Rows.push({ id: `table2-${Date.now()}-0`, playerId: "", playerName: "", eliminated: false, rebuys: [] });
+          modeState.table2Rows.push({ id: `table2-${Date.now()}-0`, playerId: "", playerName: "", eliminated: false, rebuys: [], rebuyIndexes: [] });
         }
         render();
         schedulePersistCalculatorModeState(state.mode);
@@ -5210,10 +5268,8 @@ const initAdminCalculator = () => {
     const modeState = getModeState();
     syncTable5ConfigWithRows(modeState);
     const table5Rows = getTable5Rows();
-    const rebuyColumnsCount = modeState.table2Rows.reduce(
-      (count, row) => count + row.rebuys.filter((value) => sanitizeInteger(value) !== "").length,
-      0
-    );
+    const rebuyColumnsCount = getAllRebuyEntriesForMode(modeState, state.mode)
+      .filter((entry) => entry.value !== "").length;
 
     rootTable5.innerHTML = "";
     rootTable5.appendChild(createHeader("Tabela5"));
@@ -5498,7 +5554,8 @@ const initAdminCalculator = () => {
             playerName: "",
             buyIn: "0",
             payout: "0",
-            rebuys: []
+            rebuys: [],
+            rebuyIndexes: []
           });
           render();
           schedulePersistCalculatorModeState("cash");
@@ -5514,7 +5571,7 @@ const initAdminCalculator = () => {
       deleteButton.addEventListener("click", () => {
         state.cash.table9Rows = state.cash.table9Rows.filter((entry) => entry.id !== row.id);
         if (!state.cash.table9Rows.length) {
-          state.cash.table9Rows.push({ id: `table9-${Date.now()}-0`, playerId: "", playerName: "", buyIn: "0", payout: "0", rebuys: [] });
+          state.cash.table9Rows.push({ id: `table9-${Date.now()}-0`, playerId: "", playerName: "", buyIn: "0", payout: "0", rebuys: [], rebuyIndexes: [] });
         }
         render();
         schedulePersistCalculatorModeState("cash");

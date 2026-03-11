@@ -152,3 +152,6 @@ Efekt techniczny:
 - Wszystkie manifesty ustawiają nazwę instalowanej aplikacji na `Poker - rozgrywki` (`short_name`: `Poker`).
 - `start_url` w manifestach jest relatywny (`./index.html?...`), a `scope` ustawiony na `./`, co zapobiega błędom 404 dla hostingu pod prefiksem repozytorium.
 - Service Worker używa cache `karty-main-pwa-v2`, aby wymusić pobranie nowej konfiguracji PWA po wdrożeniu.
+
+- W `initAdminCalculator` każdy wiersz rebuy (`table2Rows` i `table9Rows`) przechowuje parę `rebuys[]` + `rebuyIndexes[]`; dodawanie rebuy nadaje globalny numer `max+1` dla całego aktywnego trybu, a usunięcie rebuy wykonuje globalną kompaktację indeksów bez luk.
+- Tabela5 buduje kolumny `RebuyX` i mapowanie wartości po posortowanych `rebuyIndexes`, zamiast po samym `flatMap` kolejności graczy, dzięki czemu semantyka numeru `RebuyX` pozostaje spójna po dodawaniu/usuwaniu kolumn u różnych graczy.

@@ -656,10 +656,37 @@ const normalizeTournamentState = (value) => {
     }
     return { id: crypto.randomUUID(), split: "", mod1: "", mod2: "", mod3: "" };
   });
+
+  state.payments = state.payments || {};
+  state.payments.table12Rebuys = state.payments.table12Rebuys || {};
+  Object.keys(state.payments.table12Rebuys).forEach((playerId) => {
+    const entry = state.payments.table12Rebuys[playerId] && typeof state.payments.table12Rebuys[playerId] === "object"
+      ? state.payments.table12Rebuys[playerId]
+      : { values: [] };
+    const values = Array.isArray(entry.values) ? entry.values.map((value) => digitsOnly(value)) : [];
+    const indexes = Array.isArray(entry.indexes) && entry.indexes.length === values.length
+      ? entry.indexes.map((value, index) => {
+        const parsed = Number.parseInt(String(value ?? ""), 10);
+        return Number.isInteger(parsed) && parsed > 0 ? parsed : index + 1;
+      })
+      : Array.from({ length: values.length }, (_, index) => index + 1);
+    state.payments.table12Rebuys[playerId] = { values, indexes };
+  });
   return state;
 };
 
 const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");
+
+const ensureTable12RebuyEntryShape = (entry) => {
+  const values = Array.isArray(entry?.values) ? entry.values.map((value) => digitsOnly(value)) : [];
+  const indexes = Array.isArray(entry?.indexes) && entry.indexes.length === values.length
+    ? entry.indexes.map((value, index) => {
+      const parsed = Number.parseInt(String(value ?? ""), 10);
+      return Number.isInteger(parsed) && parsed > 0 ? parsed : index + 1;
+    })
+    : Array.from({ length: values.length }, (_, index) => index + 1);
+  return { values, indexes };
+};
 const normalizeTournamentPermissions = (value) => {
   if (Array.isArray(value)) {
     return Array.from(new Set(value.map((item) => String(item ?? "").trim()).filter(Boolean)));
@@ -805,16 +832,11 @@ const setupAdminTournament = (rootCard) => {
   const renderTable12RebuyModal = () => {
     const table = table12RebuyModal.querySelector('[data-role="table12-rebuy-modal-table"]');
     if (!table || !activeTable12RebuyPlayerId) return;
-    const groupedRows = buildGroupedRows(tournamentState.assignments);
-    const activeIndex = groupedRows.findIndex((row) => row.playerId === activeTable12RebuyPlayerId);
-    const previousRows = activeIndex > 0 ? groupedRows.slice(0, activeIndex) : [];
-    const rebuyOffset = previousRows.reduce((count, row) => count + ensureTable12RebuyState(row.playerId).values.length, 0);
     tournamentState.payments.table12Rebuys = tournamentState.payments.table12Rebuys || {};
-    const state = tournamentState.payments.table12Rebuys[activeTable12RebuyPlayerId] || { values: [] };
-    if (!Array.isArray(state.values)) state.values = [];
+    const state = ensureTable12RebuyState(activeTable12RebuyPlayerId);
     tournamentState.payments.table12Rebuys[activeTable12RebuyPlayerId] = state;
 
-    table.innerHTML = `<thead><tr>${state.values.map((_, index) => `<th>Rebuy${rebuyOffset + index + 1}</th>`).join("")}</tr></thead><tbody><tr>${state.values.map((value, index) => `<td><input class="admin-input" data-role="table12-rebuy-input" data-rebuy-index="${index}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${value || ""}"></td>`).join("")}</tr></tbody>`;
+    table.innerHTML = `<thead><tr>${state.values.map((_, index) => `<th>Rebuy${state.indexes[index]}</th>`).join("")}</tr></thead><tbody><tr>${state.values.map((value, index) => `<td><input class="admin-input" data-role="table12-rebuy-input" data-rebuy-index="${index}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${value || ""}"></td>`).join("")}</tr></tbody>`;
   };
 
   const openTable12RebuyModal = (playerId) => {
@@ -852,13 +874,18 @@ const setupAdminTournament = (rootCard) => {
     const rebuyState = tournamentState.payments.table12Rebuys?.[activeTable12RebuyPlayerId];
     if (!rebuyState) return;
     if (role === 'table12-rebuy-add') {
+      const nextIndex = getNextGlobalTable12RebuyIndex();
       rebuyState.values.push('');
+      rebuyState.indexes.push(nextIndex);
       table12RebuyDirty = true;
       renderTable12RebuyModal();
       await persistTable12RebuyChanges();
     }
     if (role === 'table12-rebuy-remove') {
+      const removedIndex = rebuyState.indexes[rebuyState.indexes.length - 1];
       rebuyState.values = rebuyState.values.slice(0, -1);
+      rebuyState.indexes = rebuyState.indexes.slice(0, -1);
+      compactTable12RebuyIndexesAfterRemoval(removedIndex);
       table12RebuyDirty = true;
       renderTable12RebuyModal();
       await persistTable12RebuyChanges();
@@ -964,11 +991,69 @@ const setupAdminTournament = (rootCard) => {
   const ensureTable12RebuyState = (playerId) => {
     tournamentState.payments.table12Rebuys = tournamentState.payments.table12Rebuys || {};
     if (!tournamentState.payments.table12Rebuys[playerId]) {
-      tournamentState.payments.table12Rebuys[playerId] = { values: [] };
+      tournamentState.payments.table12Rebuys[playerId] = { values: [], indexes: [] };
     }
-    const entry = tournamentState.payments.table12Rebuys[playerId];
-    if (!Array.isArray(entry.values)) entry.values = [];
-    return entry;
+    const normalized = ensureTable12RebuyEntryShape(tournamentState.payments.table12Rebuys[playerId]);
+    tournamentState.payments.table12Rebuys[playerId] = normalized;
+    return normalized;
+  };
+
+  const getAllTable12RebuyEntries = (groupedRows = buildGroupedRows(tournamentState.assignments)) => groupedRows
+    .flatMap((row) => {
+      const rebuyState = ensureTable12RebuyState(row.playerId);
+      return rebuyState.values.map((value, idx) => ({
+        playerId: row.playerId,
+        index: rebuyState.indexes[idx],
+        value: digitsOnly(value)
+      }));
+    })
+    .filter((entry) => Number.isInteger(entry.index) && entry.index > 0)
+    .sort((a, b) => a.index - b.index);
+
+  const getNextGlobalTable12RebuyIndex = () => {
+    const maxIndex = getAllTable12RebuyEntries().reduce((max, entry) => Math.max(max, entry.index), 0);
+    return maxIndex + 1;
+  };
+
+  const remapPoolRebuyValuesAfterRemoval = (removedIndex) => {
+    if (!Number.isInteger(removedIndex) || removedIndex <= 0) {
+      return;
+    }
+    tournamentState.pool = tournamentState.pool || {};
+    tournamentState.pool.rebuyValues = tournamentState.pool.rebuyValues || {};
+    Object.keys(tournamentState.pool.rebuyValues).forEach((rowId) => {
+      const saved = tournamentState.pool.rebuyValues[rowId] || {};
+      const remapped = {};
+      Object.keys(saved).forEach((colKey) => {
+        const colIndex = Number(colKey);
+        if (!Number.isInteger(colIndex)) {
+          return;
+        }
+        const rebuyIndex = colIndex + 1;
+        if (rebuyIndex === removedIndex) {
+          return;
+        }
+        const nextColIndex = rebuyIndex > removedIndex ? colIndex - 1 : colIndex;
+        if (nextColIndex >= 0) {
+          remapped[nextColIndex] = saved[colKey];
+        }
+      });
+      tournamentState.pool.rebuyValues[rowId] = remapped;
+    });
+  };
+
+  const compactTable12RebuyIndexesAfterRemoval = (removedIndex) => {
+    if (!Number.isInteger(removedIndex) || removedIndex <= 0) {
+      return;
+    }
+    tournamentState.payments.table12Rebuys = tournamentState.payments.table12Rebuys || {};
+    Object.values(tournamentState.payments.table12Rebuys).forEach((entry) => {
+      const normalized = ensureTable12RebuyEntryShape(entry);
+      normalized.indexes = normalized.indexes.map((index) => (index > removedIndex ? index - 1 : index));
+      entry.values = normalized.values;
+      entry.indexes = normalized.indexes;
+    });
+    remapPoolRebuyValuesAfterRemoval(removedIndex);
   };
 
   const getPlayerRebuyTotal = (playerId) => {
@@ -1005,15 +1090,9 @@ const setupAdminTournament = (rootCard) => {
     });
     const totalBuyInFromDraw = Object.values(drawTotalsByTable).reduce((sum, value) => sum + value, 0);
 
-    const allRebuyValues = [];
-    groupedDrawRows.forEach((row) => {
-      const rebuyState = ensureTable12RebuyState(row.playerId);
-      rebuyState.values.forEach((value) => {
-        if (String(value ?? "").trim()) {
-          allRebuyValues.push(toDigitsNumber(value));
-        }
-      });
-    });
+    const allRebuyValues = getAllTable12RebuyEntries(groupedDrawRows)
+      .filter((entry) => String(entry.value ?? "").trim())
+      .map((entry) => toDigitsNumber(entry.value));
     const rebuyCount = allRebuyValues.length;
     const rebuyTotal = allRebuyValues.reduce((sum, value) => sum + value, 0);
 

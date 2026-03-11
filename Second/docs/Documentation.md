@@ -134,7 +134,7 @@
 ## Tournament of Poker – logika techniczna (Second)
 
 ### Kluczowe rozszerzenia stanu
-- `payments.table12Rebuys` – przechowuje per-gracz listę rebuy (`values[]`).
+- `payments.table12Rebuys` – przechowuje per-gracz listę rebuy jako `values[]` oraz globalne indeksy kolumn `indexes[]`.
 - `pool.rebuyValues` – przechowuje wpisy edytowalnych (nieprzypisanych) komórek REBUY w `Tabela16`.
 - `pool.mods[]` – wiersze `Tabela16` (split/mod/suma).
 
@@ -156,8 +156,10 @@
 - Otwierany z `Tabela12` (kolumna `REBUY`).
 - Obsługuje dodawanie/usuwanie kolejnych pól `Rebuy` oraz zapis do Firestore.
 - Po otwarciu pustego modala nie renderuje się żadna kolumna; pierwsza kolumna pojawia się dopiero po kliknięciu `Dodaj Rebuy` (zgodnie z modułem Main).
-- Numeracja nagłówków (`Rebuy1..n`) jest globalna względem kolejności graczy w `Tabela12` (jak w module Main).
+- Numeracja nagłówków (`Rebuy1..n`) opiera się na trwałych globalnych indeksach (`indexes[]`) dla całej `Tabela12` i nie jest liczona przez offset długości poprzednich graczy.
 - Układ modala (`modal-header` + `modal-body`) jest spójny z modalem z modułu Main.
+- Dodanie nowej kolumny rebuy nadaje `nextIndex = max(indexes)+1` globalnie dla całego turnieju, a usunięcie kolumny wykonuje globalną kompaktację (`index > removedIndex => index-1`) we wszystkich wpisach graczy.
+- Po kompaktacji rebuy wykonywane jest też przenumerowanie `pool.rebuyValues` (kolumny `data-col-index`), aby ręczne wpisy w `Tabela16` pozostały przypisane do właściwych kolumn `RebuyX`.
 
 ### Podział puli (Tabela15/Tabela16)
 - `Tabela15` ma kolumny: `POT` i `PODZIAŁ`.
