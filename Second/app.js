@@ -805,6 +805,8 @@ const setupAdminTournament = (rootCard) => {
       </div>
     </div>`;
   document.body.appendChild(table12RebuyModal);
+  const table12RebuyAddButton = table12RebuyModal.querySelector('[data-role="table12-rebuy-add"]');
+  const table12RebuyRemoveButton = table12RebuyModal.querySelector('[data-role="table12-rebuy-remove"]');
 
   const persistTable12RebuyChanges = async () => {
     if (!table12RebuyDirty) {
@@ -868,28 +870,29 @@ const setupAdminTournament = (rootCard) => {
     render();
   });
 
-  table12RebuyModal.addEventListener('click', async (event) => {
-    const role = event.target?.dataset?.role;
+  table12RebuyAddButton?.addEventListener('click', async () => {
     if (!activeTable12RebuyPlayerId) return;
     const rebuyState = tournamentState.payments.table12Rebuys?.[activeTable12RebuyPlayerId];
     if (!rebuyState) return;
-    if (role === 'table12-rebuy-add') {
-      const nextIndex = getNextGlobalTable12RebuyIndex();
-      rebuyState.values.push('');
-      rebuyState.indexes.push(nextIndex);
-      table12RebuyDirty = true;
-      renderTable12RebuyModal();
-      await persistTable12RebuyChanges();
-    }
-    if (role === 'table12-rebuy-remove') {
-      const removedIndex = rebuyState.indexes[rebuyState.indexes.length - 1];
-      rebuyState.values = rebuyState.values.slice(0, -1);
-      rebuyState.indexes = rebuyState.indexes.slice(0, -1);
-      compactTable12RebuyIndexesAfterRemoval(removedIndex);
-      table12RebuyDirty = true;
-      renderTable12RebuyModal();
-      await persistTable12RebuyChanges();
-    }
+    const nextIndex = getNextGlobalTable12RebuyIndex();
+    rebuyState.values.push('');
+    rebuyState.indexes.push(nextIndex);
+    table12RebuyDirty = true;
+    renderTable12RebuyModal();
+    await persistTable12RebuyChanges();
+  });
+
+  table12RebuyRemoveButton?.addEventListener('click', async () => {
+    if (!activeTable12RebuyPlayerId) return;
+    const rebuyState = tournamentState.payments.table12Rebuys?.[activeTable12RebuyPlayerId];
+    if (!rebuyState || rebuyState.values.length === 0) return;
+    const removedIndex = rebuyState.indexes[rebuyState.indexes.length - 1];
+    rebuyState.values = rebuyState.values.slice(0, -1);
+    rebuyState.indexes = rebuyState.indexes.slice(0, -1);
+    compactTable12RebuyIndexesAfterRemoval(removedIndex);
+    table12RebuyDirty = true;
+    renderTable12RebuyModal();
+    await persistTable12RebuyChanges();
   });
 
   document.addEventListener('keydown', async (event) => {
