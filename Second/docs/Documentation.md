@@ -156,10 +156,11 @@
 - Otwierany z `Tabela12` (kolumna `REBUY`).
 - Obsługuje dodawanie/usuwanie kolejnych pól `Rebuy` oraz zapis do Firestore.
 - Po otwarciu pustego modala nie renderuje się żadna kolumna; pierwsza kolumna pojawia się dopiero po kliknięciu `Dodaj Rebuy` (zgodnie z modułem Main).
-- Numeracja nagłówków (`Rebuy1..n`) opiera się na trwałych globalnych indeksach (`indexes[]`) dla całej `Tabela12` i nie jest liczona przez offset długości poprzednich graczy.
-- Układ modala (`modal-card-header modal-header-close-right` + `admin-table-actions`) jest wierną kopią modala z modułu Main.
+- Numeracja nagłówków (`Rebuy1..n`) opiera się na trwałych globalnych indeksach (`indexes[]`) dla całej `Tabela12` i nie zależy od kolejności graczy renderowanych aktualnie w tabeli.
+- Układ modala (`modal-header` + `modal-body`) jest wierną kopią modala z modułu Main.
 - Dodanie nowej kolumny rebuy nadaje `nextIndex = max(indexes)+1` globalnie dla całego turnieju, a usunięcie kolumny wykonuje globalną kompaktację (`index > removedIndex => index-1`) we wszystkich wpisach graczy.
 - Po kompaktacji rebuy wykonywane jest też przenumerowanie `pool.rebuyValues` (kolumny `data-col-index`), aby ręczne wpisy w `Tabela16` pozostały przypisane do właściwych kolumn `RebuyX`.
+- Gdy zapis do Firestore nie powiedzie się, modal pokazuje lokalny komunikat błędu i nie utrwala lokalnej zmiany dla przycisku `Dodaj Rebuy`.
 
 ### Podział puli (Tabela15/Tabela16)
 - `Tabela15` ma kolumny: `POT` i `PODZIAŁ`.
@@ -201,6 +202,6 @@
 - Wysyłka wiadomości do `second_chat_messages` zapisuje `authorName` z `players[].name` zweryfikowanego gracza.
 
 ### Modal „Rebuy gracza” — zapis i odświeżanie
-- Tabela modala używa klasy `.game-details-rebuy-table` i ma stałe kolumny `8ch` (spójność z Main).
+- Tabela modala używa identyfikatora `#adminCalculatorRebuyTable` i ma stałe kolumny `8ch` (spójność z Main).
 - Zmiana w polu rebuy jest od razu sanityzowana do cyfr, zapisywana (`saveState()`) i od razu odświeża `Tabela12`.
 - Zamknięcie modala (`X`, klik poza modalem, ESC) zamyka okno bez dodatkowych opóźnień, jak w Main.

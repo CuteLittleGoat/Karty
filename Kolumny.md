@@ -97,5 +97,5 @@ Dodatkowo dla każdego stołu:
 
 
 ### Modal „Rebuy gracza” (Second)
-- Kolumny dynamiczne: `Rebuy1..n` (numeracja globalna względem kolejności graczy w Tabela12).
+- Kolumny dynamiczne: `Rebuy1..n` (numeracja globalna dla wszystkich wpisów `Tabela12`, niezależnie od aktualnie przypisanych graczy).
 - Szerokość każdej kolumny: `8ch` (jak w module Main).
