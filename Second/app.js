@@ -805,8 +805,6 @@ const setupAdminTournament = (rootCard) => {
       </div>
     </div>`;
   document.body.appendChild(table12RebuyModal);
-  const table12RebuyAddButton = table12RebuyModal.querySelector('[data-role="table12-rebuy-add"]');
-  const table12RebuyRemoveButton = table12RebuyModal.querySelector('[data-role="table12-rebuy-remove"]');
 
   const persistTable12RebuyChanges = async () => {
     if (!table12RebuyDirty) {
@@ -877,17 +875,18 @@ const setupAdminTournament = (rootCard) => {
   table12RebuyModal.addEventListener('click', async (event) => {
     const clickedElement = event.target instanceof Element ? event.target.closest('[data-role]') : null;
     const role = clickedElement?.dataset?.role;
+
     if (event.target === table12RebuyModal || role === 'close-table12-rebuy') {
       await closeTable12RebuyModal();
+      return;
     }
-  });
-
-  table12RebuyAddButton?.addEventListener('click', async () => {
-    await addTable12RebuyColumn();
-  });
-
-  table12RebuyRemoveButton?.addEventListener('click', async () => {
-    await removeTable12RebuyColumn();
+    if (role === 'table12-rebuy-add') {
+      await addTable12RebuyColumn();
+      return;
+    }
+    if (role === 'table12-rebuy-remove') {
+      await removeTable12RebuyColumn();
+    }
   });
 
   table12RebuyModal.addEventListener('input', (event) => {

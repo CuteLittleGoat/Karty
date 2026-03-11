@@ -203,4 +203,4 @@
 - Tabela modala używa klasy `.game-details-rebuy-table` i ma stałe kolumny `8ch` (spójność z Main).
 - Zmiana w polu rebuy ustawia flagę brudnych danych i natychmiast odświeża tabelę Tabela12 w tle.
 - Zamknięcie modala (`X`, klik poza modalem, ESC) najpierw natychmiast ukrywa okno, a następnie wykonuje zapis `saveState()` gdy są zmiany, więc przycisk `×` działa również po edycji pól i wartości nie giną po zamknięciu.
-- Akcje `Dodaj Rebuy` i `Usuń Rebuy` są obsługiwane bezpośrednio na przyciskach modala (osobne nasłuchiwacze), a zamykanie (`X`/overlay) pozostaje w osobnym `click` kontenera; eliminuje to przypadki, w których kliknięcie `Dodaj Rebuy` w module Second nie było przechwytywane, i zapewnia natychmiastowy zapis oraz odświeżenie widoku.
+- Kliknięcia w modalu (`Dodaj Rebuy`, `Usuń Rebuy`, `X`, overlay) są obsługiwane przez jeden delegowany nasłuchiwacz `click` na kontenerze modala; eliminuje to przypadki, w których kliknięcie `Dodaj Rebuy` w module Second nie było przechwytywane, i zapewnia natychmiastowy zapis oraz odświeżenie widoku.
