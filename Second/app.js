@@ -805,6 +805,8 @@ const setupAdminTournament = (rootCard) => {
       </div>
     </div>`;
   document.body.appendChild(table12RebuyModal);
+  const table12RebuyAddButton = table12RebuyModal.querySelector('[data-role="table12-rebuy-add"]');
+  const table12RebuyRemoveButton = table12RebuyModal.querySelector('[data-role="table12-rebuy-remove"]');
 
   const persistTable12RebuyChanges = async () => {
     if (!table12RebuyDirty) {
