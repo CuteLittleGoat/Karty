@@ -117,6 +117,7 @@
    - po usunięciu kolumny aplikacja kompaktuje numerację globalnie (numery większe od usuniętego przesuwają się o `-1`),
    - jeżeli zapis nie powiedzie się (np. brak uprawnień/połączenia), modal pokaże komunikat błędu z kodem/opisem problemu i nie utrwali nowo dodanego `Rebuy`,
    - podczas zapisu przyciski `Dodaj Rebuy` i `Usuń Rebuy` są czasowo blokowane, żeby uniknąć podwójnego kliknięcia i łatwiej zdiagnozować problem.
+  - po zakończeniu zapisu odroczony snapshot z serwera jest bezpiecznie nakładany automatycznie, więc przy seryjnym dodawaniu rebuy nie pojawia się błąd techniczny i nie cofa wpisów.
    - wpisane wartości sumują się na przycisku w tabeli.
 
 ### Podział puli

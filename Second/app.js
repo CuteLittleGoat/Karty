@@ -787,6 +787,16 @@ const setupAdminTournament = (rootCard) => {
   let activeTable12RebuyPlayerId = "";
   let table12RebuyActionInProgress = false;
 
+  const commitDeferredSnapshotIfSafe = () => {
+    if (hasActiveEdit || pendingLocalWrites > 0 || !deferredSnapshotState) {
+      return;
+    }
+    tournamentState = deferredSnapshotState;
+    deferredSnapshotState = null;
+    tournamentStatusMessage = "";
+    render();
+  };
+
   const table12RebuyModal = document.createElement("div");
   table12RebuyModal.className = "modal-overlay";
   table12RebuyModal.setAttribute("aria-hidden", "true");
