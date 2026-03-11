@@ -135,7 +135,7 @@
 
 ### Kluczowe rozszerzenia stanu
 - `payments.table12Rebuys` – przechowuje per-gracz listę rebuy (`values[]`).
-- `pool.rebuyValues` – przechowuje ręczne korekty komórek REBUY w `Tabela16`.
+- `pool.rebuyValues` – przechowuje wpisy edytowalnych (nieprzypisanych) komórek REBUY w `Tabela16`.
 - `pool.mods[]` – wiersze `Tabela16` (split/mod/suma).
 
 ### Automatyczne przeliczenia
@@ -168,12 +168,10 @@
 - `KWOTA`:
   - wiersze 1–3: `podział (w postaci dziesiętnej) * Tabela15.PODZIAŁ`,
   - wiersze 4+: wartość bezpośrednia z `PODZIAŁ PULI`.
-- Przypisanie `REBUY1..REBUY30` do wierszy jest stałe (wg specyfikacji biznesowej), a przypisane komórki są readonly i liczone jak `KWOTA` danego wiersza.
-- Dla kolumn `REBUY31+` komórki pozostają puste i edytowalne.
-- Kolumny `MOD` są dynamiczne względem liczby kolumn `REBUY`:
-  - `<=12`: tylko `MOD1` przed `SUMA`,
-  - `13..20`: `MOD1` po `REBUY12` oraz `MOD2` przed `SUMA`,
-  - `>20`: `MOD1` po `REBUY12`, `MOD2` po `REBUY20`, `MOD3` przed `SUMA`.
+- Liczba kolumn `REBUY` w `Tabela16` jest dynamiczna i równa liczbie uzupełnionych pól `Rebuy` w modalach `Rebuy gracza` (`Tabela12` → `REBUY`).
+- Jeśli w modalach `Rebuy gracza` nie ma żadnej uzupełnionej wartości, `Tabela16` nie renderuje żadnej kolumny `REBUY`.
+- Komórki `REBUY` są automatycznie przypisane do wierszy przez mapę biznesową (`REBUY1..REBUY30`) i pobierają wartości wpisane w modalach `Rebuy gracza` (bez nadpisywania wartością z `PODZIAŁ PULI`).
+- Kolumny `MOD` są dynamiczne względem liczby kolumn `REBUY`: dla `0..12` widoczne jest `MOD1`, dla `13..20` widoczne są `MOD1` i `MOD2`, a dla `>20` widoczne są `MOD1`, `MOD2`, `MOD3`.
 - `SUMA` = `KWOTA + suma REBUY w wierszu + MOD1 + MOD2 + MOD3` (z uwzględnieniem widocznych kolumn MOD).
 
 ### Faza grupowa
