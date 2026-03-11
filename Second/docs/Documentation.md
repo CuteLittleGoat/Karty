@@ -158,14 +158,23 @@
 - Numeracja nagłówków (`Rebuy1..n`) jest globalna względem kolejności graczy w `Tabela12` (jak w module Main).
 - Układ modala (`modal-header` + `modal-body`) jest spójny z modalem z modułu Main.
 
-### Podział puli (Tabela16)
-- Domyślne wartości `PODZIAŁ PULI`: 50% / 30% / 20% dla pierwszych 3 wierszy (do obliczeń konwersja do 0.50/0.30/0.20).
+### Podział puli (Tabela15/Tabela16)
+- `Tabela15` ma kolumny: `POT` i `PODZIAŁ`.
+- `Tabela15.POT` pobiera wartość z `Tabela14.POT`.
+- `Tabela15.PODZIAŁ` jest liczone jako: suma `PODZIAŁ PULI` od wiersza 4 do końca minus `Tabela15.POT`.
+- W `Tabela16` kolumna `PODZIAŁ PULI` ma tryb mieszany:
+  - wiersze 1–3: wejście procentowe (`50` => render `50%`, obliczenia `0.5`),
+  - wiersze 4+: wejście liczbowe bez `%` (`10` => obliczenia `10`).
 - `KWOTA`:
-  - wiersze 1–3: `podział * Tabela15.PODZIAŁ`,
-  - od wiersza 4: wartość bezpośrednio z `PODZIAŁ PULI`.
-- Dynamiczne kolumny `REBUY1..` powstają z listy rebuy i są mapowane do wierszy cyklicznie.
-- Dystrybucja automatyczna kończy się po 30 rebuy; nadwyżka sygnalizowana czerwonym ostrzeżeniem.
-- `SUMA` = `KWOTA + wszystkie REBUY + MOD`.
+  - wiersze 1–3: `podział (w postaci dziesiętnej) * Tabela15.PODZIAŁ`,
+  - wiersze 4+: wartość bezpośrednia z `PODZIAŁ PULI`.
+- Przypisanie `REBUY1..REBUY30` do wierszy jest stałe (wg specyfikacji biznesowej), a przypisane komórki są readonly i liczone jak `KWOTA` danego wiersza.
+- Dla kolumn `REBUY31+` komórki pozostają puste i edytowalne.
+- Kolumny `MOD` są dynamiczne względem liczby kolumn `REBUY`:
+  - `<=12`: tylko `MOD1` przed `SUMA`,
+  - `13..20`: `MOD1` po `REBUY12` oraz `MOD2` przed `SUMA`,
+  - `>20`: `MOD1` po `REBUY12`, `MOD2` po `REBUY20`, `MOD3` przed `SUMA`.
+- `SUMA` = `KWOTA + suma REBUY w wierszu + MOD1 + MOD2 + MOD3` (z uwzględnieniem widocznych kolumn MOD).
 
 ### Faza grupowa
 - `Tabela17` zredukowana do jednego wiersza.

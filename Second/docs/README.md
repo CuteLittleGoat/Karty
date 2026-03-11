@@ -57,7 +57,7 @@
 
 ### Podział puli
 - **Tabela13**, **Tabela14**, **Tabela15**, **Tabela16**.
-- W **Tabela15** działa **Dodaj** i **Usuń** (dla ostatniego wiersza).
+- Przyciskami **Dodaj** i **Usuń** pod `Tabela16` zarządzasz liczbą wierszy podziału puli.
 - Przycisk **Dodaj** jest krótki i wyrównany do lewej, spójnie z pozostałymi przyciskami dodawania.
 
 ### Faza grupowa
@@ -116,15 +116,13 @@
 
 ### Podział puli
 1. `Tabela13` i `Tabela14` pobierają dane automatycznie z panelu `Wpłaty`.
-2. `Tabela15` pokazuje automatyczny BUY-IN i wartość `PODZIAŁ`.
+2. `Tabela15` pokazuje `POT` (z `Tabela14`) oraz `PODZIAŁ = suma PODZIAŁ PULI od wiersza 4 - POT`.
 3. `Tabela16`:
-   - kolumna `PODZIAŁ PULI` działa w formacie procentowym jak w Main (np. wpisujesz `50`, wyświetla się `50%`, do obliczeń trafia `0.50`),
-   - przyciski **Dodaj**/**Usuń** są pod `Tabela16`,
-   - kolumny `REBUY1..` budują się automatycznie na podstawie rebuy,
-   - kolumna `MOD` jest edytowalna,
-   - kolumna `SUMA` liczy się automatycznie,
-   - przy niezgodnej sumie procentów pojawia się czerwone ostrzeżenie,
-   - przy nadmiarze rebuy ponad limit automatycznej dystrybucji pojawia się ostrzeżenie `Rebuy do rozdysponowania ...`.
+   - kolumna `PODZIAŁ PULI`: wiersze 1–3 działają procentowo (`50` => `50%`, do obliczeń `0.5`), od wiersza 4 wpisy są liczbami bez `%` i bez dzielenia przez 100,
+   - kolumna `KWOTA`: wiersze 1–3 = procent × `Tabela15.PODZIAŁ`, od wiersza 4 = przepisana wartość z `PODZIAŁ PULI`,
+   - kolumny `REBUY1..REBUY30` mają przypisanie do konkretnych wierszy i przypisane komórki są tylko do odczytu; kolumny powyżej 30 pozostają puste i edytowalne,
+   - kolumny `MOD` są dynamiczne: do 12 rebuy jest `MOD1` przed `SUMA`, powyżej 12 dochodzi `MOD2`, a powyżej 20 dochodzi `MOD3`,
+   - kolumna `SUMA` liczy się automatycznie.
 
 ### Faza grupowa
 1. `Tabela17` zawiera tylko 1 wiersz.
