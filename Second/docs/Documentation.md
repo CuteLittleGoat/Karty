@@ -161,6 +161,8 @@
 - Dodanie nowej kolumny rebuy nadaje `nextIndex = max(indexes)+1` globalnie dla całego turnieju, a usunięcie kolumny wykonuje globalną kompaktację (`index > removedIndex => index-1`) we wszystkich wpisach graczy.
 - Po kompaktacji rebuy wykonywane jest też przenumerowanie `pool.rebuyValues` (kolumny `data-col-index`), aby ręczne wpisy w `Tabela16` pozostały przypisane do właściwych kolumn `RebuyX`.
 - Gdy zapis do Firestore nie powiedzie się, modal pokazuje lokalny komunikat błędu i nie utrwala lokalnej zmiany dla przycisku `Dodaj Rebuy`.
+- Komunikat diagnostyczny zawiera szczegóły błędu (`error.code` i `error.message`), aby ustalić przyczynę problemu przy `Dodaj Rebuy` / `Usuń Rebuy`.
+- Podczas zapisu akcji rebuy używany jest lokalny lock (`table12RebuyActionInProgress`), który chwilowo blokuje przyciski modalu i zapobiega wielokrotnemu wywołaniu tej samej operacji.
 
 ### Podział puli (Tabela15/Tabela16)
 - `Tabela15` ma kolumny: `POT` i `PODZIAŁ`.
@@ -204,4 +206,5 @@
 ### Modal „Rebuy gracza” — zapis i odświeżanie
 - Tabela modala używa identyfikatora `#adminCalculatorRebuyTable` i ma stałe kolumny `8ch` (spójność z Main).
 - Zmiana w polu rebuy jest od razu sanityzowana do cyfr, zapisywana (`saveState()`) i od razu odświeża `Tabela12`.
+- `saveState()` zapisuje ostatni błąd w `saveState.lastError`, a moduł loguje błędy do konsoli (`[Second] saveState error`, `[Second][Table12Rebuy] ...`) dla szybszej diagnostyki.
 - Zamknięcie modala (`X`, klik poza modalem, ESC) zamyka okno bez dodatkowych opóźnień, jak w Main.

@@ -115,7 +115,8 @@
    - użyj **Dodaj Rebuy** / **Usuń Rebuy** — pierwsza kolumna pojawia się po kliknięciu **Dodaj Rebuy**,
    - numeracja `RebuyX` jest globalna dla całej `Tabela12` (wszyscy gracze) i przy dodawaniu zawsze dostaje kolejny numer globalny,
    - po usunięciu kolumny aplikacja kompaktuje numerację globalnie (numery większe od usuniętego przesuwają się o `-1`),
-   - jeżeli zapis nie powiedzie się (np. brak uprawnień/połączenia), modal pokaże komunikat błędu i nie utrwali nowo dodanego `Rebuy`,
+   - jeżeli zapis nie powiedzie się (np. brak uprawnień/połączenia), modal pokaże komunikat błędu z kodem/opisem problemu i nie utrwali nowo dodanego `Rebuy`,
+   - podczas zapisu przyciski `Dodaj Rebuy` i `Usuń Rebuy` są czasowo blokowane, żeby uniknąć podwójnego kliknięcia i łatwiej zdiagnozować problem.
    - wpisane wartości sumują się na przycisku w tabeli.
 
 ### Podział puli
