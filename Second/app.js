@@ -854,45 +854,42 @@ const setupAdminTournament = (rootCard) => {
     const role = event.target?.dataset?.role;
     if (event.target === table12RebuyModal || role === 'close-table12-rebuy') {
       await closeTable12RebuyModal();
+      return;
+    }
+    if (!activeTable12RebuyPlayerId) return;
+    if (role === 'table12-rebuy-add') {
+      const rebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
+      const nextIndex = getNextGlobalTable12RebuyIndex();
+      rebuyState.values.push('');
+      rebuyState.indexes.push(nextIndex);
+      table12RebuyDirty = true;
+      renderTable12RebuyModal();
+      await persistTable12RebuyChanges();
+      return;
+    }
+    if (role === 'table12-rebuy-remove') {
+      const rebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
+      if (rebuyState.values.length === 0) return;
+      const removedIndex = rebuyState.indexes[rebuyState.indexes.length - 1];
+      rebuyState.values = rebuyState.values.slice(0, -1);
+      rebuyState.indexes = rebuyState.indexes.slice(0, -1);
+      compactTable12RebuyIndexesAfterRemoval(removedIndex);
+      table12RebuyDirty = true;
+      renderTable12RebuyModal();
+      await persistTable12RebuyChanges();
     }
   });
 
   table12RebuyModal.addEventListener('input', (event) => {
     const role = event.target?.dataset?.role;
     if (role !== 'table12-rebuy-input' || !activeTable12RebuyPlayerId) return;
-    const rebuyState = tournamentState.payments.table12Rebuys?.[activeTable12RebuyPlayerId];
-    if (!rebuyState) return;
+    const rebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
     const idx = Number(event.target.dataset.rebuyIndex);
     if (!Number.isInteger(idx) || idx < 0) return;
     rebuyState.values[idx] = digitsOnly(event.target.value);
     event.target.value = rebuyState.values[idx];
     table12RebuyDirty = true;
     render();
-  });
-
-  table12RebuyAddButton?.addEventListener('click', async () => {
-    if (!activeTable12RebuyPlayerId) return;
-    const rebuyState = tournamentState.payments.table12Rebuys?.[activeTable12RebuyPlayerId];
-    if (!rebuyState) return;
-    const nextIndex = getNextGlobalTable12RebuyIndex();
-    rebuyState.values.push('');
-    rebuyState.indexes.push(nextIndex);
-    table12RebuyDirty = true;
-    renderTable12RebuyModal();
-    await persistTable12RebuyChanges();
-  });
-
-  table12RebuyRemoveButton?.addEventListener('click', async () => {
-    if (!activeTable12RebuyPlayerId) return;
-    const rebuyState = tournamentState.payments.table12Rebuys?.[activeTable12RebuyPlayerId];
-    if (!rebuyState || rebuyState.values.length === 0) return;
-    const removedIndex = rebuyState.indexes[rebuyState.indexes.length - 1];
-    rebuyState.values = rebuyState.values.slice(0, -1);
-    rebuyState.indexes = rebuyState.indexes.slice(0, -1);
-    compactTable12RebuyIndexesAfterRemoval(removedIndex);
-    table12RebuyDirty = true;
-    renderTable12RebuyModal();
-    await persistTable12RebuyChanges();
   });
 
   document.addEventListener('keydown', async (event) => {
