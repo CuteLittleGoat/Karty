@@ -112,8 +112,7 @@
 3. W `Tabela12` kolumna **REBUY** to przycisk per gracz:
    - kliknij przycisk, aby otworzyć modal **Rebuy gracza**,
    - po otwarciu pustego modala nie ma żadnej kolumny (zgodnie z Main),
-   - użyj **Dodaj Rebuy** / **Usuń Rebuy** — przyciski działają od razu po otwarciu modala (desktop i mobile), a pierwsza kolumna pojawia się po kliknięciu **Dodaj Rebuy**,
-   - kliknięcia `Dodaj Rebuy`/`Usuń Rebuy`/`×` są przechwytywane centralnie w oknie modala, więc akcje działają stabilnie także przy szybkich kliknięciach,
+   - użyj **Dodaj Rebuy** / **Usuń Rebuy** — pierwsza kolumna pojawia się po kliknięciu **Dodaj Rebuy**,
    - numeracja `RebuyX` jest globalna dla całej `Tabela12` (wszyscy gracze) i przy dodawaniu zawsze dostaje kolejny numer globalny,
    - po usunięciu kolumny aplikacja kompaktuje numerację globalnie (numery większe od usuniętego przesuwają się o `-1`),
    - wpisane wartości sumują się na przycisku w tabeli.
@@ -125,6 +124,8 @@
    - kolumna `PODZIAŁ PULI`: wiersze 1–3 działają procentowo (`50` => `50%`, do obliczeń `0.5`), od wiersza 4 wpisy są liczbami bez `%` i bez dzielenia przez 100,
    - kolumna `KWOTA`: wiersze 1–3 = procent × `Tabela15.PODZIAŁ`, od wiersza 4 = przepisana wartość z `PODZIAŁ PULI`,
    - liczba kolumn `REBUY` jest dynamiczna i zależy od liczby uzupełnionych pól `Rebuy` w modalach `Rebuy gracza` (jeśli brak rebuy, kolumn `REBUY` nie ma),
+   - `Rebuy1..Rebuy30` mają stałe przypisanie do wierszy i działają jak kolumna `KWOTA` (readonly),
+   - jeśli kolumn `REBUY` jest więcej niż 30, kolumny od `Rebuy31` wzwyż pozostają puste i edytowalne ręcznie,
    - komórki `REBUY` pokazują wartości wpisane w modalach `Rebuy gracza` i nie są nadpisywane przez wartości z `PODZIAŁ PULI`,
    - kolumny `MOD` są dynamiczne: dla `0..12` rebuy jest `MOD1` przed `SUMA`, dla `13..20` dochodzi `MOD2`, a powyżej 20 dochodzi `MOD3`,
    - kolumna `SUMA` liczy się automatycznie.

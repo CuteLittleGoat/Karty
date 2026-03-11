@@ -87,8 +87,9 @@ Dodatkowo dla każdego stołu:
   - przyciski `Dodaj/Usuń` są pod `Tabela16`,
   - `Tabela15` pokazuje kolumny `POT` i `PODZIAŁ`,
   - `Tabela16` ma `PODZIAŁ PULI` (wiersze 1–3 procentowo, od 4 liczbowo),
-  - liczba kolumn `REBUY` jest dynamiczna (0..30) i zależy od liczby uzupełnionych pól `Rebuy` w modalach `Rebuy gracza`,
+  - liczba kolumn `REBUY` jest dynamiczna i zależy od liczby uzupełnionych pól `Rebuy` w modalach `Rebuy gracza`,
   - `REBUY1..REBUY30` mają stałe przypisanie do wierszy, a przypisane komórki są readonly i pokazują wartości z modali `Rebuy gracza`,
+  - kolumny od `REBUY31` wzwyż są puste domyślnie i edytowalne ręcznie przez użytkownika,
   - kolumny `MOD` są dynamiczne (`MOD1`, `MOD2`, `MOD3`) zależnie od liczby kolumn `REBUY`.
 - Panel `Faza grupowa`:
   - `Tabela17` tylko 2 kolumny: `STACK GRACZA`, `REBUY/ADD-ON`.

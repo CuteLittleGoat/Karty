@@ -157,7 +157,7 @@
 - Obsługuje dodawanie/usuwanie kolejnych pól `Rebuy` oraz zapis do Firestore.
 - Po otwarciu pustego modala nie renderuje się żadna kolumna; pierwsza kolumna pojawia się dopiero po kliknięciu `Dodaj Rebuy` (zgodnie z modułem Main).
 - Numeracja nagłówków (`Rebuy1..n`) opiera się na trwałych globalnych indeksach (`indexes[]`) dla całej `Tabela12` i nie jest liczona przez offset długości poprzednich graczy.
-- Układ modala (`modal-header` + `modal-body`) jest spójny z modalem z modułu Main.
+- Układ modala (`modal-card-header modal-header-close-right` + `admin-table-actions`) jest wierną kopią modala z modułu Main.
 - Dodanie nowej kolumny rebuy nadaje `nextIndex = max(indexes)+1` globalnie dla całego turnieju, a usunięcie kolumny wykonuje globalną kompaktację (`index > removedIndex => index-1`) we wszystkich wpisach graczy.
 - Po kompaktacji rebuy wykonywane jest też przenumerowanie `pool.rebuyValues` (kolumny `data-col-index`), aby ręczne wpisy w `Tabela16` pozostały przypisane do właściwych kolumn `RebuyX`.
 
@@ -173,7 +173,8 @@
   - wiersze 4+: wartość bezpośrednia z `PODZIAŁ PULI`.
 - Liczba kolumn `REBUY` w `Tabela16` jest dynamiczna i równa liczbie uzupełnionych pól `Rebuy` w modalach `Rebuy gracza` (`Tabela12` → `REBUY`).
 - Jeśli w modalach `Rebuy gracza` nie ma żadnej uzupełnionej wartości, `Tabela16` nie renderuje żadnej kolumny `REBUY`.
-- Komórki `REBUY` są automatycznie przypisane do wierszy przez mapę biznesową (`REBUY1..REBUY30`) i pobierają wartości wpisane w modalach `Rebuy gracza` (bez nadpisywania wartością z `PODZIAŁ PULI`).
+- Komórki `REBUY1..REBUY30` są automatycznie przypisane do wierszy przez mapę biznesową i są readonly (jak `KWOTA`) z wartościami z modali `Rebuy gracza`.
+- Komórki od `REBUY31` wzwyż pozostają puste domyślnie i są edytowalne przez użytkownika (wartości ręczne są trzymane w `pool.rebuyValues`).
 - Kolumny `MOD` są dynamiczne względem liczby kolumn `REBUY`: dla `0..12` widoczne jest `MOD1`, dla `13..20` widoczne są `MOD1` i `MOD2`, a dla `>20` widoczne są `MOD1`, `MOD2`, `MOD3`.
 - `SUMA` = `KWOTA + suma REBUY w wierszu + MOD1 + MOD2 + MOD3` (z uwzględnieniem widocznych kolumn MOD).
 
@@ -201,6 +202,5 @@
 
 ### Modal „Rebuy gracza” — zapis i odświeżanie
 - Tabela modala używa klasy `.game-details-rebuy-table` i ma stałe kolumny `8ch` (spójność z Main).
-- Zmiana w polu rebuy ustawia flagę brudnych danych i natychmiast odświeża tabelę Tabela12 w tle.
-- Zamknięcie modala (`X`, klik poza modalem, ESC) najpierw natychmiast ukrywa okno, a następnie wykonuje zapis `saveState()` gdy są zmiany, więc przycisk `×` działa również po edycji pól i wartości nie giną po zamknięciu.
-- Kliknięcia w modalu (`Dodaj Rebuy`, `Usuń Rebuy`, `X`, overlay) są obsługiwane przez jeden delegowany nasłuchiwacz `click` na kontenerze modala; eliminuje to przypadki, w których kliknięcie `Dodaj Rebuy` w module Second nie było przechwytywane, i zapewnia natychmiastowy zapis oraz odświeżenie widoku.
+- Zmiana w polu rebuy jest od razu sanityzowana do cyfr, zapisywana (`saveState()`) i od razu odświeża `Tabela12`.
+- Zamknięcie modala (`X`, klik poza modalem, ESC) zamyka okno bez dodatkowych opóźnień, jak w Main.
