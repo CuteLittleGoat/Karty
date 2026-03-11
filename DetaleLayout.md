@@ -37,6 +37,7 @@
 
 ## Modale i tabele – aktualne zasady
 - Modal `Rebuy gracza` w module Second używa układu `modal-header` + `modal-body` identycznego jak w Main, wraz z tymi samymi proporcjami sekcji tabeli i akcji.
+- W modalu `Rebuy gracza` (Second) pod nagłówkiem renderowany jest komunikat statusu `.builder-info` dla błędów zapisu (pokazywany warunkowo tylko przy problemach z zapisem).
 - W module Second nagłówki tabel są prezentowane uppercase, z wyjątkiem dynamicznych nagłówków stołów w `Tabela18`.
 - Ostrzeżenia walidacyjne i dystrybucji rebuy w module Second używają czerwonego stylu (`.t-warning`).
 - W panelu `Podział puli` (Second) tabela `Tabela16` renderuje dynamiczną liczbę kolumn `REBUY` (równą liczbie uzupełnionych pól `Rebuy` w modalach graczy), przypisane komórki `REBUY1..REBUY30` są readonly i wyświetlają wartości z tych modali.
@@ -44,4 +45,4 @@
 - W obu modułach (`Main`, `Second`) kontener `.player-zone-layout` rozszerza sekcję z ciemno-zielonymi panelami na pełną szerokość wnętrza karty (1 px luzu od lewej i prawej krawędzi zewnętrznej ramki).
 - W module `Main` na mobile (`max-width: 720px`) przyciski nawigacyjne sekcji `Strefa Gracza` (`.player-zone-button`) mają większy font (`14px`) i ciaśniej kontrolowany odstęp liter (`0.12em`) dla lepszej czytelności.
 
-- Tabela rebuy gracza w modalu (`.game-details-rebuy-table`) ma takie same reguły jak w Main: `width:auto`, `min-width:0`, `table-layout:fixed` oraz stałą szerokość kolumn `8ch`.
+- Tabela rebuy gracza w modalu (`#adminCalculatorRebuyTable`) ma takie same reguły jak w Main: `width:auto`, `min-width:0`, `table-layout:fixed` oraz stałą szerokość kolumn `8ch`.
