@@ -106,6 +106,7 @@
   - `pendingLocalWrites` — licznik zapisów w trakcie,
   - `deferredSnapshotState` — odroczony stan z `onSnapshot`.
 - `onSnapshot` nie nadpisuje stanu lokalnego w trakcie edycji/zapisu; aktualizacja jest nakładana dopiero po zakończeniu edycji i spadku licznika zapisów do zera.
+- Funkcja `commitDeferredSnapshotIfSafe` domyka odroczoną synchronizację: po zakończeniu lokalnych zapisów i braku aktywnej edycji nakłada `deferredSnapshotState`, czyści status i wykonuje `render()`.
 
 ### Przyciski dodawania — zmiana layoutu
 - Dodano klasę `t-inline-add-button` dla przycisków `Dodaj gracza`, `Dodaj stół`, `Dodaj` (Podział puli) i `Dodaj nowy stół`.
