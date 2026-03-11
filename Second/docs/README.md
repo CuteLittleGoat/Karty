@@ -111,7 +111,8 @@
 2. `Tabela10` oraz `Tabela11` są automatycznie wyliczane i tylko do odczytu.
 3. W `Tabela12` kolumna **REBUY** to przycisk per gracz:
    - kliknij przycisk, aby otworzyć modal **Rebuy gracza**,
-   - użyj **Dodaj Rebuy** / **Usuń Rebuy**,
+   - po otwarciu pustego modala nie ma żadnej kolumny (zgodnie z Main),
+   - użyj **Dodaj Rebuy** / **Usuń Rebuy** — pierwsza kolumna pojawia się dopiero po kliknięciu **Dodaj Rebuy**,
    - wpisane wartości sumują się na przycisku w tabeli.
 
 ### Podział puli

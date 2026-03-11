@@ -155,6 +155,7 @@
 - Nowy modal tworzony dynamicznie przy inicjalizacji turnieju.
 - Otwierany z `Tabela12` (kolumna `REBUY`).
 - Obsługuje dodawanie/usuwanie kolejnych pól `Rebuy` oraz zapis do Firestore.
+- Po otwarciu pustego modala nie renderuje się żadna kolumna; pierwsza kolumna pojawia się dopiero po kliknięciu `Dodaj Rebuy` (zgodnie z modułem Main).
 - Numeracja nagłówków (`Rebuy1..n`) jest globalna względem kolejności graczy w `Tabela12` (jak w module Main).
 - Układ modala (`modal-header` + `modal-body`) jest spójny z modalem z modułu Main.
 
