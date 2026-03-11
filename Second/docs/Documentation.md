@@ -164,6 +164,7 @@
 - Gdy zapis do Firestore nie powiedzie się, modal pokazuje lokalny komunikat błędu i nie utrwala lokalnej zmiany dla przycisku `Dodaj Rebuy`.
 - Komunikat diagnostyczny zawiera szczegóły błędu (`error.code` i `error.message`), aby ustalić przyczynę problemu przy `Dodaj Rebuy` / `Usuń Rebuy`.
 - Podczas zapisu akcji rebuy używany jest lokalny lock (`table12RebuyActionInProgress`), który chwilowo blokuje przyciski modalu i zapobiega wielokrotnemu wywołaniu tej samej operacji.
+- Handler `Dodaj Rebuy` jest opakowany pełnym `try/catch`, także dla kroku wyliczenia kolejnego indeksu i aktualizacji lokalnych tablic, dzięki czemu każda awaria pokazuje komunikat w modalu zamiast „cichego” braku reakcji przycisku.
 
 ### Podział puli (Tabela15/Tabela16)
 - `Tabela15` ma kolumny: `POT` i `PODZIAŁ`.

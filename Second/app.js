@@ -920,10 +920,12 @@ const setupAdminTournament = (rootCard) => {
       }
       table12RebuyActionInProgress = true;
       renderTable12RebuyModal();
-      const nextIndex = getNextGlobalTable12RebuyIndex();
-      rebuyState.values.push("");
-      rebuyState.indexes.push(nextIndex);
+      let appended = false;
       try {
+        const nextIndex = getNextGlobalTable12RebuyIndex();
+        rebuyState.values.push("");
+        rebuyState.indexes.push(nextIndex);
+        appended = true;
         const saved = await persistTable12RebuyChanges("Dodaj Rebuy");
         if (!saved) {
           rebuyState.values.pop();
@@ -934,8 +936,10 @@ const setupAdminTournament = (rootCard) => {
         render();
         renderTable12RebuyModal();
       } catch (error) {
-        rebuyState.values.pop();
-        rebuyState.indexes.pop();
+        if (appended) {
+          rebuyState.values.pop();
+          rebuyState.indexes.pop();
+        }
         setTable12RebuyModalStatus(`Wystąpił nieoczekiwany błąd przy operacji \"Dodaj Rebuy\". ${getFirebaseErrorDetails(error)}`);
         console.error("[Second][Table12Rebuy] Błąd podczas dodawania Rebuy", error);
         renderTable12RebuyModal();
