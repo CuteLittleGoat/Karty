@@ -923,6 +923,7 @@ const setupAdminTournament = (rootCard) => {
       let appended = false;
       let activeRebuyState = null;
       try {
+        activeRebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
         const nextIndex = getNextGlobalTable12RebuyIndex();
         activeRebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
         activeRebuyState.values.push("");
