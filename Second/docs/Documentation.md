@@ -165,6 +165,8 @@
 - Komunikat diagnostyczny zawiera szczegóły błędu (`error.code` i `error.message`), aby ustalić przyczynę problemu przy `Dodaj Rebuy` / `Usuń Rebuy`.
 - Podczas zapisu akcji rebuy używany jest lokalny lock (`table12RebuyActionInProgress`), który chwilowo blokuje przyciski modalu i zapobiega wielokrotnemu wywołaniu tej samej operacji.
 - Handler `Dodaj Rebuy` jest opakowany pełnym `try/catch`, także dla kroku wyliczenia kolejnego indeksu i aktualizacji lokalnych tablic, dzięki czemu każda awaria pokazuje komunikat w modalu zamiast „cichego” braku reakcji przycisku.
+- Operacje `Dodaj Rebuy` i `Usuń Rebuy` pracują na świeżo pobranym stanie (`ensureTable12RebuyState(activeTable12RebuyPlayerId)`), co eliminuje problem mutowania nieaktualnej referencji po wewnętrznym rerenderze modala.
+- W `Dodaj Rebuy` kolejny globalny numer (`getNextGlobalTable12RebuyIndex`) jest wyliczany **przed** pobraniem stanu do mutacji, ponieważ samo wyliczanie normalizuje wpisy i może podmienić referencję aktywnego obiektu.
 
 ### Podział puli (Tabela15/Tabela16)
 - `Tabela15` ma kolumny: `POT` i `PODZIAŁ`.
