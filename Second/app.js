@@ -678,14 +678,17 @@ const normalizeTournamentState = (value) => {
 const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");
 
 const ensureTable12RebuyEntryShape = (entry) => {
-  const values = Array.isArray(entry?.values) ? entry.values.map((value) => digitsOnly(value)) : [];
-  const indexes = Array.isArray(entry?.indexes) && entry.indexes.length === values.length
-    ? entry.indexes.map((value, index) => {
+  const target = entry && typeof entry === "object" ? entry : {};
+  const values = Array.isArray(target.values) ? target.values.map((value) => digitsOnly(value)) : [];
+  const indexes = Array.isArray(target.indexes) && target.indexes.length === values.length
+    ? target.indexes.map((value, index) => {
       const parsed = Number.parseInt(String(value ?? ""), 10);
       return Number.isInteger(parsed) && parsed > 0 ? parsed : index + 1;
     })
     : Array.from({ length: values.length }, (_, index) => index + 1);
-  return { values, indexes };
+  target.values = values;
+  target.indexes = indexes;
+  return target;
 };
 const normalizeTournamentPermissions = (value) => {
   if (Array.isArray(value)) {
@@ -1131,9 +1134,7 @@ const setupAdminTournament = (rootCard) => {
     if (!tournamentState.payments.table12Rebuys[playerId]) {
       tournamentState.payments.table12Rebuys[playerId] = { values: [], indexes: [] };
     }
-    const normalized = ensureTable12RebuyEntryShape(tournamentState.payments.table12Rebuys[playerId]);
-    tournamentState.payments.table12Rebuys[playerId] = normalized;
-    return normalized;
+    return ensureTable12RebuyEntryShape(tournamentState.payments.table12Rebuys[playerId]);
   };
 
   const getAllTable12RebuyEntries = () => Object.keys(tournamentState.payments.table12Rebuys || {})
