@@ -1,3 +1,0 @@
-## Skopiuj ten plik do local.properties i dostosuj ścieżkę do Android SDK.
-## local.properties jest plikiem lokalnym (nie commituj go do repo aplikacji).
-sdk.dir=/Users/TWOJ_UZYTKOWNIK/Library/Android/sdk

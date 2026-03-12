@@ -1,5 +1,0 @@
-<resources>
-    <string name="app_name">Karty Main</string>
-    <string name="notification_channel_name">Powiadomienia Main</string>
-    <string name="notification_channel_description">Powiadomienia PUSH dla modułu Main</string>
-</resources>
