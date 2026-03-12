@@ -921,24 +921,26 @@ const setupAdminTournament = (rootCard) => {
       table12RebuyActionInProgress = true;
       renderTable12RebuyModal();
       let appended = false;
+      let activeRebuyState = null;
       try {
+        activeRebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
         const nextIndex = getNextGlobalTable12RebuyIndex();
-        rebuyState.values.push("");
-        rebuyState.indexes.push(nextIndex);
+        activeRebuyState.values.push("");
+        activeRebuyState.indexes.push(nextIndex);
         appended = true;
         const saved = await persistTable12RebuyChanges("Dodaj Rebuy");
         if (!saved) {
-          rebuyState.values.pop();
-          rebuyState.indexes.pop();
+          activeRebuyState.values.pop();
+          activeRebuyState.indexes.pop();
           renderTable12RebuyModal();
           return;
         }
         render();
         renderTable12RebuyModal();
       } catch (error) {
-        if (appended) {
-          rebuyState.values.pop();
-          rebuyState.indexes.pop();
+        if (appended && activeRebuyState) {
+          activeRebuyState.values.pop();
+          activeRebuyState.indexes.pop();
         }
         setTable12RebuyModalStatus(`Wystąpił nieoczekiwany błąd przy operacji \"Dodaj Rebuy\". ${getFirebaseErrorDetails(error)}`);
         console.error("[Second][Table12Rebuy] Błąd podczas dodawania Rebuy", error);
@@ -966,9 +968,10 @@ const setupAdminTournament = (rootCard) => {
       renderTable12RebuyModal();
       const backupTable12Rebuys = JSON.parse(JSON.stringify(tournamentState.payments.table12Rebuys || {}));
       const backupPoolRebuyValues = JSON.parse(JSON.stringify(tournamentState.pool?.rebuyValues || {}));
-      const removedIndex = rebuyState.indexes[rebuyState.indexes.length - 1];
-      rebuyState.values = rebuyState.values.slice(0, -1);
-      rebuyState.indexes = rebuyState.indexes.slice(0, -1);
+      const activeRebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
+      const removedIndex = activeRebuyState.indexes[activeRebuyState.indexes.length - 1];
+      activeRebuyState.values = activeRebuyState.values.slice(0, -1);
+      activeRebuyState.indexes = activeRebuyState.indexes.slice(0, -1);
       compactTable12RebuyIndexesAfterRemoval(removedIndex);
       try {
         const saved = await persistTable12RebuyChanges("Usuń Rebuy");
