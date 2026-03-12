@@ -120,6 +120,7 @@
   - po zakończeniu zapisu odroczony snapshot z serwera jest bezpiecznie nakładany automatycznie, więc przy seryjnym dodawaniu rebuy nie pojawia się błąd techniczny i nie cofa wpisów.
   - jeżeli podczas dodawania wystąpi błąd techniczny (także przed samym zapisem), modal pokaże komunikat błędu zamiast „cichego” braku reakcji przycisku.
   - po kliknięciu `Dodaj Rebuy` / `Usuń Rebuy` aplikacja aktualizuje zawsze bieżący stan gracza, więc przycisk nie „gubi” zmian po odświeżeniu modala w trakcie zapisu.
+  - numer nowego pola jest wyliczany najpierw globalnie, a dopiero potem wykonywany jest zapis do aktywnego wpisu gracza, co zapobiega cichemu braku reakcji po ponownym renderze modala.
    - wpisane wartości sumują się na przycisku w tabeli.
 
 ### Podział puli
