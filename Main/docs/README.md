@@ -169,25 +169,26 @@ Kolumna **IlośćPotwierdzonych**:
 
 ### E) Modal „Szczegóły” gry (po kliknięciu „Szczegóły”)
 W modalu:
-1. Kliknij **Dodaj**, aby dodać nowego uczestnika (wiersz).
-2. W każdym wierszu ustaw:
+1. W pierwszej linii modalu odczytasz szczegóły gry (`Nazwa | Rodzaj gry | Data | Pula | Ilość graczy`) — zastępują one wcześniejszy tytuł „Szczegóły gry”.
+2. Kliknij **Dodaj**, aby dodać nowego uczestnika (wiersz).
+3. W każdym wierszu ustaw:
    - **Gracz** (lista wyboru),
    - **Wpisowe**,
    - **Rebuy/Add-on**,
    - **Wypłata**,
    - **Punkty**,
    - **Mistrzostwo** (checkbox).
-3. Kolumna **+/-** liczy się automatycznie.
-4. Kliknij **Usuń** w wierszu, aby usunąć konkretnego gracza z tej gry.
-5. Nagłówek **Wpisowe** (przycisk zbiorczy) pozwala nadać jedną wartość wpisowego wszystkim wierszom naraz.
-6. Kolumna **Rebuy/Add-on** ma zwykły nagłówek tekstowy (bez akcji zbiorczej).
-7. W każdym wierszu kliknij przycisk z wartością w kolumnie **Rebuy/Add-on**, aby otworzyć okno `Rebuy gracza` i dodać/usunąć kolejne wpisy rebuy (tak jak w Kalkulatorze).
-8. W oknie `Rebuy gracza` nowe kolumny są numerowane per gracz (`Rebuy1`, `Rebuy2`, …); po usunięciu ostatniej kolumny kolejne dodanie przywraca numer ostatniego dostępnego rebuy.
-9. Suma z okna `Rebuy gracza` jest wyświetlana na przycisku w wierszu i automatycznie uwzględniana w kolumnach **+/-**, puli i podsumowaniach.
-10. Modal szczegółów nie koloruje już wierszy po statusie potwierdzenia.
-11. Pola **Wpisowe**, **Wypłata**, **Punkty** oraz wartości w oknie `Rebuy gracza` otwierają na urządzeniach mobilnych klawiaturę numeryczną.
-12. Gdy lista graczy jest długa, sekcja tabeli w modalu ma pionowy pasek przewijania — przewiń w dół, aby edytować kolejne wiersze.
-13. Zamknięcie modalu: przycisk `×`, kliknięcie poza modalem lub klawisz `Esc`.
+4. Kolumna **+/-** liczy się automatycznie.
+5. Kliknij **Usuń** w wierszu, aby usunąć konkretnego gracza z tej gry.
+6. Nagłówek **Wpisowe** (przycisk zbiorczy) pozwala nadać jedną wartość wpisowego wszystkim wierszom naraz.
+7. Kolumna **Rebuy/Add-on** ma zwykły nagłówek tekstowy (bez akcji zbiorczej).
+8. W każdym wierszu kliknij przycisk z wartością w kolumnie **Rebuy/Add-on**, aby otworzyć okno `Rebuy gracza` i dodać/usunąć kolejne wpisy rebuy (tak jak w Kalkulatorze).
+9. W oknie `Rebuy gracza` nowe kolumny są numerowane per gracz (`Rebuy1`, `Rebuy2`, …); po usunięciu ostatniej kolumny kolejne dodanie przywraca numer ostatniego dostępnego rebuy.
+10. Suma z okna `Rebuy gracza` jest wyświetlana na przycisku w wierszu i automatycznie uwzględniana w kolumnach **+/-**, puli i podsumowaniach.
+11. Modal szczegółów nie koloruje już wierszy po statusie potwierdzenia.
+12. Pola **Wpisowe**, **Wypłata**, **Punkty** oraz wartości w oknie `Rebuy gracza` otwierają na urządzeniach mobilnych klawiaturę numeryczną.
+13. Gdy lista graczy jest długa, sekcja tabeli w modalu ma pionowy pasek przewijania — przewiń w dół, aby edytować kolejne wiersze.
+14. Zamknięcie modalu: przycisk `×`, kliknięcie poza modalem lub klawisz `Esc`.
 
 ### F) Modal „Notatki do gry”
 Przyciski:
@@ -363,14 +364,15 @@ W każdym wierszu gry:
 - checkbox **CzyZamknięta** — zamknięcie/otwarcie gry.
 
 ### 10.4. Modal „Szczegóły” gry admina
-1. Kliknij **Dodaj**, aby dodać uczestnika.
-2. Wypełnij kolumny: gracz, wpisowe, rebuy/add-on, wypłata, punkty, mistrzostwo.
-3. **+/-** wylicza się automatycznie.
-4. Kliknij **Usuń** w wierszu, aby usunąć jednego uczestnika.
-5. Kliknij nagłówek-przycisk **Wpisowe**, by ustawić jedno wpisowe dla wszystkich wierszy.
-6. Kliknij przycisk z wartością w kolumnie **Rebuy/Add-on** dla wybranego gracza, aby otworzyć okno `Rebuy gracza` i zarządzać wieloma wpisami rebuy/add-on (przyciski **Dodaj Rebuy** i **Usuń Rebuy**). Numeracja kolumn (`Rebuy1`, `Rebuy2`, …) jest niezależna dla każdego gracza, a po usunięciu ostatniej kolumny następne dodanie przywraca ten numer.
-7. W polach liczbowych tego modalu i w oknie `Rebuy gracza` na telefonie uruchamia się klawiatura numeryczna.
-8. Przy większej liczbie uczestników sekcja tabeli w modalu ma pionowy scrollbar, więc możesz przewijać listę graczy i uzupełniać dane wszystkich wierszy.
+1. W pierwszej linii modalu odczytasz szczegóły gry (`Nazwa | Rodzaj gry | Data | Pula | Ilość graczy`) — ta linia zajmuje miejsce wcześniejszego tytułu „Szczegóły gry”.
+2. Kliknij **Dodaj**, aby dodać uczestnika.
+3. Wypełnij kolumny: gracz, wpisowe, rebuy/add-on, wypłata, punkty, mistrzostwo.
+4. **+/-** wylicza się automatycznie.
+5. Kliknij **Usuń** w wierszu, aby usunąć jednego uczestnika.
+6. Kliknij nagłówek-przycisk **Wpisowe**, by ustawić jedno wpisowe dla wszystkich wierszy.
+7. Kliknij przycisk z wartością w kolumnie **Rebuy/Add-on** dla wybranego gracza, aby otworzyć okno `Rebuy gracza` i zarządzać wieloma wpisami rebuy/add-on (przyciski **Dodaj Rebuy** i **Usuń Rebuy**). Numeracja kolumn (`Rebuy1`, `Rebuy2`, …) jest niezależna dla każdego gracza, a po usunięciu ostatniej kolumny następne dodanie przywraca ten numer.
+8. W polach liczbowych tego modalu i w oknie `Rebuy gracza` na telefonie uruchamia się klawiatura numeryczna.
+9. Przy większej liczbie uczestników sekcja tabeli w modalu ma pionowy scrollbar, więc możesz przewijać listę graczy i uzupełniać dane wszystkich wierszy.
 
 ### 10.5. „Notatki po grze”
 W podsumowaniu każdej gry użyj przycisku **Notatki po grze**:
