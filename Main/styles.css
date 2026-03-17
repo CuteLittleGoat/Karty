@@ -1897,6 +1897,24 @@ body.modal-open {
   }
 }
 
+@media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 500px) {
+  .admin-games-layout {
+    grid-template-columns: 1fr;
+  }
+
+  #adminGamesTab .admin-games-layout {
+    grid-template-columns: 1fr;
+  }
+
+  #adminStatisticsTab .admin-games-layout {
+    grid-template-columns: 1fr;
+  }
+
+  #statisticsTab .admin-games-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 520px) {
   .modal-overlay {
     padding: 16px;
