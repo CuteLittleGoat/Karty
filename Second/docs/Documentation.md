@@ -151,6 +151,7 @@
   - `BUY-IN` = suma `BUY-IN` pomniejszona o rake,
   - `REBUY/ADD-ON` = suma rebuy pomniejszona o rake,
   - `POT` = `BUY-IN + REBUY/ADD-ON`.
+- Wszystkie wartości liczbowe prezentowane w komórkach tabel modułu są zaokrąglane do pełnych liczb (`Math.round`), tak samo jak w module Main.
 
 ### Modal „Rebuy gracza” (Second)
 - Nowy modal tworzony dynamicznie przy inicjalizacji turnieju.
