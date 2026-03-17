@@ -10,6 +10,7 @@ const STATISTICS_PIN_STORAGE_KEY = "statisticsPinVerified";
 const STATISTICS_PLAYER_ID_STORAGE_KEY = "statisticsPlayerId";
 const PLAYER_ZONE_PIN_STORAGE_KEY = "playerZonePinVerified";
 const PLAYER_ZONE_PLAYER_ID_STORAGE_KEY = "playerZonePlayerId";
+const PLAYER_ACCESS_UPDATED_EVENT = "player-access-updated";
 const PLAYER_ACCESS_COLLECTION = "app_settings";
 const PLAYER_ACCESS_DOCUMENT = "player_access";
 const RULES_DOCUMENT = "rules";
@@ -3939,11 +3940,12 @@ const initUserTabs = () => {
   const syncPlayerZoneSectionAccess = (player) => {
     const hasSectionAccess = (sectionKey) => Boolean(player) && isPlayerAllowedForTab(player, sectionKey);
 
-    setPinGateState(hasSectionAccess("nextGameTab"));
-    setChatPinGateState(hasSectionAccess("chatTab"));
-    setConfirmationsPinGateState(hasSectionAccess("confirmationsTab"));
-    setUserGamesPinGateState(hasSectionAccess("userGamesTab"));
-    setStatisticsPinGateState(hasSectionAccess("statsTab"));
+    const isZoneVerified = getPlayerZonePinGateState();
+    setPinGateState(isZoneVerified && hasSectionAccess("nextGameTab"));
+    setChatPinGateState(isZoneVerified && hasSectionAccess("chatTab"));
+    setConfirmationsPinGateState(isZoneVerified && hasSectionAccess("confirmationsTab"));
+    setUserGamesPinGateState(isZoneVerified && hasSectionAccess("userGamesTab"));
+    setStatisticsPinGateState(isZoneVerified && hasSectionAccess("statsTab"));
 
     const playerId = player?.id || "";
     setChatVerifiedPlayerId(hasSectionAccess("chatTab") ? playerId : "");
@@ -4079,6 +4081,18 @@ const initUserTabs = () => {
         setActiveZoneSection(target);
       }
     });
+  });
+
+  window.addEventListener(PLAYER_ACCESS_UPDATED_EVENT, () => {
+    if (!getPlayerZonePinGateState()) {
+      syncPlayerZoneSectionAccess(null);
+      updatePlayerZoneVisibility();
+      return;
+    }
+
+    const verifiedPlayer = getPlayerZoneVerifiedPlayer();
+    syncPlayerZoneSectionAccess(verifiedPlayer);
+    updatePlayerZoneVisibility();
   });
 
   if (!getPlayerZonePinGateState()) {
@@ -4252,6 +4266,7 @@ const initSharedPlayerAccess = () => {
       adminPlayersState.players = rawPlayers.map(normalizePlayerRecord);
       rebuildAdminPlayersPinMap();
       synchronizeStatisticsAccessState();
+      window.dispatchEvent(new CustomEvent(PLAYER_ACCESS_UPDATED_EVENT));
       window.dispatchEvent(new CustomEvent("statistics-access-updated"));
     });
 };
