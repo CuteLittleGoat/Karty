@@ -9,7 +9,7 @@ Instrukcja jest podzielona na dwie części:
 
 ---
 
-## 1. Start aplikacji i orientacja na ekranie
+## 1. Start aplikacji
 
 1. Otwórz plik `Main/index.html` w przeglądarce.
 2. Na górze ekranu zobaczysz nagłówek oraz sekcję z ikoną `Pliki/Ikona.png` i przyciskiem **Instrukcja** (prawy górny róg, ikona po lewej stronie przycisku w tej samej linii).
@@ -19,13 +19,9 @@ Instrukcja jest podzielona na dwie części:
    - **Panel użytkownika** (zakładki: Aktualności, Regulamin, Strefa Gracza).
 5. Kliknięcie **Instrukcja** otwiera okno modalne z instrukcją; zamkniesz je przyciskiem `×`.
 6. W trybie użytkownika główna zielona ramka panelu jest rozciągnięta niemal na pełną szerokość ekranu: zaczyna się 1 px od lewej i kończy 1 px przed prawą krawędzią.
-7. W uruchomieniu PWA (aplikacja zainstalowana na urządzeniu) moduł Main startuje domyślnie z blokadą orientacji **pionowej**.
-8. Jeśli potrzebujesz testowo zmienić profil orientacji, dopisz do adresu parametr `pwaOrientation`:
-   - `?pwaOrientation=portrait` — pion,
-   - `?pwaOrientation=landscape` — poziom,
-   - `?pwaOrientation=any` — decyzja urządzenia.
-9. Nazwa karty w przeglądarce dla modułu Main to **"Poker - rozgrywki"**.
-10. Po instalacji PWA aplikacja na urządzeniu również wyświetla nazwę **"Poker - rozgrywki"**.
+7. W uruchomieniu PWA (aplikacja zainstalowana na urządzeniu) moduł Main nie wymusza orientacji — aplikacja działa zgodnie z ustawieniem orientacji urządzenia.
+8. Nazwa karty w przeglądarce dla modułu Main to **"Poker - rozgrywki"**.
+9. Po instalacji PWA aplikacja na urządzeniu również wyświetla nazwę **"Poker - rozgrywki"**.
 
 ---
 

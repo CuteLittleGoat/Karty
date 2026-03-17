@@ -1,13 +1,10 @@
-const CACHE_NAME = "karty-main-pwa-v2";
+const CACHE_NAME = "karty-main-pwa-v3";
 const APP_SHELL_ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
-  "./pwa-config.js",
   "./pwa-bootstrap.js",
-  "./manifest-portrait.webmanifest",
-  "./manifest-landscape.webmanifest",
   "./manifest-any.webmanifest",
   "../Pliki/Ikona.png"
 ];

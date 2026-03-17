@@ -4,9 +4,8 @@
 - `Main/index.html` — pełny układ widoku użytkownika i administratora oraz modal instrukcji.
 - `Main/styles.css` — motyw, layout kart, tabele i style modali.
 - `Main/app.js` — logika Firebase, zakładek, panelu admina, strefy gracza, kalkulatora i modali.
-- `Main/pwa-config.js` — konfiguracja profili orientacji PWA (`portrait`, `landscape`, `any`) i wybór aktywnego profilu (query/localStorage).
-- `Main/pwa-bootstrap.js` — podmiana aktywnego manifestu na podstawie profilu oraz rejestracja Service Workera.
-- `Main/manifest-portrait.webmanifest`, `Main/manifest-landscape.webmanifest`, `Main/manifest-any.webmanifest` — trzy warianty manifestu do łatwego sterowania blokadą orientacji.
+- `Main/pwa-bootstrap.js` — rejestracja Service Workera po załadowaniu aplikacji.
+- `Main/manifest-any.webmanifest` — manifest PWA bez wymuszania orientacji; układ zależy od ustawień urządzenia.
 - `Main/service-worker.js` — podstawowy cache app-shell dla uruchamiania PWA i pracy offline dla statycznych zasobów.
 
 ## 2. Aktualny zakres funkcjonalny tej wersji
@@ -145,15 +144,14 @@ Efekt techniczny:
 
 
 ## PWA (Main-only)
-- `index.html` zawiera link `<link rel="manifest">` z identyfikatorem `pwaManifestLink`; domyślnie wskazuje profil `portrait`.
-- Skrypt `pwa-config.js` wybiera profil orientacji wg kolejności: `pwaOrientation` w URL -> `localStorage` -> domyślnie `portrait`.
-- Skrypt `pwa-bootstrap.js` podmienia plik manifestu zgodnie z profilem i rejestruje `service-worker.js`.
+- `index.html` wskazuje bezpośrednio jeden manifest PWA (`manifest-any.webmanifest`).
+- Skrypt `pwa-bootstrap.js` rejestruje `service-worker.js`.
 - Uruchomienie z konfiguracji PWA (`?pwa=1&view=user`) wymusza tryb użytkownika: `getAdminMode()` zawsze zwraca `false` dla takiego startu.
-- Obecna konfiguracja startowa PWA używa wariantu pionowego (`manifest-portrait.webmanifest`).
+- Konfiguracja PWA nie wymusza orientacji ekranu.
 - Tytuł dokumentu (`<title>`) w `index.html` ustawiono na `Poker - rozgrywki`.
-- Wszystkie manifesty ustawiają nazwę instalowanej aplikacji na `Poker - rozgrywki` (`short_name`: `Poker`).
-- `start_url` w manifestach jest relatywny (`./index.html?...`), a `scope` ustawiony na `./`, co zapobiega błędom 404 dla hostingu pod prefiksem repozytorium.
-- Service Worker używa cache `karty-main-pwa-v2`, aby wymusić pobranie nowej konfiguracji PWA po wdrożeniu.
+- Manifest PWA ustawia nazwę instalowanej aplikacji na `Poker - rozgrywki` (`short_name`: `Poker`).
+- `start_url` w manifeście jest relatywny (`./index.html?...`), a `scope` ustawiony na `./`, co zapobiega błędom 404 dla hostingu pod prefiksem repozytorium.
+- Service Worker używa cache `karty-main-pwa-v3`, aby wymusić pobranie nowej konfiguracji PWA po wdrożeniu.
 
 - W `initAdminCalculator` każdy wiersz rebuy (`table2Rows` i `table9Rows`) przechowuje parę `rebuys[]` + `rebuyIndexes[]`; dodawanie rebuy nadaje globalny numer `max+1` dla całego aktywnego trybu, a usunięcie rebuy wykonuje globalną kompaktację indeksów bez luk.
 - Tabela5 buduje kolumny `RebuyX` i mapowanie wartości po posortowanych `rebuyIndexes`, zamiast po samym `flatMap` kolejności graczy, dzięki czemu semantyka numeru `RebuyX` pozostaje spójna po dodawaniu/usuwaniu kolumn u różnych graczy.
