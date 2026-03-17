@@ -60,6 +60,7 @@ To strefa z dodatkowymi funkcjami, odblokowywana PIN-em.
 2. Wpisz swój **PIN (5 cyfr)**.
 3. Kliknij **Otwórz**.
 4. Po poprawnej weryfikacji aplikacja pokaże przyciski sekcji, do których masz uprawnienia.
+5. Po odświeżeniu strony (refresh) sesja wejścia do **Strefy Gracza** pozostaje aktywna w tej samej karcie, a przełączanie między sekcjami bocznymi nie wymaga ponownego wpisywania PIN do strefy.
 
 Dostępne przyciski sekcji (widoczne zależnie od uprawnień):
 - **Najbliższa Gra**,
