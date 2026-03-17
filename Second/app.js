@@ -1124,8 +1124,7 @@ const setupAdminTournament = (rootCard) => {
   };
   const formatCellNumber = (value) => {
     if (!Number.isFinite(value)) return "";
-    const rounded = Math.round(value * 100) / 100;
-    return Number.isInteger(rounded) ? String(rounded) : String(rounded.toFixed(2));
+    return String(Math.round(value));
   };
   const toPercentText = (value) => `${Math.round((toNumber(value) * 100) * 100) / 100}%`;
 

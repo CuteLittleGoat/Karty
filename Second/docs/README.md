@@ -109,7 +109,8 @@
 ### Wpłaty
 1. Przejdź do zakładki `Wpłaty`.
 2. `Tabela10` oraz `Tabela11` są automatycznie wyliczane i tylko do odczytu.
-3. W `Tabela12` kolumna **REBUY** to przycisk per gracz:
+3. Wszystkie wartości liczbowe w komórkach tabel są zaokrąglane do pełnych liczb (jak w module Main).
+4. W `Tabela12` kolumna **REBUY** to przycisk per gracz:
    - kliknij przycisk, aby otworzyć modal **Rebuy gracza**,
    - po otwarciu pustego modala nie ma żadnej kolumny (zgodnie z Main),
    - użyj **Dodaj Rebuy** / **Usuń Rebuy** — pierwsza kolumna pojawia się po kliknięciu **Dodaj Rebuy**,
