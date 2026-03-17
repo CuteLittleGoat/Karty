@@ -1769,6 +1769,13 @@ body:not(.is-admin) .player-zone-layout {
   font-family: var(--font-subtitle);
 }
 
+.game-details-meta {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  color: rgba(237, 235, 230, 0.92);
+}
+
 .modal-body {
   padding: 18px 22px 22px;
   display: grid;

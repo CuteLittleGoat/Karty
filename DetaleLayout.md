@@ -28,6 +28,11 @@
 - W `Półfinał` usunięto `Tabela20`, a w tabelach tworzonych po `Dodaj nowy stół` dodano kolumnę `Stack` przed `Eliminated`.
 - Kontrolka statusu płatności gracza (`.payment-status-toggle`) ma pełny obszar kliknięcia obejmujący całą pigułkę, z ukrytym inputem rozciągniętym na cały element.
 
+## Moduł Main — modale „Szczegóły gry” (Gry admina i Gry użytkowników)
+- W modalach `#gameDetailsModal`, `#userGameDetailsModal`, `#playerUserGameDetailsModal` usunięto osobny nagłówek tekstowy „Szczegóły gry” / „Szczegóły gry użytkownika”.
+- Linia metadanych gry (`Nazwa | Rodzaj gry | Data | Pula | Ilość graczy`) została przeniesiona do pierwszej linii nagłówka obok przycisku `×`, co wizualnie powiększa obszar tabeli danych.
+- Dla linii metadanych używana jest klasa `.game-details-meta` (`margin: 0`, `flex: 1`, `min-width: 0`, jaśniejszy kolor tekstu), aby tekst poprawnie współdzielił przestrzeń z przyciskiem zamknięcia.
+
 ## Moduł Main — panel Ranking (Gry admina, Statystyki i widok gracza)
 - Tabela rankingu ma trzy kolumny: `Miejsce`, `Gracz`, `Wynik` i używa `table-layout: fixed`.
 - Kolumna `Gracz` ma stałą szerokość `13ch`; nagłówek i wartości są wyrównane do lewej, a dłuższe nazwy są obcinane z wielokropkiem (`white-space: nowrap`, `overflow: hidden`, `text-overflow: ellipsis`).
