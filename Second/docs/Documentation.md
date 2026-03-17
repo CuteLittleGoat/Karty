@@ -181,7 +181,7 @@
 - Liczba kolumn `REBUY` w `Tabela16` jest dynamiczna i równa liczbie uzupełnionych pól `Rebuy` w modalach `Rebuy gracza` (`Tabela12` → `REBUY`).
 - Jeśli w modalach `Rebuy gracza` nie ma żadnej uzupełnionej wartości, `Tabela16` nie renderuje żadnej kolumny `REBUY`.
 - Komórki `REBUY1..REBUY30` są automatycznie przypisane do wierszy przez mapę biznesową i są readonly (jak `KWOTA`) z wartościami z modali `Rebuy gracza`.
-- Komórki od `REBUY31` wzwyż pozostają puste domyślnie i są edytowalne przez użytkownika (wartości ręczne są trzymane w `pool.rebuyValues`).
+- Komórki od `REBUY31` wzwyż są renderowane dynamicznie, pozostają puste domyślnie (bez auto-przypisania do wiersza) i są edytowalne przez użytkownika (wartości ręczne są trzymane w `pool.rebuyValues`).
 - Kolumny `MOD` są dynamiczne względem liczby kolumn `REBUY`: dla `0..12` widoczne jest `MOD1`, dla `13..20` widoczne są `MOD1` i `MOD2`, a dla `>20` widoczne są `MOD1`, `MOD2`, `MOD3`.
 - `SUMA` = `KWOTA + suma REBUY w wierszu + MOD1 + MOD2 + MOD3` (z uwzględnieniem widocznych kolumn MOD).
 
