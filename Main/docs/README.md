@@ -212,7 +212,8 @@ Jeśli wypłaty nie zgadzają się z pulą, pojawia się czerwone ostrzeżenie.
 5. Kliknij **Eksportuj**, aby pobrać dane statystyk.
 6. Na komputerze panel **Ranking** jest po prawej stronie tabeli **Statystyki**.
 7. Na telefonie panel **Ranking** wyświetla się pod tabelą **Statystyki** (układ jednokolumnowy).
-8. W telefonie poziomo (mobile landscape) układ również przełącza się na jedną kolumnę, więc panele **Lata** i **Ranking** pojawiają się pod treścią, a nie obok niej.
+8. W telefonie poziomo (mobile landscape) panel **Lata** jest celowo zwężony, sekcja **Statystyki** dostaje większą minimalną szerokość, a cały układ może przewijać się poziomo — dzięki temu tabele pozostają czytelne.
+9. W tym samym widoku panel **Ranking** jest przenoszony pod główną sekcję statystyk (na pełną szerokość).
 
 ---
 
@@ -561,7 +562,7 @@ Jak to działa w praktyce dla użytkownika:
 2. Gdy tabela nie mieści się poziomo, pojawia się **poziomy pasek przewijania**.
 3. Gdy tabela ma dużo wierszy, pojawia się **pionowy pasek przewijania** w obrębie bloku tabeli.
 4. Nie zmienia się logika formularzy, obliczeń ani typy danych — zmienia się wyłącznie układ wizualny i ergonomia pracy.
-5. Na telefonach w orientacji poziomej (widok dotykowy o małej wysokości) panele boczne (np. **Lata**, **Ranking**) także układają się pionowo, jeden pod drugim.
+5. Na telefonach w orientacji poziomej (widok dotykowy o małej wysokości) panel **Lata** jest zwężony, tabela główna dostaje większą szerokość minimalną, a w razie potrzeby używasz przewijania lewo/prawo; panel **Ranking** trafia pod sekcję główną.
 
 Wskazówka użycia:
 - Na telefonie przewijaj tabelę ruchem poziomym w obrębie jej kontenera.
