@@ -1346,7 +1346,7 @@ const setupAdminTournament = (rootCard) => {
       const rebuyLimit = 30;
       const distributed = allRebuyValues.slice(0, rebuyLimit);
       const overflow = allRebuyValues.slice(rebuyLimit).reduce((sum, value) => sum + value, 0);
-      const rebuyColumns = distributed.length;
+      const rebuyColumns = allRebuyValues.length;
       tournamentState.pool.rebuyValues = tournamentState.pool.rebuyValues || {};
 
       const rebuyMatrix = splitRows.map(() => Array.from({ length: rebuyColumns }, () => ""));
