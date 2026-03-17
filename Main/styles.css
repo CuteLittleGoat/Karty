@@ -1898,17 +1898,20 @@ body.modal-open {
 }
 
 @media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 500px) {
-  #adminGamesTab .admin-games-layout,
-  #adminStatisticsTab .admin-games-layout,
-  #statisticsTab .admin-games-layout {
-    grid-template-columns: 10ch minmax(64ch, 1fr);
-    overflow-x: auto;
+  .admin-games-layout {
+    grid-template-columns: 1fr;
   }
 
-  #adminGamesTab .admin-games-ranking-sidebar,
-  #adminStatisticsTab .admin-games-ranking-sidebar,
-  #statisticsTab .admin-games-ranking-sidebar {
-    grid-column: 1 / -1;
+  #adminGamesTab .admin-games-layout {
+    grid-template-columns: 1fr;
+  }
+
+  #adminStatisticsTab .admin-games-layout {
+    grid-template-columns: 1fr;
+  }
+
+  #statisticsTab .admin-games-layout {
+    grid-template-columns: 1fr;
   }
 }
 

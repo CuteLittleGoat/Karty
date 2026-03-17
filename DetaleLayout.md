@@ -34,7 +34,7 @@
 - Dzięki skróceniu kolumny `Gracz` cała tabela rankingu mieści się w panelu bez poziomego przewijania w `Gry admina` i `Statystyki`.
 - Wysokość wiersza rankingu pozostaje zgodna z `--admin-games-panel-item-height`.
 - W widoku gracza (`Statystyki`) na desktopie panel `Ranking` jest po prawej stronie tabeli statystyk (osobna kolumna `34ch`), a na mobile wraca pod tabelę statystyk.
-- Dla telefonów w orientacji poziomej (`orientation: landscape`, `hover: none`, `pointer: coarse`, `max-height: 500px`) układ paneli statystyk używa dwóch kolumn: zwężony panel `Lata` (`10ch`) oraz szeroki obszar danych (`minmax(64ch, 1fr)`) z lokalnym przewijaniem poziomym. Panel `Ranking` jest przenoszony pod główną sekcję (`grid-column: 1 / -1`).
+- Dla telefonów w orientacji poziomej (`orientation: landscape`, `hover: none`, `pointer: coarse`, `max-height: 500px`) układ `.admin-games-layout` jest wymuszony do jednej kolumny, żeby panele `Lata` i `Ranking` układały się pionowo.
 
 ## Modale i tabele – aktualne zasady
 - Modal `Rebuy gracza` w module Second używa układu `modal-header` + `modal-body` identycznego jak w Main, wraz z tymi samymi proporcjami sekcji tabeli i akcji.

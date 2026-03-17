@@ -72,7 +72,7 @@ Dodatkowo dla każdego stołu:
 - W `Statystyki` (widok gracza) siatka ma trzy kolumny: `Lata` (`20ch`), `Statystyki` (`minmax(0, 1fr)`) i `Ranking` (`34ch`).
 - Dzięki temu panel `Ranking` jest po prawej stronie tabel statystyk na desktopie.
 - W mobile (`max-width: 720px`) układ przechodzi na jedną kolumnę i panel `Ranking` wraca pod tabelę statystyk.
-- Dodatkowo na telefonach w poziomie (`orientation: landscape` + urządzenie dotykowe + `max-height: 500px`) layout używa kolumn `10ch` (`Lata`) + `minmax(64ch, 1fr)` (`Statystyki`) z poziomym przewijaniem kontenera; panel `Ranking` przechodzi pod sekcję główną.
+- Dodatkowo na telefonach w poziomie (`orientation: landscape` + urządzenie dotykowe + `max-height: 500px`) layout także przechodzi na jedną kolumnę, aby panele nie były ustawione obok siebie.
 
 
 ### Losowanie stołów — akcje w bloku stołu
