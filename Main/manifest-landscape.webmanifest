@@ -1,10 +1,9 @@
 {
   "name": "Poker - rozgrywki",
   "short_name": "Poker",
-  "start_url": "./index.html?pwa=1&view=user&pwaOrientation=landscape",
+  "start_url": "./index.html?pwa=1&view=user",
   "scope": "./",
   "display": "standalone",
-  "orientation": "landscape",
   "theme_color": "#0f172a",
   "background_color": "#0f172a",
   "icons": [
