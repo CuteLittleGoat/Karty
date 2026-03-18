@@ -24,7 +24,8 @@
   - `Do zapłaty` ma styl `.is-unpaid` (jasnoróżowy napis + czerwonawa obwódka).
   - `Opłacone` ma styl `.is-paid` (złoty napis + złota obwódka + glow).
 - W `Losowanie stołów` usunięto górny zbiorczy blok `Nazwa` + `Łączna Suma`; nagłówki `Nazwa` i `Łączna Suma` występują teraz wyłącznie wewnątrz każdego dodanego bloku stołu.
-- W `Faza grupowa` dodano tabelę `Tabela17A` (`LP`, `Gracz`, `Stack`, `%`, `Stół`).
+- W panelu `Wpłaty` (`Tabela12`) oraz `Faza grupowa` (`Tabela19`) zastosowano zebra striping per grupa stołu: wszystkie kolejne wiersze tego samego stołu mają wspólne tło, a następny stół przełącza kolor na naprzemienny wariant (`.t-group-stripe-even` / `.t-group-stripe-odd`).
+- W `Faza grupowa` dodano tabele `Tabela19A` i `Tabela19B`; obie korzystają ze standardowych pól `.admin-input`, a dynamiczne przenoszenie graczy między tabelami zależy od checkboxa `ELIMINATED` w `Tabela19`.
 - W `Półfinał` usunięto `Tabela20`, a w tabelach tworzonych po `Dodaj nowy stół` dodano kolumnę `Stack` przed `Eliminated`.
 - Kontrolka statusu płatności gracza (`.payment-status-toggle`) ma pełny obszar kliknięcia obejmujący całą pigułkę, z ukrytym inputem rozciągniętym na cały element.
 

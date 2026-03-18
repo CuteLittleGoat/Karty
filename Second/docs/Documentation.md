@@ -69,7 +69,7 @@
 - Przycisk `Edytuj` otwiera `prompt` i zapisuje listę uprawnień oddzieloną przecinkami do pola `permissions`.
 
 ### Usuwanie gracza
-- `delete-player` usuwa rekord gracza z `players` oraz czyści powiązane dane (`assignments`, `group`, `semi`).
+- `delete-player` usuwa rekord gracza z `players` oraz czyści powiązane dane (`assignments`, `group.playerStacks`, `group.eliminated`, `group.eliminatedWins`, `group.survivorStacks`, `semi`).
 
 ### Losowanie stołów — status i wybór stołu
 - Usunięto górny, zbiorczy blok z polami `Nazwa` i `Łączna Suma` nad tabelą przypisań.
@@ -84,9 +84,14 @@
 - Handler `click` wykonuje logikę wyłącznie dla ról-akcji (`add-player`, `delete-player`, `add-table`, itp.). Kontrolki formularza (`checkbox`, `select`, `input`) nie uruchamiają już globalnego `render()` przez `click`, dzięki czemu przełączenie statusu działa stabilnie na desktopie i mobile (tap).
 
 ### Faza grupowa
-- `Tabela17` ma teraz tylko kolumny `STACK GRACZA` oraz `REBUY/ADD-on(w żetonach na os)` (usunięto kolumnę `Gracz`).
-- Dodano `Tabela17A` z kolumnami `LP`, `Gracz`, `Stack`, `%`, `Stół`.
-- Kolumna `Stack` w `Tabela17A` jest polem liczbowym (`data-role="group-stack"`) mapowanym do `group.playerStacks[playerId]`.
+- `Tabela17` ma tylko kolumny `STACK GRACZA` oraz `REBUY/ADD-ON`; wartości są readonly i pochodzą z metadanych turnieju (`stack`, `rebuyStack`).
+- `Tabela18` wylicza stack per stół (`liczba graczy przy stole × stack`) oraz `ŁĄCZNY STACK`.
+- `Tabela19` renderuje kolumny `LP`, `STÓŁ`, `GRACZ`, `ELIMINATED`, `STACK`, `REBUY/ADD-ON`.
+- Kolumna `REBUY/ADD-ON` w `Tabela19` jest wyliczana jako `rebuyStack × liczba niepustych pól RebuyX` dla danego gracza w `payments.table12Rebuys[playerId].values`.
+- `Tabela19` nie ma już kolumny `REBUY`.
+- Dodano zebra striping per grupa stołu dla `Tabela19`; klasy wierszy są wyliczane helperem `getAlternatingTableGroupClass(...)`.
+- `Tabela19A` pokazuje tylko graczy z zaznaczonym `group.eliminated[playerId]`; kolumna `WYGRANA` jest inputem liczbowym `data-role="group-eliminated-win"` zapisywanym do `group.eliminatedWins[playerId]` i domyślnie renderuje `0`.
+- `Tabela19B` pokazuje tylko graczy bez zaznaczonego `ELIMINATED`; kolumna `STACK` jest inputem liczbowym `data-role="group-survivor-stack"` zapisywanym do `group.survivorStacks[playerId]`, a `%` liczy `stack gracza / Tabela18.ŁĄCZNY STACK`.
 
 ### Półfinał
 - Usunięto `Tabela20`.
@@ -147,10 +152,11 @@
   - `LICZ. REBUY/ADD-ON` jako liczba uzupełnionych pól rebuy w modalach `Rebuy gracza` (bez sumowania wartości).
 - `Tabela11`:
   - `%` z pola `RAKE` (konwersja do ułamka),
-  - `RAKE` = `Tabela10.SUMA * %`,
-  - `BUY-IN` = suma `BUY-IN` pomniejszona o rake,
-  - `REBUY/ADD-ON` = suma rebuy pomniejszona o rake,
+  - `RAKE` = `(suma BUY-IN z Tabela12 + suma REBUY z Tabela12) * %`,
+  - `BUY-IN` = suma `BUY-IN` pomniejszona o rake naliczony tylko od `BUY-IN`,
+  - `REBUY/ADD-ON` = suma rebuy pomniejszona o rake naliczony tylko od rebuy,
   - `POT` = `BUY-IN + REBUY/ADD-ON`.
+- `Tabela12` renderuje kolumny w kolejności `LP`, `STÓŁ`, `GRACZ`, `BUY-IN`, `REBUY` i stosuje zebra striping per grupa stołu przez klasy `t-group-stripe-even/odd`.
 - Wszystkie wartości liczbowe prezentowane w komórkach tabel modułu są zaokrąglane do pełnych liczb (`Math.round`), tak samo jak w module Main.
 
 ### Modal „Rebuy gracza” (Second)
@@ -187,10 +193,9 @@
 - `SUMA` = `KWOTA + suma REBUY w wierszu + MOD1 + MOD2 + MOD3` (z uwzględnieniem widocznych kolumn MOD).
 
 ### Faza grupowa
-- `Tabela17` zredukowana do jednego wiersza.
-- `Tabela17A` usunięta.
-- `Tabela18` wylicza stack per stół i `ŁĄCZNY STACK`.
-- `Tabela19` pobiera dane readonly z `Losowanie graczy` i `Wpłaty`.
+- `group` przechowuje dodatkowo `eliminatedWins` oraz `survivorStacks`, które zasilają odpowiednio `Tabela19A` i `Tabela19B`.
+- `Tabela19A` i `Tabela19B` są w pełni zależne od checkboxa `group-eliminated`; przełączenie checkboxa natychmiast przenosi gracza pomiędzy tabelami przy kolejnym renderze.
+- Dla nowych inputów w `Tabela19A` i `Tabela19B` dodano metadane fokusu (`data-focus-target`, `data-section`, `data-row-id`, `data-column-key`), aby nie wrócił błąd utraty fokusu opisany w `Analizy/Wazne_Fokus`.
 
 ### Nagłówki kolumn
 - Dodano globalne wymuszenie uppercase dla nagłówków tabel (`th`) w module Second.

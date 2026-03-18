@@ -618,7 +618,9 @@ const createTournamentDefaultState = () => ({
   },
   group: {
     playerStacks: {},
-    eliminated: {}
+    eliminated: {},
+    eliminatedWins: {},
+    survivorStacks: {}
   },
   semi: {
     tables: [],
@@ -656,6 +658,11 @@ const normalizeTournamentState = (value) => {
     }
     return { id: crypto.randomUUID(), split: "", mod1: "", mod2: "", mod3: "" };
   });
+  state.group = state.group || {};
+  state.group.playerStacks = state.group.playerStacks || {};
+  state.group.eliminated = state.group.eliminated || {};
+  state.group.eliminatedWins = state.group.eliminatedWins || {};
+  state.group.survivorStacks = state.group.survivorStacks || {};
 
   state.payments = state.payments || {};
   state.payments.table12Rebuys = state.payments.table12Rebuys || {};
@@ -676,6 +683,18 @@ const normalizeTournamentState = (value) => {
 };
 
 const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");
+const getAlternatingTableGroupClass = (rows, getTableKey) => {
+  let previousTableKey = Symbol("initial");
+  let groupIndex = -1;
+  return rows.map((row) => {
+    const tableKey = getTableKey(row);
+    if (tableKey !== previousTableKey) {
+      groupIndex += 1;
+      previousTableKey = tableKey;
+    }
+    return groupIndex % 2 === 0 ? "t-group-stripe-even" : "t-group-stripe-odd";
+  });
+};
 
 const ensureTable12RebuyEntryShape = (entry) => {
   const target = entry && typeof entry === "object" ? entry : {};
@@ -1244,7 +1263,7 @@ const setupAdminTournament = (rootCard) => {
     const rakePercent = percentInputToDecimal(tournamentState.rake);
     const table11 = {
       percent: rakePercent,
-      rake: table10.sum * rakePercent,
+      rake: (totalBuyInFromDraw + rebuyTotal) * rakePercent,
       buyIn: table10.sum * (1 - rakePercent),
       rebuyAddOn: rebuyTotal * (1 - rakePercent),
       pot: 0
@@ -1326,7 +1345,8 @@ const setupAdminTournament = (rootCard) => {
     }
 
     if (activeSection === "payments") {
-      mount.innerHTML = `<h3>TABELA10</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZ. REBUY/ADD-ON</th></tr></thead><tbody><tr><td>${formatCellNumber(table10.buyIn)}</td><td>${formatCellNumber(table10.rebuyAddOn)}</td><td>${formatCellNumber(table10.sum)}</td><td>${formatCellNumber(table10.rebuyCount)}</td></tr></tbody></table></div><h3>TABELA11</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${toPercentText(table11.percent)}</td><td>${formatCellNumber(table11.rake)}</td><td>${formatCellNumber(table11.buyIn)}</td><td>${formatCellNumber(table11.rebuyAddOn)}</td><td>${formatCellNumber(table11.pot)}</td></tr></tbody></table></div><h3>TABELA12</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>STÓŁ</th><th>LP</th><th>GRACZ</th><th>BUY-IN</th><th>REBUY</th></tr></thead><tbody>${groupedDrawRows.map((row) => `<tr><td>${esc(row.tableName)}</td><td>${row.lp}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(playerBuyInById[row.playerId] || 0)}</td><td><button class="secondary" type="button" data-role="open-table12-rebuy" data-player-id="${row.playerId}">${formatCellNumber(getPlayerRebuyTotal(row.playerId))}</button></td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div>`;
+      const paymentsStripeClasses = getAlternatingTableGroupClass(groupedDrawRows, (row) => row.tableId);
+      mount.innerHTML = `<h3>TABELA10</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZ. REBUY/ADD-ON</th></tr></thead><tbody><tr><td>${formatCellNumber(table10.buyIn)}</td><td>${formatCellNumber(table10.rebuyAddOn)}</td><td>${formatCellNumber(table10.sum)}</td><td>${formatCellNumber(table10.rebuyCount)}</td></tr></tbody></table></div><h3>TABELA11</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${toPercentText(table11.percent)}</td><td>${formatCellNumber((totalBuyInFromDraw + rebuyTotal) * rakePercent)}</td><td>${formatCellNumber(table11.buyIn)}</td><td>${formatCellNumber(table11.rebuyAddOn)}</td><td>${formatCellNumber(table11.pot)}</td></tr></tbody></table></div><h3>TABELA12</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>STÓŁ</th><th>GRACZ</th><th>BUY-IN</th><th>REBUY</th></tr></thead><tbody>${groupedDrawRows.map((row, index) => `<tr class="${paymentsStripeClasses[index]}"><td>${row.lp}</td><td>${esc(row.tableName)}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(playerBuyInById[row.playerId] || 0)}</td><td><button class="secondary" type="button" data-role="open-table12-rebuy" data-player-id="${row.playerId}">${formatCellNumber(getPlayerRebuyTotal(row.playerId))}</button></td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div>`;
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
@@ -1438,6 +1458,10 @@ const setupAdminTournament = (rootCard) => {
     if (activeSection === "group") {
       const stackValue = toDigitsNumber(tournamentState.stack);
       const rebuyStackValue = toDigitsNumber(tournamentState.rebuyStack);
+      tournamentState.group = tournamentState.group || {};
+      tournamentState.group.eliminated = tournamentState.group.eliminated || {};
+      tournamentState.group.eliminatedWins = tournamentState.group.eliminatedWins || {};
+      tournamentState.group.survivorStacks = tournamentState.group.survivorStacks || {};
       const groupedByTable = tournamentState.tables.map((table) => {
         const rowsForTable = groupedDrawRows.filter((row) => row.tableId === table.id);
         return {
@@ -1445,9 +1469,21 @@ const setupAdminTournament = (rootCard) => {
           stack: rowsForTable.length * stackValue
         };
       });
-      const totalGroupStack = groupedDrawRows.length * stackValue;
-
-      mount.innerHTML = `<h3>TABELA17</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>STACK GRACZA</th><th>REBUY/ADD-ON</th></tr></thead><tbody><tr><td>${formatCellNumber(stackValue)}</td><td>${formatCellNumber(rebuyStackValue)}</td></tr></tbody></table></div><h3>TABELA18</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr>${groupedByTable.map(({ table }) => `<th class="table18-dynamic-header">${esc(table.name)}</th>`).join("")}<th>ŁĄCZNY STACK</th></tr></thead><tbody><tr>${groupedByTable.map(({ stack }) => `<td>${formatCellNumber(stack)}</td>`).join("")}<td>${formatCellNumber(totalGroupStack)}</td></tr></tbody></table></div><h3>TABELA19</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>STÓŁ</th><th>LP</th><th>GRACZ</th><th>ELIMINATED</th><th>STACK</th><th>REBUY/ADD-ON</th><th>REBUY</th></tr></thead><tbody>${groupedDrawRows.map((row) => `<tr><td>${esc(row.tableName)}</td><td>${row.lp}</td><td>${esc(row.playerName)}</td><td><input type="checkbox" data-role="group-eliminated" data-player-id="${row.playerId}" ${tournamentState.group.eliminated[row.playerId] ? "checked" : ""}></td><td>${formatCellNumber(stackValue)}</td><td>${formatCellNumber(rebuyStackValue)}</td><td>${formatCellNumber(getPlayerRebuyTotal(row.playerId))}</td></tr>`).join("") || '<tr><td colspan="7">Brak danych.</td></tr>'}</tbody></table></div>`;
+      const totalGroupStackBase = groupedByTable.reduce((sum, item) => sum + item.stack, 0);
+      const groupStripeClasses = getAlternatingTableGroupClass(groupedDrawRows, (row) => row.tableId);
+      const groupRows = groupedDrawRows.map((row) => {
+        const rebuyState = ensureTable12RebuyState(row.playerId);
+        const rebuyMultiplier = rebuyState.values.filter((value) => String(value ?? "").trim()).length;
+        const rebuyAddOnAmount = rebuyMultiplier > 0 ? rebuyStackValue * rebuyMultiplier : 0;
+        return {
+          ...row,
+          eliminated: !!tournamentState.group.eliminated[row.playerId],
+          rebuyAddOnAmount
+        };
+      });
+      const eliminatedRows = groupRows.filter((row) => row.eliminated);
+      const survivorRows = groupRows.filter((row) => !row.eliminated);
+      mount.innerHTML = `<h3>TABELA17</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>STACK GRACZA</th><th>REBUY/ADD-ON</th></tr></thead><tbody><tr><td>${formatCellNumber(stackValue)}</td><td>${formatCellNumber(rebuyStackValue)}</td></tr></tbody></table></div><h3>TABELA18</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr>${groupedByTable.map(({ table }) => `<th class="table18-dynamic-header">${esc(table.name)}</th>`).join("")}<th>ŁĄCZNY STACK</th></tr></thead><tbody><tr>${groupedByTable.map(({ stack }) => `<td>${formatCellNumber(stack)}</td>`).join("")}<td>${formatCellNumber(totalGroupStackBase)}</td></tr></tbody></table></div><h3>TABELA19</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>STÓŁ</th><th>GRACZ</th><th>ELIMINATED</th><th>STACK</th><th>REBUY/ADD-ON</th></tr></thead><tbody>${groupRows.map((row, index) => `<tr class="${groupStripeClasses[index]}"><td>${row.lp}</td><td>${esc(row.tableName)}</td><td>${esc(row.playerName)}</td><td><input type="checkbox" data-role="group-eliminated" data-player-id="${row.playerId}" ${row.eliminated ? "checked" : ""}></td><td>${formatCellNumber(stackValue)}</td><td>${formatCellNumber(row.rebuyAddOnAmount)}</td></tr>`).join("") || '<tr><td colspan="6">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA19A</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>WYELIMINOWANI GRACZE</th><th>WYGRANA</th></tr></thead><tbody>${eliminatedRows.map((row, index) => `<tr><td>${index + 1}</td><td>${esc(row.playerName)}</td><td><input class="admin-input" data-role="group-eliminated-win" data-player-id="${row.playerId}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.group.eliminatedWins[row.playerId] || "0")}" data-focus-target="1" data-section="second-tournament-group-eliminated" data-row-id="${row.playerId}" data-column-key="win"></td></tr>`).join("") || ""}</tbody></table></div><h3>TABELA19B</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>STÓŁ</th><th>GRACZ</th><th>STACK</th><th>%</th></tr></thead><tbody>${survivorRows.map((row, index) => { const survivorStack = toDigitsNumber(tournamentState.group.survivorStacks[row.playerId]); const share = totalGroupStackBase > 0 ? survivorStack / totalGroupStackBase : 0; return `<tr><td>${index + 1}</td><td>${esc(row.tableName)}</td><td>${esc(row.playerName)}</td><td><input class="admin-input" data-role="group-survivor-stack" data-player-id="${row.playerId}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.group.survivorStacks[row.playerId] || "")}" data-focus-target="1" data-section="second-tournament-group-survivors" data-row-id="${row.playerId}" data-column-key="stack"></td><td>${toPercentText(share)}</td></tr>`; }).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div>`;
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
@@ -1482,7 +1518,7 @@ const setupAdminTournament = (rootCard) => {
     const target = event.target;
     const role = target?.dataset?.role;
     if (!role) return;
-    if (["meta-buyin", "meta-rebuy", "meta-rake", "meta-stack", "meta-rebuystack", "player-pin", "table-entry", "group-stack", "final-stack", "pool-split", "pool-mod", "pool-rebuy-value", "semi-custom-stack"].includes(role)) {
+    if (["meta-buyin", "meta-rebuy", "meta-rake", "meta-stack", "meta-rebuystack", "player-pin", "table-entry", "group-stack", "group-eliminated-win", "group-survivor-stack", "final-stack", "pool-split", "pool-mod", "pool-rebuy-value", "semi-custom-stack"].includes(role)) {
       target.value = digitsOnly(target.value);
     }
 
@@ -1517,6 +1553,8 @@ const setupAdminTournament = (rootCard) => {
       render();
     }
     if (role === "group-stack") tournamentState.group.playerStacks[target.dataset.playerId] = target.value;
+    if (role === "group-eliminated-win") tournamentState.group.eliminatedWins[target.dataset.playerId] = target.value || "0";
+    if (role === "group-survivor-stack") tournamentState.group.survivorStacks[target.dataset.playerId] = target.value;
     if (role === "final-stack") tournamentState.finalPlayers = tournamentState.finalPlayers.map((player) => player.id === target.dataset.id ? { ...player, stack: target.value } : player);
     if (role === "pool-split") tournamentState.pool.mods = tournamentState.pool.mods.map((row) => row.id === target.dataset.id ? { ...row, split: target.value } : row);
     if (role === "pool-mod") {
@@ -1631,6 +1669,8 @@ const setupAdminTournament = (rootCard) => {
       });
       delete tournamentState.group.playerStacks[playerId];
       delete tournamentState.group.eliminated[playerId];
+      delete tournamentState.group.eliminatedWins[playerId];
+      delete tournamentState.group.survivorStacks[playerId];
       delete tournamentState.semi.assignments[playerId];
       delete tournamentState.payments.table12Rebuys[playerId];
     }
