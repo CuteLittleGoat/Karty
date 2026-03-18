@@ -296,6 +296,19 @@ h1 {
   background: rgba(0, 0, 0, 0.2);
 }
 
+.admin-data-table tbody tr.t-group-stripe-even {
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.admin-data-table tbody tr.t-group-stripe-odd {
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.admin-data-table tbody tr.t-group-stripe-even:hover,
+.admin-data-table tbody tr.t-group-stripe-odd:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
 #adminCalculatorRebuyTable {
   width: auto;
   min-width: 0;

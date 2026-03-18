@@ -49,11 +49,13 @@
 ### Wpłaty
 - **Tabela10**: Buy-in, REBUY/ADD-ON, SUMA, licz. REBUY/ADD-ON (wszystkie pola tylko do odczytu, bez klikalnych inputów).
 - **Tabela11**: %, Rake, BUY-IN, REBUY/ADD-ON, POT (wszystkie pola tylko do odczytu, bez klikalnych inputów).
-- **Tabela12**: Stół, LP, Gracz, BUY-IN, REBUY.
+  - kolumna `RAKE` liczy się jako: `(suma BUY-IN z Tabela12 + suma REBUY z Tabela12) × %`.
+- **Tabela12**: LP, Stół, Gracz, BUY-IN, REBUY.
   - kolumna `BUY-IN` pobiera wartość przypisaną graczowi w sekcji **Losowanie stołów**,
   - kolumna `REBUY` otwiera modal **Rebuy gracza**,
   - modal **Rebuy gracza** możesz zawsze zamknąć przez `×`, kliknięcie poza oknem lub klawisz `Esc` — także po edycji pól,
-  - licznik `LICZ. REBUY/ADD-ON` w Tabela10 zlicza liczbę uzupełnionych pól `Rebuy` u wszystkich graczy (nie sumę kwot).
+  - licznik `LICZ. REBUY/ADD-ON` w Tabela10 zlicza liczbę uzupełnionych pól `Rebuy` u wszystkich graczy (nie sumę kwot),
+  - wiersze mają zebra striping per grupa stołu: cały blok graczy z tego samego stołu ma wspólny kolor, a kolejne stoły zmieniają kolor naprzemiennie.
 
 ### Podział puli
 - **Tabela13**, **Tabela14**, **Tabela15**, **Tabela16**.
@@ -61,10 +63,21 @@
 - Przycisk **Dodaj** jest krótki i wyrównany do lewej, spójnie z pozostałymi przyciskami dodawania.
 
 ### Faza grupowa
-- **Tabela17**: kolumny `STACK GRACZA` i `REBUY/ADD-on(w żetonach na os)` (kolumna `Gracz` została usunięta).
-- **Tabela17A**: nowa tabela z kolumnami `LP`, `Gracz`, `Stack`, `%`, `Stół` (LP automatyczne, Stół z losowania stołów).
-- **Tabela18**: widok zbiorczy stołów.
-- **Tabela19**: gracze wg stołów + checkbox **ELIMINATED**.
+- **Tabela17**: kolumny `STACK GRACZA` i `REBUY/ADD-ON`.
+- **Tabela18**: widok zbiorczy stołów oraz `ŁĄCZNY STACK`.
+- **Tabela19**: LP, Stół, Gracz, checkbox **ELIMINATED**, Stack, `REBUY/ADD-ON`.
+  - kolumna `REBUY` została usunięta,
+  - `REBUY/ADD-ON` liczy się automatycznie z liczby uzupełnionych pól `RebuyX` w modalu `Rebuy gracza` dla danego gracza,
+  - wiersze mają zebra striping per grupa stołu.
+- **Tabela19A**: LP, `WYELIMINOWANI GRACZE`, `WYGRANA`.
+  - pokazuje tylko graczy z zaznaczonym checkboxem **ELIMINATED** w `Tabela19`,
+  - liczba wierszy zmienia się dynamicznie,
+  - kolumna `WYGRANA` jest edytowalna i domyślnie ma wartość `0`.
+- **Tabela19B**: LP, Stół, Gracz, Stack, %.
+  - pokazuje tylko graczy bez zaznaczonego checkboxa **ELIMINATED**,
+  - liczba wierszy zmienia się dynamicznie po zaznaczaniu/odznaczaniu **ELIMINATED**,
+  - kolumna `STACK` jest edytowalna i domyślnie pusta,
+  - kolumna `%` liczy `STACK / ŁĄCZNY STACK z Tabela18`.
 
 ### Półfinał
 - **Tabela20** została usunięta.
@@ -110,7 +123,9 @@
 1. Przejdź do zakładki `Wpłaty`.
 2. `Tabela10` oraz `Tabela11` są automatycznie wyliczane i tylko do odczytu.
 3. Wszystkie wartości liczbowe w komórkach tabel są zaokrąglane do pełnych liczb (jak w module Main).
-4. W `Tabela12` kolumna **REBUY** to przycisk per gracz:
+4. W `Tabela11` kolumna `RAKE` liczy się z całkowitej sumy `BUY-IN + REBUY` i procentu `RAKE`.
+5. W `Tabela12` kolumny `LP` i `STÓŁ` są zamienione miejscami, a kolor wiersza zależy od grupy stołu.
+6. W `Tabela12` kolumna **REBUY** to przycisk per gracz:
    - kliknij przycisk, aby otworzyć modal **Rebuy gracza**,
    - po otwarciu pustego modala nie ma żadnej kolumny (zgodnie z Main),
    - użyj **Dodaj Rebuy** / **Usuń Rebuy** — pierwsza kolumna pojawia się po kliknięciu **Dodaj Rebuy**,
@@ -140,7 +155,11 @@
 1. `Tabela17` zawiera tylko 1 wiersz.
 2. `Tabela17` ma kolumny: `STACK GRACZA` i `REBUY/ADD-ON` (tylko odczyt).
 3. `Tabela18` pokazuje stack per stół oraz `ŁĄCZNY STACK`.
-4. `Tabela19` pokazuje dane gracza, w tym `STACK`, `REBUY/ADD-ON` i `REBUY` (tylko odczyt).
+4. `Tabela19` ma kolumny: `LP`, `STÓŁ`, `GRACZ`, `ELIMINATED`, `STACK`, `REBUY/ADD-ON`.
+5. W `Tabela19` kolumna `REBUY/ADD-ON` wylicza się jako `Tabela17.REBUY/ADD-ON × liczba uzupełnionych pól RebuyX` dla danego gracza.
+6. Zaznaczenie checkboxa `ELIMINATED` przenosi gracza z `Tabela19B` do `Tabela19A`.
+7. `Tabela19A` pokazuje tylko wyeliminowanych graczy i pozwala wpisać `WYGRANA` (domyślnie `0`).
+8. `Tabela19B` pokazuje tylko niewyeliminowanych graczy i pozwala wpisać ich `STACK`; kolumna `%` liczy udział względem `Tabela18.ŁĄCZNY STACK`.
 
 ### Nagłówki kolumn
 - W module Second nagłówki tabel są wyświetlane wielkimi literami.

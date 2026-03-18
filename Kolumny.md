@@ -21,7 +21,7 @@ Dodatkowo dla każdego stołu:
 ### Wpłaty
 - Tabela10: Buy-in, REBUY/ADD-ON, SUMA, licz. REBUY/ADD-ON
 - Tabela11: %, Rake, BUY-IN, REBUY/ADD-ON, POT
-- Tabela12: Stół, LP, Gracz, BUY-IN, REBUY
+- Tabela12: LP, Stół, Gracz, BUY-IN, REBUY
 
 ### Podział puli
 - Tabela13: BUY-IN, REBUY/ADD-ON, SUMA, LICZBA REBUY
@@ -31,9 +31,10 @@ Dodatkowo dla każdego stołu:
 
 ### Faza grupowa
 - Tabela17: STACK GRACZA, REBUY/ADD-on(w żetonach na os)
-- Tabela17A: LP, Gracz, Stack, %, Stół
 - Tabela18: Stoły dynamiczne + ŁĄCZNY STACK
-- Tabela19: Stół, LP, Gracz, ELIMINATED, Stack, REBUY/add-on, REBUY
+- Tabela19: LP, Stół, Gracz, ELIMINATED, Stack, REBUY/ADD-ON
+- Tabela19A: LP, WYELIMINOWANI GRACZE, WYGRANA
+- Tabela19B: LP, Stół, Gracz, Stack, %
 
 ### Półfinał
 - Tabela21: LP, Gracz, STACK, %, Stół
@@ -82,8 +83,8 @@ Dodatkowo dla każdego stołu:
 - Panel `Losowanie stołów`: kolumna `Wpisowe` została zastąpiona przez `BUY-IN`.
 - Panel `Wpłaty`:
   - `Tabela10`: nieedytowalne komórki obliczane (`BUY-IN`, `REBUY/ADD-ON`, `SUMA`, `LICZ. REBUY/ADD-ON`).
-  - `Tabela11`: nieedytowalne komórki obliczane (`%`, `RAKE`, `BUY-IN`, `REBUY/ADD-ON`, `POT`).
-  - `Tabela12`: kolumna `REBUY` jako przycisk otwierający modal.
+  - `Tabela11`: nieedytowalne komórki obliczane (`%`, `RAKE`, `BUY-IN`, `REBUY/ADD-ON`, `POT`), gdzie `RAKE` liczy się z sumy `BUY-IN + REBUY`.
+  - `Tabela12`: kolejność kolumn `LP`, `STÓŁ`, `GRACZ`, `BUY-IN`, `REBUY`; kolumna `REBUY` jako przycisk otwierający modal.
 - Panel `Podział puli`:
   - przyciski `Dodaj/Usuń` są pod `Tabela16`,
   - `Tabela15` pokazuje kolumny `POT` i `PODZIAŁ`,
@@ -94,7 +95,9 @@ Dodatkowo dla każdego stołu:
   - kolumny `MOD` są dynamiczne (`MOD1`, `MOD2`, `MOD3`) zależnie od liczby kolumn `REBUY`.
 - Panel `Faza grupowa`:
   - `Tabela17` tylko 2 kolumny: `STACK GRACZA`, `REBUY/ADD-ON`.
-  - `Tabela17A` usunięta.
+  - `Tabela19` ma kolumny `LP`, `STÓŁ`, `GRACZ`, `ELIMINATED`, `STACK`, `REBUY/ADD-ON`.
+  - `Tabela19A` pokazuje wyeliminowanych graczy.
+  - `Tabela19B` pokazuje niewyeliminowanych graczy.
 
 
 ### Modal „Rebuy gracza” (Second)
