@@ -1659,7 +1659,7 @@ const setupAdminTournament = (rootCard) => {
 
     pendingLocalWrites += 1;
     try {
-      await saveState({ deletedPaths });
+      await saveState();
     } finally {
       pendingLocalWrites = Math.max(0, pendingLocalWrites - 1);
       commitDeferredSnapshotIfSafe();
@@ -1679,12 +1679,12 @@ const setupAdminTournament = (rootCard) => {
     if (role === "final-eliminated") tournamentState.finalPlayers = tournamentState.finalPlayers.map((player) => player.id === target.dataset.id ? { ...player, eliminated: target.checked } : player);
     if (role === "toggle-payout-initial") tournamentState.payouts.showInitial = target.checked;
     if (role === "toggle-payout-final") tournamentState.payouts.showFinal = target.checked;
-    if (["player-payment-status", "assign-table", "semi-assign-status", "semi-assign-table"].includes(role)) {
+    if (["player-payment-status", "assign-table", "semi-assign-status", "semi-assign-table", "group-eliminated"].includes(role)) {
       render();
     }
     pendingLocalWrites += 1;
     try {
-      await saveState({ deletedPaths });
+      await saveState();
     } finally {
       pendingLocalWrites = Math.max(0, pendingLocalWrites - 1);
       commitDeferredSnapshotIfSafe();

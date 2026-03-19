@@ -134,3 +134,31 @@ Problem nie wynika z błędnej definicji TABELA19A/TABELA19B, tylko z dwóch bł
 2. **Odwołanie do niezdefiniowanej zmiennej `deletedPaths` w handlerach `change` i `input`** — przez to zmiany nie zapisują się do Firebase i znikają po odświeżeniu.
 
 Oba zgłoszone objawy są spójne z aktualnym stanem kodu.
+
+
+## Zrealizowane zmiany w kodzie
+
+Plik Second/app.js
+Linia 1662
+Było:      await saveState({ deletedPaths });
+Jest:      await saveState();
+
+Plik Second/app.js
+Linia 1682
+Było:    if (["player-payment-status", "assign-table", "semi-assign-status", "semi-assign-table"].includes(role)) {
+Jest:    if (["player-payment-status", "assign-table", "semi-assign-status", "semi-assign-table", "group-eliminated"].includes(role)) {
+
+Plik Second/app.js
+Linia 1687
+Było:      await saveState({ deletedPaths });
+Jest:      await saveState();
+
+Plik Second/docs/Documentation.md
+Linia 97
+Było:     Brak opisu natychmiastowego renderu i trwałego zapisu checkboxa `ELIMINATED` w fazie grupowej.
+Jest:     Dodano opis, że checkbox `ELIMINATED` zapisuje się na zdarzeniu `change`, od razu wywołuje `render()` i utrzymuje stan po odświeżeniu.
+
+Plik Second/docs/README.md
+Linia 108
+Było:     Instrukcja UI opisywała dynamiczne filtrowanie Tabela19A i Tabela19B, ale bez informacji o natychmiastowej reakcji i trwałości po odświeżeniu.
+Jest:     Doprecyzowano, że kliknięcie `ELIMINATED` natychmiast przenosi gracza między Tabela19A i Tabela19B oraz że zmiana pozostaje po odświeżeniu strony.

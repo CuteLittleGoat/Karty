@@ -74,10 +74,12 @@
 - **Tabela19A**: LP, `WYELIMINOWANI GRACZE`, `WYGRANA`.
   - pokazuje tylko graczy z zaznaczonym checkboxem **ELIMINATED** w `Tabela19`,
   - liczba wierszy zmienia się dynamicznie,
+  - po kliknięciu checkboxa gracz od razu pojawia się tutaj bez ręcznego odświeżania strony,
   - kolumna `WYGRANA` jest edytowalna i domyślnie ma wartość `0`.
 - **Tabela19B**: LP, Stół, Gracz, Stack, %.
   - pokazuje tylko graczy bez zaznaczonego checkboxa **ELIMINATED**,
   - liczba wierszy zmienia się dynamicznie po zaznaczaniu/odznaczaniu **ELIMINATED**,
+  - po zaznaczeniu checkboxa w `Tabela19` wiersz znika stąd natychmiast i zapisuje się także po odświeżeniu strony,
   - kolumna `STACK` jest edytowalna i domyślnie pusta,
   - kolumna `%` liczy `STACK / ŁĄCZNY STACK z Tabela18`.
 
