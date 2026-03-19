@@ -808,9 +808,13 @@ const setupAdminTournament = (rootCard) => {
   let deferredSnapshotState = null;
   let activeTable12RebuyPlayerId = "";
   let table12RebuyActionInProgress = false;
+  let table12RebuyModalDraft = null;
+  let table12RebuyModalDirty = false;
+
+  const isTable12RebuyModalEditing = () => Boolean(activeTable12RebuyPlayerId && table12RebuyModalDraft);
 
   const commitDeferredSnapshotIfSafe = () => {
-    if (hasActiveEdit || pendingLocalWrites > 0 || !deferredSnapshotState) {
+    if (hasActiveEdit || pendingLocalWrites > 0 || isTable12RebuyModalEditing() || !deferredSnapshotState) {
       return;
     }
     tournamentState = deferredSnapshotState;
@@ -865,11 +869,23 @@ const setupAdminTournament = (rootCard) => {
     return parts.join(" | ") || "Brak szczegółów błędu.";
   };
 
+  const syncTable12RebuyDraftToState = () => {
+    if (!activeTable12RebuyPlayerId || !table12RebuyModalDraft) {
+      return;
+    }
+    tournamentState.payments.table12Rebuys = tournamentState.payments.table12Rebuys || {};
+    tournamentState.payments.table12Rebuys[activeTable12RebuyPlayerId] = {
+      values: [...table12RebuyModalDraft.values],
+      indexes: [...table12RebuyModalDraft.indexes]
+    };
+  };
+
   const persistTable12RebuyChanges = async (operationLabel = "zapis", options = {}) => {
     if (!activeTable12RebuyPlayerId) {
       setTable12RebuyModalStatus("Nie można zapisać zmian: brak wskazanego gracza.");
       return false;
     }
+    syncTable12RebuyDraftToState();
     pendingLocalWrites += 1;
     try {
       const saved = await saveState(options);
@@ -886,8 +902,28 @@ const setupAdminTournament = (rootCard) => {
     }
   };
 
-  const closeTable12RebuyModal = () => {
+  const closeTable12RebuyModal = async () => {
+    if (table12RebuyActionInProgress) {
+      setTable12RebuyModalStatus("Trwa zapisywanie zmian rebuy. Poczekaj na zakończenie operacji.");
+      return;
+    }
+
+    if (activeTable12RebuyPlayerId && table12RebuyModalDirty) {
+      table12RebuyActionInProgress = true;
+      renderTable12RebuyModal();
+      const saved = await persistTable12RebuyChanges("Zamknięcie modalu Rebuy");
+      table12RebuyActionInProgress = false;
+      if (!saved) {
+        renderTable12RebuyModal();
+        return;
+      }
+      table12RebuyModalDirty = false;
+      render();
+    }
+
     activeTable12RebuyPlayerId = "";
+    table12RebuyModalDraft = null;
+    table12RebuyModalDirty = false;
     setTable12RebuyModalStatus("");
     table12RebuyModal.classList.remove("is-visible");
     table12RebuyModal.setAttribute("aria-hidden", "true");
@@ -897,8 +933,14 @@ const setupAdminTournament = (rootCard) => {
   const renderTable12RebuyModal = () => {
     if (!table12RebuyModalTable || !table12RebuyModalActions || !activeTable12RebuyPlayerId) return;
     tournamentState.payments.table12Rebuys = tournamentState.payments.table12Rebuys || {};
-    const rebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
-    tournamentState.payments.table12Rebuys[activeTable12RebuyPlayerId] = rebuyState;
+    if (!table12RebuyModalDraft) {
+      const persistedState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
+      table12RebuyModalDraft = {
+        values: [...persistedState.values],
+        indexes: [...persistedState.indexes]
+      };
+    }
+    const rebuyState = table12RebuyModalDraft;
 
     let headerHtml = "<thead><tr>";
     rebuyState.indexes.forEach((columnIndex) => {
@@ -917,10 +959,15 @@ const setupAdminTournament = (rootCard) => {
       input.inputMode = "numeric";
       input.pattern = "[0-9]*";
       input.value = value;
-      input.addEventListener("input", async () => {
+      input.dataset.focusTarget = "second-table12-rebuy-modal";
+      input.dataset.section = "table12-rebuy-modal";
+      input.dataset.tableId = activeTable12RebuyPlayerId;
+      input.dataset.columnKey = `rebuy${index}`;
+      input.addEventListener("input", () => {
         rebuyState.values[index] = digitsOnly(input.value);
         input.value = rebuyState.values[index];
-        await persistTable12RebuyChanges();
+        table12RebuyModalDirty = true;
+        syncTable12RebuyDraftToState();
         render();
       });
       td.appendChild(input);
@@ -945,19 +992,13 @@ const setupAdminTournament = (rootCard) => {
       let appended = false;
       let activeRebuyState = null;
       try {
-        activeRebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
+        activeRebuyState = rebuyState;
         const nextIndex = getNextGlobalTable12RebuyIndex();
-        activeRebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
         activeRebuyState.values.push("");
         activeRebuyState.indexes.push(nextIndex);
+        table12RebuyModalDirty = true;
+        syncTable12RebuyDraftToState();
         appended = true;
-        const saved = await persistTable12RebuyChanges("Dodaj Rebuy");
-        if (!saved) {
-          activeRebuyState.values.pop();
-          activeRebuyState.indexes.pop();
-          renderTable12RebuyModal();
-          return;
-        }
         render();
         renderTable12RebuyModal();
       } catch (error) {
@@ -989,25 +1030,39 @@ const setupAdminTournament = (rootCard) => {
       }
       table12RebuyActionInProgress = true;
       renderTable12RebuyModal();
+      const backupDraft = JSON.parse(JSON.stringify(rebuyState));
       const backupTable12Rebuys = JSON.parse(JSON.stringify(tournamentState.payments.table12Rebuys || {}));
       const backupPoolRebuyValues = JSON.parse(JSON.stringify(tournamentState.pool?.rebuyValues || {}));
-      const activeRebuyState = ensureTable12RebuyState(activeTable12RebuyPlayerId);
+      const activeRebuyState = rebuyState;
       const removedIndex = activeRebuyState.indexes[activeRebuyState.indexes.length - 1];
       activeRebuyState.values = activeRebuyState.values.slice(0, -1);
       activeRebuyState.indexes = activeRebuyState.indexes.slice(0, -1);
+      tournamentState.payments.table12Rebuys[activeTable12RebuyPlayerId] = {
+        values: [...activeRebuyState.values],
+        indexes: [...activeRebuyState.indexes]
+      };
       compactTable12RebuyIndexesAfterRemoval(removedIndex);
+      const persistedStateAfterCompaction = ensureTable12RebuyState(activeTable12RebuyPlayerId);
+      table12RebuyModalDraft = {
+        values: [...persistedStateAfterCompaction.values],
+        indexes: [...persistedStateAfterCompaction.indexes]
+      };
+      table12RebuyModalDirty = true;
       try {
         const saved = await persistTable12RebuyChanges("Usuń Rebuy");
         if (!saved) {
+          table12RebuyModalDraft = backupDraft;
           tournamentState.payments.table12Rebuys = backupTable12Rebuys;
           tournamentState.pool = tournamentState.pool || {};
           tournamentState.pool.rebuyValues = backupPoolRebuyValues;
           renderTable12RebuyModal();
           return;
         }
+        table12RebuyModalDirty = false;
         render();
         renderTable12RebuyModal();
       } catch (error) {
+        table12RebuyModalDraft = backupDraft;
         tournamentState.payments.table12Rebuys = backupTable12Rebuys;
         tournamentState.pool = tournamentState.pool || {};
         tournamentState.pool.rebuyValues = backupPoolRebuyValues;
@@ -1035,6 +1090,8 @@ const setupAdminTournament = (rootCard) => {
       return;
     }
     activeTable12RebuyPlayerId = normalizedPlayerId;
+    table12RebuyModalDraft = null;
+    table12RebuyModalDirty = false;
     setTable12RebuyModalStatus("");
     table12RebuyModal.classList.add("is-visible");
     table12RebuyModal.setAttribute("aria-hidden", "false");
@@ -1759,7 +1816,7 @@ const setupAdminTournament = (rootCard) => {
 
   docRef.onSnapshot((snapshot) => {
     const snapshotState = normalizeTournamentState(snapshot.data());
-    if (hasActiveEdit || pendingLocalWrites > 0) {
+    if (hasActiveEdit || pendingLocalWrites > 0 || isTable12RebuyModalEditing()) {
       deferredSnapshotState = snapshotState;
       return;
     }
