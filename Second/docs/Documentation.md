@@ -17,7 +17,7 @@
 ### Edycja uprawnień gracza (modal)
 - Zamiast `window.prompt` używany jest dedykowany modal: `#secondPlayerPermissionsModal` w `Second/index.html`.
 - Inicjalizacja i obsługa: `initSecondPlayerPermissionsModal(...)` w `Second/app.js`.
-- Aktualna lista uprawnień (`SECOND_AVAILABLE_PLAYER_PERMISSIONS`): `Czat`.
+- Aktualna lista uprawnień (`SECOND_AVAILABLE_PLAYER_PERMISSIONS`): `Czat`, `Wpłaty`, `Podział Puli`, `Faza Grupowa`, `Półfinał`, `Finał`, `Wypłaty`.
 - Każdy checkbox aktualizuje `player.permissions` jako tablicę unikalnych etykiet i natychmiast zapisuje zmiany do `second_tournament/state`.
 - Modal wspiera trzy sposoby zamknięcia: przycisk `✕`, kliknięcie w overlay i klawisz `Escape`.
 - Widok tabeli graczy renderuje wybrane uprawnienia jako badge (`.permission-badge`) w kolumnie `Uprawnienia`.
@@ -67,7 +67,7 @@
 ### Obsługa uprawnień
 - `normalizeTournamentPermissions(value)` wspiera dane jako string CSV lub tablicę.
 - Widok pokazuje uprawnienia jako badge.
-- Przycisk `Edytuj` otwiera `prompt` i zapisuje listę uprawnień oddzieloną przecinkami do pola `permissions`.
+- Przycisk `Edytuj` otwiera modal checkboxów i zapisuje listę uprawnień do pola `permissions`; komunikat o testowych uprawnieniach został usunięty z HTML modala.
 
 ### Usuwanie gracza
 - `delete-player` usuwa rekord gracza z `players` oraz czyści powiązane dane (`assignments`, `group.playerStacks`, `group.eliminated`, `group.eliminatedWins`, `group.survivorStacks`, `semi`).
@@ -138,12 +138,14 @@
 - Stan lokalny użytkownika jest normalizowany przez `normalizeTournamentState`, dzięki czemu brakujące pola nie psują renderu UI.
 
 ### Render sekcji użytkownika
-- Użytkownik może przełączać sekcje przez przyciski `data-tournament-target`.
+- Zakładki `Czat` i `TOURNAMENT OF POKER` są ukryte do czasu poprawnej weryfikacji głównego PIN-u użytkownika (`#userPlayerPinInput`, `#userPlayerPinOpenButton`).
+- Stan tej weryfikacji jest przechowywany w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`), więc użytkownik wpisuje PIN tylko raz do resetu lub odświeżenia strony.
+- Po wejściu do `TOURNAMENT OF POKER` przyciski `data-tournament-target` są filtrowane per gracz; bez odpowiednich uprawnień nie renderują się przyciski nawigacji do paneli.
+- Użytkownik może przełączać dostępne sekcje przez przyciski `data-tournament-target`.
 - Sekcje z aktywną prezentacją danych:
-  - `players`: tabela status/nazwa/PIN/uprawnienia,
-  - `draw`: tabela gracz/status/stół,
-  - `payments`: podgląd pól `payments.table10` i `payments.table11`.
-- Dla pozostałych sekcji renderowany jest komunikat informacyjny o zapisie danych w panelu administratora.
+  - `payments`: podgląd pól `payments.table10` i `payments.table11`,
+  - `payouts`: tabela miejsc i wygranych zależna od flag `payouts.showInitial` / `payouts.showFinal`.
+- Dla pozostałych dozwolonych sekcji renderowany jest komunikat informacyjny o zapisie danych w panelu administratora.
 
 ### Ręczne odświeżanie
 - Przycisk `#userPanelRefresh` dla aktywnej zakładki `tournamentTab` wykonuje `get({ source: "server" })` dla `second_tournament/state`, co wymusza pobranie najnowszych danych z Firestore.
@@ -220,11 +222,14 @@
 - Zapewnia to wyrównanie wewnętrznych ciemno-zielonych paneli do 1 px od lewej i prawej strony zewnętrznej zielonej karty.
 
 
-### Czat użytkownika — PIN i uprawnienia
-- Wejście PIN: `#chatPinInput`, akcja: `#chatPinOpenButton`, status: `#chatPinStatus`.
-- Weryfikacja PIN porównuje 5-cyfrową wartość z `players[].pin` w stanie `second_tournament/state`.
-- Dostęp jest nadawany tylko graczom z uprawnieniem `Czat` (pole `players[].permissions`).
-- Stan weryfikacji sesji jest zapisywany w `sessionStorage` (`secondChatPinVerified`, `secondChatPlayerId`), dzięki czemu użytkownik wpisuje PIN raz na sesję przeglądarki.
+### PIN użytkownika, czat i uprawnienia
+- Główna bramka PIN użytkownika korzysta z kontrolek `#userPlayerPinInput`, `#userPlayerPinOpenButton`, `#userPlayerPinStatus`; po poprawnej weryfikacji odsłania zakładki `Czat` i `TOURNAMENT OF POKER`.
+- Weryfikacja głównego PIN porównuje 5-cyfrową wartość z `players[].pin` w stanie `second_tournament/state` i zapisuje sesję w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`).
+- Nawigacja wewnątrz `TOURNAMENT OF POKER` filtruje przyciski zgodnie z mapą `SECOND_TOURNAMENT_PERMISSION_MAP`; każdy przycisk panelu wymaga przypisanego uprawnienia z mapy `SECOND_TOURNAMENT_PERMISSION_MAP`, więc bez żadnego uprawnienia sidebar nie pokazuje żadnej nawigacji.
+- Wejście PIN czatu nadal korzysta z `#chatPinInput`, `#chatPinOpenButton`, `#chatPinStatus`.
+- Weryfikacja PIN czatu porównuje 5-cyfrową wartość z `players[].pin` w stanie `second_tournament/state`.
+- Dostęp do wysyłki wiadomości jest nadawany tylko graczom z uprawnieniem `Czat` (pole `players[].permissions`).
+- Stan weryfikacji sesji czatu jest zapisywany w `sessionStorage` (`secondChatPinVerified`, `secondChatPlayerId`), dzięki czemu użytkownik wpisuje PIN do czatu raz na sesję przeglądarki.
 - Wysyłka wiadomości do `second_chat_messages` zapisuje `authorName` z `players[].name` zweryfikowanego gracza.
 
 ### Modal „Rebuy gracza” — zapis i odświeżanie

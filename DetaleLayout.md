@@ -11,7 +11,8 @@
   - obok pola znajduje się przycisk `Losuj` (`.admin-pin-random`).
 - Kolumna `Uprawnienia` prezentuje bieżące uprawnienia jako badge (`.permissions-tags`, `.permission-badge`) i zawiera przycisk `Edytuj` (`.admin-permissions-edit`).
 - Przycisk `Edytuj` w kolumnie `Uprawnienia` otwiera modal `Uprawnienia gracza` (`#secondPlayerPermissionsModal`) o wyglądzie spójnym z modalami modułu Main (nagłówek, przycisk zamknięcia `✕`, overlay, karta `modal-card-sm`).
-- W modalu lista `.permissions-list` zawiera uprawnienie `Czat`; zaznaczenie tej opcji nadaje graczowi możliwość odblokowania zakładki Czat PIN-em.
+- W modalu lista `.permissions-list` zawiera uprawnienia `Czat`, `Wpłaty`, `Podział Puli`, `Faza Grupowa`, `Półfinał`, `Finał`, `Wypłaty`; zaznaczenie opcji steruje widocznością odpowiednich paneli użytkownika.
+- W widoku użytkownika modułu `Second` nad zakładkami działa dodatkowa bramka `.pin-gate.user-access-pin-gate`, wykorzystująca ten sam styl karty PIN co sekcja czatu; po poprawnym PIN ukrywa się bez zmiany layoutu całej karty.
 - Ostatnia kolumna `Akcje` zawiera przycisk `Usuń` (`.admin-row-delete`) wyrównany do prawej strony.
 - W sekcji `Losowanie stołów` przycisk usuwania stołu ma klasy `.admin-row-delete.draw-table-delete`: zachowuje kompaktowy rozmiar i jest dosunięty do prawej krawędzi bloku stołu (`justify-self: end`).
 - Nad tabelą prezentowany jest licznik liczby graczy (tekst informacyjny `.builder-info`).
