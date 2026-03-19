@@ -507,3 +507,290 @@ Taki wariant:
 W praktyce oznacza to, że rekomendacja z punktu 7 pozostaje aktualna, ale warto doprecyzować sposób implementacji:
 - **tak** dla `update()` / kontrolowanego `set()` / `FieldValue.delete()` na polach,
 - **nie** dla `docRef.delete()` jako sposobu resetowania turnieju.
+
+---
+
+## 13. Stan wdrożenia po realizacji zmian
+
+### 13.1. Zakres wdrożenia
+Zgodnie z decyzją użytkownika **nie wdrożono punktu 8** („ręczny reset nowym przyciskiem”).
+
+Wdrożono punkt **7** z rekomendowanym wariantem:
+- **Opcja 1 — `update()` z `FieldValue.delete()` dla konkretnych ścieżek**.
+
+Dodatkowo wdrożenie zostało wykonane tak, aby **nie kolidowało z zabezpieczeniem przed usunięciem ostatniego dokumentu z kolekcji Firebase**.
+
+### 13.2. Stan obecny przed zmianą
+Przed zmianą aplikacja miała następujące zachowanie:
+- `getAllTable12RebuyEntries()` agregowało wpisy z całego `payments.table12Rebuys`, również dla nieistniejących już graczy,
+- `saveState()` wykonywał wyłącznie `docRef.set(..., { merge: true })`, więc skasowanie klucza lokalnie nie usuwało go fizycznie z dokumentu Firestore,
+- po usunięciu ostatnich graczy i stołów nie było procedury automatycznego resetu `payments.table12Rebuys` oraz `pool.rebuyValues`,
+- przez to licznik rebuy i globalna numeracja `RebuyX` mogły dalej korzystać z historycznych danych.
+
+### 13.3. Stan po zmianie
+Po zmianie aplikacja działa następująco:
+- `getAllTable12RebuyEntries()` liczy tylko rebuy aktywnych graczy znajdujących się w `tournamentState.players`,
+- `saveState({ deletedPaths })` przed standardowym `set(..., { merge: true })` wykonuje `docRef.update()` z `FieldValue.delete()` dla wskazanych ścieżek,
+- przy `delete-player` usuwane jest zarówno lokalne `payments.table12Rebuys[playerId]`, jak i trwałe pole Firestore `payments.table12Rebuys.<playerId>`,
+- po `delete-player` i `delete-table` działa automatyczny warunek: jeśli `players.length === 0 && tables.length === 0`, aplikacja czyści `payments.table12Rebuys` oraz `pool.rebuyValues`,
+- reset odbywa się przez czyszczenie pól **wewnątrz istniejącego dokumentu** `second_tournament/state`, więc nie uruchamia blokady „nie usuwaj ostatniego dokumentu”.
+
+## 14. Szczegółowa rozpiska zmian w kodzie — dokładne linie
+
+Poniżej zapisuję dokładnie zmienione linie w stylu „Było / Jest”, zgodnie z prośbą użytkownika.
+
+### 14.1. Plik `Second/app.js`
+
+#### Zmiana 1 — przekazanie opcji zapisu do helpera modala rebuy
+**Zakres logiczny:** helper `persistTable12RebuyChanges(...)`.
+
+**Było:**
+```js
+const persistTable12RebuyChanges = async (operationLabel = "zapis") => {
+```
+
+**Jest:**
+```js
+const persistTable12RebuyChanges = async (operationLabel = "zapis", options = {}) => {
+```
+
+**Było:**
+```js
+const saved = await saveState();
+```
+
+**Jest:**
+```js
+const saved = await saveState(options);
+```
+
+#### Zmiana 2 — `saveState()` obsługuje `deletedPaths`
+**Zakres logiczny:** zapis do Firestore.
+
+**Było:**
+```js
+const saveState = async () => {
+  try {
+    await docRef.set({ ...tournamentState, updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp() }, { merge: true });
+```
+
+**Jest:**
+```js
+const saveState = async (options = {}) => {
+  const deletedPaths = Array.isArray(options.deletedPaths) ? options.deletedPaths.filter((path) => typeof path === "string" && path.trim()) : [];
+  try {
+    if (deletedPaths.length) {
+      const deletePayload = deletedPaths.reduce((acc, path) => {
+        acc[path] = firebaseApp.firestore.FieldValue.delete();
+        return acc;
+      }, {
+        updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+      });
+      await docRef.update(deletePayload);
+    }
+    await docRef.set({ ...tournamentState, updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp() }, { merge: true });
+```
+
+#### Zmiana 3 — filtrowanie rebuy tylko do aktywnych graczy
+**Zakres logiczny:** `getAllTable12RebuyEntries()`.
+
+**Było:**
+```js
+const getAllTable12RebuyEntries = () => Object.keys(tournamentState.payments.table12Rebuys || {})
+  .flatMap((playerId) => {
+```
+
+**Jest:**
+```js
+const getAllTable12RebuyEntries = () => {
+  const activePlayerIds = new Set((tournamentState.players || []).map((player) => player.id));
+  return Object.keys(tournamentState.payments.table12Rebuys || {})
+    .filter((playerId) => activePlayerIds.has(playerId))
+    .flatMap((playerId) => {
+```
+
+**Było:**
+```js
+  .filter((entry) => Number.isInteger(entry.index) && entry.index > 0)
+  .sort((a, b) => a.index - b.index);
+```
+
+**Jest:**
+```js
+    .filter((entry) => Number.isInteger(entry.index) && entry.index > 0)
+    .sort((a, b) => a.index - b.index);
+};
+```
+
+#### Zmiana 4 — nowy helper automatycznego resetu po stanie `0 graczy i 0 stołów`
+**Zakres logiczny:** `getAutomaticRebuyResetDeletedPaths()`.
+
+**Było:**
+```js
+// brak tej funkcji
+```
+
+**Jest:**
+```js
+const getAutomaticRebuyResetDeletedPaths = () => {
+  const deletedPaths = [];
+  if ((tournamentState.players || []).length === 0 && (tournamentState.tables || []).length === 0) {
+    tournamentState.payments = tournamentState.payments || {};
+    tournamentState.pool = tournamentState.pool || {};
+    tournamentState.payments.table12Rebuys = {};
+    tournamentState.pool.rebuyValues = {};
+    deletedPaths.push("payments.table12Rebuys", "pool.rebuyValues");
+    if (activeTable12RebuyPlayerId) {
+      closeTable12RebuyModal();
+    }
+  }
+  return deletedPaths;
+};
+```
+
+#### Zmiana 5 — usuwanie gracza czyści też trwałe ścieżki rebuy
+**Zakres logiczny:** handler `click` dla `delete-player`.
+
+**Było:**
+```js
+if (role === "delete-player") {
+  const playerId = target.dataset.playerId;
+  tournamentState.players = tournamentState.players.filter((player) => player.id !== playerId);
+  ...
+  delete tournamentState.payments.table12Rebuys[playerId];
+}
+```
+
+**Jest:**
+```js
+let deletedPaths = [];
+if (role === "delete-player") {
+  const playerId = target.dataset.playerId;
+  tournamentState.players = tournamentState.players.filter((player) => player.id !== playerId);
+  ...
+  delete tournamentState.payments.table12Rebuys[playerId];
+  deletedPaths.push(`payments.table12Rebuys.${playerId}`);
+  deletedPaths = deletedPaths.concat(getAutomaticRebuyResetDeletedPaths());
+}
+```
+
+#### Zmiana 6 — usuwanie stołu uruchamia automatyczny reset rebuy przy pustym układzie
+**Zakres logiczny:** handler `click` dla `delete-table`.
+
+**Było:**
+```js
+if (role === "delete-table") {
+  const tableId = target.dataset.tableId;
+  tournamentState.tables = tournamentState.tables.filter((table) => table.id !== tableId);
+  ...
+}
+```
+
+**Jest:**
+```js
+if (role === "delete-table") {
+  const tableId = target.dataset.tableId;
+  tournamentState.tables = tournamentState.tables.filter((table) => table.id !== tableId);
+  ...
+  deletedPaths = deletedPaths.concat(getAutomaticRebuyResetDeletedPaths());
+}
+```
+
+#### Zmiana 7 — końcowy zapis kliknięć uwzględnia pola do skasowania w Firestore
+**Zakres logiczny:** końcówka handlera `click`.
+
+**Było:**
+```js
+await saveState();
+```
+
+**Jest:**
+```js
+await saveState({ deletedPaths });
+```
+
+### 14.2. Plik `Second/docs/Documentation.md`
+
+#### Zmiana 1 — opis nowego mechanizmu zapisu
+**Było:**
+```md
+- Zapis: `docRef.set({ ...tournamentState, updatedAt: serverTimestamp }, { merge: true })`.
+```
+
+**Jest:**
+```md
+- Zapis: `saveState(options)` używa standardowo `docRef.set({ ...tournamentState, updatedAt: serverTimestamp }, { merge: true })`, a gdy przekazane są `deletedPaths`, najpierw wykonuje `docRef.update({ [path]: FieldValue.delete() })` dla wskazanych ścieżek i dopiero potem zapisuje pełny stan z merge.
+```
+
+#### Zmiana 2 — opis automatycznego resetu po usunięciu gracza
+**Było:**
+```md
+- `delete-player` usuwa rekord gracza z `players` oraz czyści powiązane dane (`assignments`, `group.playerStacks`, `group.eliminated`, `group.eliminatedWins`, `group.survivorStacks`, `semi`).
+```
+
+**Jest:**
+```md
+- `delete-player` usuwa rekord gracza z `players` oraz czyści powiązane dane (`assignments`, `group.playerStacks`, `group.eliminated`, `group.eliminatedWins`, `group.survivorStacks`, `semi`).
+- Dodatkowo `delete-player` usuwa trwały wpis `payments.table12Rebuys[playerId]` przez `FieldValue.delete()` oraz sprawdza, czy po operacji nie został pusty układ `0 graczy i 0 stołów`.
+- Jeśli po usunięciu gracza stan turnieju spełnia warunek `players.length === 0 && tables.length === 0`, aplikacja automatycznie resetuje `payments.table12Rebuys` i `pool.rebuyValues`, bez usuwania dokumentu `second_tournament/state`.
+```
+
+### 14.3. Plik `Second/docs/README.md`
+
+#### Zmiana 1 — instrukcja UI dla automatycznego resetu po usunięciu ostatniego gracza
+**Było:**
+```md
+9. W kolumnie **Akcje** kliknij **Usuń**, aby skasować gracza z tabeli.
+```
+
+**Jest:**
+```md
+9. W kolumnie **Akcje** kliknij **Usuń**, aby skasować gracza z tabeli.
+   - Jeżeli był to ostatni gracz, a jednocześnie nie ma już żadnego stołu, aplikacja automatycznie wyzeruje licznik rebuy i usunie stare kolumny `RebuyX` z danych turnieju.
+```
+
+#### Zmiana 2 — instrukcja UI dla automatycznego resetu po usunięciu ostatniego stołu
+**Było:**
+```md
+6. Kliknij **Usuń** przy wybranym stole, aby go usunąć.
+   - Czerwony przycisk **Usuń** jest kompaktowy i wyrównany do prawej krawędzi bloku (spójny wizualnie z przyciskami **Usuń** w sekcji **Losowanie graczy**).
+```
+
+**Jest:**
+```md
+6. Kliknij **Usuń** przy wybranym stole, aby go usunąć.
+   - Czerwony przycisk **Usuń** jest kompaktowy i wyrównany do prawej krawędzi bloku (spójny wizualnie z przyciskami **Usuń** w sekcji **Losowanie graczy**).
+   - Jeżeli po usunięciu stołu nie ma już żadnych stołów i żadnych graczy, aplikacja automatycznie czyści dane rebuy oraz ręczne nadpisania rebuy w podziale puli.
+```
+
+### 14.4. Plik `Analizy/Second_ResetLicznikaRebuy.md`
+
+Ten plik został uzupełniony o:
+- sekcję wdrożeniową,
+- porównanie „stan przed / stan po”,
+- szczegółową listę dokładnie zmienionych linii i bloków kodu.
+
+## 15. Konflikt z zabezpieczeniem przed usunięciem ostatniego dokumentu — stan po wdrożeniu
+
+Po wdrożeniu konflikt **nie występuje**.
+
+Powód:
+- aplikacja **nie** wykonuje `docRef.delete()` dla `second_tournament/state`,
+- aplikacja wykonuje jedynie:
+  - `docRef.update({ "payments.table12Rebuys.<playerId>": FieldValue.delete() })` dla usuwanego gracza,
+  - `docRef.update({ "payments.table12Rebuys": FieldValue.delete(), "pool.rebuyValues": FieldValue.delete() })` dla pełnego automatycznego resetu,
+  - oraz standardowy `docRef.set(..., { merge: true })` dla utrwalenia nowego stanu lokalnego.
+
+To oznacza, że:
+- dokument `second_tournament/state` nadal istnieje,
+- kolekcja `second_tournament` nadal ma dokument `state`,
+- guard blokujący usunięcie ostatniego dokumentu nie ma podstaw, żeby się uruchomić.
+
+## 16. Wniosek końcowy po implementacji
+
+Zrealizowana zmiana spełnia wymaganie użytkownika z punktu 7:
+- licznik rebuy resetuje się automatycznie po usunięciu wszystkich stołów i graczy,
+- reset czyści również `pool.rebuyValues`, więc nie zostają martwe kolumny `RebuyX` w logice podziału puli,
+- nowa implementacja używa rekomendowanego wariantu z `update()` + `FieldValue.delete()`,
+- mechanizm nie koliduje z ochroną przed usunięciem ostatniego dokumentu w Firebase,
+- punkt 8 (ręczny przycisk resetu) **nie został wdrożony**, zgodnie z decyzją użytkownika.
