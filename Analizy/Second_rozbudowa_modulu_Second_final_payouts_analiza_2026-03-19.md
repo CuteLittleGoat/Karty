@@ -323,3 +323,137 @@ Precyzyjniej:
 - **nie ma widocznej blokady systemowej**, która wymagałaby osobnego projektu infrastrukturalnego albo migracji bazy.
 
 Największe ryzyko dotyczy więc nie technologii, tylko poprawnego zaprojektowania logiki danych i kolejności rekalkulacji w kodzie.
+
+
+## Uzupełnienie analizy — decyzje biznesowe do podjęcia
+
+Poniżej są decyzje, które warto podjąć **przed rozpoczęciem programowania**, aby uniknąć nieporozumień i poprawek po wdrożeniu.
+Opis jest celowo napisany prostym językiem, bez technicznych szczegółów.
+
+### 1. Co dokładnie oznacza zaznaczenie `ELIMINATED` w panelu Finał
+**Do ustalenia:**
+- Czy zaznaczenie pola `ELIMINATED` oznacza, że gracz definitywnie odpada z dalszego liczenia miejsc?
+- Czy odznaczenie ma przywracać go z powrotem do aktywnych graczy?
+- Czy taka zmiana ma od razu wpływać na tabelę wypłat, czy dopiero po dodatkowym zatwierdzeniu?
+
+**Dlaczego to ważne biznesowo:**
+Od tej decyzji zależy, czy system ma przeliczać wyniki automatycznie natychmiast po kliknięciu, czy dopiero po świadomej akceptacji administratora.
+
+**Rekomendacja:**
+Najprościej biznesowo przyjąć, że zaznaczenie `ELIMINATED` od razu oznacza odpadnięcie gracza i natychmiast aktualizuje dalsze zestawienia.
+
+### 2. Jak rozstrzygać remis przy takich samych wartościach `STACK`
+**Do ustalenia:**
+- Co zrobić, gdy dwóch lub więcej graczy ma taki sam `STACK`?
+- Czy wtedy ma decydować kolejność z innej tabeli?
+- Czy miejsca mają być współdzielone, czy mimo remisu każdy ma dostać osobne miejsce?
+
+**Dlaczego to ważne biznesowo:**
+Wymaganie mówi o sortowaniu po `STACK`, ale nie mówi, co zrobić przy remisie. Bez tej decyzji dwie osoby mogą inaczej interpretować poprawny wynik.
+
+**Rekomendacja:**
+Najlepiej z góry zapisać jedną prostą zasadę, np. że przy remisie decyduje dotychczasowa kolejność na liście.
+
+### 3. Czy kolejność w `Tabela22A` ma być w pełni ręczna
+**Do ustalenia:**
+- Czy po automatycznym dodaniu graczy do `Tabela22A` administrator może dowolnie ustawiać ich kolejność?
+- Czy po późniejszym zaznaczeniu kolejnego gracza lista ma zachować wcześniej ręcznie ustawioną kolejność, a nową osobę dopisać na końcu?
+- Czy ponowne odznaczenie i zaznaczenie tego samego gracza ma przywracać jego poprzednie miejsce, czy traktować go jako nowy wpis?
+
+**Dlaczego to ważne biznesowo:**
+To decyduje, czy administrator ma pełną kontrolę nad listą eliminacji półfinałowych, czy system ma ją za każdym razem układać od nowa.
+
+**Rekomendacja:**
+Najbardziej zrozumiałe dla użytkownika będzie zachowanie ręcznie ustawionej kolejności i dopisywanie nowych osób na końcu listy.
+
+### 4. Czy `Tabela24` ma zawsze obejmować wszystkich graczy bez wyjątku
+**Do ustalenia:**
+- Czy w tabeli wypłat zawsze mają być widoczni wszyscy gracze z turnieju?
+- Czy nawet osoby bez wygranej mają pozostać na liście z wartością `0`?
+- Czy dopuszczalne jest ukrywanie części graczy, jeśli nie otrzymują wypłaty?
+
+**Dlaczego to ważne biznesowo:**
+To wpływa na czytelność końcowego zestawienia i na to, czy tabela ma pełnić rolę pełnej klasyfikacji, czy tylko listy osób z wypłatą.
+
+**Rekomendacja:**
+Najbezpieczniej przyjąć, że w tabeli są zawsze wszyscy gracze, a osoby bez wypłaty mają wpisane `0`.
+
+### 5. Czy wartości wypłat mają być całkowicie nieedytowalne
+**Do ustalenia:**
+- Czy administrator rzeczywiście nie może ręcznie poprawić kolumn `POCZĄTKOWA WYGRANA` i `KOŃCOWA WYGRANA`?
+- Czy dopuszczalny jest wyjątkowy tryb korekty, np. w sytuacji reklamacji lub błędu danych wejściowych?
+
+**Dlaczego to ważne biznesowo:**
+Jeżeli wartości mają być zablokowane całkowicie, system będzie prostszy i mniej podatny na pomyłki. Jeśli jednak biznes czasem koryguje wypłaty ręcznie, trzeba to uwzględnić od razu.
+
+**Rekomendacja:**
+Jeżeli nie ma wyraźnej potrzeby wyjątków, najlepiej pozostawić te pola całkowicie automatyczne i nieedytowalne.
+
+### 6. Czy zmiana danych w wcześniejszych etapach ma automatycznie zmieniać finał i wypłaty
+**Do ustalenia:**
+- Jeśli zmieni się kolejność w `Tabela19A` albo `Tabela22A`, czy `Tabela24` ma od razu przeliczyć miejsca?
+- Jeśli administrator zmieni status gracza w półfinale lub finale, czy wszystkie zależne tabele mają zaktualizować się automatycznie?
+- Czy potrzebny jest moment „zamrożenia” wyników, po którym dalsze zmiany nie wpływają już na wypłaty?
+
+**Dlaczego to ważne biznesowo:**
+Bez tej decyzji użytkownicy mogą być zaskoczeni, że jedna drobna zmiana automatycznie przestawi gotowe wyniki.
+
+**Rekomendacja:**
+Warto ustalić prostą zasadę: albo wszystko przelicza się automatycznie do momentu zatwierdzenia wyników, albo po zatwierdzeniu dane zostają zablokowane.
+
+### 7. Czy potrzebny jest etap zatwierdzenia końcowych wyników
+**Do ustalenia:**
+- Czy administrator ma móc pracować „na żywo”, a wyniki stają się oficjalne dopiero po kliknięciu zatwierdzenia?
+- Czy po zatwierdzeniu edycja ma być zablokowana?
+- Kto ma mieć prawo do takiego zatwierdzenia?
+
+**Dlaczego to ważne biznesowo:**
+To zabezpiecza przed przypadkową zmianą wyników i daje jasny moment, od którego lista miejsc i wypłat jest ostateczna.
+
+**Rekomendacja:**
+Jeżeli te dane mają znaczenie finansowe lub oficjalne, warto wprowadzić jednoznaczny etap zatwierdzenia końcowego.
+
+### 8. Czy kolejność miejsc ma być zawsze wyliczana automatycznie, czy czasem ręcznie korygowana
+**Do ustalenia:**
+- Czy system ma sam wyznaczać wszystkie miejsca według ustalonych reguł?
+- Czy administrator może wyjątkowo ręcznie poprawić przypisanie miejsca konkretnego gracza?
+
+**Dlaczego to ważne biznesowo:**
+Jeżeli dopuszczona będzie ręczna korekta, system musi rozróżniać wynik automatyczny od decyzji człowieka. Jeśli nie, zasady pozostają prostsze i bardziej przejrzyste.
+
+**Rekomendacja:**
+Jeżeli turniej ma jasne reguły, lepiej ograniczyć się do automatycznego wyliczania miejsc i nie dodawać ręcznych wyjątków bez silnej potrzeby.
+
+### 9. Jak traktować gracza, który został omyłkowo oznaczony jako wyeliminowany
+**Do ustalenia:**
+- Czy cofnięcie takiego oznaczenia ma w pełni przywracać gracza do wcześniejszego etapu?
+- Czy system ma przywracać też jego poprzednią pozycję na liście, czy tylko samą obecność?
+
+**Dlaczego to ważne biznesowo:**
+To wpływa na to, czy obsługa błędów użytkownika będzie intuicyjna i czy przypadkowe kliknięcie nie spowoduje zamieszania.
+
+**Rekomendacja:**
+Najbardziej przyjazne dla użytkownika będzie pełne przywrócenie gracza wraz z możliwie zachowaną wcześniejszą kolejnością.
+
+### 10. Czy potrzebna jest osobna zasada komunikacji dla operatora
+**Do ustalenia:**
+- Czy system ma tylko zmieniać dane, czy także wyraźnie informować użytkownika, dlaczego coś się zmieniło?
+- Czy po ważnych zmianach powinien pojawiać się prosty komunikat, np. że tabela wypłat została przeliczona?
+
+**Dlaczego to ważne biznesowo:**
+Jasna komunikacja zmniejsza liczbę pomyłek i pytań od operatorów, zwłaszcza gdy jedna zmiana wpływa na kilka ekranów.
+
+**Rekomendacja:**
+Warto ustalić minimum komunikacyjne: po istotnych zmianach użytkownik powinien dostać prostą informację, co system właśnie zaktualizował.
+
+## Najkrótsza lista decyzji, bez których nie warto zaczynać wdrożenia
+Jeśli trzeba podjąć tylko kilka najważniejszych ustaleń, to priorytetowo należy odpowiedzieć na poniższe pytania:
+1. Czy zaznaczenie `ELIMINATED` ma natychmiast wpływać na wyniki i wypłaty?
+2. Co ma decydować o kolejności, gdy dwóch graczy ma taki sam `STACK`?
+3. Czy `Tabela24` ma zawsze pokazywać wszystkich graczy, także tych z wypłatą `0`?
+4. Czy wypłaty mają być zawsze automatyczne i całkowicie nieedytowalne?
+5. Czy potrzebny jest etap końcowego zatwierdzenia wyników?
+
+## Wniosek biznesowy po uzupełnieniu analizy
+Od strony technicznej wdrożenie nadal wygląda na możliwe bez zmian infrastruktury.
+Natomiast przed rozpoczęciem prac programistycznych warto zamknąć powyższe decyzje biznesowe, ponieważ to one określą, jak system ma zachowywać się w sytuacjach niejednoznacznych i wyjątkowych.
