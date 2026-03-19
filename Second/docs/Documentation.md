@@ -40,6 +40,7 @@
 - Gracze: `players[]` z polami `id`, `name`, `pin`, `permissions`, `status` (status aktywności gracza).
 - Status płatności gracza: `assignments[playerId].status` (`"Do zapłaty"` lub `"Opłacone"`).
 - Pozostałe sekcje: `tables`, `assignments`, `tableEntries`, `payments`, `pool`, `group`, `semi`, `finalPlayers`, `payouts`.
+- Sekcja `payouts` przechowuje flagi `showInitial` i `showFinal`, które sterują widocznością wartości wypłat w tabeli renderowanej dla admina i użytkownika.
 
 ### Losowanie graczy — aktualny render
 - Nagłówek metadanych turnieju: grid `.t-section-grid`.
@@ -100,6 +101,12 @@
 - Usunięto `Tabela20`.
 - W stołach dodawanych przyciskiem `Dodaj nowy stół` tabela ma kolumny: `LP`, `Gracz`, `Stack`, `Eliminated`, `%`.
 - Dodana kolumna `Stack` używa pola liczbowego `data-role="semi-custom-stack"` zapisywanego do `semi.customTables[].stack`.
+
+### Wypłaty
+- Dodano jawny branch renderu `activeSection === "payouts"` w panelu administratora, więc kliknięcie zakładki zawsze czyści poprzedni widok i renderuje `Tabela24`.
+- `Tabela24` pokazuje miejsca na podstawie kolejności `finalPlayers[]`; kolumny wygranych używają pól `initialWin` i `finalWin`, jeśli są obecne w rekordzie gracza finałowego.
+- Checkboxy `data-role="toggle-payout-initial"` i `data-role="toggle-payout-final"` sterują tym, czy w komórkach tabeli pojawiają się wartości, czy placeholder `—`.
+- W widoku użytkownika `renderUserTournament()` ma analogiczną gałąź `payouts`, więc zakładka nie wraca już do ogólnego komunikatu fallbackowego.
 
 ### Stabilność UI przy błędach Firebase
 - Dla błędów odczytu `onSnapshot` renderuje się informacja ostrzegawcza, a nie pusty ekran sekcji.

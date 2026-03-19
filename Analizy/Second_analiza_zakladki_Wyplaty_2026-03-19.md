@@ -80,3 +80,25 @@ Najbardziej bezpośrednia przyczyna zgłaszanego błędu:
 
 ## Podsumowanie
 Błąd nie jest problemem kliknięcia ani CSS. Problemem jest brak implementacji renderowania sekcji `payouts` mimo obecności przycisku i stanu danych. W panelu administratora powoduje to pozostawienie poprzedniego widoku bez zmian.
+
+## Zmiany w kodzie po wdrożeniu rekomendacji
+
+Plik Second/app.js
+Linia 1598
+Było:     po sekcji final funkcja render() kończyła się bez gałęzi dla activeSection === "payouts".
+Jest:     dodano gałąź activeSection === "payouts", która renderuje Tabela24, checkboxy showInitial/showFinal oraz komunikat zamiast pozostawiania poprzedniej zakładki.
+
+Plik Second/app.js
+Linia 1921
+Było:     renderUserTournament() nie miał własnej gałęzi dla userTournamentSection === "payouts" i wpadał do ogólnego fallbacku.
+Jest:     dodano osobny render sekcji payouts w widoku użytkownika z tabelą miejsc i wypłat oraz komunikatem o pustych kwotach.
+
+Plik Second/docs/README.md
+Linia 98
+Było:     dokumentacja wspominała Tabela24, ale nie opisywała działania nowych checkboxów ani zachowania zakładki Wypłaty w widoku użytkownika.
+Jest:     dopisano aktualny opis zakładki Wypłaty dla administratora i użytkownika.
+
+Plik Second/docs/Documentation.md
+Linia 42
+Było:     dokumentacja techniczna wymieniała sekcję payouts w stanie, ale nie opisywała renderowania tej zakładki.
+Jest:     uzupełniono dokumentację o techniczny opis renderu payouts dla admina i użytkownika oraz o flagi showInitial/showFinal.

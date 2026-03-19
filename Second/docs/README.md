@@ -96,6 +96,8 @@
 
 ### Wypłaty
 - **Tabela24**: MIEJSCE, GRACZ, POCZĄTKOWA WYGRANA, KOŃCOWA WYGRANA.
+- Nad tabelą administrator może zaznaczyć checkboxy **Pokaż kolumnę POCZĄTKOWA WYGRANA** i **Pokaż kolumnę KOŃCOWA WYGRANA**.
+- Jeżeli w danych turnieju nie ma jeszcze zapisanych kwot, tabela pokazuje wartości `0` albo znak `—`, ale sama zakładka zawsze przełącza widok poprawnie zamiast zostawiać poprzednią sekcję na ekranie.
 
 
 
@@ -104,10 +106,11 @@
 2. W prawym górnym rogu znajdziesz ikonę `Pliki/Ikona.png` oraz przycisk **Instrukcja** — ikona jest po lewej stronie przycisku.
 3. Zewnętrzna zielona ramka panelu użytkownika ma po 1 px odstępu od lewej i prawej krawędzi ekranu oraz 1 px grubości na bocznych krawędziach.
 4. Kliknij zakładkę **TOURNAMENT OF POKER**.
-5. W lewym panelu wybierz sekcję: **Losowanie graczy**, **Losowanie stołów** albo **Wpłaty**.
+5. W lewym panelu wybierz sekcję: **Losowanie graczy**, **Losowanie stołów**, **Wpłaty** albo **Wypłaty**.
 6. Dane w tych sekcjach są pobierane automatycznie z dokumentu Firebase `second_tournament/state` i odświeżają się na żywo po zmianach wykonanych przez administratora.
 7. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
-8. Pozostałe sekcje zakładki turniejowej w panelu użytkownika pokazują komunikat informacyjny — dane są zapisywane i edytowane w panelu administratora.
+8. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.
+9. Pozostałe sekcje zakładki turniejowej w panelu użytkownika pokazują komunikat informacyjny — dane są zapisywane i edytowane w panelu administratora.
 
 ### Stabilność wpisywania danych (autozapis)
 - Wszystkie pola edytowalne w panelu turniejowym mają zabezpieczenie przed utratą fokusu podczas automatycznego zapisu i odświeżeń z Firebase.
