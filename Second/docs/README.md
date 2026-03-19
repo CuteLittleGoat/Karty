@@ -50,6 +50,7 @@
 
 ### Wpłaty
 - **Tabela10**: Buy-in, REBUY/ADD-ON, SUMA, licz. REBUY/ADD-ON (wszystkie pola tylko do odczytu, bez klikalnych inputów).
+  - `SUMA` liczy się jako: suma `BUY-IN` z `Tabela12` + suma `REBUY` z `Tabela12`.
 - **Tabela11**: %, Rake, BUY-IN, REBUY/ADD-ON, POT (wszystkie pola tylko do odczytu, bez klikalnych inputów).
   - kolumna `RAKE` liczy się jako: `(suma BUY-IN z Tabela12 + suma REBUY z Tabela12) × %`.
 - **Tabela12**: LP, Stół, Gracz, BUY-IN, REBUY.
@@ -84,20 +85,37 @@
   - kolumna `%` liczy `STACK / ŁĄCZNY STACK z Tabela18`.
 
 ### Półfinał
-- **Tabela20** została usunięta.
-- **Tabela21**: gracze bez ELIMINATED z fazy grupowej.
+- **Tabela21** pokazuje graczy z `Tabela19B`.
+  - kolumna `STACK` jest kopiowana z `Tabela19B` i nie da się jej edytować tutaj,
+  - kolumna `%` jest kopiowana z `Tabela19B` i nie da się jej edytować tutaj,
+  - kolumna `STÓŁ` jest listą rozwijaną z nazwami stołów dodanych przyciskiem **Dodaj nowy stół**.
 - **Tabela22**: dynamiczne stoły półfinałowe.
-  - Po kliknięciu **Dodaj nowy stół** każdy stół ma tabelę z kolumnami `LP`, `Gracz`, `Stack`, `Eliminated`, `%`.
-- Przycisk **Dodaj nowy stół** jest krótki i wyrównany do lewej strony.
+  - kliknij **Dodaj nowy stół**,
+  - w polu `NAZWA` wpisz nazwę stołu,
+  - gracze pojawiają się automatycznie zgodnie z wyborem z `Tabela21`,
+  - `STACK` jest kopiowany z `Tabela21`,
+  - `ŁĄCZNY STACK` liczy się automatycznie z sumy stacków graczy przy tym stole,
+  - checkbox `ELIMINATED` zapisuje się między sesjami przeglądarki i po odświeżeniu.
+- **Tabela FINAŁOWA** pokazuje tylko graczy bez zaznaczonego `ELIMINATED` w `Tabela22`.
+  - jeśli żaden gracz nie spełnia warunku, zobaczysz sam nagłówek tabeli,
+  - kolumna `STACK` jest edytowalna,
+  - kolumna `STÓŁ` uzupełnia się automatycznie,
+  - kolumna `%` liczy `STACK / ŁĄCZNY STACK z Tabela18`.
 
 ### Finał
-- **Tabela23**: LP, GRACZ, STACK, %, Eliminated.
+- **Tabela23**: LP, GRACZ, STACK, %.
+- Dane w tej tabeli są synchronizowane z `Tabela FINAŁOWA` z panelu `Półfinał`.
 - Pod tabelą widoczny jest stół pokerowy SVG.
 
 ### Wypłaty
-- **Tabela24**: MIEJSCE, GRACZ, POCZĄTKOWA WYGRANA, KOŃCOWA WYGRANA.
+- **Tabela24**: MIEJSCE, GRACZ oraz kolumny wygranych zależne od checkboxów nad tabelą.
 - Nad tabelą administrator może zaznaczyć checkboxy **Pokaż kolumnę POCZĄTKOWA WYGRANA** i **Pokaż kolumnę KOŃCOWA WYGRANA**.
-- Jeżeli w danych turnieju nie ma jeszcze zapisanych kwot, tabela pokazuje wartości `0` albo znak `—`, ale sama zakładka zawsze przełącza widok poprawnie zamiast zostawiać poprzednią sekcję na ekranie.
+  - gdy checkbox jest zaznaczony, kolumna jest widoczna także w widoku użytkownika,
+  - gdy checkbox jest odznaczony, kolumna jest całkowicie ukryta,
+  - stan checkboxów zapisuje się między sesjami i po restarcie aplikacji.
+- W kolumnach wygranych wpisujesz liczby ręcznie.
+  - dla miejsc 1–8 domyślnie przepisywane są wartości z `Tabela16` (`KWOTA` -> `POCZĄTKOWA WYGRANA`, `SUMA` -> `KOŃCOWA WYGRANA`),
+  - od miejsca 9 w dół wartość startowa to `0`.
 
 
 
@@ -167,11 +185,12 @@
 1. `Tabela17` zawiera tylko 1 wiersz.
 2. `Tabela17` ma kolumny: `STACK GRACZA` i `REBUY/ADD-ON` (tylko odczyt).
 3. `Tabela18` pokazuje stack per stół oraz `ŁĄCZNY STACK`.
-4. `Tabela19` ma kolumny: `LP`, `STÓŁ`, `GRACZ`, `ELIMINATED`, `STACK`, `REBUY/ADD-ON`.
-5. W `Tabela19` kolumna `REBUY/ADD-ON` wylicza się jako `Tabela17.REBUY/ADD-ON × liczba uzupełnionych pól RebuyX` dla danego gracza.
-6. Zaznaczenie checkboxa `ELIMINATED` przenosi gracza z `Tabela19B` do `Tabela19A`.
-7. `Tabela19A` pokazuje tylko wyeliminowanych graczy i pozwala wpisać `WYGRANA` (domyślnie `0`).
-8. `Tabela19B` pokazuje tylko niewyeliminowanych graczy i pozwala wpisać ich `STACK`; kolumna `%` liczy udział względem `Tabela18.ŁĄCZNY STACK`.
+4. Wartość każdego stołu w `Tabela18` to suma kolumn `STACK` i `REBUY/ADD-ON` z `Tabela19` dla graczy przypisanych do tego stołu.
+5. `Tabela19` ma kolumny: `LP`, `STÓŁ`, `GRACZ`, `ELIMINATED`, `STACK`, `REBUY/ADD-ON`.
+6. W `Tabela19` kolumna `REBUY/ADD-ON` wylicza się jako `Tabela17.REBUY/ADD-ON × liczba uzupełnionych pól RebuyX` dla danego gracza.
+7. Zaznaczenie checkboxa `ELIMINATED` przenosi gracza z `Tabela19B` do `Tabela19A`.
+8. `Tabela19A` pokazuje tylko wyeliminowanych graczy i pozwala wpisać `WYGRANA` (domyślnie `0`).
+9. `Tabela19B` pokazuje tylko niewyeliminowanych graczy i pozwala wpisać ich `STACK`; kolumna `%` liczy udział względem `Tabela18.ŁĄCZNY STACK`.
 
 ### Nagłówki kolumn
 - W module Second nagłówki tabel są wyświetlane wielkimi literami.

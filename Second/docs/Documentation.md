@@ -83,12 +83,12 @@
 - Styl statusu:
   - `Do zapłaty` ma klasę `.payment-status-label.is-unpaid` (jasnoróżowy napis + czerwonawa obwódka),
   - `Opłacone` ma klasę `.payment-status-label.is-paid` (złoty napis + złota obwódka + glow).
-- Wybór stołu (`assign-table`) i status w półfinale (`semi-assign-status`, `semi-assign-table`) zapisują się na zdarzeniu `change`, bez wymuszonego zapisu na `input`, co eliminuje znikanie rozwijanych list podczas wyboru.
+- Wybór stołu (`assign-table`) oraz półfinałowe przypisanie do stołu (`semi-assign-table`) zapisują się na zdarzeniu `change`, bez wymuszonego zapisu na `input`, co eliminuje znikanie rozwijanych list podczas wyboru.
 - Handler `click` wykonuje logikę wyłącznie dla ról-akcji (`add-player`, `delete-player`, `add-table`, itp.). Kontrolki formularza (`checkbox`, `select`, `input`) nie uruchamiają już globalnego `render()` przez `click`, dzięki czemu przełączenie statusu działa stabilnie na desktopie i mobile (tap).
 
 ### Faza grupowa
 - `Tabela17` ma tylko kolumny `STACK GRACZA` oraz `REBUY/ADD-ON`; wartości są readonly i pochodzą z metadanych turnieju (`stack`, `rebuyStack`).
-- `Tabela18` wylicza stack per stół (`liczba graczy przy stole × stack`) oraz `ŁĄCZNY STACK`.
+- `Tabela18` wylicza stack per stół jako sumę `STACK + REBUY/ADD-ON` ze wszystkich wierszy `Tabela19` przypisanych do danego stołu oraz pokazuje `ŁĄCZNY STACK`.
 - `Tabela19` renderuje kolumny `LP`, `STÓŁ`, `GRACZ`, `ELIMINATED`, `STACK`, `REBUY/ADD-ON`.
 - Kolumna `REBUY/ADD-ON` w `Tabela19` jest wyliczana jako `rebuyStack × liczba niepustych pól RebuyX` dla danego gracza w `payments.table12Rebuys[playerId].values`.
 - `Tabela19` nie ma już kolumny `REBUY`.
@@ -98,15 +98,17 @@
 - Checkbox `ELIMINATED` zapisuje się na zdarzeniu `change` bez dodatkowych ścieżek usuwania; po kliknięciu aplikacja od razu wykonuje `render()`, więc gracz natychmiast przechodzi między `Tabela19A` i `Tabela19B`, a stan pozostaje po odświeżeniu.
 
 ### Półfinał
-- Usunięto `Tabela20`.
-- W stołach dodawanych przyciskiem `Dodaj nowy stół` tabela ma kolumny: `LP`, `Gracz`, `Stack`, `Eliminated`, `%`.
-- Dodana kolumna `Stack` używa pola liczbowego `data-role="semi-custom-stack"` zapisywanego do `semi.customTables[].stack`.
+- `Tabela21` pobiera listę graczy z `Tabela19B`: kolumny `STACK` i `%` są tylko do odczytu i kopiują odpowiednio `group.survivorStacks[playerId]` oraz udział liczony względem `Tabela18.ŁĄCZNY STACK`.
+- `Tabela21.STÓŁ` jest selectem opartym o `semi.customTables[]`; wybór zapisuje `semi.assignments[playerId].tableId`.
+- `Tabela22` renderuje po jednej karcie na każdy wpis `semi.customTables[]`; karta pokazuje nazwę stołu, `ŁĄCZNY STACK` liczony jako suma stacków przypisanych graczy oraz wiersze `GRACZ / STACK / ŁĄCZNY STACK / ELIMINATED`.
+- Checkbox `ELIMINATED` w `Tabela22` zapisuje się do `semi.assignments[playerId].eliminated`, więc stan pozostaje po odświeżeniu i po ponownym wejściu do aplikacji.
+- `Tabela FINAŁOWA` buduje się dynamicznie tylko z graczy przypisanych do stołów półfinałowych bez zaznaczonego `ELIMINATED`; `STACK` jest edytowalny i zapisywany w `finalPlayers[]`, `STÓŁ` jest tylko do odczytu, a `%` liczy się jako `finalPlayers[].stack / Tabela18.ŁĄCZNY STACK`.
 
 ### Wypłaty
-- Dodano jawny branch renderu `activeSection === "payouts"` w panelu administratora, więc kliknięcie zakładki zawsze czyści poprzedni widok i renderuje `Tabela24`.
-- `Tabela24` pokazuje miejsca na podstawie kolejności `finalPlayers[]`; kolumny wygranych używają pól `initialWin` i `finalWin`, jeśli są obecne w rekordzie gracza finałowego.
-- Checkboxy `data-role="toggle-payout-initial"` i `data-role="toggle-payout-final"` sterują tym, czy w komórkach tabeli pojawiają się wartości, czy placeholder `—`.
-- W widoku użytkownika `renderUserTournament()` ma analogiczną gałąź `payouts`, więc zakładka nie wraca już do ogólnego komunikatu fallbackowego.
+- `Tabela24` korzysta z dynamicznej listy `finalPlayers[]` zasilanej z półfinału.
+- Pola `POCZĄTKOWA WYGRANA` i `KOŃCOWA WYGRANA` są edytowalnymi inputami liczbowymi z metadanymi fokusu; zapisują się odpowiednio do `finalPlayers[].initialWin` i `finalPlayers[].finalWin`.
+- Domyślne wartości dla pierwszych 8 miejsc są wyliczane z `Tabela16`: `KWOTA` zasila `POCZĄTKOWA WYGRANA`, a `SUMA` zasila `KOŃCOWA WYGRANA`; kolejne miejsca startują od `0`.
+- Checkboxy `data-role="toggle-payout-initial"` i `data-role="toggle-payout-final"` sterują realną widocznością kolumn w tabeli administratora i użytkownika, a ich stan jest utrwalany w `payouts.showInitial` / `payouts.showFinal`.
 
 ### Stabilność UI przy błędach Firebase
 - Dla błędów odczytu `onSnapshot` renderuje się informacja ostrzegawcza, a nie pusty ekran sekcji.
@@ -161,7 +163,7 @@
 - `Tabela10`:
   - `BUY-IN` z metadanych turnieju (Losowanie graczy),
   - `REBUY/ADD-ON` z metadanych turnieju,
-  - `SUMA` jako suma BUY-IN przypisanych graczy (na podstawie stołów),
+  - `SUMA` jako `suma BUY-IN z Tabela12 + suma REBUY z Tabela12`,
   - `LICZ. REBUY/ADD-ON` jako liczba uzupełnionych pól rebuy w modalach `Rebuy gracza` (bez sumowania wartości).
 - `Tabela11`:
   - `%` z pola `RAKE` (konwersja do ułamka),
