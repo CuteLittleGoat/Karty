@@ -245,3 +245,81 @@ Najbezpieczniejsza ścieżka wdrożenia wygląda tak:
 
 ## Podsumowanie praktyczne
 **Wdrożenie jest możliwe bez migracji Firestore.** Zakres zmian dotyczy przede wszystkim `Second/app.js`: modelu stanu, helperów budujących listy graczy, renderu trzech sekcji (`semi`, `final`, `payouts`) oraz obsługi nowych przycisków zmiany pozycji dla `Tabela22A`.
+
+## Uzupełnienie analizy — odpowiedź na pytanie o zakres zmian
+
+### Dodatkowy prompt użytkownika
+> Uzupełnij analizę Analizy/Second_rozbudowa_modulu_Second_final_payouts_analiza_2026-03-19.md
+> Powiedz mi czy wszystkie problemy da się rozwiązać na poziomie zmiany kodu.
+
+### Krótka odpowiedź
+**Tak — wszystkie problemy wskazane w tej analizie da się rozwiązać na poziomie zmiany kodu aplikacji oraz sposobu zapisu stanu w istniejącym dokumencie Firestore.**
+
+Nie widać tutaj blokera, który wymagałby:
+- zmiany struktury kolekcji w Firebase jako osobnego projektu migracyjnego,
+- ręcznej ingerencji administracyjnej w konsoli Firebase jako warunku wdrożenia,
+- zmiany infrastruktury hostingowej,
+- wymiany bazy danych,
+- dołożenia nowego zewnętrznego systemu.
+
+### Co dokładnie oznacza „na poziomie zmiany kodu” w tym przypadku
+Zakres potrzebnych prac nadal mieści się w typowym wdrożeniu programistycznym w module `Second`, czyli w:
+- rozszerzeniu modelu stanu w `Second/app.js`,
+- poprawieniu normalizacji i rekalkulacji danych pochodnych,
+- zmianie renderu tabel `Tabela22A`, `Tabela23`, `Tabela24`,
+- dopisaniu handlerów UI dla checkboxów i zmiany kolejności,
+- utrwalaniu nowych pól w tym samym dokumencie `second_tournament/state`.
+
+### Które problemy są wyłącznie problemami kodowymi
+#### 1. Nadpisywanie `finalPlayers[]`
+To problem architektury stanu w kodzie. Da się go rozwiązać przez:
+- zachowanie dodatkowych pól przy rekalkulacji,
+- przeniesienie flag do osobnej gałęzi stanu,
+- albo wyliczanie części danych przez dedykowany helper.
+
+Nie wymaga to zmian infrastrukturalnych.
+
+#### 2. Brak `Tabela22A`
+To brakująca funkcjonalność UI + brak logiki stanu. Da się ją dodać wyłącznie kodem.
+
+#### 3. Niepoprawne źródło danych dla `Tabela24`
+To błąd modelowania logiki biznesowej w aplikacji. Rozwiązanie wymaga przebudowy algorytmu budowania klasyfikacji, ale nadal tylko w kodzie.
+
+#### 4. Readonly/sortowanie/checkboxy w `Tabela23`
+To typowa zmiana renderu i obsługi zdarzeń. Również wyłącznie kod.
+
+#### 5. Trwałość nowych danych między sesjami
+To także problem kodowy, bo obecny Firestore już potrafi przechować takie pola. Trzeba jedynie dopisać ich zapis/odczyt.
+
+### Jedyny istotny warunek
+Jedyny realny warunek jest taki, że wdrożenie powinno być zrobione **spójnie**, a nie jako pojedyncza kosmetyczna poprawka UI.
+
+To znaczy, że sama podmiana tabel bez uporządkowania źródeł danych może stworzyć kolejne błędy. Nadal jednak jest to kwestia jakości implementacji kodu, a nie ograniczenia technologicznego.
+
+### Czy potrzebna jest migracja danych?
+**Najprawdopodobniej nie.**
+
+Ponieważ dokument stanu jest elastyczny i aplikacja już toleruje brak części pól, nowe właściwości mogą zostać dopisane przy kolejnym zapisie. W praktyce oznacza to, że wdrożenie można oprzeć na:
+- dodaniu domyślnych wartości w normalizacji,
+- bezpiecznym fallbacku dla starszych zapisów stanu,
+- stopniowym uzupełnieniu nowych pól przez samą aplikację.
+
+### Czy istnieją problemy, których sam kod nie rozwiąże?
+**Nie w zakresie wymagań opisanych w tej analizie.**
+
+Jedynie w szerszym sensie pozakodowym mogą pojawić się kwestie organizacyjne, np.:
+- potrzeba doprecyzowania remisu przy identycznych `STACK`, jeśli biznes oczekuje ścisłej reguły tie-break,
+- decyzja biznesowa, czy odznaczenie `ELIMINATED` w finale ma natychmiast przeliczać `Tabela24`,
+- decyzja, czy wynikowa lista miejsc ma być zawsze wyliczana automatycznie, czy częściowo ręcznie nadpisywalna.
+
+To jednak nie są blokery techniczne. To tylko decyzje produktowe, które trzeba jednoznacznie zapisać przed implementacją.
+
+### Ostateczny wniosek po uzupełnieniu analizy
+**Tak — wszystkie zidentyfikowane problemy da się rozwiązać na poziomie zmiany kodu.**
+
+Precyzyjniej:
+- **tak po stronie technicznej,** bo obecny Firebase i obecna struktura danych są wystarczające,
+- **tak po stronie implementacyjnej,** bo potrzebne zmiany mieszczą się w `Second/app.js` i aktualnym modelu zapisu stanu,
+- **nie ma widocznej blokady systemowej**, która wymagałaby osobnego projektu infrastrukturalnego albo migracji bazy.
+
+Największe ryzyko dotyczy więc nie technologii, tylko poprawnego zaprojektowania logiki danych i kolejności rekalkulacji w kodzie.
