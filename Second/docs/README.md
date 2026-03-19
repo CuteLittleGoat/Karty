@@ -25,7 +25,7 @@
 8. W kolumnie **Uprawnienia**:
    - widzisz aktualne uprawnienia jako badge,
    - kliknij **Edytuj** — otworzy się modal **Uprawnienia gracza** (jak w module Main),
-   - w modalu zaznacz/odznacz checkboxy: **Zakładka1**, **Zakładka2**, **Zakładka3**,
+   - w modalu zaznacz/odznacz checkboxy: **Czat**, **Wpłaty**, **Podział Puli**, **Faza Grupowa**, **Półfinał**, **Finał**, **Wypłaty**,
    - zamknij modal przyciskiem **✕**, kliknięciem poza oknem lub klawiszem `Esc`,
    - wybrane pozycje od razu pojawią się w kolumnie **Uprawnienia** jako lista badge.
 9. W kolumnie **Akcje** kliknij **Usuń**, aby skasować gracza z tabeli.
@@ -105,12 +105,16 @@
 1. Otwórz widok użytkownika `Second/index.html` (bez `?admin=1`).
 2. W prawym górnym rogu znajdziesz ikonę `Pliki/Ikona.png` oraz przycisk **Instrukcja** — ikona jest po lewej stronie przycisku.
 3. Zewnętrzna zielona ramka panelu użytkownika ma po 1 px odstępu od lewej i prawej krawędzi ekranu oraz 1 px grubości na bocznych krawędziach.
-4. Kliknij zakładkę **TOURNAMENT OF POKER**.
-5. W lewym panelu wybierz sekcję: **Losowanie graczy**, **Losowanie stołów**, **Wpłaty** albo **Wypłaty**.
-6. Dane w tych sekcjach są pobierane automatycznie z dokumentu Firebase `second_tournament/state` i odświeżają się na żywo po zmianach wykonanych przez administratora.
-7. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
-8. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.
-9. Pozostałe sekcje zakładki turniejowej w panelu użytkownika pokazują komunikat informacyjny — dane są zapisywane i edytowane w panelu administratora.
+4. Bez wpisania PIN dostępne są tylko zakładki **Aktualności** i **Regulamin**.
+5. W górnej bramce PIN wpisz 5 cyfr przypisanych do gracza i kliknij **Otwórz**.
+6. Po poprawnym PIN aplikacja odblokuje zakładki **Czat** i **TOURNAMENT OF POKER** do czasu resetu/odświeżenia strony.
+7. Kliknij zakładkę **TOURNAMENT OF POKER**.
+8. W lewym panelu zobaczysz tylko te przyciski sekcji, do których administrator nadał uprawnienia dla tego gracza; bez żadnego uprawnienia sidebar pozostanie pusty.
+9. Jeżeli administrator nie nadał żadnego uprawnienia turniejowego, panel boczny nie pokaże przycisków nawigacji i pojawi się komunikat informacyjny.
+10. Dane w dostępnych sekcjach są pobierane automatycznie z dokumentu Firebase `second_tournament/state` i odświeżają się na żywo po zmianach wykonanych przez administratora.
+11. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
+12. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.
+13. Pozostałe sekcje zakładki turniejowej w panelu użytkownika pokazują komunikat informacyjny — dane są zapisywane i edytowane w panelu administratora.
 
 ### Stabilność wpisywania danych (autozapis)
 - Wszystkie pola edytowalne w panelu turniejowym mają zabezpieczenie przed utratą fokusu podczas automatycznego zapisu i odświeżeń z Firebase.
@@ -178,10 +182,11 @@
 2. Każdy taki panel zaczyna się 1 px od lewej krawędzi zewnętrznej zielonej ramki i kończy 1 px przed prawą krawędzią.
 
 
-## Odblokowanie czatu PIN-em (widok użytkownika)
-1. Wejdź do zakładki **Czat**.
-2. W polu PIN wpisz dokładnie 5 cyfr przypisanych do gracza.
-3. Kliknij **Otwórz** (lub naciśnij Enter).
-4. Jeżeli PIN jest poprawny i gracz ma uprawnienie **Czat** nadane przez admina w sekcji **Losowanie graczy**, ukryje się panel PIN i pojawi się formularz wysyłki wiadomości.
-5. Po poprawnej weryfikacji PIN nie musi być wpisywany ponownie do odświeżenia/resetu strony.
-6. Wysłane wiadomości publikują się z nazwą gracza skonfigurowaną przez admina.
+## Odblokowanie zakładek i czatu PIN-em (widok użytkownika)
+1. Po wejściu do widoku użytkownika najpierw wpisz PIN w górnej bramce nad zakładkami.
+2. Bez tego kroku dostępne są wyłącznie **Aktualności** i **Regulamin**.
+3. Po poprawnej weryfikacji odblokują się zakładki **Czat** i **TOURNAMENT OF POKER**; ten stan jest pamiętany do czasu resetu lub odświeżenia strony.
+4. Wejdź do zakładki **Czat**.
+5. W polu PIN czatu wpisz dokładnie 5 cyfr przypisanych do gracza i kliknij **Otwórz** (lub naciśnij Enter).
+6. Jeżeli PIN jest poprawny i gracz ma uprawnienie **Czat** nadane przez admina w sekcji **Losowanie graczy**, ukryje się panel PIN i pojawi się formularz wysyłki wiadomości.
+7. Wysłane wiadomości publikują się z nazwą gracza skonfigurowaną przez admina.

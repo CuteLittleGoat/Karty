@@ -168,6 +168,8 @@ const SECOND_TOURNAMENT_COLLECTION = "second_tournament";
 const SECOND_TOURNAMENT_DOCUMENT = "state";
 const SECOND_CHAT_PIN_STORAGE_KEY = "secondChatPinVerified";
 const SECOND_CHAT_PLAYER_STORAGE_KEY = "secondChatPlayerId";
+const SECOND_USER_PIN_STORAGE_KEY = "secondUserPinVerified";
+const SECOND_USER_PLAYER_STORAGE_KEY = "secondUserPlayerId";
 
 const shouldRequestAdminAccess = () => new URLSearchParams(window.location.search).get("admin") === "1";
 
@@ -720,8 +722,24 @@ const normalizeTournamentPermissions = (value) => {
 };
 
 const SECOND_AVAILABLE_PLAYER_PERMISSIONS = [
-  { key: "chatTab", label: "Czat" }
+  { key: "chatTab", label: "Czat" },
+  { key: "payments", label: "Wpłaty" },
+  { key: "pool", label: "Podział Puli" },
+  { key: "group", label: "Faza Grupowa" },
+  { key: "semi", label: "Półfinał" },
+  { key: "final", label: "Finał" },
+  { key: "payouts", label: "Wypłaty" }
 ];
+
+const SECOND_TOURNAMENT_PERMISSION_MAP = {
+  chatTab: "Czat",
+  payments: "Wpłaty",
+  pool: "Podział Puli",
+  group: "Faza Grupowa",
+  semi: "Półfinał",
+  final: "Finał",
+  payouts: "Wypłaty"
+};
 
 const getSecondChatPinGateState = () => sessionStorage.getItem(SECOND_CHAT_PIN_STORAGE_KEY) === "1";
 const setSecondChatPinGateState = (isVerified) => {
@@ -736,7 +754,24 @@ const setSecondChatVerifiedPlayerId = (playerId) => {
   sessionStorage.removeItem(SECOND_CHAT_PLAYER_STORAGE_KEY);
 };
 const getSecondChatVerifiedPlayerId = () => sessionStorage.getItem(SECOND_CHAT_PLAYER_STORAGE_KEY) || "";
+const getSecondUserPinGateState = () => sessionStorage.getItem(SECOND_USER_PIN_STORAGE_KEY) === "1";
+const setSecondUserPinGateState = (isVerified) => {
+  sessionStorage.setItem(SECOND_USER_PIN_STORAGE_KEY, isVerified ? "1" : "0");
+};
+const setSecondUserVerifiedPlayerId = (playerId) => {
+  const normalized = String(playerId ?? "").trim();
+  if (normalized) {
+    sessionStorage.setItem(SECOND_USER_PLAYER_STORAGE_KEY, normalized);
+    return;
+  }
+  sessionStorage.removeItem(SECOND_USER_PLAYER_STORAGE_KEY);
+};
+const getSecondUserVerifiedPlayerId = () => sessionStorage.getItem(SECOND_USER_PLAYER_STORAGE_KEY) || "";
 const isSecondPlayerAllowedForChat = (player) => normalizeTournamentPermissions(player?.permissions).includes("Czat");
+const isSecondPlayerAllowedForTournamentSection = (player, sectionKey) => {
+  const permissionLabel = SECOND_TOURNAMENT_PERMISSION_MAP[sectionKey] || "";
+  return permissionLabel ? normalizeTournamentPermissions(player?.permissions).includes(permissionLabel) : false;
+};
 
 const getTournamentEditableFocusState = (container) => {
   const activeElement = document.activeElement;
@@ -1849,13 +1884,15 @@ const setupAdminTournament = (rootCard) => {
 };
 
 const setupUserView = (root) => {
-  setupTabs({
-    container: root,
-    buttonSelector: ".tab-button",
-    panelSelector: ".tab-panel",
-    getTarget: (button) => button.dataset.target,
-    isPanelMatch: (panel, target) => panel.id === target
-  });
+  const tabButtons = Array.from(root.querySelectorAll(".tab-button"));
+  const tabPanels = Array.from(root.querySelectorAll(".tab-panel"));
+  const setActiveUserTab = (target) => {
+    if (!target) {
+      return;
+    }
+    tabButtons.forEach((button) => button.classList.toggle("is-active", button.dataset.target === target));
+    tabPanels.forEach((panel) => panel.classList.toggle("is-active", panel.id === target));
+  };
 
   setupTournamentButtons(root);
 
@@ -1876,7 +1913,13 @@ const setupUserView = (root) => {
   const tournamentSection = root.querySelector("#tournamentTab .admin-games-section");
   const userPanelRefreshButton = root.querySelector("#userPanelRefresh");
   const userPanelRefreshStatus = root.querySelector("#userPanelRefreshStatus");
+  const userPinGate = root.querySelector("#userPlayerPinGate");
+  const userPinInput = root.querySelector("#userPlayerPinInput");
+  const userPinOpenButton = root.querySelector("#userPlayerPinOpenButton");
+  const userPinStatus = root.querySelector("#userPlayerPinStatus");
+  const userTournamentStatus = root.querySelector("#userTournamentSectionsStatus");
   const tournamentButtons = Array.from(root.querySelectorAll("#tournamentTab [data-tournament-target]"));
+  const protectedTabButtons = tabButtons.filter((button) => button.dataset.requiresPlayerPin === "true");
 
   let userTournamentState = createTournamentDefaultState();
   let userTournamentSection = "players";
@@ -1896,6 +1939,73 @@ const setupUserView = (root) => {
     }
     return getTournamentPlayerById(playerId);
   };
+  const getVerifiedUserPlayer = () => {
+    const playerId = getSecondUserVerifiedPlayerId();
+    if (!playerId) {
+      return null;
+    }
+    return getTournamentPlayerById(playerId);
+  };
+  const renderTournamentButtonsForPlayer = () => {
+    const verifiedPlayer = getVerifiedUserPlayer();
+    const isVerified = getSecondUserPinGateState() && Boolean(verifiedPlayer);
+    const allowedButtons = [];
+
+    tournamentButtons.forEach((button, index) => {
+      const sectionKey = button.dataset.tournamentTarget || "";
+      const isAllowed = isVerified && isSecondPlayerAllowedForTournamentSection(verifiedPlayer, sectionKey);
+      button.style.display = isAllowed ? "block" : "none";
+      button.classList.toggle("is-active", isAllowed && allowedButtons.length === 0 && userTournamentSection === sectionKey);
+      if (isAllowed) {
+        allowedButtons.push(button);
+      }
+      if (!isAllowed && index === 0) {
+        button.classList.remove("is-active");
+      }
+    });
+
+    if (!allowedButtons.length) {
+      if (userTournamentStatus) {
+        userTournamentStatus.textContent = isVerified ? "Administrator nie nadał Ci jeszcze uprawnień do paneli Tournament of Poker." : "Wpisz PIN, aby zobaczyć dostępne panele.";
+      }
+      return [];
+    }
+
+    if (userTournamentStatus) {
+      userTournamentStatus.textContent = "";
+    }
+
+    const allowedTargets = allowedButtons.map((button) => button.dataset.tournamentTarget || "");
+    if (!allowedTargets.includes(userTournamentSection)) {
+      userTournamentSection = allowedTargets[0] || "players";
+    }
+    allowedButtons.forEach((button) => {
+      button.classList.toggle("is-active", button.dataset.tournamentTarget === userTournamentSection);
+    });
+    return allowedTargets;
+  };
+
+  const updateProtectedTabsVisibility = () => {
+    const verifiedPlayer = getVerifiedUserPlayer();
+    const isVerified = getSecondUserPinGateState() && Boolean(verifiedPlayer);
+
+    if (userPinGate) {
+      userPinGate.classList.toggle("is-hidden", isVerified);
+      userPinGate.hidden = isVerified;
+    }
+
+    protectedTabButtons.forEach((button) => {
+      button.style.display = isVerified ? "inline-flex" : "none";
+    });
+
+    const activeProtectedTab = protectedTabButtons.find((button) => button.classList.contains("is-active"));
+    if (!isVerified && activeProtectedTab) {
+      setActiveUserTab("updatesTab");
+    }
+
+    renderTournamentButtonsForPlayer();
+  };
+
   const updateSecondChatVisibility = () => {
     const verifiedPlayer = getVerifiedChatPlayer();
     const isAllowed = getSecondChatPinGateState() && Boolean(verifiedPlayer) && isSecondPlayerAllowedForChat(verifiedPlayer);
@@ -1917,6 +2027,12 @@ const setupUserView = (root) => {
 
   const renderUserTournament = () => {
     if (!tournamentSection) {
+      return;
+    }
+
+    const allowedTargets = renderTournamentButtonsForPlayer();
+    if (!allowedTargets.length) {
+      tournamentSection.innerHTML = '<p class="builder-info">Brak dostępnych paneli Tournament of Poker dla tego PIN-u.</p>';
       return;
     }
 
@@ -1952,12 +2068,72 @@ const setupUserView = (root) => {
 
   tournamentButtons.forEach((button) => {
     button.addEventListener("click", () => {
+      if (button.style.display === "none") {
+        return;
+      }
       userTournamentSection = button.dataset.tournamentTarget || "players";
       renderUserTournament();
     });
   });
 
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = button.dataset.target || "updatesTab";
+      if (button.dataset.requiresPlayerPin === "true" && !getSecondUserPinGateState()) {
+        setActiveUserTab("updatesTab");
+        if (userPinStatus) {
+          userPinStatus.textContent = "Najpierw wpisz PIN gracza, aby odblokować dodatkowe zakładki.";
+        }
+        return;
+      }
+      setActiveUserTab(target);
+    });
+  });
+
   renderUserTournament();
+  updateProtectedTabsVisibility();
+  setActiveUserTab("updatesTab");
+
+  if (userPinInput) {
+    userPinInput.addEventListener("input", () => {
+      userPinInput.value = digitsOnly(userPinInput.value).slice(0, 5);
+    });
+  }
+
+  const verifyUserPin = () => {
+    const pin = digitsOnly(userPinInput?.value || "").slice(0, 5);
+    if (pin.length !== 5) {
+      if (userPinStatus) {
+        userPinStatus.textContent = "Wpisz pełny PIN (5 cyfr).";
+      }
+      return;
+    }
+
+    const matchedPlayer = getTournamentPlayerByPin(pin);
+    if (!matchedPlayer) {
+      setSecondUserPinGateState(false);
+      setSecondUserVerifiedPlayerId("");
+      if (userPinStatus) {
+        userPinStatus.textContent = "Błędny PIN.";
+      }
+      updateProtectedTabsVisibility();
+      return;
+    }
+
+    setSecondUserPinGateState(true);
+    setSecondUserVerifiedPlayerId(matchedPlayer.id);
+    if (userPinStatus) {
+      userPinStatus.textContent = `PIN poprawny. Witaj ${matchedPlayer.name || "graczu"}.`;
+    }
+    updateProtectedTabsVisibility();
+  };
+
+  userPinOpenButton?.addEventListener("click", verifyUserPin);
+  userPinInput?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      verifyUserPin();
+    }
+  });
 
   if (userPanelRefreshButton) {
     userPanelRefreshButton.addEventListener("click", async () => {
@@ -2024,6 +2200,12 @@ const setupUserView = (root) => {
     }
     if (chatStatus) {
       chatStatus.textContent = "Uzupełnij konfigurację Firebase, aby używać czatu.";
+    }
+    if (userPinStatus) {
+      userPinStatus.textContent = "Uzupełnij konfigurację Firebase, aby zweryfikować PIN gracza.";
+    }
+    if (userPinOpenButton) {
+      userPinOpenButton.disabled = true;
     }
     if (chatPinOpenButton) {
       chatPinOpenButton.disabled = true;
@@ -2161,6 +2343,14 @@ const setupUserView = (root) => {
   db.collection(SECOND_TOURNAMENT_COLLECTION).doc(SECOND_TOURNAMENT_DOCUMENT).onSnapshot(
     (snapshot) => {
       userTournamentState = normalizeTournamentState(snapshot.data());
+      const verifiedUserPlayer = getVerifiedUserPlayer();
+      if (!verifiedUserPlayer) {
+        setSecondUserPinGateState(false);
+        setSecondUserVerifiedPlayerId("");
+        if (userPinStatus) {
+          userPinStatus.textContent = "Wpisz PIN gracza, aby odblokować dodatkowe zakładki.";
+        }
+      }
       const verifiedPlayer = getVerifiedChatPlayer();
       if (!verifiedPlayer || !isSecondPlayerAllowedForChat(verifiedPlayer)) {
         setSecondChatPinGateState(false);
@@ -2169,6 +2359,7 @@ const setupUserView = (root) => {
           chatPinStatus.textContent = "Wpisz PIN z uprawnieniem Czat, aby odblokować wysyłanie wiadomości.";
         }
       }
+      updateProtectedTabsVisibility();
       updateSecondChatVisibility();
       renderUserTournament();
     },
@@ -2236,6 +2427,13 @@ const setupUserView = (root) => {
   } else if (chatPinStatus) {
     chatPinStatus.textContent = "Wpisz PIN z uprawnieniem Czat, aby odblokować wysyłanie wiadomości.";
   }
+  if (userPinStatus && getSecondUserPinGateState() && getVerifiedUserPlayer()) {
+    const verifiedPlayer = getVerifiedUserPlayer();
+    userPinStatus.textContent = `PIN poprawny. Witaj ${verifiedPlayer?.name || "graczu"}.`;
+  } else if (userPinStatus) {
+    userPinStatus.textContent = "Wpisz PIN gracza, aby odblokować dodatkowe zakładki.";
+  }
+  updateProtectedTabsVisibility();
   updateSecondChatVisibility();
 };
 
