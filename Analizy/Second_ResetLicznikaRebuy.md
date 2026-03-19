@@ -418,3 +418,92 @@ Dopiero taki komplet zmian zapewni, że:
 - licznik będzie wracał do zera,
 - pierwszy nowy rebuy zacznie się od `Rebuy1`,
 - TABELA10/TABELA11/TABELA13/TABELA14/TABELA16/TABELA19 pozostaną spójne.
+
+## Uzupełnienie analizy — odpowiedź na dodatkowe pytanie użytkownika
+
+### Dodatkowy prompt użytkownika
+"Przeczytaj analizę: Analizy/Second_ResetLicznikaRebuy.md
+Zaktualizuj analizę o wyjaśnienie jeszcze jednej kwestii.
+W aplikacji jest zabezpieczenie uniemożliwiające usunięcie ostatniego dokumentu z kolekcji Firebase.
+Czy wdrożenie "7. Co dokładnie trzeba zrobić, aby licznik resetował się automatycznie po usunięciu wszystkich stołów i graczy" nie będzie kolidować z tym zabezpieczeniem?"
+
+## 11. Czy automatyczny reset licznika będzie kolidować z zabezpieczeniem przed usunięciem ostatniego dokumentu?
+
+### 11.1. Krótka odpowiedź
+Nie — **o ile reset będzie realizowany jako aktualizacja pól w istniejącym dokumencie `second_tournament/state`, a nie jako usunięcie tego dokumentu**.
+
+Zabezpieczenie obecne w `Second/app.js` blokuje wyłącznie operacje `DocumentReference.delete()` oraz batch delete, kiedy miałyby usunąć ostatni dokument z chronionej kolekcji najwyższego poziomu. Nie blokuje ono zwykłych operacji `set()` / `update()` zmieniających zawartość dokumentu.
+
+### 11.2. Co dokładnie robi obecne zabezpieczenie
+Obecny guard działa na poziomie metod kasujących dokumenty Firebase:
+- patchuje `DocumentReference.delete()`,
+- patchuje `WriteBatch.delete()` + `commit()`,
+- przed usunięciem sprawdza, czy usuwany dokument byłby ostatnim dokumentem w kolekcji głównej,
+- jeśli tak, rzuca błąd `LAST_DOCUMENT_DELETE_BLOCKED` i pokazuje alert użytkownikowi.
+
+Kluczowa rzecz: to zabezpieczenie odnosi się do **usuwania dokumentów z kolekcji**, a nie do czyszczenia pól wewnątrz dokumentu.
+
+### 11.3. Dlaczego proponowany reset z punktu 7 nie powinien kolidować
+W analizowanym przypadku moduł `Second` zapisuje stan turnieju do jednego dokumentu:
+- kolekcja: `second_tournament`,
+- dokument: `state`.
+
+Proponowany w punkcie 7 reset polega na wyczyszczeniu fragmentów danych takich jak:
+- `payments.table12Rebuys`,
+- `pool.rebuyValues`,
+- ewentualnie innych map pochodnych związanych z rebuy.
+
+Jeżeli zrobimy to przez:
+- `docRef.update({...})`, albo
+- `docRef.set({...}, { merge: true })` dla jawnie nadpisywanych pustych map,
+- albo `update()` z `FieldValue.delete()` dla konkretnych pól zagnieżdżonych,
+
+to **dokument `second_tournament/state` nadal istnieje**, więc zabezpieczenie „nie usuwaj ostatniego dokumentu z kolekcji” w ogóle nie powinno się uruchomić.
+
+### 11.4. Kiedy mogłoby dojść do konfliktu
+Kolizja pojawiłaby się tylko przy błędnej implementacji, np. gdyby ktoś chciał zrealizować reset przez:
+1. `docRef.delete()` dla `second_tournament/state`, a potem
+2. ponowne utworzenie pustego dokumentu.
+
+To byłoby ryzykowne z dwóch powodów:
+- guard mógłby zablokować usunięcie jako próbę skasowania ostatniego dokumentu z kolekcji `second_tournament`,
+- nawet gdyby zabezpieczenia nie było, powstałoby niepotrzebne okno czasowe z brakiem dokumentu i potencjalnym rozjazdem snapshotów.
+
+Czyli:
+- **reset przez kasowanie dokumentu — koliduje / niezalecane**,
+- **reset przez czyszczenie pól w istniejącym dokumencie — nie koliduje / zalecane**.
+
+### 11.5. Dodatkowy niuans: `FieldValue.delete()` nie jest tym samym co `doc.delete()`
+To ważne rozróżnienie.
+
+Jeżeli użyjemy:
+- `firebase.firestore.FieldValue.delete()` w `update()`
+
+to kasujemy tylko wskazane pole dokumentu, np. `payments.table12Rebuys.somePlayerId`.
+
+To **nie jest usunięcie dokumentu Firestore**, więc nie przechodzi przez guard blokujący skasowanie ostatniego dokumentu kolekcji. Z punktu widzenia obecnego zabezpieczenia to nadal zwykła aktualizacja istniejącego dokumentu.
+
+### 11.6. Najbezpieczniejszy sposób wdrożenia punktu 7
+Żeby uniknąć konfliktu z zabezpieczeniem i jednocześnie naprawić problem z „duchami danych”, implementacja powinna wyglądać tak:
+
+1. Po każdej operacji `delete-player` i `delete-table` sprawdzić warunek:
+   - `tournamentState.players.length === 0 && tournamentState.tables.length === 0`.
+2. Jeśli warunek jest spełniony, uruchomić dedykowaną funkcję np. `resetRebuyStateWhenTournamentStructureEmpty()`.
+3. Funkcja powinna:
+   - wyczyścić lokalnie `payments.table12Rebuys = {}`,
+   - wyczyścić lokalnie `pool.rebuyValues = {}`,
+   - opcjonalnie wyczyścić inne mapy pochodne rebuy, jeżeli są semantycznie powiązane.
+4. Następnie zapisać to jako **update istniejącego dokumentu**, a nie delete dokumentu.
+5. Jeśli potrzebne jest skasowanie pojedynczych osieroconych kluczy, użyć `update()` + `FieldValue.delete()` dla ścieżek pól, zamiast usuwać dokument turnieju.
+
+Taki wariant:
+- nie koliduje z obecnym zabezpieczeniem,
+- nie wymaga obchodzenia guarda,
+- jest zgodny z architekturą modułu `Second`, który pracuje na jednym trwałym dokumencie stanu.
+
+### 11.7. Wniosek końcowy
+**Nie ma konfliktu pomiędzy zabezpieczeniem „nie usuwaj ostatniego dokumentu z kolekcji Firebase” a wdrożeniem automatycznego resetu licznika rebuy z punktu 7 — pod warunkiem, że reset będzie wykonany jako czyszczenie pól wewnątrz dokumentu `second_tournament/state`, a nie jako usunięcie samego dokumentu.**
+
+W praktyce oznacza to, że rekomendacja z punktu 7 pozostaje aktualna, ale warto doprecyzować sposób implementacji:
+- **tak** dla `update()` / kontrolowanego `set()` / `FieldValue.delete()` na polach,
+- **nie** dla `docRef.delete()` jako sposobu resetowania turnieju.
