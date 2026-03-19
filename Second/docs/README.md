@@ -29,6 +29,7 @@
    - zamknij modal przyciskiem **✕**, kliknięciem poza oknem lub klawiszem `Esc`,
    - wybrane pozycje od razu pojawią się w kolumnie **Uprawnienia** jako lista badge.
 9. W kolumnie **Akcje** kliknij **Usuń**, aby skasować gracza z tabeli.
+   - Jeżeli był to ostatni gracz, a jednocześnie nie ma już żadnego stołu, aplikacja automatycznie wyzeruje licznik rebuy i usunie stare kolumny `RebuyX` z danych turnieju.
 
 ### Losowanie stołów
 1. W górnej tabeli przypisz każdemu graczowi:
@@ -45,6 +46,7 @@
 5. W tabeli stołu kolumna **BUY-IN** jest automatyczna i pobiera wartość z sekcji **Losowanie graczy** (pole `BUY-IN`) dla każdego przypisanego gracza — brak edycji w tej tabeli.
 6. Kliknij **Usuń** przy wybranym stole, aby go usunąć.
    - Czerwony przycisk **Usuń** jest kompaktowy i wyrównany do prawej krawędzi bloku (spójny wizualnie z przyciskami **Usuń** w sekcji **Losowanie graczy**).
+   - Jeżeli po usunięciu stołu nie ma już żadnych stołów i żadnych graczy, aplikacja automatycznie czyści dane rebuy oraz ręczne nadpisania rebuy w podziale puli.
 
 ### Wpłaty
 - **Tabela10**: Buy-in, REBUY/ADD-ON, SUMA, licz. REBUY/ADD-ON (wszystkie pola tylko do odczytu, bez klikalnych inputów).
@@ -54,7 +56,7 @@
   - kolumna `BUY-IN` pobiera wartość przypisaną graczowi w sekcji **Losowanie stołów**,
   - kolumna `REBUY` otwiera modal **Rebuy gracza**,
   - modal **Rebuy gracza** możesz zawsze zamknąć przez `×`, kliknięcie poza oknem lub klawisz `Esc` — także po edycji pól,
-  - licznik `LICZ. REBUY/ADD-ON` w Tabela10 zlicza liczbę uzupełnionych pól `Rebuy` u wszystkich graczy (nie sumę kwot),
+  - licznik `LICZ. REBUY/ADD-ON` w Tabela10 zlicza liczbę uzupełnionych pól `Rebuy` tylko dla aktualnie istniejących graczy (nie sumę kwot),
   - wiersze mają zebra striping per grupa stołu: cały blok graczy z tego samego stołu ma wspólny kolor, a kolejne stoły zmieniają kolor naprzemiennie.
 
 ### Podział puli

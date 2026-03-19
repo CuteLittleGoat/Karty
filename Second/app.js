@@ -865,14 +865,14 @@ const setupAdminTournament = (rootCard) => {
     return parts.join(" | ") || "Brak szczegółów błędu.";
   };
 
-  const persistTable12RebuyChanges = async (operationLabel = "zapis") => {
+  const persistTable12RebuyChanges = async (operationLabel = "zapis", options = {}) => {
     if (!activeTable12RebuyPlayerId) {
       setTable12RebuyModalStatus("Nie można zapisać zmian: brak wskazanego gracza.");
       return false;
     }
     pendingLocalWrites += 1;
     try {
-      const saved = await saveState();
+      const saved = await saveState(options);
       if (!saved) {
         const reason = getFirebaseErrorDetails(saveState.lastError);
         setTable12RebuyModalStatus(`Nie udało się wykonać operacji \"${operationLabel}\". ${reason}`);
@@ -1060,8 +1060,18 @@ const setupAdminTournament = (rootCard) => {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 
-  const saveState = async () => {
+  const saveState = async (options = {}) => {
+    const deletedPaths = Array.isArray(options.deletedPaths) ? options.deletedPaths.filter((path) => typeof path === "string" && path.trim()) : [];
     try {
+      if (deletedPaths.length) {
+        const deletePayload = deletedPaths.reduce((acc, path) => {
+          acc[path] = firebaseApp.firestore.FieldValue.delete();
+          return acc;
+        }, {
+          updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+        });
+        await docRef.update(deletePayload);
+      }
       await docRef.set({ ...tournamentState, updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp() }, { merge: true });
       tournamentStatusMessage = "";
       saveState.lastError = null;
@@ -1155,17 +1165,22 @@ const setupAdminTournament = (rootCard) => {
     return ensureTable12RebuyEntryShape(tournamentState.payments.table12Rebuys[playerId]);
   };
 
-  const getAllTable12RebuyEntries = () => Object.keys(tournamentState.payments.table12Rebuys || {})
-    .flatMap((playerId) => {
-      const rebuyState = ensureTable12RebuyState(playerId);
-      return rebuyState.values.map((value, idx) => ({
-        playerId,
-        index: rebuyState.indexes[idx],
-        value: digitsOnly(value)
-      }));
-    })
-    .filter((entry) => Number.isInteger(entry.index) && entry.index > 0)
-    .sort((a, b) => a.index - b.index);
+  const getAllTable12RebuyEntries = () => {
+    const activePlayerIds = new Set((tournamentState.players || []).map((player) => player.id));
+    return Object.keys(tournamentState.payments.table12Rebuys || {})
+      .filter((playerId) => activePlayerIds.has(playerId))
+      .flatMap((playerId) => {
+        const rebuyState = ensureTable12RebuyState(playerId);
+        return rebuyState.values.map((value, idx) => ({
+          playerId,
+          index: rebuyState.indexes[idx],
+          value: digitsOnly(value)
+        }));
+      })
+
+      .filter((entry) => Number.isInteger(entry.index) && entry.index > 0)
+      .sort((a, b) => a.index - b.index);
+  };
 
   const getNextGlobalTable12RebuyIndex = () => {
     const maxIndex = getAllTable12RebuyEntries().reduce((max, entry) => Math.max(max, entry.index), 0);
@@ -1211,6 +1226,21 @@ const setupAdminTournament = (rootCard) => {
       entry.indexes = normalized.indexes;
     });
     remapPoolRebuyValuesAfterRemoval(removedIndex);
+  };
+
+  const getAutomaticRebuyResetDeletedPaths = () => {
+    const deletedPaths = [];
+    if ((tournamentState.players || []).length === 0 && (tournamentState.tables || []).length === 0) {
+      tournamentState.payments = tournamentState.payments || {};
+      tournamentState.pool = tournamentState.pool || {};
+      tournamentState.payments.table12Rebuys = {};
+      tournamentState.pool.rebuyValues = {};
+      deletedPaths.push("payments.table12Rebuys", "pool.rebuyValues");
+      if (activeTable12RebuyPlayerId) {
+        closeTable12RebuyModal();
+      }
+    }
+    return deletedPaths;
   };
 
   const getPlayerRebuyTotal = (playerId) => {
@@ -1572,7 +1602,7 @@ const setupAdminTournament = (rootCard) => {
 
     pendingLocalWrites += 1;
     try {
-      await saveState();
+      await saveState({ deletedPaths });
     } finally {
       pendingLocalWrites = Math.max(0, pendingLocalWrites - 1);
       commitDeferredSnapshotIfSafe();
@@ -1597,7 +1627,7 @@ const setupAdminTournament = (rootCard) => {
     }
     pendingLocalWrites += 1;
     try {
-      await saveState();
+      await saveState({ deletedPaths });
     } finally {
       pendingLocalWrites = Math.max(0, pendingLocalWrites - 1);
       commitDeferredSnapshotIfSafe();
@@ -1658,6 +1688,7 @@ const setupAdminTournament = (rootCard) => {
       });
       return;
     }
+    let deletedPaths = [];
     if (role === "delete-player") {
       const playerId = target.dataset.playerId;
       tournamentState.players = tournamentState.players.filter((player) => player.id !== playerId);
@@ -1673,6 +1704,8 @@ const setupAdminTournament = (rootCard) => {
       delete tournamentState.group.survivorStacks[playerId];
       delete tournamentState.semi.assignments[playerId];
       delete tournamentState.payments.table12Rebuys[playerId];
+      deletedPaths.push(`payments.table12Rebuys.${playerId}`);
+      deletedPaths = deletedPaths.concat(getAutomaticRebuyResetDeletedPaths());
     }
     if (role === "add-table") {
       tournamentState.tables.push({ id: crypto.randomUUID(), name: `Stół${tournamentState.tables.length + 1}` });
@@ -1687,6 +1720,7 @@ const setupAdminTournament = (rootCard) => {
       Object.keys(tournamentState.semi.assignments).forEach((key) => {
         if (tournamentState.semi.assignments[key]?.tableId === tableId) tournamentState.semi.assignments[key].tableId = "";
       });
+      deletedPaths = deletedPaths.concat(getAutomaticRebuyResetDeletedPaths());
     }
     if (role === "open-table12-rebuy") {
       openTable12RebuyModal(target.dataset.playerId || "");
@@ -1701,7 +1735,7 @@ const setupAdminTournament = (rootCard) => {
     render();
     pendingLocalWrites += 1;
     try {
-      await saveState();
+      await saveState({ deletedPaths });
     } finally {
       pendingLocalWrites = Math.max(0, pendingLocalWrites - 1);
       commitDeferredSnapshotIfSafe();
