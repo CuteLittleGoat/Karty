@@ -93,9 +93,10 @@
 - Kolumna `REBUY/ADD-ON` w `Tabela19` jest wyliczana jako `rebuyStack × liczba niepustych pól RebuyX` dla danego gracza w `payments.table12Rebuys[playerId].values`.
 - `Tabela19` nie ma już kolumny `REBUY`.
 - Dodano zebra striping per grupa stołu dla `Tabela19`; klasy wierszy są wyliczane helperem `getAlternatingTableGroupClass(...)`.
-- `Tabela19A` pokazuje tylko graczy z zaznaczonym `group.eliminated[playerId]`; kolumna `WYGRANA` jest inputem liczbowym `data-role="group-eliminated-win"` zapisywanym do `group.eliminatedWins[playerId]` i domyślnie renderuje `0`.
+- `Tabela19A` pokazuje tylko graczy z zaznaczonym `group.eliminated[playerId]`; kolejność wierszy jest utrwalana w `group.eliminatedOrder`, synchronizowana z aktualną listą wyeliminowanych i domyślnie dopisuje nowych graczy na koniec rankingu.
+- `Tabela19A` ma stałą numerację `LP = index + 1`, kolumnę `POZYCJA` z przyciskami `▲/▼` (`data-role="group-eliminated-move"`) oraz kolumnę `WYGRANA` jako input liczbowy `data-role="group-eliminated-win"` zapisywany do `group.eliminatedWins[playerId]`; wartość wygranej przemieszcza się razem z graczem, bo nadal jest związana z `playerId`.
 - `Tabela19B` pokazuje tylko graczy bez zaznaczonego `ELIMINATED`; kolumna `STACK` jest inputem liczbowym `data-role="group-survivor-stack"` zapisywanym do `group.survivorStacks[playerId]`, a `%` liczy `stack gracza / Tabela18.ŁĄCZNY STACK`.
-- Checkbox `ELIMINATED` zapisuje się na zdarzeniu `change` bez dodatkowych ścieżek usuwania; po kliknięciu aplikacja od razu wykonuje `render()`, więc gracz natychmiast przechodzi między `Tabela19A` i `Tabela19B`, a stan pozostaje po odświeżeniu.
+- Checkbox `ELIMINATED` zapisuje się na zdarzeniu `change` bez dodatkowych ścieżek usuwania; po kliknięciu aplikacja od razu wykonuje `render()`, więc gracz natychmiast przechodzi między `Tabela19A` i `Tabela19B`, a stan pozostaje po odświeżeniu. Odznaczenie checkboxa usuwa też gracza z `group.eliminatedOrder`, a ponowne zaznaczenie dopisuje go na końcu listy.
 
 ### Półfinał
 - `Tabela21` pobiera listę graczy z `Tabela19B`: kolumny `STACK` i `%` są tylko do odczytu i kopiują odpowiednio `group.survivorStacks[playerId]` oraz udział liczony względem `Tabela18.ŁĄCZNY STACK`.
@@ -211,9 +212,9 @@
 - `SUMA` = `KWOTA + suma REBUY w wierszu + MOD1 + MOD2 + MOD3` (z uwzględnieniem widocznych kolumn MOD).
 
 ### Faza grupowa
-- `group` przechowuje dodatkowo `eliminatedWins` oraz `survivorStacks`, które zasilają odpowiednio `Tabela19A` i `Tabela19B`.
-- `Tabela19A` i `Tabela19B` są w pełni zależne od checkboxa `group-eliminated`; przełączenie checkboxa natychmiast przenosi gracza pomiędzy tabelami przy kolejnym renderze.
-- Dla nowych inputów w `Tabela19A` i `Tabela19B` dodano metadane fokusu (`data-focus-target`, `data-section`, `data-row-id`, `data-column-key`), aby nie wrócił błąd utraty fokusu opisany w `Analizy/Wazne_Fokus`.
+- `group` przechowuje dodatkowo `eliminatedOrder`, `eliminatedWins` oraz `survivorStacks`, które zasilają odpowiednio ranking `Tabela19A` i dane `Tabela19B`.
+- `Tabela19A` i `Tabela19B` są w pełni zależne od checkboxa `group-eliminated`; przełączenie checkboxa natychmiast przenosi gracza pomiędzy tabelami przy kolejnym renderze, a kolejność wyeliminowanych jest dalej kontrolowana przez `group.eliminatedOrder`.
+- Dla inputów w `Tabela19A` i `Tabela19B` utrzymano metadane fokusu (`data-focus-target`, `data-section`, `data-row-id`, `data-column-key`), aby nie wrócił błąd utraty fokusu opisany w `Analizy/Wazne_Fokus`.
 
 ### Nagłówki kolumn
 - Dodano globalne wymuszenie uppercase dla nagłówków tabel (`th`) w module Second.

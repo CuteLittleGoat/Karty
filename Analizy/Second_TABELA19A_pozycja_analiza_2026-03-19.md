@@ -359,3 +359,161 @@ Najlepszy kierunek wdrożenia pozostaje ten sam technicznie, ale zmienia się zn
 - przesuwani są gracze, a nie numery.
 
 To doprecyzowanie usuwa wcześniejszą niejednoznaczność i daje bardzo klarowną specyfikację do implementacji w kolejnym kroku.
+
+---
+
+## Sekcja zmian po wdrożeniu (2026-03-19)
+
+### Plik `Second/app.js`
+
+Linie: logika stanu `group`
+Było:
+```js
+  group: {
+    playerStacks: {},
+    eliminated: {},
+    eliminatedWins: {},
+    survivorStacks: {}
+  },
+```
+Jest:
+```js
+  group: {
+    playerStacks: {},
+    eliminated: {},
+    eliminatedOrder: [],
+    eliminatedWins: {},
+    survivorStacks: {}
+  },
+```
+
+Linie: normalizacja stanu `group`
+Było:
+```js
+  state.group.playerStacks = state.group.playerStacks || {};
+  state.group.eliminated = state.group.eliminated || {};
+  state.group.eliminatedWins = state.group.eliminatedWins || {};
+  state.group.survivorStacks = state.group.survivorStacks || {};
+```
+Jest:
+```js
+  state.group.playerStacks = state.group.playerStacks || {};
+  state.group.eliminated = state.group.eliminated || {};
+  state.group.eliminatedOrder = Array.isArray(state.group.eliminatedOrder) ? state.group.eliminatedOrder.map((playerId) => String(playerId ?? "").trim()).filter(Boolean) : [];
+  state.group.eliminatedWins = state.group.eliminatedWins || {};
+  state.group.survivorStacks = state.group.survivorStacks || {};
+```
+
+Linie: wyliczanie `Tabela19A`
+Było:
+```js
+    const groupStripeClasses = getAlternatingTableGroupClass(groupedDrawRows, (row) => row.tableId);
+    const eliminatedRows = groupRows.filter((row) => row.eliminated);
+    const survivorRows = groupRows.filter((row) => !row.eliminated);
+```
+Jest:
+```js
+    const groupStripeClasses = getAlternatingTableGroupClass(groupedDrawRows, (row) => row.tableId);
+    const defaultEliminatedRows = groupRows.filter((row) => row.eliminated);
+    const eliminatedRowsById = new Map(defaultEliminatedRows.map((row) => [row.playerId, row]));
+    const syncedEliminatedOrder = tournamentState.group.eliminatedOrder.filter((playerId) => eliminatedRowsById.has(playerId));
+    defaultEliminatedRows.forEach((row) => {
+      if (!syncedEliminatedOrder.includes(row.playerId)) {
+        syncedEliminatedOrder.push(row.playerId);
+      }
+    });
+    tournamentState.group.eliminatedOrder = syncedEliminatedOrder;
+    const eliminatedRows = syncedEliminatedOrder.map((playerId) => eliminatedRowsById.get(playerId)).filter(Boolean);
+    const survivorRows = groupRows.filter((row) => !row.eliminated);
+```
+
+Linie: render `Tabela19A`
+Było:
+```js
+<h3>TABELA19A</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>WYELIMINOWANI GRACZE</th><th>WYGRANA</th></tr></thead><tbody>${eliminatedRows.map((row, index) => `<tr><td>${index + 1}</td><td>${esc(row.playerName)}</td><td><input class="admin-input" data-role="group-eliminated-win" data-player-id="${row.playerId}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.group.eliminatedWins[row.playerId] || "0")}" data-focus-target="1" data-section="second-tournament-group-eliminated" data-row-id="${row.playerId}" data-column-key="win"></td></tr>`).join("") || ""}</tbody></table></div>
+```
+Jest:
+```js
+<h3>TABELA19A</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>WYELIMINOWANI GRACZE</th><th>POZYCJA</th><th>WYGRANA</th></tr></thead><tbody>${eliminatedRows.map((row, index) => `<tr><td>${index + 1}</td><td>${esc(row.playerName)}</td><td><div class="group-position-controls"><button class="secondary group-position-button" type="button" data-role="group-eliminated-move" data-player-id="${row.playerId}" data-direction="up" ${index === 0 ? "disabled" : ""}>▲</button><button class="secondary group-position-button" type="button" data-role="group-eliminated-move" data-player-id="${row.playerId}" data-direction="down" ${index === eliminatedRows.length - 1 ? "disabled" : ""}>▼</button></div></td><td><input class="admin-input" data-role="group-eliminated-win" data-player-id="${row.playerId}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.group.eliminatedWins[row.playerId] || "0")}" data-focus-target="1" data-section="second-tournament-group-eliminated" data-row-id="${row.playerId}" data-column-key="win"></td></tr>`).join("") || '<tr><td colspan="4">Brak danych.</td></tr>'}</tbody></table></div>
+```
+
+Linie: obsługa kliknięcia strzałek
+Było:
+```js
+  const tournamentClickActionRoles = new Set([
+    "add-player",
+    "player-pin-random",
+    "player-perm-edit",
+    "delete-player",
+    "add-table",
+    "delete-table",
+    "add-pool-mod-row",
+    "remove-pool-mod-row",
+    "open-table12-rebuy",
+    "add-semi-table",
+    "remove-semi-table"
+  ]);
+```
+Jest:
+```js
+  const tournamentClickActionRoles = new Set([
+    "add-player",
+    "player-pin-random",
+    "player-perm-edit",
+    "delete-player",
+    "add-table",
+    "delete-table",
+    "add-pool-mod-row",
+    "remove-pool-mod-row",
+    "open-table12-rebuy",
+    "add-semi-table",
+    "remove-semi-table",
+    "group-eliminated-move"
+  ]);
+```
+
+Linie: czyszczenie danych przy usuwaniu gracza
+Było:
+```js
+      delete tournamentState.group.playerStacks[playerId];
+      delete tournamentState.group.eliminated[playerId];
+      delete tournamentState.group.eliminatedWins[playerId];
+      delete tournamentState.group.survivorStacks[playerId];
+```
+Jest:
+```js
+      delete tournamentState.group.playerStacks[playerId];
+      delete tournamentState.group.eliminated[playerId];
+      tournamentState.group.eliminatedOrder = (tournamentState.group.eliminatedOrder || []).filter((id) => id !== playerId);
+      delete tournamentState.group.eliminatedWins[playerId];
+      delete tournamentState.group.survivorStacks[playerId];
+```
+
+### Plik `Second/styles.css`
+
+Linie: styl przycisków pozycji w `Tabela19A`
+Było:
+```css
+#adminTournamentRoot .t-inline-add-button {
+  justify-self: flex-start;
+  width: auto;
+}
+```
+Jest:
+```css
+#adminTournamentRoot .t-inline-add-button {
+  justify-self: flex-start;
+  width: auto;
+}
+
+#adminTournamentRoot .group-position-controls {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#adminTournamentRoot .group-position-button {
+  min-width: 42px;
+  padding-inline: 0;
+}
+```

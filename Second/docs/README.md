@@ -189,8 +189,10 @@
 5. `Tabela19` ma kolumny: `LP`, `STÓŁ`, `GRACZ`, `ELIMINATED`, `STACK`, `REBUY/ADD-ON`.
 6. W `Tabela19` kolumna `REBUY/ADD-ON` wylicza się jako `Tabela17.REBUY/ADD-ON × liczba uzupełnionych pól RebuyX` dla danego gracza.
 7. Zaznaczenie checkboxa `ELIMINATED` przenosi gracza z `Tabela19B` do `Tabela19A`.
-8. `Tabela19A` pokazuje tylko wyeliminowanych graczy i pozwala wpisać `WYGRANA` (domyślnie `0`).
-9. `Tabela19B` pokazuje tylko niewyeliminowanych graczy i pozwala wpisać ich `STACK`; kolumna `%` liczy udział względem `Tabela18.ŁĄCZNY STACK`.
+8. `Tabela19A` pokazuje tylko wyeliminowanych graczy i ma kolumny `LP`, `WYELIMINOWANI GRACZE`, `POZYCJA`, `WYGRANA`.
+9. W kolumnie `POZYCJA` kliknij `▲`, aby przesunąć gracza o jedno miejsce wyżej, albo `▼`, aby przesunąć go o jedno miejsce niżej; przycisk w pierwszym lub ostatnim wierszu jest automatycznie zablokowany.
+10. Kolumna `LP` w `Tabela19A` zawsze pokazuje stałe miejsca `1..N`, a po kliknięciu strzałek przemieszcza się gracz wraz z przypisaną mu wartością `WYGRANA`.
+11. `Tabela19B` pokazuje tylko niewyeliminowanych graczy i pozwala wpisać ich `STACK`; kolumna `%` liczy udział względem `Tabela18.ŁĄCZNY STACK`.
 
 ### Nagłówki kolumn
 - W module Second nagłówki tabel są wyświetlane wielkimi literami.
