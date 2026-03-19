@@ -448,11 +448,21 @@ Warto ustalić minimum komunikacyjne: po istotnych zmianach użytkownik powinien
 
 ## Najkrótsza lista decyzji, bez których nie warto zaczynać wdrożenia
 Jeśli trzeba podjąć tylko kilka najważniejszych ustaleń, to priorytetowo należy odpowiedzieć na poniższe pytania:
-1. Czy zaznaczenie `ELIMINATED` ma natychmiast wpływać na wyniki i wypłaty?
-2. Co ma decydować o kolejności, gdy dwóch graczy ma taki sam `STACK`?
-3. Czy `Tabela24` ma zawsze pokazywać wszystkich graczy, także tych z wypłatą `0`?
-4. Czy wypłaty mają być zawsze automatyczne i całkowicie nieedytowalne?
-5. Czy potrzebny jest etap końcowego zatwierdzenia wyników?
+
+1. **Czy zaznaczenie `ELIMINATED` ma natychmiast wpływać na wyniki i wypłaty?**  
+   Chodzi o ustalenie, czy jedno kliknięcie administratora ma od razu zmieniać dalsze tabele i końcowe miejsca. Ta decyzja wpływa na to, czy system będzie działał w pełni automatycznie, czy będzie potrzebny dodatkowy krok potwierdzenia przed przeliczeniem danych.
+
+2. **Co ma decydować o kolejności, gdy dwóch graczy ma taki sam `STACK`?**  
+   Chodzi o sytuację remisu, czyli gdy same liczby nie pozwalają wskazać, kto powinien być wyżej. Ta decyzja wpłynie na to, czy końcowa kolejność będzie zawsze jednoznaczna i czy nie będzie sporów przy interpretacji wyników.
+
+3. **Czy `Tabela24` ma zawsze pokazywać wszystkich graczy, także tych z wypłatą `0`?**  
+   Trzeba ustalić, czy tabela wypłat ma być jednocześnie pełną klasyfikacją całego turnieju, czy tylko listą osób, które faktycznie otrzymują pieniądze. Ta decyzja wpłynie na czytelność raportu końcowego i sposób prezentacji wyników dla organizatora.
+
+4. **Czy wypłaty mają być zawsze automatyczne i całkowicie nieedytowalne?**  
+   Chodzi o to, czy administrator ma tylko zatwierdzać wartości wyliczone przez system, czy czasem może je ręcznie skorygować. Ta decyzja wpłynie na bezpieczeństwo procesu, ryzyko pomyłek oraz ewentualną potrzebę dodania wyjątkowych scenariuszy korekty.
+
+5. **Czy potrzebny jest etap końcowego zatwierdzenia wyników?**  
+   Trzeba zdecydować, czy wyniki mają być uznawane za oficjalne od razu po zmianach, czy dopiero po osobnym potwierdzeniu przez uprawnioną osobę. Ta decyzja wpłynie na poziom kontroli nad danymi, ochronę przed przypadkowymi zmianami i jasny moment zamknięcia turnieju.
 
 ## Wniosek biznesowy po uzupełnieniu analizy
 Od strony technicznej wdrożenie nadal wygląda na możliwe bez zmian infrastruktury.
