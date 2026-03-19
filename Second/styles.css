@@ -1928,6 +1928,17 @@ body.modal-open {
   width: auto;
 }
 
+#adminTournamentRoot .group-position-controls {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#adminTournamentRoot .group-position-button {
+  min-width: 42px;
+  padding-inline: 0;
+}
+
 .test-buttons {
   margin: 12px 0;
   display: flex;

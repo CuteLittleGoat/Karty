@@ -33,7 +33,7 @@ Dodatkowo dla każdego stołu:
 - Tabela17: STACK GRACZA, REBUY/ADD-on(w żetonach na os)
 - Tabela18: Stoły dynamiczne + ŁĄCZNY STACK
 - Tabela19: LP, Stół, Gracz, ELIMINATED, Stack, REBUY/ADD-ON
-- Tabela19A: LP, WYELIMINOWANI GRACZE, WYGRANA
+- Tabela19A: LP, WYELIMINOWANI GRACZE, POZYCJA, WYGRANA
 - Tabela19B: LP, Stół, Gracz, Stack, %
 
 ### Półfinał
