@@ -94,6 +94,7 @@
 - Dodano zebra striping per grupa stołu dla `Tabela19`; klasy wierszy są wyliczane helperem `getAlternatingTableGroupClass(...)`.
 - `Tabela19A` pokazuje tylko graczy z zaznaczonym `group.eliminated[playerId]`; kolumna `WYGRANA` jest inputem liczbowym `data-role="group-eliminated-win"` zapisywanym do `group.eliminatedWins[playerId]` i domyślnie renderuje `0`.
 - `Tabela19B` pokazuje tylko graczy bez zaznaczonego `ELIMINATED`; kolumna `STACK` jest inputem liczbowym `data-role="group-survivor-stack"` zapisywanym do `group.survivorStacks[playerId]`, a `%` liczy `stack gracza / Tabela18.ŁĄCZNY STACK`.
+- Checkbox `ELIMINATED` zapisuje się na zdarzeniu `change` bez dodatkowych ścieżek usuwania; po kliknięciu aplikacja od razu wykonuje `render()`, więc gracz natychmiast przechodzi między `Tabela19A` i `Tabela19B`, a stan pozostaje po odświeżeniu.
 
 ### Półfinał
 - Usunięto `Tabela20`.
