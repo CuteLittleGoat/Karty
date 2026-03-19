@@ -1598,7 +1598,26 @@ const setupAdminTournament = (rootCard) => {
         return `<text x="${x}" y="${y}" fill="#ededdf" text-anchor="middle" font-size="13">${esc(player.name || "Gracz")} (${esc(player.stack || 0)})</text>`;
       }).join("");
       mount.innerHTML = `<h3>TABELA23</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>ELIMINATED</th></tr></thead><tbody>${finalPlayers.map((player, i) => `<tr><td>${i + 1}</td><td>${esc(player.name)}</td><td><input class="admin-input" data-role="final-stack" data-id="${player.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(player.stack)}"></td><td></td><td><input type="checkbox" data-role="final-eliminated" data-id="${player.id}" ${player.eliminated ? "checked" : ""}></td></tr>`).join("") || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div><p class="test-controls-note">Przyciski testowe do sprawdzenia poprawności wyświetlania stołu.</p><div class="test-buttons"><button class="danger" type="button" data-role="add-final-player">Dodaj gracza</button><button class="danger" type="button" data-role="remove-final-player">Usuń gracza</button></div><svg viewBox="0 0 ${width} ${height}" class="poker-table-svg"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0d5f3f" stroke="#d4af37" stroke-width="6"></ellipse>${labels}</svg>`;
+      restoreTournamentEditableFocusState(container, focusState);
+      return;
     }
+
+    if (activeSection === "payouts") {
+      const payoutRows = tournamentState.finalPlayers.map((player, index) => `<tr><td>${index + 1}</td><td>${esc(player.name || "-")}</td><td>${tournamentState.payouts.showInitial ? formatCellNumber(player.initialWin || 0) : "—"}</td><td>${tournamentState.payouts.showFinal ? formatCellNumber(player.finalWin || 0) : "—"}</td></tr>`).join("");
+      mount.innerHTML = `
+        <div class="admin-toggle-row">
+          <label><input type="checkbox" data-role="toggle-payout-initial" ${tournamentState.payouts.showInitial ? "checked" : ""}> Pokaż kolumnę POCZĄTKOWA WYGRANA</label>
+          <label><input type="checkbox" data-role="toggle-payout-final" ${tournamentState.payouts.showFinal ? "checked" : ""}> Pokaż kolumnę KOŃCOWA WYGRANA</label>
+        </div>
+        <p class="builder-info">Sekcja Wypłaty renderuje się poprawnie. Wartości wygranych pozostają tymczasowo puste, dopóki nie zostaną dodane do danych turnieju.</p>
+        <h3>TABELA24</h3>
+        <div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>MIEJSCE</th><th>GRACZ</th><th>POCZĄTKOWA WYGRANA</th><th>KOŃCOWA WYGRANA</th></tr></thead><tbody>${payoutRows || '<tr><td colspan="4">Brak finalistów.</td></tr>'}</tbody></table></div>
+      `;
+      restoreTournamentEditableFocusState(container, focusState);
+      return;
+    }
+
+    mount.innerHTML = '<p class="builder-info">Brak widoku dla wybranej sekcji.</p>';
   };
 
   container.addEventListener("input", async (event) => {
@@ -1919,6 +1938,12 @@ const setupUserView = (root) => {
       const t10 = userTournamentState.payments?.table10 || {};
       const t11 = userTournamentState.payments?.table11 || {};
       tournamentSection.innerHTML = `<div class="t-section-grid"><label>Stół 10 — Buy-In <input class="admin-input" readonly value="${t10.buyIn || ""}"></label><label>Stół 10 — Rebuy/Add-On <input class="admin-input" readonly value="${t10.rebuyAddOn || ""}"></label><label>Stół 10 — Suma <input class="admin-input" readonly value="${t10.sum || ""}"></label><label>Stół 10 — Liczba Rebuy <input class="admin-input" readonly value="${t10.rebuyCount || ""}"></label><label>Stół 11 — Procent <input class="admin-input" readonly value="${t11.percent || ""}"></label><label>Stół 11 — Rake <input class="admin-input" readonly value="${t11.rake || ""}"></label><label>Stół 11 — Buy-In <input class="admin-input" readonly value="${t11.buyIn || ""}"></label><label>Stół 11 — Rebuy/Add-On <input class="admin-input" readonly value="${t11.rebuyAddOn || ""}"></label><label>Stół 11 — Pula <input class="admin-input" readonly value="${t11.pot || ""}"></label></div>`;
+      return;
+    }
+
+    if (userTournamentSection === "payouts") {
+      const payoutRows = userTournamentState.finalPlayers.map((player, index) => `<tr><td>${index + 1}</td><td>${player.name || "-"}</td><td>${userTournamentState.payouts?.showInitial ? formatCellNumber(player.initialWin || 0) : "—"}</td><td>${userTournamentState.payouts?.showFinal ? formatCellNumber(player.finalWin || 0) : "—"}</td></tr>`).join("");
+      tournamentSection.innerHTML = `<p class="builder-info">Widok wypłat jest dostępny także dla użytkownika. Kwoty pozostają puste, dopóki administrator nie doda ich do danych turnieju.</p><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Miejsce</th><th>Gracz</th><th>Początkowa wygrana</th><th>Końcowa wygrana</th></tr></thead><tbody>${payoutRows || '<tr><td colspan="4">Brak finalistów.</td></tr>'}</tbody></table></div>`;
       return;
     }
 
