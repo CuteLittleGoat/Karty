@@ -113,6 +113,7 @@
   - `pendingLocalWrites` — licznik zapisów w trakcie,
   - `deferredSnapshotState` — odroczony stan z `onSnapshot`.
 - `onSnapshot` nie nadpisuje stanu lokalnego w trakcie edycji/zapisu; aktualizacja jest nakładana dopiero po zakończeniu edycji i spadku licznika zapisów do zera.
+- Dla modalu `Tabela12 -> Rebuy gracza` ochrona obejmuje też otwarty draft modalu, więc snapshot nie może przywrócić pustego `Rebuy1` w trakcie pierwszej edycji.
 - Funkcja `commitDeferredSnapshotIfSafe` domyka odroczoną synchronizację: po zakończeniu lokalnych zapisów i braku aktywnej edycji nakłada `deferredSnapshotState`, czyści status i wykonuje `render()`.
 
 ### Przyciski dodawania — zmiana layoutu
@@ -165,10 +166,12 @@
 - Nowy modal tworzony dynamicznie przy inicjalizacji turnieju.
 - Otwierany z `Tabela12` (kolumna `REBUY`).
 - Obsługuje dodawanie/usuwanie kolejnych pól `Rebuy` oraz zapis do Firestore.
+- Modal korzysta z lokalnego draftu (`table12RebuyModalDraft`) i flagi brudnych zmian (`table12RebuyModalDirty`), dzięki czemu pierwsze dodane pole nie jest zapisywane jako pusty rekord.
 - Po otwarciu pustego modala nie renderuje się żadna kolumna; pierwsza kolumna pojawia się dopiero po kliknięciu `Dodaj Rebuy` (zgodnie z modułem Main).
 - Numeracja nagłówków (`Rebuy1..n`) opiera się na trwałych globalnych indeksach (`indexes[]`) dla całej `Tabela12` i nie zależy od kolejności graczy renderowanych aktualnie w tabeli.
 - Układ modala (`modal-header` + `modal-body`) jest wierną kopią modala z modułu Main.
 - Dodanie nowej kolumny rebuy nadaje `nextIndex = max(indexes)+1` globalnie dla całego turnieju, ale maksimum liczone jest już tylko z wpisów aktywnych graczy (`players[].id`).
+- `Dodaj Rebuy` aktualizuje najpierw tylko lokalny draft i główny stan UI; zapis pustej kolumny do Firestore nie jest wykonywany od razu.
 - Usunięcie kolumny wykonuje globalną kompaktację (`index > removedIndex => index-1`) we wszystkich wpisach graczy.
 - Po kompaktacji rebuy wykonywane jest też przenumerowanie `pool.rebuyValues` (kolumny `data-col-index`), aby ręczne wpisy w `Tabela16` pozostały przypisane do właściwych kolumn `RebuyX`.
 - Gdy zapis do Firestore nie powiedzie się, modal pokazuje lokalny komunikat błędu i nie utrwala lokalnej zmiany dla przycisku `Dodaj Rebuy`.
@@ -218,7 +221,7 @@
 
 ### Modal „Rebuy gracza” — zapis i odświeżanie
 - Tabela modala używa identyfikatora `#adminCalculatorRebuyTable` i ma stałe kolumny `8ch` (spójność z Main).
-- Zmiana w polu rebuy jest od razu sanityzowana do cyfr, zapisywana (`saveState()`) i od razu odświeża `Tabela12`.
+- Zmiana w polu rebuy jest od razu sanityzowana do cyfr i aktualizuje lokalny stan/draft oraz `Tabela12`; zapis do Firebase wykonywany jest przy zamknięciu modalu z niezapisanymi zmianami albo przy operacji `Usuń Rebuy`.
 - `saveState()` zapisuje ostatni błąd w `saveState.lastError`, a moduł loguje błędy do konsoli (`[Second] saveState error`, `[Second][Table12Rebuy] ...`) dla szybszej diagnostyki.
 - Automatyczny reset rebuy po stanie `0 graczy i 0 stołów` działa przez czyszczenie pól wewnątrz dokumentu (`payments.table12Rebuys`, `pool.rebuyValues`), więc nie koliduje z ochroną przed usunięciem ostatniego dokumentu z kolekcji Firebase.
 - Zamknięcie modala (`X`, klik poza modalem, ESC) zamyka okno bez dodatkowych opóźnień, jak w Main.
