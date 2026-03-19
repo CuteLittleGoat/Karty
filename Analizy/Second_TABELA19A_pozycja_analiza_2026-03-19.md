@@ -241,3 +241,121 @@ Najważniejsze elementy techniczne są trzy:
 3. sterować kolejnością przez proste przesuwanie `playerId` w tablicy, analogicznie do mechanizmu strzałek z referencyjnej strony audio.
 
 Jeżeli zechcesz, w kolejnym kroku mogę od razu wdrożyć tę funkcję w module `Second` wraz z aktualizacją dokumentacji wymaganej przez repozytorium.
+
+---
+
+## Uzupełnienie analizy z 2026-03-19 po doprecyzowaniu wymagania
+
+## Dodatkowy prompt użytkownika
+> Uzupełnij analizę Analizy/Second_TABELA19A_pozycja_analiza_2026-03-19.md
+>
+> Celem jest umożliwienie adminowi korektę jeżeli w błędnej kolejności kliknie "ELIMINATED". W kolejnym kroku będzie uzupełniana tabela z rankingiem od pierwszego do ostatniego wyeliminowanego gracza. Dodanie strzałek ma umożliwić korektę kolejności jakby admin źle kliknął.
+> Dlatego kolumna LP musi pozostać stała niezależnie od przycisków. Numer 1 zawsze będzie pierwszy na górze, pod nim numer 2. To kolejność graczy ma się zmieniać.
+
+## Doprecyzowanie celu biznesowego
+Nowe wyjaśnienie zmienia interpretację poprzedniego fragmentu o kolumnie `LP`.
+
+Wcześniej można było rozważać, czy `LP` ma oznaczać numer źródłowy z `TABELA19`, czy numer pozycji w `TABELA19A`. Po doprecyzowaniu intencja jest już jednoznaczna:
+- `LP` w `TABELA19A` ma pozostać stałą numeracją widoku: `1, 2, 3, 4...`,
+- numery w kolumnie `LP` nie mogą przemieszczać się razem z graczem,
+- przesuwani mają być wyłącznie gracze przypisani do kolejnych wierszy,
+- ta kolejność ma odzwierciedlać ranking eliminacji potrzebny do późniejszego uzupełniania następnej tabeli.
+
+Innymi słowy:
+- wiersz nr `1` zawsze pozostaje pierwszym wierszem tabeli,
+- wiersz nr `2` zawsze pozostaje drugim wierszem tabeli,
+- po kliknięciu strzałki zamienia się obsada graczy między wierszami, a nie numeracja `LP`.
+
+## Korekta wcześniejszego wniosku o kolumnie LP
+Poprzednia rekomendacja, aby w `TABELA19A` wyświetlać `row.lp` z `TABELA19`, **nie jest zgodna z nowym doprecyzowaniem**.
+
+Po aktualizacji wymagania poprawna interpretacja brzmi:
+- `LP` w `TABELA19A` powinno być renderowane jako numer pozycji w tabeli eliminacji, czyli `index + 1`,
+- ale ten numer ma wynikać z miejsca w tabeli, a nie z tożsamości gracza,
+- więc po przesunięciu gracza numer `LP` pozostaje na swoim miejscu, a gracz pojawia się w innym wierszu.
+
+To oznacza, że logika ma działać dokładnie odwrotnie niż przy prezentowaniu "oryginalnego LP gracza":
+- **nie przenosimy numeru razem z graczem**,
+- **przenosimy gracza do innego slotu rankingowego**.
+
+## Co to oznacza dla modelu danych
+Model z `group.eliminatedOrder = []` pozostaje trafny i nadal jest najlepszym rozwiązaniem.
+
+Trzeba tylko doprecyzować semantykę tej tablicy:
+- `eliminatedOrder[0]` = gracz zajmujący pozycję `LP = 1`,
+- `eliminatedOrder[1]` = gracz zajmujący pozycję `LP = 2`,
+- `eliminatedOrder[2]` = gracz zajmujący pozycję `LP = 3`,
+- itd.
+
+Zatem `eliminatedOrder` nie przechowuje "oryginalnych LP", tylko **aktualny ranking kolejności wyeliminowania po korektach admina**.
+
+## Wpływ na rendering TABELA19A
+Rendering powinien działać według następującej zasady:
+1. Lista wyeliminowanych nadal powstaje na podstawie checkboxów `ELIMINATED`.
+2. `group.eliminatedOrder` ustala, który gracz trafia do którego wiersza rankingu.
+3. Kolumna `LP` jest wyświetlana jako stałe `index + 1`.
+4. Kolumna z graczem pokazuje dane gracza znajdującego się aktualnie na tej pozycji.
+5. Kliknięcie `▲` / `▼` zamienia pozycję gracza w rankingu, ale nie zmienia numerów `LP` wyświetlanych przy wierszach.
+
+Przykład:
+- przed korektą:
+  - `LP 1` → Gracz A
+  - `LP 2` → Gracz B
+  - `LP 3` → Gracz C
+- po przesunięciu Gracza C o jedno miejsce w górę:
+  - `LP 1` → Gracz A
+  - `LP 2` → Gracz C
+  - `LP 3` → Gracz B
+
+Numery `1, 2, 3` zostają na swoich miejscach. Zmienia się tylko obsada graczy.
+
+## Relacja między LP, POZYCJA i przyszłą tabelą rankingową
+Z nowego opisu wynika, że `TABELA19A` zaczyna pełnić rolę pomocniczej listy rankingowej:
+- kolejność wierszy ma odzwierciedlać kolejność eliminacji po ręcznej korekcie,
+- ta kolejność ma być potem wykorzystana do uzupełnienia kolejnej tabeli,
+- z perspektywy biznesowej `LP` staje się więc numerem miejsca w rankingu eliminacji, a nie identyfikatorem gracza z tabeli źródłowej.
+
+To ma ważną konsekwencję projektową:
+- jeśli w przyszłym kroku kolejna tabela ma pobierać dane "od pierwszego do ostatniego wyeliminowanego gracza", to najlepiej oprzeć ją bezpośrednio na `group.eliminatedOrder`, a nie próbować ponownie odtwarzać kolejność z `TABELA19`.
+
+## Zachowanie domyślne nadal pozostaje poprawne
+Domyślne działanie nadal powinno wyglądać tak samo:
+1. Admin zaznacza checkbox `ELIMINATED`.
+2. Gracz trafia na koniec `group.eliminatedOrder`.
+3. Tabela nadaje mu ostatni numer `LP`.
+4. Jeśli admin kliknął checkboxy w złej kolejności, używa strzałek do korekty.
+
+To dokładnie realizuje opisany cel:
+- checkbox ustala, że gracz jest wyeliminowany,
+- strzałki poprawiają kolejność rankingu eliminacji.
+
+## Zaktualizowana rekomendacja implementacyjna
+Po doprecyzowaniu wymagania rekomendacja wdrożeniowa powinna brzmieć tak:
+
+1. Dodać `group.eliminatedOrder` do stanu i normalizacji.
+2. Synchronizować tablicę z aktualną listą wyeliminowanych graczy.
+3. Renderować `TABELA19A` według `group.eliminatedOrder`.
+4. W kolumnie `LP` pokazywać **zawsze** `index + 1`.
+5. W kolumnie `POZYCJA` dodać strzałki `▲` / `▼` zmieniające kolejność graczy w `group.eliminatedOrder`.
+6. Zachować `WYGRANA` po `playerId`, tak aby wartość przemieszczała się razem z graczem.
+7. Przy odznaczeniu `ELIMINATED` usuwać gracza z `group.eliminatedOrder`, a pozostałych automatycznie przesuwać wyżej w numeracji `LP`.
+
+## Zmiana względem poprzedniej wersji analizy
+Poprzedni fragment:
+- rekomendował pozostawienie `LP` z `row.lp` pochodzącego z `TABELA19`.
+
+Po doprecyzowaniu należy go uznać za **nieaktualny**.
+
+Aktualna, obowiązująca interpretacja jest następująca:
+- `LP` w `TABELA19A` to stały numer pozycji rankingowej w widoku,
+- gracze mogą zmieniać między sobą miejsca w tych wierszach,
+- ranking po korekcie ma odzwierciedlać poprawną kolejność wyeliminowania.
+
+## Ostateczna konkluzja po uzupełnieniu
+Najlepszy kierunek wdrożenia pozostaje ten sam technicznie, ale zmienia się znaczenie kolumny `LP`:
+- technicznie nadal potrzebna jest trwała tablica `group.eliminatedOrder`,
+- funkcjonalnie tabela ma działać jak edytowalny ranking kolejności eliminacji,
+- `LP` ma być numerem miejsca w rankingu (`1..N`), stałym dla wiersza,
+- przesuwani są gracze, a nie numery.
+
+To doprecyzowanie usuwa wcześniejszą niejednoznaczność i daje bardzo klarowną specyfikację do implementacji w kolejnym kroku.
