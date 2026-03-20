@@ -628,7 +628,11 @@ const createTournamentDefaultState = () => ({
   semi: {
     tables: [],
     assignments: {},
-    customTables: []
+    customTables: [],
+    eliminatedOrder: []
+  },
+  final: {
+    eliminated: {}
   },
   finalPlayers: [],
   payouts: {
@@ -670,6 +674,9 @@ const normalizeTournamentState = (value) => {
   state.semi = state.semi || {};
   state.semi.assignments = state.semi.assignments || {};
   state.semi.customTables = Array.isArray(state.semi.customTables) ? state.semi.customTables : [];
+  state.semi.eliminatedOrder = Array.isArray(state.semi.eliminatedOrder) ? state.semi.eliminatedOrder.map((playerId) => String(playerId ?? "").trim()).filter(Boolean) : [];
+  state.final = state.final || {};
+  state.final.eliminated = state.final.eliminated || {};
   state.finalPlayers = Array.isArray(state.finalPlayers) ? state.finalPlayers : [];
 
   state.payments = state.payments || {};
@@ -688,6 +695,52 @@ const normalizeTournamentState = (value) => {
     state.payments.table12Rebuys[playerId] = { values, indexes };
   });
   return state;
+};
+
+const syncOrderedPlayerIds = (orderedIds, rows, getPlayerId = (row) => row?.playerId ?? row?.id) => {
+  const normalizedOrder = Array.isArray(orderedIds) ? orderedIds.map((playerId) => String(playerId ?? "").trim()).filter(Boolean) : [];
+  const rowMap = new Map(rows.map((row) => [String(getPlayerId(row) ?? "").trim(), row]).filter(([playerId]) => playerId));
+  const synced = normalizedOrder.filter((playerId) => rowMap.has(playerId));
+  rows.forEach((row) => {
+    const playerId = String(getPlayerId(row) ?? "").trim();
+    if (playerId && !synced.includes(playerId)) {
+      synced.push(playerId);
+    }
+  });
+  return synced;
+};
+
+const sortPlayersByStackDesc = (players) => [...players].sort((left, right) => toDigitsNumber(right.stack) - toDigitsNumber(left.stack));
+
+const buildPlacementRows = ({ players, groupRows, semiRows, finalRows, payoutDefaults }) => {
+  const totalPlayers = Array.isArray(players) ? players.length : 0;
+  const placements = Array.from({ length: totalPlayers }, () => null);
+  let nextFromEnd = totalPlayers - 1;
+
+  [...groupRows, ...semiRows].forEach((row) => {
+    if (nextFromEnd < 0) return;
+    placements[nextFromEnd] = row;
+    nextFromEnd -= 1;
+  });
+
+  let nextFromStart = 0;
+  finalRows.forEach((row) => {
+    while (nextFromStart < placements.length && placements[nextFromStart]) {
+      nextFromStart += 1;
+    }
+    if (nextFromStart < placements.length) {
+      placements[nextFromStart] = row;
+      nextFromStart += 1;
+    }
+  });
+
+  return placements.map((row, index) => ({
+    place: index + 1,
+    playerId: row?.playerId || row?.id || "",
+    playerName: row?.playerName || row?.name || "-",
+    initialWin: String(payoutDefaults[index]?.amount ?? "0"),
+    finalWin: String(payoutDefaults[index]?.total ?? "0")
+  }));
 };
 
 const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");
@@ -1378,6 +1431,8 @@ const setupAdminTournament = (rootCard) => {
     const allRebuyValues = getAllTable12RebuyEntries()
       .filter((entry) => String(entry.value ?? "").trim())
       .map((entry) => toDigitsNumber(entry.value));
+    const rakePercent = percentInputToDecimal(tournamentState.rake);
+    const adjustedRebuyValues = allRebuyValues.map((value) => value * (1 - rakePercent));
     const rebuyCount = allRebuyValues.length;
     const rebuyTotal = allRebuyValues.reduce((sum, value) => sum + value, 0);
 
@@ -1388,7 +1443,6 @@ const setupAdminTournament = (rootCard) => {
       rebuyCount
     };
 
-    const rakePercent = percentInputToDecimal(tournamentState.rake);
     const table11 = {
       percent: rakePercent,
       rake: (totalBuyInFromDraw + rebuyTotal) * rakePercent,
@@ -1422,6 +1476,9 @@ const setupAdminTournament = (rootCard) => {
     tournamentState.semi = tournamentState.semi || {};
     tournamentState.semi.assignments = tournamentState.semi.assignments || {};
     tournamentState.semi.customTables = Array.isArray(tournamentState.semi.customTables) ? tournamentState.semi.customTables : [];
+    tournamentState.semi.eliminatedOrder = Array.isArray(tournamentState.semi.eliminatedOrder) ? tournamentState.semi.eliminatedOrder : [];
+    tournamentState.final = tournamentState.final || {};
+    tournamentState.final.eliminated = tournamentState.final.eliminated || {};
 
     const groupRows = groupedDrawRows.map((row) => {
       const rebuyState = ensureTable12RebuyState(row.playerId);
@@ -1484,24 +1541,35 @@ const setupAdminTournament = (rootCard) => {
         totalStack
       };
     });
+    const semiEliminatedDefaultRows = semiRows.filter((row) => row.semiTableId && row.semiEliminated);
+    tournamentState.semi.eliminatedOrder = syncOrderedPlayerIds(tournamentState.semi.eliminatedOrder, semiEliminatedDefaultRows);
+    const semiEliminatedRowsById = new Map(semiEliminatedDefaultRows.map((row) => [row.playerId, row]));
+    const semiEliminatedRows = tournamentState.semi.eliminatedOrder.map((playerId) => semiEliminatedRowsById.get(playerId)).filter(Boolean);
+
+    const finalPlayerRows = semiRows.filter((row) => row.semiTableId);
     const finalPlayerStateById = new Map(
       (Array.isArray(tournamentState.finalPlayers) ? tournamentState.finalPlayers : []).map((player) => [player.id, player])
     );
-    tournamentState.finalPlayers = semiRows
-      .filter((row) => row.semiTableId && !row.semiEliminated)
-      .map((row) => {
-        const stored = finalPlayerStateById.get(row.playerId) || {};
-        return {
-          id: row.playerId,
-          name: row.playerName,
-          tableId: row.semiTableId,
-          tableName: row.semiTableName,
-          stack: stored.stack || "",
-          initialWin: stored.initialWin ?? "0",
-          finalWin: stored.finalWin ?? "0",
-          eliminated: false
-        };
-      });
+    const nextFinalEliminated = {};
+    tournamentState.finalPlayers = finalPlayerRows.map((row) => {
+      const stored = finalPlayerStateById.get(row.playerId) || {};
+      const eliminated = !!tournamentState.final.eliminated[row.playerId];
+      nextFinalEliminated[row.playerId] = eliminated;
+      return {
+        id: row.playerId,
+        name: row.playerName,
+        tableId: row.semiTableId,
+        tableName: row.semiTableName,
+        stack: String(formatCellNumber(row.survivorStack)),
+        initialWin: stored.initialWin ?? "0",
+        finalWin: stored.finalWin ?? "0",
+        eliminated
+      };
+    });
+    tournamentState.final.eliminated = nextFinalEliminated;
+    const sortedFinalPlayers = sortPlayersByStackDesc(tournamentState.finalPlayers);
+    const finalActivePlayers = sortedFinalPlayers.filter((player) => !player.eliminated);
+    const finalEliminatedPlayers = sortedFinalPlayers.filter((player) => player.eliminated);
 
     if (activeSection === "players") {
       const playersRows = tournamentState.players.map((player) => {
@@ -1582,8 +1650,8 @@ const setupAdminTournament = (rootCard) => {
       const table15Split = table15Pot - sumFrom4th;
 
       const rebuyLimit = 30;
-      const distributed = allRebuyValues.slice(0, rebuyLimit);
-      const overflow = allRebuyValues.slice(rebuyLimit).reduce((sum, value) => sum + value, 0);
+      const distributed = adjustedRebuyValues.slice(0, rebuyLimit);
+      const overflow = adjustedRebuyValues.slice(rebuyLimit).reduce((sum, value) => sum + value, 0);
       const rebuyColumns = allRebuyValues.length;
       tournamentState.pool.rebuyValues = tournamentState.pool.rebuyValues || {};
 
@@ -1681,15 +1749,19 @@ const setupAdminTournament = (rootCard) => {
     }
 
     if (activeSection === "semi") {
-      const finalRows = tournamentState.finalPlayers;
-      const customTables = semiTables.map((table, index) => `<article class="admin-table-card"><h4>STÓŁ PÓŁFINAŁOWY NUMER ${index + 1} <button type="button" class="danger" data-role="remove-semi-table" data-id="${table.id}">Usuń stół</button></h4><div class="t-section-grid"><label>NAZWA <input class="admin-input" data-role="semi-custom-name" data-id="${table.id}" type="text" value="${esc(table.name || "")}" data-focus-target="1" data-section="second-tournament-semi-name" data-column-key="name"></label><label>ŁĄCZNY STACK <input class="admin-input" readonly value="${formatCellNumber(table.totalStack)}"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>ŁĄCZNY STACK</th><th>ELIMINATED</th></tr></thead><tbody>${table.rows.map((row, rowIndex) => `<tr><td>${rowIndex + 1}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(row.survivorStack)}</td><td>${formatCellNumber(table.totalStack)}</td><td><input type="checkbox" data-role="semi-player-eliminated" data-player-id="${row.playerId}" ${row.semiEliminated ? "checked" : ""}></td></tr>`).join("") || '<tr><td colspan="5">Brak przypisanych graczy.</td></tr>'}</tbody></table></div></article>`).join("");
-      mount.innerHTML = `<h3>TABELA21</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>STÓŁ</th></tr></thead><tbody>${semiRows.map((row, idx) => `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(row.survivorStack)}</td><td>${toPercentText(row.share)}</td><td><select class="admin-input" data-role="semi-assign-table" data-player-id="${row.playerId}"><option value="">-</option>${tournamentState.semi.customTables.map((table, tableIndex) => `<option value="${table.id}" ${row.semiTableId === table.id ? "selected" : ""}>${esc(table.name || `Stół${tableIndex + 1}`)}</option>`).join("")}</select></td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA22</h3><button type="button" class="secondary t-inline-add-button" data-role="add-semi-table">Dodaj nowy stół</button><div class="semi-tables">${customTables || "<p>Brak stołów półfinałowych.</p>"}</div><h3>TABELA FINAŁOWA</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>STÓŁ</th><th>%</th></tr></thead><tbody>${finalRows.map((row, idx) => { const finalShare = totalGroupStackBase > 0 ? toDigitsNumber(row.stack) / totalGroupStackBase : 0; return `<tr><td>${idx + 1}</td><td>${esc(row.name)}</td><td><input class="admin-input" data-role="final-stack" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row.stack)}" data-focus-target="1" data-section="second-tournament-final" data-row-id="${row.id}" data-column-key="stack"></td><td>${esc(row.tableName)}</td><td>${toPercentText(finalShare)}</td></tr>`; }).join("")}</tbody></table></div>`;
+      const customTables = semiTables.map((table, index) => `<article class="admin-table-card"><h4>STÓŁ PÓŁFINAŁOWY NUMER ${index + 1} <button type="button" class="danger" data-role="remove-semi-table" data-id="${table.id}">Usuń stół</button></h4><div class="t-section-grid"><label>NAZWA <input class="admin-input" data-role="semi-custom-name" data-id="${table.id}" type="text" value="${esc(table.name || "")}" data-focus-target="1" data-section="second-tournament-semi-name" data-column-key="name"></label><label>ŁĄCZNY STACK <input class="admin-input" readonly value="${formatCellNumber(table.totalStack)}"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>ELIMINATED</th></tr></thead><tbody>${table.rows.map((row, rowIndex) => `<tr><td>${rowIndex + 1}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(row.survivorStack)}</td><td><input type="checkbox" data-role="semi-player-eliminated" data-player-id="${row.playerId}" ${row.semiEliminated ? "checked" : ""}></td></tr>`).join("") || '<tr><td colspan="4">Brak przypisanych graczy.</td></tr>'}</tbody></table></div></article>`).join("");
+      const semiEliminatedTable = `<h3>TABELA22A</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>POZYCJA</th></tr></thead><tbody>${semiEliminatedRows.map((row, index) => `<tr><td>${index + 1}</td><td>${esc(row.playerName)}</td><td><div class="group-position-controls"><button class="secondary group-position-button" type="button" data-role="semi-eliminated-move" data-player-id="${row.playerId}" data-direction="up" ${index === 0 ? "disabled" : ""}>▲</button><button class="secondary group-position-button" type="button" data-role="semi-eliminated-move" data-player-id="${row.playerId}" data-direction="down" ${index === semiEliminatedRows.length - 1 ? "disabled" : ""}>▼</button></div></td></tr>`).join("") || '<tr><td colspan="3">Brak danych.</td></tr>'}</tbody></table></div>`;
+      const finalRowsMarkup = finalActivePlayers.map((row, idx) => {
+        const finalShare = totalGroupStackBase > 0 ? toDigitsNumber(row.stack) / totalGroupStackBase : 0;
+        return `<tr><td>${idx + 1}</td><td>${esc(row.name)}</td><td>${formatCellNumber(toDigitsNumber(row.stack))}</td><td>${esc(row.tableName)}</td><td>${toPercentText(finalShare)}</td></tr>`;
+      }).join("");
+      mount.innerHTML = `<h3>TABELA21</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>STÓŁ</th></tr></thead><tbody>${semiRows.map((row, idx) => `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(row.survivorStack)}</td><td>${toPercentText(row.share)}</td><td><select class="admin-input" data-role="semi-assign-table" data-player-id="${row.playerId}"><option value="">-</option>${tournamentState.semi.customTables.map((table, tableIndex) => `<option value="${table.id}" ${row.semiTableId === table.id ? "selected" : ""}>${esc(table.name || `Stół${tableIndex + 1}`)}</option>`).join("")}</select></td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA22</h3><button type="button" class="secondary t-inline-add-button" data-role="add-semi-table">Dodaj nowy stół</button><div class="semi-tables">${customTables || "<p>Brak stołów półfinałowych.</p>"}</div>${semiEliminatedTable}<h3>TABELA FINAŁOWA</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>STÓŁ</th><th>%</th></tr></thead><tbody>${finalRowsMarkup || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div>`;
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
 
     if (activeSection === "final") {
-      const finalPlayers = tournamentState.finalPlayers;
+      const finalPlayers = sortedFinalPlayers;
       const width = 700;
       const height = 360;
       const cx = width / 2;
@@ -1702,7 +1774,7 @@ const setupAdminTournament = (rootCard) => {
         const y = cy + Math.sin(angle) * (ry + 55);
         return `<text x="${x}" y="${y}" fill="#ededdf" text-anchor="middle" font-size="13">${esc(player.name || "Gracz")} (${esc(player.stack || 0)})</text>`;
       }).join("");
-      mount.innerHTML = `<h3>TABELA23</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th></tr></thead><tbody>${finalPlayers.map((player, i) => { const finalShare = totalGroupStackBase > 0 ? toDigitsNumber(player.stack) / totalGroupStackBase : 0; return `<tr><td>${i + 1}</td><td>${esc(player.name)}</td><td><input class="admin-input" data-role="final-stack" data-id="${player.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(player.stack)}" data-focus-target="1" data-section="second-tournament-final" data-row-id="${player.id}" data-column-key="stack"></td><td>${toPercentText(finalShare)}</td></tr>`; }).join("") || '<tr><td colspan="4">Brak graczy.</td></tr>'}</tbody></table></div><svg viewBox="0 0 ${width} ${height}" class="poker-table-svg"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0d5f3f" stroke="#d4af37" stroke-width="6"></ellipse>${labels}</svg>`;
+      mount.innerHTML = `<h3>TABELA23</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>ELIMINATED</th></tr></thead><tbody>${finalPlayers.map((player, i) => { const finalShare = totalGroupStackBase > 0 ? toDigitsNumber(player.stack) / totalGroupStackBase : 0; return `<tr><td>${i + 1}</td><td>${esc(player.name)}</td><td>${formatCellNumber(toDigitsNumber(player.stack))}</td><td>${toPercentText(finalShare)}</td><td><input type="checkbox" data-role="final-player-eliminated" data-player-id="${player.id}" ${player.eliminated ? "checked" : ""}></td></tr>`; }).join("") || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div><svg viewBox="0 0 ${width} ${height}" class="poker-table-svg"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0d5f3f" stroke="#d4af37" stroke-width="6"></ellipse>${labels}</svg>`;
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
@@ -1726,7 +1798,7 @@ const setupAdminTournament = (rootCard) => {
       for (let colIdx = 0; colIdx < Math.min(30, payoutRebuyColumns); colIdx += 1) {
         const mappedRow = payoutRebuyRowMapping[colIdx] - 1;
         if (mappedRow >= 0 && mappedRow < payoutSplitRows.length) {
-          payoutMatrix[mappedRow][colIdx] = formatCellNumber(allRebuyValues[colIdx]);
+          payoutMatrix[mappedRow][colIdx] = formatCellNumber(adjustedRebuyValues[colIdx]);
         }
       }
       payoutSplitRows.forEach((row, rowIdx) => {
@@ -1749,21 +1821,23 @@ const setupAdminTournament = (rootCard) => {
           total: String(formatCellNumber(amount + rebuySumRow + mod1 + mod2 + mod3))
         };
       });
-      tournamentState.finalPlayers = tournamentState.finalPlayers.map((player, index) => ({
-        ...player,
-        initialWin: player.initialWin ?? (index < 8 ? payoutDefaults[index]?.amount || "0" : "0"),
-        finalWin: player.finalWin ?? (index < 8 ? payoutDefaults[index]?.total || "0" : "0")
-      }));
       const initialHeader = tournamentState.payouts.showInitial ? "<th>POCZĄTKOWA WYGRANA</th>" : "";
       const finalHeader = tournamentState.payouts.showFinal ? "<th>KOŃCOWA WYGRANA</th>" : "";
-      const payoutRows = tournamentState.finalPlayers.map((player, index) => `<tr><td>${index + 1}</td><td>${esc(player.name || "-")}</td>${tournamentState.payouts.showInitial ? `<td><input class="admin-input" data-role="payout-initial" data-id="${player.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(player.initialWin || "0")}" data-focus-target="1" data-section="second-tournament-payouts" data-row-id="${player.id}" data-column-key="initialWin"></td>` : ""}${tournamentState.payouts.showFinal ? `<td><input class="admin-input" data-role="payout-final" data-id="${player.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(player.finalWin || "0")}" data-focus-target="1" data-section="second-tournament-payouts" data-row-id="${player.id}" data-column-key="finalWin"></td>` : ""}</tr>`).join("");
+      const payoutRowsState = buildPlacementRows({
+        players: tournamentState.players,
+        groupRows: eliminatedRows,
+        semiRows: semiEliminatedRows,
+        finalRows: [...finalActivePlayers, ...finalEliminatedPlayers],
+        payoutDefaults
+      });
+      const payoutRows = payoutRowsState.map((player) => `<tr><td>${player.place}</td><td>${esc(player.playerName || "-")}</td>${tournamentState.payouts.showInitial ? `<td>${formatCellNumber(toNumber(player.initialWin))}</td>` : ""}${tournamentState.payouts.showFinal ? `<td>${formatCellNumber(toNumber(player.finalWin))}</td>` : ""}</tr>`).join("");
       mount.innerHTML = `
         <div class="admin-toggle-row">
           <label><input type="checkbox" data-role="toggle-payout-initial" ${tournamentState.payouts.showInitial ? "checked" : ""}> Pokaż kolumnę POCZĄTKOWA WYGRANA</label>
           <label><input type="checkbox" data-role="toggle-payout-final" ${tournamentState.payouts.showFinal ? "checked" : ""}> Pokaż kolumnę KOŃCOWA WYGRANA</label>
         </div>
         <h3>TABELA24</h3>
-        <div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>MIEJSCE</th><th>GRACZ</th>${initialHeader}${finalHeader}</tr></thead><tbody>${payoutRows || `<tr><td colspan="${2 + Number(tournamentState.payouts.showInitial) + Number(tournamentState.payouts.showFinal)}">Brak finalistów.</td></tr>`}</tbody></table></div>
+        <div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>MIEJSCE</th><th>GRACZ</th>${initialHeader}${finalHeader}</tr></thead><tbody>${payoutRows || `<tr><td colspan="${2 + Number(tournamentState.payouts.showInitial) + Number(tournamentState.payouts.showFinal)}">Brak danych.</td></tr>`}</tbody></table></div>
       `;
       restoreTournamentEditableFocusState(container, focusState);
       return;
@@ -1776,7 +1850,7 @@ const setupAdminTournament = (rootCard) => {
     const target = event.target;
     const role = target?.dataset?.role;
     if (!role) return;
-    if (["meta-buyin", "meta-rebuy", "meta-rake", "meta-stack", "meta-rebuystack", "player-pin", "table-entry", "group-stack", "group-eliminated-win", "group-survivor-stack", "final-stack", "payout-initial", "payout-final", "pool-split", "pool-mod", "pool-rebuy-value"].includes(role)) {
+    if (["meta-buyin", "meta-rebuy", "meta-rake", "meta-stack", "meta-rebuystack", "player-pin", "table-entry", "group-stack", "group-eliminated-win", "group-survivor-stack", "pool-split", "pool-mod", "pool-rebuy-value"].includes(role)) {
       target.value = digitsOnly(target.value);
     }
 
@@ -1813,9 +1887,6 @@ const setupAdminTournament = (rootCard) => {
     if (role === "group-stack") tournamentState.group.playerStacks[target.dataset.playerId] = target.value;
     if (role === "group-eliminated-win") tournamentState.group.eliminatedWins[target.dataset.playerId] = target.value || "0";
     if (role === "group-survivor-stack") tournamentState.group.survivorStacks[target.dataset.playerId] = target.value;
-    if (role === "final-stack") tournamentState.finalPlayers = tournamentState.finalPlayers.map((player) => player.id === target.dataset.id ? { ...player, stack: target.value } : player);
-    if (role === "payout-initial") tournamentState.finalPlayers = tournamentState.finalPlayers.map((player) => player.id === target.dataset.id ? { ...player, initialWin: target.value } : player);
-    if (role === "payout-final") tournamentState.finalPlayers = tournamentState.finalPlayers.map((player) => player.id === target.dataset.id ? { ...player, finalWin: target.value } : player);
     if (role === "pool-split") tournamentState.pool.mods = tournamentState.pool.mods.map((row) => row.id === target.dataset.id ? { ...row, split: target.value } : row);
     if (role === "pool-mod") {
       const modKey = target.dataset.modKey || "mod1";
@@ -1847,10 +1918,19 @@ const setupAdminTournament = (rootCard) => {
     if (role === "assign-table") tournamentState.assignments[target.dataset.playerId] = { ...(tournamentState.assignments[target.dataset.playerId] || {}), tableId: target.value, status: tournamentState.assignments[target.dataset.playerId]?.status || "Do zapłaty" };
     if (role === "semi-assign-table") tournamentState.semi.assignments[target.dataset.playerId] = { ...(tournamentState.semi.assignments[target.dataset.playerId] || {}), tableId: target.value, eliminated: !!tournamentState.semi.assignments[target.dataset.playerId]?.eliminated };
     if (role === "group-eliminated") tournamentState.group.eliminated[target.dataset.playerId] = target.checked;
-    if (role === "semi-player-eliminated") tournamentState.semi.assignments[target.dataset.playerId] = { ...(tournamentState.semi.assignments[target.dataset.playerId] || {}), tableId: tournamentState.semi.assignments[target.dataset.playerId]?.tableId || "", eliminated: target.checked };
+    if (role === "semi-player-eliminated") {
+      tournamentState.semi.assignments[target.dataset.playerId] = { ...(tournamentState.semi.assignments[target.dataset.playerId] || {}), tableId: tournamentState.semi.assignments[target.dataset.playerId]?.tableId || "", eliminated: target.checked };
+      if (target.checked && !tournamentState.semi.eliminatedOrder.includes(target.dataset.playerId)) {
+        tournamentState.semi.eliminatedOrder.push(target.dataset.playerId);
+      }
+      if (!target.checked) {
+        tournamentState.semi.eliminatedOrder = tournamentState.semi.eliminatedOrder.filter((playerId) => playerId !== target.dataset.playerId);
+      }
+    }
+    if (role === "final-player-eliminated") tournamentState.final.eliminated[target.dataset.playerId] = target.checked;
     if (role === "toggle-payout-initial") tournamentState.payouts.showInitial = target.checked;
     if (role === "toggle-payout-final") tournamentState.payouts.showFinal = target.checked;
-    if (["player-payment-status", "assign-table", "semi-assign-table", "semi-player-eliminated", "group-eliminated"].includes(role)) {
+    if (["player-payment-status", "assign-table", "semi-assign-table", "semi-player-eliminated", "group-eliminated", "final-player-eliminated"].includes(role)) {
       render();
     }
     pendingLocalWrites += 1;
@@ -1887,7 +1967,8 @@ const setupAdminTournament = (rootCard) => {
     "open-table12-rebuy",
     "add-semi-table",
     "remove-semi-table",
-    "group-eliminated-move"
+    "group-eliminated-move",
+    "semi-eliminated-move"
   ]);
 
   container.addEventListener("click", async (event) => {
@@ -1931,6 +2012,10 @@ const setupAdminTournament = (rootCard) => {
       delete tournamentState.group.eliminatedWins[playerId];
       delete tournamentState.group.survivorStacks[playerId];
       delete tournamentState.semi.assignments[playerId];
+      tournamentState.semi.eliminatedOrder = (tournamentState.semi.eliminatedOrder || []).filter((id) => id !== playerId);
+      if (tournamentState.final?.eliminated) {
+        delete tournamentState.final.eliminated[playerId];
+      }
       delete tournamentState.payments.table12Rebuys[playerId];
       tournamentState.finalPlayers = tournamentState.finalPlayers.filter((player) => player.id !== playerId);
       deletedPaths.push(`payments.table12Rebuys.${playerId}`);
@@ -1949,6 +2034,17 @@ const setupAdminTournament = (rootCard) => {
       }
       const [movedPlayerId] = tournamentState.group.eliminatedOrder.splice(currentIndex, 1);
       tournamentState.group.eliminatedOrder.splice(nextIndex, 0, movedPlayerId);
+    }
+    if (role === "semi-eliminated-move") {
+      const playerId = target.dataset.playerId;
+      const direction = target.dataset.direction;
+      const currentIndex = tournamentState.semi.eliminatedOrder.indexOf(playerId);
+      const nextIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+      if (currentIndex < 0 || nextIndex < 0 || nextIndex >= tournamentState.semi.eliminatedOrder.length) {
+        return;
+      }
+      const [movedPlayerId] = tournamentState.semi.eliminatedOrder.splice(currentIndex, 1);
+      tournamentState.semi.eliminatedOrder.splice(nextIndex, 0, movedPlayerId);
     }
     if (role === "delete-table") {
       const tableId = target.dataset.tableId;
@@ -1978,6 +2074,7 @@ const setupAdminTournament = (rootCard) => {
             ...tournamentState.semi.assignments[playerId],
             tableId: ""
           };
+          tournamentState.semi.eliminatedOrder = (tournamentState.semi.eliminatedOrder || []).filter((id) => id !== playerId);
         }
       });
     }
@@ -2205,6 +2302,8 @@ const setupUserView = (root) => {
         .flatMap((entry) => Array.isArray(entry?.values) ? entry.values : [])
         .filter((value) => String(value ?? "").trim())
         .map((value) => toDigitsNumber(value));
+      const userRakePercent = percentInputToDecimal(userTournamentState.rake);
+      const adjustedUserRebuyValues = userRebuyValues.map((value) => value * (1 - userRakePercent));
       const rebuyColumns = userRebuyValues.length;
       const rebuyMatrix = splitRows.map(() => Array.from({ length: rebuyColumns }, () => ""));
       const rebuyRowMapping = [
@@ -2215,7 +2314,7 @@ const setupUserView = (root) => {
       for (let colIdx = 0; colIdx < Math.min(30, rebuyColumns); colIdx += 1) {
         const mappedRow = rebuyRowMapping[colIdx] - 1;
         if (mappedRow >= 0 && mappedRow < splitRows.length) {
-          rebuyMatrix[mappedRow][colIdx] = formatCellNumber(userRebuyValues[colIdx]);
+          rebuyMatrix[mappedRow][colIdx] = formatCellNumber(adjustedUserRebuyValues[colIdx]);
         }
       }
       splitRows.forEach((row, rowIdx) => {
@@ -2240,12 +2339,33 @@ const setupUserView = (root) => {
           total: amount + rebuySumRow + mod1 + mod2 + mod3
         };
       });
-      const payoutRows = userTournamentState.finalPlayers.map((player, index) => {
-        const initialValue = player.initialWin || (index < 8 ? payoutDefaults[index]?.amount || 0 : 0);
-        const finalValue = player.finalWin || (index < 8 ? payoutDefaults[index]?.total || 0 : 0);
-        return `<tr><td>${index + 1}</td><td>${player.name || "-"}</td>${showInitial ? `<td>${formatCellNumber(initialValue)}</td>` : ""}${showFinal ? `<td>${formatCellNumber(finalValue)}</td>` : ""}</tr>`;
-      }).join("");
-      tournamentSection.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Miejsce</th><th>Gracz</th>${showInitial ? "<th>Początkowa wygrana</th>" : ""}${showFinal ? "<th>Końcowa wygrana</th>" : ""}</tr></thead><tbody>${payoutRows || `<tr><td colspan="${2 + Number(showInitial) + Number(showFinal)}">Brak finalistów.</td></tr>`}</tbody></table></div>`;
+      const userGroupRows = syncOrderedPlayerIds(
+        userTournamentState.group?.eliminatedOrder,
+        (userTournamentState.players || []).filter((player) => userTournamentState.group?.eliminated?.[player.id]).map((player) => ({ playerId: player.id, playerName: player.name || "-" }))
+      ).map((playerId) => {
+        const player = userTournamentState.players.find((item) => item.id === playerId);
+        return { playerId, playerName: player?.name || "-" };
+      });
+      const userSemiRows = syncOrderedPlayerIds(
+        userTournamentState.semi?.eliminatedOrder,
+        (userTournamentState.players || []).filter((player) => {
+          const assignment = userTournamentState.semi?.assignments?.[player.id] || {};
+          return assignment.tableId && assignment.eliminated;
+        }).map((player) => ({ playerId: player.id, playerName: player.name || "-" }))
+      ).map((playerId) => {
+        const player = userTournamentState.players.find((item) => item.id === playerId);
+        return { playerId, playerName: player?.name || "-" };
+      });
+      const sortedUserFinalPlayers = sortPlayersByStackDesc(userTournamentState.finalPlayers || []);
+      const payoutRowsState = buildPlacementRows({
+        players: userTournamentState.players,
+        groupRows: userGroupRows,
+        semiRows: userSemiRows,
+        finalRows: sortedUserFinalPlayers.filter((player) => !player.eliminated).concat(sortedUserFinalPlayers.filter((player) => player.eliminated)),
+        payoutDefaults
+      });
+      const payoutRows = payoutRowsState.map((player) => `<tr><td>${player.place}</td><td>${player.playerName || "-"}</td>${showInitial ? `<td>${formatCellNumber(toNumber(player.initialWin))}</td>` : ""}${showFinal ? `<td>${formatCellNumber(toNumber(player.finalWin))}</td>` : ""}</tr>`).join("");
+      tournamentSection.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Miejsce</th><th>Gracz</th>${showInitial ? "<th>Początkowa wygrana</th>" : ""}${showFinal ? "<th>Końcowa wygrana</th>" : ""}</tr></thead><tbody>${payoutRows || `<tr><td colspan="${2 + Number(showInitial) + Number(showFinal)}">Brak danych.</td></tr>`}</tbody></table></div>`;
       return;
     }
 

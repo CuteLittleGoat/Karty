@@ -101,14 +101,15 @@
 ### Półfinał
 - `Tabela21` pobiera listę graczy z `Tabela19B`: kolumny `STACK` i `%` są tylko do odczytu i kopiują odpowiednio `group.survivorStacks[playerId]` oraz udział liczony względem `Tabela18.ŁĄCZNY STACK`.
 - `Tabela21.STÓŁ` jest selectem opartym o `semi.customTables[]`; wybór zapisuje `semi.assignments[playerId].tableId`.
-- `Tabela22` renderuje po jednej karcie na każdy wpis `semi.customTables[]`; karta pokazuje nazwę stołu, `ŁĄCZNY STACK` liczony jako suma stacków przypisanych graczy oraz wiersze `GRACZ / STACK / ŁĄCZNY STACK / ELIMINATED`.
-- Checkbox `ELIMINATED` w `Tabela22` zapisuje się do `semi.assignments[playerId].eliminated`, więc stan pozostaje po odświeżeniu i po ponownym wejściu do aplikacji.
-- `Tabela FINAŁOWA` buduje się dynamicznie tylko z graczy przypisanych do stołów półfinałowych bez zaznaczonego `ELIMINATED`; `STACK` jest edytowalny i zapisywany w `finalPlayers[]`, `STÓŁ` jest tylko do odczytu, a `%` liczy się jako `finalPlayers[].stack / Tabela18.ŁĄCZNY STACK`.
+- `Tabela22` renderuje po jednej karcie na każdy wpis `semi.customTables[]`; karta pokazuje nazwę stołu, `ŁĄCZNY STACK` liczony jako suma stacków przypisanych graczy oraz wiersze `GRACZ / STACK / ELIMINATED`.
+- Checkbox `ELIMINATED` w `Tabela22` zapisuje się do `semi.assignments[playerId].eliminated`, a kolejność graczy wyeliminowanych w półfinale utrwala się w `semi.eliminatedOrder`; stan pozostaje po odświeżeniu i po ponownym wejściu do aplikacji.
+- `Tabela22A` pokazuje graczy wyeliminowanych w półfinale (`semi.assignments[playerId].eliminated === true`) w kolejności z `semi.eliminatedOrder` i pozwala zmieniać ją przyciskami `▲/▼` (`data-role="semi-eliminated-move"`).
+- `Tabela FINAŁOWA` buduje się dynamicznie z graczy przypisanych do stołów półfinałowych bez zaznaczonego `ELIMINATED` w finale; `STACK` jest readonly, pochodzi z `group.survivorStacks[playerId]`, `STÓŁ` jest tylko do odczytu, a `%` liczy się jako `finalPlayers[].stack / Tabela18.ŁĄCZNY STACK`.
 
 ### Wypłaty
-- `Tabela24` korzysta z dynamicznej listy `finalPlayers[]` zasilanej z półfinału.
-- Pola `POCZĄTKOWA WYGRANA` i `KOŃCOWA WYGRANA` są edytowalnymi inputami liczbowymi z metadanymi fokusu; zapisują się odpowiednio do `finalPlayers[].initialWin` i `finalPlayers[].finalWin`.
-- Domyślne wartości dla pierwszych 8 miejsc są wyliczane z `Tabela16`: `KWOTA` zasila `POCZĄTKOWA WYGRANA`, a `SUMA` zasila `KOŃCOWA WYGRANA`; kolejne miejsca startują od `0`.
+- `Tabela24` korzysta z pełnej klasyfikacji wszystkich graczy: miejsca od końca zajmują najpierw gracze z `group.eliminatedOrder`, potem gracze z `semi.eliminatedOrder`, a pozostałe miejsca uzupełniają finaliści posortowani po `STACK` malejąco; finaliści z zaznaczonym `final.eliminated[playerId]` trafiają za aktywnych finalistów.
+- Liczba wierszy `Tabela24` jest zawsze równa liczbie graczy w `players[]`.
+- Kolumny `POCZĄTKOWA WYGRANA` i `KOŃCOWA WYGRANA` są readonly i pobierają odpowiednio `KWOTA` oraz `SUMA` z tego samego miejsca w `Tabela16`; jeśli miejsc w `Tabela24` jest więcej niż wierszy w `Tabela16`, reszta otrzymuje `0`.
 - Checkboxy `data-role="toggle-payout-initial"` i `data-role="toggle-payout-final"` sterują realną widocznością kolumn w tabeli administratora i użytkownika, a ich stan jest utrwalany w `payouts.showInitial` / `payouts.showFinal`.
 
 ### Stabilność UI przy błędach Firebase
@@ -206,13 +207,14 @@
   - wiersze 4+: wartość bezpośrednia z `PODZIAŁ PULI`.
 - Liczba kolumn `REBUY` w `Tabela16` jest dynamiczna i równa liczbie uzupełnionych pól `Rebuy` w modalach `Rebuy gracza` (`Tabela12` → `REBUY`).
 - Jeśli w modalach `Rebuy gracza` nie ma żadnej uzupełnionej wartości, `Tabela16` nie renderuje żadnej kolumny `REBUY`.
-- Komórki `REBUY1..REBUY30` są automatycznie przypisane do wierszy przez mapę biznesową i są readonly (jak `KWOTA`) z wartościami z modali `Rebuy gracza`.
+- Komórki `REBUY1..REBUY30` są automatycznie przypisane do wierszy przez mapę biznesową i są readonly (jak `KWOTA`) z wartościami z modali `Rebuy gracza` pomniejszonymi o procent z `Tabela14` (`wartość * (1 - rakePercent)`).
 - Komórki od `REBUY31` wzwyż są renderowane dynamicznie, pozostają puste domyślnie (bez auto-przypisania do wiersza) i są edytowalne przez użytkownika (wartości ręczne są trzymane w `pool.rebuyValues`).
 - Kolumny `MOD` są dynamiczne względem liczby kolumn `REBUY`: dla `0..12` widoczne jest `MOD1`, dla `13..20` widoczne są `MOD1` i `MOD2`, a dla `>20` widoczne są `MOD1`, `MOD2`, `MOD3`.
 - `SUMA` = `KWOTA + suma REBUY w wierszu + MOD1 + MOD2 + MOD3` (z uwzględnieniem widocznych kolumn MOD).
 
 ### Faza grupowa
 - `group` przechowuje dodatkowo `eliminatedOrder`, `eliminatedWins` oraz `survivorStacks`, które zasilają odpowiednio ranking `Tabela19A` i dane `Tabela19B`.
+- `semi` przechowuje też `eliminatedOrder`, które zasila `Tabela22A`, a `final.eliminated` utrwala checkboxy `ELIMINATED` w `Tabela23`.
 - `Tabela19A` i `Tabela19B` są w pełni zależne od checkboxa `group-eliminated`; przełączenie checkboxa natychmiast przenosi gracza pomiędzy tabelami przy kolejnym renderze, a kolejność wyeliminowanych jest dalej kontrolowana przez `group.eliminatedOrder`.
 - Dla inputów w `Tabela19A` i `Tabela19B` utrzymano metadane fokusu (`data-focus-target`, `data-section`, `data-row-id`, `data-column-key`), aby nie wrócił błąd utraty fokusu opisany w `Analizy/Wazne_Fokus`.
 

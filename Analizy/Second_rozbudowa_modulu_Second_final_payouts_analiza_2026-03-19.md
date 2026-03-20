@@ -467,3 +467,50 @@ Jeśli trzeba podjąć tylko kilka najważniejszych ustaleń, to priorytetowo na
 ## Wniosek biznesowy po uzupełnieniu analizy
 Od strony technicznej wdrożenie nadal wygląda na możliwe bez zmian infrastruktury.
 Natomiast przed rozpoczęciem prac programistycznych warto zamknąć powyższe decyzje biznesowe, ponieważ to one określą, jak system ma zachowywać się w sytuacjach niejednoznacznych i wyjątkowych.
+
+
+## Sekcja po wdrożeniu zmian w kodzie
+
+Poniżej zapis zmian wdrożonych na podstawie tej analizy.
+
+### Plik `Second/app.js`
+- Linia / blok: stan domyślny i normalizacja.
+  - Było: `semi: { tables: [], assignments: {}, customTables: [] }`
+  - Jest: `semi: { tables: [], assignments: {}, customTables: [], eliminatedOrder: [] }`
+- Linia / blok: stan domyślny i normalizacja.
+  - Było: brak osobnej gałęzi dla finałowych checkboxów.
+  - Jest: `final: { eliminated: {} }`
+- Linia / blok: logika półfinału.
+  - Było: brak tabeli `Tabela22A` i brak osobnej kolejności dla eliminacji półfinałowych.
+  - Jest: synchronizacja `semi.eliminatedOrder`, render `Tabela22A` i obsługa przycisków `data-role="semi-eliminated-move"`.
+- Linia / blok: render stołów półfinałowych.
+  - Było: nagłówek tabeli stołu zawierał `LP | GRACZ | STACK | ŁĄCZNY STACK | ELIMINATED`.
+  - Jest: nagłówek tabeli stołu zawiera `LP | GRACZ | STACK | ELIMINATED`, a `ŁĄCZNY STACK` pozostał tylko obok nazwy stołu.
+- Linia / blok: budowa finalistów.
+  - Było: `tournamentState.finalPlayers = semiRows.filter((row) => row.semiTableId && !row.semiEliminated)...` oraz `eliminated: false`.
+  - Jest: `tournamentState.finalPlayers = finalPlayerRows.map(...)` z trwałym stanem `final.eliminated[playerId]` oraz sortowaniem pomocniczym po `STACK`.
+- Linia / blok: `Tabela23`.
+  - Było: kolumny `LP | GRACZ | STACK | %`, a `STACK` był inputem `data-role="final-stack"`.
+  - Jest: kolumny `LP | GRACZ | STACK | % | ELIMINATED`, `STACK` jest readonly, a checkbox `data-role="final-player-eliminated"` zapisuje się między sesjami.
+- Linia / blok: `Tabela24`.
+  - Było: tabela była oparta tylko o `finalPlayers[]`, a pola `POCZĄTKOWA WYGRANA` i `KOŃCOWA WYGRANA` były inputami `data-role="payout-initial"` i `data-role="payout-final"`.
+  - Jest: tabela powstaje z pełnej klasyfikacji wszystkich graczy (`Tabela19A` -> `Tabela22A` -> finaliści), a wygrane są readonly i pobierają wartości z odpowiadających miejsc `Tabela16`.
+- Linia / blok: `Tabela16`.
+  - Było: `REBUY1..REBUY30` kopiowały surowe wartości z modali `Rebuy gracza`.
+  - Jest: `REBUY1..REBUY30` używają wartości po potrąceniu procentu z `Tabela14`, czyli `rebuy * (1 - rakePercent)`.
+- Linia / blok: obsługa zdarzeń.
+  - Było: brak obsługi `final-player-eliminated` i `semi-eliminated-move`.
+  - Jest: dodana obsługa `change` dla `final-player-eliminated` oraz `click` dla `semi-eliminated-move`, razem z czyszczeniem danych przy usuwaniu gracza i stołu.
+
+### Plik `Second/docs/README.md`
+- Linia / blok: opis półfinału, finału i wypłat.
+  - Było: dokument mówił, że `Tabela FINAŁOWA` ma edytowalny `STACK`, `Tabela23` nie miała kolumny `ELIMINATED`, a `Tabela24` opisywała ręczną edycję wygranych.
+  - Jest: dokument opisuje `Tabela22A`, readonly `STACK` w finale, trwały checkbox `ELIMINATED` w `Tabela23`, pełną klasyfikację w `Tabela24` i automatyczne przypisanie wygranych z `Tabela16`.
+- Linia / blok: opis `Tabela16`.
+  - Było: `Rebuy1..Rebuy30` były opisane jako zwykłe wartości z modali.
+  - Jest: dokument wyjaśnia, że `Rebuy1..Rebuy30` są pomniejszane o procent z `Tabela14`.
+
+### Plik `Second/docs/Documentation.md`
+- Linia / blok: opis backendu i logiki sekcji `semi`, `final`, `payouts`.
+  - Było: brak informacji o `semi.eliminatedOrder` i `final.eliminated`, a `Tabela24` była opisana jako tabela finalistów z edytowalnymi wygranymi.
+  - Jest: dokumentacja opisuje nowe pola stanu, `Tabela22A`, trwałość checkboxów w `Tabela23`, pełną klasyfikację wszystkich graczy w `Tabela24` oraz nowe liczenie `REBUY1..REBUY30`.

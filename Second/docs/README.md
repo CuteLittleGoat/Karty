@@ -94,17 +94,23 @@
   - w polu `NAZWA` wpisz nazwę stołu,
   - gracze pojawiają się automatycznie zgodnie z wyborem z `Tabela21`,
   - `STACK` jest kopiowany z `Tabela21`,
-  - `ŁĄCZNY STACK` liczy się automatycznie z sumy stacków graczy przy tym stole,
+  - `ŁĄCZNY STACK` liczy się automatycznie z sumy stacków graczy przy tym stole i jest widoczny tylko nad tabelą,
   - checkbox `ELIMINATED` zapisuje się między sesjami przeglądarki i po odświeżeniu.
-- **Tabela FINAŁOWA** pokazuje tylko graczy bez zaznaczonego `ELIMINATED` w `Tabela22`.
+- **Tabela22A** pojawia się pod stołami półfinałowymi i pokazuje wszystkich graczy z zaznaczonym `ELIMINATED` w `Tabela22`.
+  - kolumna `LP` numeruje listę automatycznie,
+  - kolumna `POZYCJA` pozwala zmieniać kolejność strzałkami `▲/▼`,
+  - kolejność zapisuje się między sesjami.
+- **Tabela FINAŁOWA** pokazuje tylko graczy bez zaznaczonego `ELIMINATED` w półfinale.
   - jeśli żaden gracz nie spełnia warunku, zobaczysz sam nagłówek tabeli,
-  - kolumna `STACK` jest edytowalna,
+  - kolumna `STACK` jest tylko do odczytu,
   - kolumna `STÓŁ` uzupełnia się automatycznie,
   - kolumna `%` liczy `STACK / ŁĄCZNY STACK z Tabela18`.
 
 ### Finał
-- **Tabela23**: LP, GRACZ, STACK, %.
-- Dane w tej tabeli są synchronizowane z `Tabela FINAŁOWA` z panelu `Półfinał`.
+- **Tabela23**: LP, GRACZ, STACK, %, ELIMINATED.
+- Dane w tej tabeli są synchronizowane z `Tabela FINAŁOWA` z panelu `Półfinał` i sortowane malejąco po `STACK`.
+- `STACK` jest tylko do odczytu.
+- Checkbox `ELIMINATED` zapisuje się między sesjami i od razu wpływa na klasyfikację w `Tabela24`.
 - Pod tabelą widoczny jest stół pokerowy SVG.
 
 ### Wypłaty
@@ -113,9 +119,15 @@
   - gdy checkbox jest zaznaczony, kolumna jest widoczna także w widoku użytkownika,
   - gdy checkbox jest odznaczony, kolumna jest całkowicie ukryta,
   - stan checkboxów zapisuje się między sesjami i po restarcie aplikacji.
-- W kolumnach wygranych wpisujesz liczby ręcznie.
-  - dla miejsc 1–8 domyślnie przepisywane są wartości z `Tabela16` (`KWOTA` -> `POCZĄTKOWA WYGRANA`, `SUMA` -> `KOŃCOWA WYGRANA`),
-  - od miejsca 9 w dół wartość startowa to `0`.
+- `Tabela24` zawsze pokazuje wszystkich graczy z panelu **Losowanie Graczy**.
+  - miejsca od końca zajmują najpierw gracze z `Tabela19A`,
+  - potem wolne miejsca od końca zajmują gracze z `Tabela22A`,
+  - pozostałe miejsca zajmują finaliści z `Tabela23` posortowani po `STACK`,
+  - zaznaczenie `ELIMINATED` w `Tabela23` przenosi gracza za aktywnych finalistów.
+- Kolumny wygranych są tylko do odczytu.
+  - `POCZĄTKOWA WYGRANA` pobiera `KWOTA` z tego samego miejsca w `Tabela16`,
+  - `KOŃCOWA WYGRANA` pobiera `SUMA` z tego samego miejsca w `Tabela16`,
+  - jeśli w `Tabela24` jest więcej miejsc niż wierszy w `Tabela16`, dalsze miejsca pokazują `0`.
 
 
 
@@ -175,7 +187,7 @@
    - kolumna `PODZIAŁ PULI`: wiersze 1–3 działają procentowo (`50` => `50%`, do obliczeń `0.5`), od wiersza 4 wpisy są liczbami bez `%` i bez dzielenia przez 100,
    - kolumna `KWOTA`: wiersze 1–3 = procent × `Tabela15.PODZIAŁ`, od wiersza 4 = przepisana wartość z `PODZIAŁ PULI`,
    - liczba kolumn `REBUY` jest dynamiczna i zależy od liczby uzupełnionych pól `Rebuy` w modalach `Rebuy gracza` (jeśli brak rebuy, kolumn `REBUY` nie ma),
-   - `Rebuy1..Rebuy30` mają stałe przypisanie do wierszy i działają jak kolumna `KWOTA` (readonly),
+   - `Rebuy1..Rebuy30` mają stałe przypisanie do wierszy i działają jak kolumna `KWOTA` (readonly), ale każda z tych wartości jest najpierw pomniejszana o procent z `Tabela14`,
    - jeśli kolumn `REBUY` jest więcej niż 30, kolumny od `Rebuy31` wzwyż są renderowane bez auto-uzupełniania wierszy i pozostają edytowalne ręcznie,
    - komórki `REBUY` pokazują wartości wpisane w modalach `Rebuy gracza` i nie są nadpisywane przez wartości z `PODZIAŁ PULI`,
    - kolumny `MOD` są dynamiczne: dla `0..12` rebuy jest `MOD1` przed `SUMA`, dla `13..20` dochodzi `MOD2`, a powyżej 20 dochodzi `MOD3`,
