@@ -514,3 +514,20 @@ Poniżej zapis zmian wdrożonych na podstawie tej analizy.
 - Linia / blok: opis backendu i logiki sekcji `semi`, `final`, `payouts`.
   - Było: brak informacji o `semi.eliminatedOrder` i `final.eliminated`, a `Tabela24` była opisana jako tabela finalistów z edytowalnymi wygranymi.
   - Jest: dokumentacja opisuje nowe pola stanu, `Tabela22A`, trwałość checkboxów w `Tabela23`, pełną klasyfikację wszystkich graczy w `Tabela24` oraz nowe liczenie `REBUY1..REBUY30`.
+
+## Zmiany w kodzie po realizacji zgłoszenia 2026-03-20 — naprawa pustego panelu Tournament of Poker
+
+Plik `Second/app.js`
+- Linia przed zmianą (helper lokalny wewnątrz `setupAdminTournament`):
+  - Było: `  const toDigitsNumber = (value) => Number(digitsOnly(value));`
+  - Jest: `const toDigitsNumber = (value) => Number(digitsOnly(value));`
+- Linia przy helperach globalnych modułu:
+  - Było: `const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");`
+  - Jest: `const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");`
+  - Jest dodatkowo: `const toDigitsNumber = (value) => Number(digitsOnly(value));`
+
+Plik `Second/docs/Documentation.md`
+- Sekcja „Tournament of Poker – logika techniczna (Second)” została uzupełniona o opis wspólnego helpera liczbowego używanego przez wszystkie sekcje turniejowe.
+
+Plik `Second/docs/README.md`
+- Sekcja instrukcji dla widoku użytkownika została uzupełniona o oczekiwane zachowanie sidebaru: kliknięcie przycisku w lewym panelu ma od razu renderować zawartość po prawej stronie.

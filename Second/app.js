@@ -744,6 +744,7 @@ const buildPlacementRows = ({ players, groupRows, semiRows, finalRows, payoutDef
 };
 
 const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");
+const toDigitsNumber = (value) => Number(digitsOnly(value));
 const getAlternatingTableGroupClass = (rows, getTableKey) => {
   let previousTableKey = Symbol("initial");
   let groupIndex = -1;
@@ -1281,7 +1282,6 @@ const setupAdminTournament = (rootCard) => {
     const parsed = Number(normalized);
     return Number.isFinite(parsed) ? parsed : 0;
   };
-  const toDigitsNumber = (value) => Number(digitsOnly(value));
   const toPercentDigits = (value) => {
     const normalized = digitsOnly(value).replace(/^0+(?=\d)/, "");
     return normalized || "0";

@@ -160,6 +160,7 @@
 - `payments.table12Rebuys` – przechowuje per-gracz listę rebuy jako `values[]` oraz globalne indeksy kolumn `indexes[]`.
 - `pool.rebuyValues` – przechowuje wpisy edytowalnych (nieprzypisanych) komórek REBUY w `Tabela16`.
 - `pool.mods[]` – wiersze `Tabela16` (split/mod/suma).
+- Wspólny helper `toDigitsNumber` działa na poziomie modułu i jest używany przez renderowanie wszystkich sekcji `Tournament of Poker` (m.in. sortowanie finału, wypłaty i przeliczenia liczbowe), dzięki czemu kliknięcie w przyciski sidebaru nie kończy się błędem zasięgu funkcji.
 
 ### Automatyczne przeliczenia
 - `Tabela10`:
