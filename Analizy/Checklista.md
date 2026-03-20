@@ -1,279 +1,488 @@
-# Checklista testów ręcznych modułów Main i Second
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checklista testów ręcznych</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --line: #d7deea;
+      --accent: #1d4ed8;
+      --accent-soft: #dbeafe;
+      --ok: #166534;
+    }
 
-## Cel dokumentu
-Ta checklista opisuje bardzo dokładnie, krok po kroku, jak ręcznie sprawdzić najważniejsze funkcje modułów `Main` i `Second`, w tym nowe mechanizmy półfinału, finału, wypłat i obliczeń rebuy.
+    * {
+      box-sizing: border-box;
+    }
 
----
+    body {
+      margin: 0;
+      padding: 32px 18px 48px;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      color: var(--text);
+      background: linear-gradient(180deg, #eef3ff 0%, var(--bg) 220px);
+    }
 
-## 1. Przygotowanie środowiska testowego
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
 
-1. Otwórz aplikację `Main/index.html` w jednej karcie przeglądarki.
-2. Otwórz aplikację `Second/index.html` w drugiej karcie przeglądarki.
-3. Jeśli chcesz testować panel administratora, otwórz obie aplikacje z parametrem `?admin=1`.
-4. Upewnij się, że oba moduły mają połączenie z tym samym Firebase.
-5. Do testów modułu `Second` przygotuj co najmniej 10 graczy, żeby było widać logikę miejsc, eliminacji i wypłat.
-6. Dobrze jest przygotować przykładowe dane testowe:
-   - BUY-IN: 100
-   - REBUY/ADD-ON: 100
-   - RAKE: 10
-   - STACK: 10000
-   - REBUY/ADD-ON STACK: 10000
-7. Do testu nowych funkcji w `Second` przygotuj przykładowo 10 graczy o nazwach: `G1`, `G2`, `G3`, `G4`, `G5`, `G6`, `G7`, `G8`, `G9`, `G10`.
+    .hero,
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
 
----
+    .hero {
+      padding: 28px;
+      margin-bottom: 24px;
+    }
 
-## 2. Checklista modułu Main
+    section {
+      padding: 26px;
+      margin-bottom: 20px;
+    }
 
-### 2.1. Start aplikacji i podstawowa nawigacja
+    h1,
+    h2,
+    h3 {
+      margin-top: 0;
+      color: #0f172a;
+    }
 
-1. Otwórz `Main/index.html`.
-2. Sprawdź, czy w prawym górnym rogu widać ikonę oraz przycisk **Instrukcja**.
-3. Kliknij **Instrukcja**.
-4. Sprawdź, czy otwiera się modal z opisem.
-5. Zamknij modal przyciskiem `×`.
-6. Jeśli jesteś w trybie admina, sprawdź, czy widać panel administratora oraz panel użytkownika.
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
 
-### 2.2. Aktualności
+    h2 {
+      font-size: 1.55rem;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--accent-soft);
+      margin-bottom: 18px;
+    }
 
-1. W panelu administratora przejdź do zakładki **Aktualności**.
-2. Wpisz przykładową wiadomość testową, np. `Test aktualności Main`.
-3. Kliknij **Wyślij**.
-4. W panelu użytkownika przejdź do zakładki **Aktualności**.
-5. Sprawdź, czy wyświetla się właśnie zapisana wiadomość.
-6. Kliknij w nagłówku użytkownika **Odśwież**.
-7. Sprawdź, czy zawartość nadal jest poprawna.
+    h3 {
+      font-size: 1.15rem;
+      margin-bottom: 10px;
+    }
 
-### 2.3. Regulamin
+    p,
+    li {
+      font-size: 1rem;
+    }
 
-1. W panelu administratora przejdź do zakładki **Regulamin**.
-2. Wpisz lub zmień fragment tekstu.
-3. Zapisz zmiany zgodnie z dostępnym UI.
-4. W panelu użytkownika przejdź do zakładki **Regulamin**.
-5. Sprawdź, czy użytkownik widzi aktualną wersję tekstu.
+    .lead {
+      font-size: 1.06rem;
+      color: var(--muted);
+      margin: 0;
+    }
 
-### 2.4. Gracze i PIN-y
+    .links {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
 
-1. W panelu administratora przejdź do zakładki **Gracze**.
-2. Dodaj kilku graczy.
-3. Dla każdego gracza wpisz nazwę i PIN lub użyj generatora PIN, jeśli jest dostępny.
-4. Nadaj uprawnienia co najmniej jednemu graczowi do sekcji użytkownika.
-5. Zapisz dane.
-6. W panelu użytkownika przejdź do **Strefa Gracza**.
-7. Wpisz PIN jednego z graczy i kliknij **Otwórz**.
-8. Sprawdź, czy pojawiają się tylko te sekcje, do których gracz ma uprawnienia.
+    .links a {
+      color: var(--accent);
+      font-weight: bold;
+      text-decoration: none;
+      word-break: break-all;
+    }
 
-### 2.5. Czat
+    .box {
+      background: #f8fbff;
+      border: 1px solid #cfe0ff;
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin: 16px 0;
+    }
 
-1. W panelu administratora upewnij się, że wybrany gracz ma uprawnienie do czatu.
-2. W panelu użytkownika przejdź do sekcji **Czat**.
-3. Wpisz PIN gracza i kliknij **Otwórz**.
-4. Wpisz wiadomość testową.
-5. Kliknij **Wyślij**.
-6. Sprawdź, czy wiadomość pojawia się na liście.
-7. Jeśli masz drugą kartę lub drugiego gracza, sprawdź, czy wiadomość jest widoczna także tam.
+    .note {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
 
-### 2.6. Gry do potwierdzenia
+    .step-block {
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+      margin-top: 18px;
+    }
 
-1. W panelu administratora dodaj lub przygotuj grę, którą użytkownik może potwierdzić.
-2. W panelu użytkownika przejdź do **Gry do Potwierdzenia**.
-3. Wpisz PIN i kliknij **Otwórz**.
-4. Sprawdź, czy na liście pojawia się gra.
-5. Kliknij **Potwierdź**.
-6. Sprawdź, czy status przy tej grze się zmienia.
-7. Kliknij **Anuluj**.
-8. Sprawdź, czy potwierdzenie znika.
-9. Kliknij **Szczegóły** i sprawdź, czy otwiera się modal z danymi gry.
-10. Kliknij **Notatki do gry** i sprawdź, czy modal otwiera się poprawnie.
+    .step-block:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+      margin-top: 0;
+    }
 
-### 2.7. Gry użytkowników
+    ol,
+    ul {
+      padding-left: 22px;
+    }
 
-1. W panelu użytkownika przejdź do **Gry Użytkowników**.
-2. Wpisz PIN z odpowiednim uprawnieniem.
-3. Kliknij **Otwórz**.
-4. Kliknij **Dodaj**.
-5. Sprawdź, czy pojawia się nowy wiersz gry.
-6. Ustaw typ gry, datę i nazwę.
-7. Kliknij **Szczegóły**.
-8. W modalu kliknij **Dodaj** i dodaj uczestników.
-9. Uzupełnij pola `Wpisowe`, `Rebuy/Add-on`, `Wypłata`, `Punkty`.
-10. W kolumnie `Rebuy/Add-on` kliknij przycisk z wartością.
-11. W modalu `Rebuy gracza` dodaj kilka wpisów `Rebuy`.
-12. Zamknij modal i sprawdź, czy suma na przycisku została zaktualizowana.
-13. Sprawdź, czy podsumowania pod grą przeliczają się automatycznie.
+    li + li {
+      margin-top: 8px;
+    }
 
-### 2.8. Statystyki
+    strong {
+      color: #111827;
+    }
 
-1. W panelu użytkownika przejdź do **Statystyki**.
-2. Wpisz PIN z uprawnieniem do statystyk.
-3. Kliknij **Otwórz**.
-4. Przełącz kilka lat na panelu bocznym.
-5. Sprawdź, czy zmieniają się dane tabeli i rankingu.
-6. Kliknij **Eksportuj**, jeśli przycisk jest dostępny.
-7. Sprawdź, czy eksport przebiega poprawnie.
+    code {
+      font-family: Consolas, Monaco, monospace;
+      background: #eff6ff;
+      color: #1e3a8a;
+      border-radius: 6px;
+      padding: 2px 6px;
+    }
 
----
+    .summary-list li {
+      color: var(--ok);
+    }
 
-## 3. Checklista modułu Second — pełny scenariusz turniejowy
+    @media (max-width: 720px) {
+      body {
+        padding: 18px 10px 34px;
+      }
 
-## 3.1. Przygotowanie danych podstawowych
+      .hero,
+      section {
+        padding: 20px;
+        border-radius: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="hero">
+      <h1>Checklista testów ręcznych</h1>
+      <p class="lead">
+        Ten dokument prowadzi krok po kroku przez sprawdzenie dwóch części aplikacji: <strong>Pierwsza</strong> i <strong>Druga</strong>.
+        Opis został przygotowany dla osoby, która nie musi znać działania aplikacji od strony technicznej.
+      </p>
+      <div class="links">
+        <a href="https://cutelittlegoat.github.io/Karty/Main/index.html">https://cutelittlegoat.github.io/Karty/Main/index.html</a>
+        <a href="https://cutelittlegoat.github.io/Karty/Second/index.html">https://cutelittlegoat.github.io/Karty/Second/index.html</a>
+      </div>
+    </div>
 
-1. Otwórz `Second/index.html?admin=1`.
-2. Wejdź do panelu turniejowego.
-3. W sekcji **Losowanie Graczy** / `players` dodaj 10 graczy.
-4. Dla każdego gracza wpisz nazwę oraz PIN.
-5. Ustaw metadane turnieju:
-   - `ORGANIZATOR`
-   - `BUY-IN`
-   - `REBUY/ADD-ON`
-   - `RAKE`
-   - `STACK`
-   - `REBUY/ADD-ON STACK`
-6. Sprawdź, czy po odświeżeniu strony dane nadal są zapisane.
+    <section>
+      <h2>1. Przygotowanie środowiska testowego</h2>
+      <ol>
+        <li>Otwórz pierwszy link w jednej karcie przeglądarki. To będzie część <strong>Pierwsza</strong>.</li>
+        <li>Otwórz drugi link w drugiej karcie przeglądarki. To będzie część <strong>Druga</strong>.</li>
+        <li>Jeżeli masz sprawdzać także ustawienia dostępne tylko dla organizatora lub osoby zarządzającej, otwórz każdą z tych stron także w wersji administratora, dopisując na końcu adresu <code>?admin=1</code>.</li>
+        <li>Upewnij się, że wszystkie otwarte karty pokazują te same dane. Jeżeli po zapisaniu zmian w jednej karcie nie widać ich w drugiej, odśwież stronę.</li>
+        <li>Przygotuj przykładowe dane, które będą potrzebne podczas testów części <strong>Druga</strong>:
+          <ul>
+            <li>wpłata początkowa: <strong>100</strong>,</li>
+            <li>dodatkowa wpłata: <strong>100</strong>,</li>
+            <li>opłata organizacyjna: <strong>10</strong>,</li>
+            <li>początkowa liczba żetonów: <strong>10000</strong>,</li>
+            <li>liczba żetonów za dodatkową wpłatę: <strong>10000</strong>.</li>
+          </ul>
+        </li>
+        <li>Przygotuj listę co najmniej 10 przykładowych graczy, na przykład: <code>G1</code>, <code>G2</code>, <code>G3</code>, <code>G4</code>, <code>G5</code>, <code>G6</code>, <code>G7</code>, <code>G8</code>, <code>G9</code>, <code>G10</code>.</li>
+      </ol>
+      <div class="box note">
+        <strong>Ważne:</strong> w kolejnych punktach najpierw przygotowujesz dane w widoku administratora, a dopiero potem przechodzisz do zwykłego widoku użytkownika i sprawdzasz, czy wszystko pokazuje się poprawnie.
+      </div>
+    </section>
 
-## 3.2. Losowanie stołów
+    <section>
+      <h2>2. Checklista części Pierwsza</h2>
 
-1. Przejdź do panelu **Losowanie Graczy**.
-2. Kliknij **Dodaj stół** tyle razy, aby utworzyć co najmniej 2 stoły.
-3. Nadaj stołom nazwy.
-4. W wierszach graczy przypisz każdego gracza do stołu.
-5. Sprawdź, czy pod każdym stołem pojawiają się przypisani gracze.
-6. Sprawdź, czy `ŁĄCZNA SUMA` nad stołem przelicza się automatycznie.
+      <div class="step-block">
+        <h3>2.1. Uruchomienie i pierwsze sprawdzenie</h3>
+        <ol>
+          <li>Otwórz część <strong>Pierwsza</strong> pod adresem <a href="https://cutelittlegoat.github.io/Karty/Main/index.html">https://cutelittlegoat.github.io/Karty/Main/index.html</a>.</li>
+          <li>Sprawdź, czy w górnej części strony widać przycisk <strong>Instrukcja</strong>.</li>
+          <li>Kliknij ten przycisk.</li>
+          <li>Sprawdź, czy pojawia się okno z treścią instrukcji.</li>
+          <li>Zamknij to okno i upewnij się, że wracasz do poprzedniego widoku.</li>
+          <li>W widoku administratora sprawdź, czy widzisz zarówno część do zarządzania treścią, jak i zwykły widok użytkownika.</li>
+        </ol>
+      </div>
 
-## 3.3. Panel Wpłaty i modal Rebuy gracza
+      <div class="step-block">
+        <h3>2.2. Aktualności</h3>
+        <ol>
+          <li>Przełącz się do widoku administratora części <strong>Pierwsza</strong>.</li>
+          <li>Otwórz zakładkę <strong>Aktualności</strong>.</li>
+          <li>Wpisz przykładową wiadomość, na przykład <code>Test aktualności Pierwsza</code>.</li>
+          <li>Zapisz lub wyślij wiadomość.</li>
+          <li>Przełącz się do zwykłego widoku użytkownika tej samej części.</li>
+          <li>Otwórz zakładkę <strong>Aktualności</strong>.</li>
+          <li>Sprawdź, czy widać wiadomość zapisaną chwilę wcześniej.</li>
+          <li>Kliknij przycisk odświeżenia i sprawdź, czy wiadomość nadal jest widoczna.</li>
+        </ol>
+      </div>
 
-1. Przejdź do panelu **Wpłaty**.
-2. W `Tabela12` kliknij przycisk w kolumnie `REBUY` dla gracza `G1`.
-3. W modalu wpisz np. `100` w `Rebuy1`.
-4. Kliknij **Dodaj Rebuy** i wpisz `200` w `Rebuy2`.
-5. Zamknij modal.
-6. Sprawdź, czy przycisk w `Tabela12` pokazuje sumę `300`.
-7. Powtórz podobny test dla kilku kolejnych graczy, aby mieć co najmniej 5–6 wpisów rebuy.
-8. Zanotuj kolejność wpisów rebuy, bo będzie potrzebna w teście `Tabela16`.
+      <div class="step-block">
+        <h3>2.3. Regulamin</h3>
+        <ol>
+          <li>W widoku administratora otwórz zakładkę <strong>Regulamin</strong>.</li>
+          <li>Zmień fragment tekstu, dodając krótkie zdanie testowe.</li>
+          <li>Zapisz zmiany.</li>
+          <li>Przełącz się do zwykłego widoku użytkownika.</li>
+          <li>Otwórz zakładkę <strong>Regulamin</strong>.</li>
+          <li>Sprawdź, czy użytkownik widzi właśnie zapisaną wersję tekstu.</li>
+        </ol>
+      </div>
 
-## 3.4. Panel Podział Puli — test obliczeń Tabela16
+      <div class="step-block">
+        <h3>2.4. Gracze i kody dostępu</h3>
+        <ol>
+          <li>W widoku administratora przejdź do zakładki <strong>Gracze</strong>.</li>
+          <li>Dodaj kilku graczy.</li>
+          <li>Przy każdym graczu wpisz nazwę i kod dostępu albo skorzystaj z automatycznego tworzenia kodu, jeśli taka opcja jest widoczna.</li>
+          <li>Przynajmniej jednej osobie nadaj dostęp do części użytkownika.</li>
+          <li>Zapisz dane.</li>
+          <li>Przełącz się do zwykłego widoku użytkownika i otwórz sekcję <strong>Strefa Gracza</strong>.</li>
+          <li>Wpisz kod dostępu jednego z utworzonych graczy i otwórz jego widok.</li>
+          <li>Sprawdź, czy pokazują się tylko te części, do których ten gracz ma dostęp.</li>
+        </ol>
+      </div>
 
-1. Przejdź do panelu **Podział Puli**.
-2. Sprawdź `Tabela13` i `Tabela14`.
-3. Upewnij się, że w `Tabela14` procent jest zgodny z wpisanym `RAKE`.
-4. Odszukaj `Tabela16`.
-5. Sprawdź, czy pojawiły się kolumny `REBUY1`, `REBUY2`, `REBUY3` itd.
-6. Dla każdego z pierwszych maksymalnie 30 rebuy sprawdź, czy wartość jest liczona według wzoru:
-   - `wartość rebuy z modala × (1 - procent z Tabela14)`.
-7. Przykład testu:
-   - jeśli w modalu wpisano `100`,
-   - a `RAKE` wynosi `10`,
-   - to w `Tabela16` powinno się pojawić `90`.
-8. Sprawdź kilka różnych rebuy, np. `100`, `200`, `300`.
-9. Zweryfikuj, czy `SUMA` w wierszu uwzględnia już te pomniejszone wartości rebuy.
-10. Jeśli masz więcej niż 30 kolumn rebuy, sprawdź, czy `Rebuy31+` pozostają ręcznie edytowalne.
+      <div class="step-block">
+        <h3>2.5. Rozmowy</h3>
+        <ol>
+          <li>W widoku administratora upewnij się, że wybrany gracz ma dostęp do rozmów.</li>
+          <li>Przełącz się do zwykłego widoku użytkownika i otwórz sekcję <strong>Czat</strong>.</li>
+          <li>Wpisz kod dostępu tego gracza.</li>
+          <li>Otwórz rozmowę.</li>
+          <li>Wpisz wiadomość testową i wyślij ją.</li>
+          <li>Sprawdź, czy wiadomość pojawia się na liście.</li>
+          <li>Jeżeli masz drugą kartę lub drugiego gracza, sprawdź również tam, czy ta wiadomość jest widoczna.</li>
+        </ol>
+      </div>
 
-## 3.5. Faza grupowa — Tabela19 / Tabela19A / Tabela19B
+      <div class="step-block">
+        <h3>2.6. Gry do potwierdzenia</h3>
+        <ol>
+          <li>W widoku administratora przygotuj grę, którą użytkownik może potwierdzić.</li>
+          <li>Przełącz się do zwykłego widoku użytkownika i otwórz sekcję <strong>Gry do Potwierdzenia</strong>.</li>
+          <li>Wpisz kod dostępu i otwórz widok gracza.</li>
+          <li>Sprawdź, czy na liście pojawia się przygotowana gra.</li>
+          <li>Kliknij <strong>Potwierdź</strong> i sprawdź, czy stan gry się zmienia.</li>
+          <li>Kliknij <strong>Anuluj</strong> i sprawdź, czy potwierdzenie znika.</li>
+          <li>Otwórz szczegóły gry i sprawdź, czy pojawia się okno z informacjami.</li>
+          <li>Otwórz notatki do gry i sprawdź, czy również pokazuje się poprawne okno z treścią.</li>
+        </ol>
+      </div>
 
-1. Przejdź do panelu **Faza Grupowa**.
-2. W `Tabela19` zaznacz `ELIMINATED` dla kilku graczy, np. `G1`, `G2`, `G3`.
-3. Sprawdź, czy ci gracze znikają z `Tabela19B` i pojawiają się w `Tabela19A`.
-4. Sprawdź, czy w `Tabela19A` dostają LP `1`, `2`, `3`.
-5. Kliknij strzałkę `▼` lub `▲` przy jednym z graczy.
-6. Sprawdź, czy zmienia się kolejność graczy w `Tabela19A`.
-7. Odśwież stronę.
-8. Sprawdź, czy kolejność nadal jest zachowana.
-9. W `Tabela19B` wpisz stacki dla graczy, którzy pozostali w grze.
-10. Sprawdź, czy kolumna `%` reaguje na wpisane stacki.
+      <div class="step-block">
+        <h3>2.7. Gry użytkowników</h3>
+        <ol>
+          <li>Przełącz się do zwykłego widoku użytkownika i otwórz sekcję <strong>Gry Użytkowników</strong>.</li>
+          <li>Wpisz kod dostępu gracza, który ma prawo korzystać z tej sekcji.</li>
+          <li>Otwórz widok gracza.</li>
+          <li>Dodaj nową grę.</li>
+          <li>Sprawdź, czy pojawia się nowy wiersz.</li>
+          <li>Uzupełnij podstawowe dane, takie jak rodzaj gry, data i nazwa.</li>
+          <li>Otwórz szczegóły tej gry.</li>
+          <li>Dodaj uczestników.</li>
+          <li>Uzupełnij pola związane z wpisowym, dodatkowymi wpłatami, wypłatą i punktami.</li>
+          <li>Kliknij przycisk pokazujący wysokość dodatkowych wpłat.</li>
+          <li>W nowym oknie dodaj kilka przykładowych dodatkowych wpłat.</li>
+          <li>Zamknij okno i sprawdź, czy suma na przycisku została zaktualizowana.</li>
+          <li>Sprawdź, czy podsumowanie pod grą przelicza się automatycznie.</li>
+        </ol>
+      </div>
 
-## 3.6. Półfinał — Tabela21 / Tabela22 / Tabela22A / Tabela FINAŁOWA
+      <div class="step-block">
+        <h3>2.8. Statystyki</h3>
+        <ol>
+          <li>Przełącz się do zwykłego widoku użytkownika i otwórz sekcję <strong>Statystyki</strong>.</li>
+          <li>Wpisz kod dostępu gracza, który ma prawo oglądać statystyki.</li>
+          <li>Otwórz widok.</li>
+          <li>Przełącz kilka lat na liście po lewej stronie.</li>
+          <li>Sprawdź, czy zmieniają się dane w tabeli i w zestawieniu wyników.</li>
+          <li>Jeżeli jest dostępny przycisk eksportu, uruchom go i sprawdź, czy działa poprawnie.</li>
+        </ol>
+      </div>
+    </section>
 
-1. Przejdź do panelu **Półfinał**.
-2. W `Tabela21` sprawdź, czy widzisz tylko graczy z `Tabela19B`.
-3. Kliknij **Dodaj nowy stół** co najmniej 2 razy.
-4. Nadaj stołom półfinałowym nazwy.
-5. Przypisz graczy z `Tabela21` do stołów półfinałowych przez listę `STÓŁ`.
-6. Sprawdź, czy gracze pojawiają się w odpowiednich kartach `Tabela22`.
-7. Sprawdź, czy `ŁĄCZNY STACK` jest widoczny obok nazwy stołu, ale nie występuje już jako osobna kolumna wewnątrz tabeli stołu.
-8. W `Tabela22` zaznacz `ELIMINATED` dla dwóch graczy, np. `G4` i `G5`.
-9. Sprawdź, czy ci gracze pojawiają się automatycznie w `Tabela22A`.
-10. Sprawdź, czy w `Tabela22A` mają LP `1` i `2`.
-11. Kliknij strzałki `▲/▼` w `Tabela22A`.
-12. Sprawdź, czy kolejność w `Tabela22A` się zmienia.
-13. Odśwież stronę.
-14. Sprawdź, czy kolejność i zaznaczenia `ELIMINATED` nadal są zachowane.
-15. Sprawdź `Tabela FINAŁOWA`.
-16. Zweryfikuj, czy pokazuje tylko graczy przypisanych do stołów półfinałowych i niewyeliminowanych w półfinale.
-17. Sprawdź, czy `STACK` w `Tabela FINAŁOWA` jest tylko do odczytu.
-18. Sprawdź, czy `%` liczy się od `ŁĄCZNY STACK` z `Tabela18`.
+    <section>
+      <h2>3. Checklista części Druga — pełny scenariusz turniejowy</h2>
 
-## 3.7. Finał — Tabela23
+      <div class="step-block">
+        <h3>3.1. Przygotowanie danych w części Druga</h3>
+        <ol>
+          <li>Otwórz część <strong>Druga</strong> w widoku administratora pod adresem <a href="https://cutelittlegoat.github.io/Karty/Second/index.html?admin=1">https://cutelittlegoat.github.io/Karty/Second/index.html?admin=1</a>.</li>
+          <li>Przejdź do miejsca, w którym dodaje się graczy.</li>
+          <li>Dodaj 10 graczy z przygotowanej wcześniej listy.</li>
+          <li>Przy każdym graczu wpisz nazwę i kod dostępu.</li>
+          <li>Uzupełnij dane turnieju przygotowanymi wcześniej wartościami: organizator, wpłata początkowa, dodatkowa wpłata, opłata organizacyjna, początkowa liczba żetonów i liczba żetonów za dodatkową wpłatę.</li>
+          <li>Zapisz zmiany.</li>
+          <li>Odśwież stronę i sprawdź, czy wszystkie dane nadal są widoczne.</li>
+        </ol>
+      </div>
 
-1. Przejdź do panelu **Finał**.
-2. Sprawdź, czy `Tabela23` pokazuje tych samych graczy i te same wartości co `Tabela FINAŁOWA` z panelu **Półfinał**.
-3. Sprawdź, czy wiersze są posortowane malejąco po `STACK`.
-4. Sprawdź, czy `STACK` nie da się edytować.
-5. Sprawdź, czy na końcu tabeli jest kolumna `ELIMINATED` z checkboxami.
-6. Zaznacz `ELIMINATED` dla jednego z finalistów.
-7. Odśwież stronę.
-8. Sprawdź, czy checkbox nadal jest zaznaczony.
-9. Odznacz checkbox.
-10. Ponownie odśwież stronę.
-11. Sprawdź, czy stan znowu został poprawnie zapamiętany.
+      <div class="step-block">
+        <h3>3.2. Losowanie stołów</h3>
+        <ol>
+          <li>Pozostając w widoku administratora, otwórz część odpowiedzialną za przydzielanie graczy do stołów.</li>
+          <li>Dodaj co najmniej 2 stoły.</li>
+          <li>Nadaj im nazwy.</li>
+          <li>Przypisz wszystkich graczy do stołów.</li>
+          <li>Sprawdź, czy pod każdym stołem pokazują się przypisane osoby.</li>
+          <li>Sprawdź, czy łączna wartość przy każdym stole przelicza się automatycznie.</li>
+        </ol>
+      </div>
 
-## 3.8. Wypłaty — Tabela24
+      <div class="step-block">
+        <h3>3.3. Dodatkowe wpłaty</h3>
+        <ol>
+          <li>Otwórz część dotyczącą wpłat.</li>
+          <li>Przy graczu <code>G1</code> kliknij przycisk odpowiedzialny za dodatkowe wpłaty.</li>
+          <li>W nowym oknie wpisz pierwszą kwotę, na przykład <code>100</code>.</li>
+          <li>Dodaj kolejną pozycję i wpisz <code>200</code>.</li>
+          <li>Zamknij okno.</li>
+          <li>Sprawdź, czy na przycisku przy tym graczu pojawiła się suma <code>300</code>.</li>
+          <li>Powtórz podobny test dla kilku kolejnych graczy, aby łącznie było przynajmniej 5 lub 6 dodatkowych wpłat.</li>
+          <li>Zapisz sobie kolejność wprowadzonych kwot, bo będzie potrzebna później.</li>
+        </ol>
+      </div>
 
-1. Przejdź do panelu **Wypłaty**.
-2. Sprawdź, czy liczba wierszy w `Tabela24` jest równa liczbie wszystkich graczy dodanych na początku.
-3. Sprawdź, czy wiersze końcowych miejsc są obsadzane zgodnie z `Tabela19A`:
-   - gracz z LP=1 w `Tabela19A` ma ostatnie miejsce w `Tabela24`,
-   - gracz z LP=2 w `Tabela19A` ma przedostatnie miejsce.
-4. Sprawdź, czy po wykorzystaniu `Tabela19A` kolejne wolne miejsca od końca zajmują gracze z `Tabela22A`.
-5. Sprawdź, czy najwyższe pozostałe miejsca zajmują finaliści.
-6. Jeśli w `Tabela23` zaznaczysz `ELIMINATED`, wróć do `Tabela24` i sprawdź, czy klasyfikacja zmieniła się od razu.
-7. Zaznacz checkbox **Pokaż kolumnę POCZĄTKOWA WYGRANA**.
-8. Sprawdź, czy kolumna się pojawia.
-9. Dla miejsca 1 porównaj wartość z `Tabela16.KWOTA` w wierszu 1.
-10. Dla miejsca 2 porównaj wartość z `Tabela16.KWOTA` w wierszu 2.
-11. Dla dalszych miejsc sprawdź analogicznie przypisanie 1:1.
-12. Jeżeli liczba miejsc jest większa niż liczba wierszy `Tabela16`, sprawdź, czy dalsze miejsca mają `0`.
-13. Zaznacz checkbox **Pokaż kolumnę KOŃCOWA WYGRANA**.
-14. Sprawdź, czy kolumna się pojawia.
-15. Dla miejsca 1 porównaj wartość z `Tabela16.SUMA` w wierszu 1.
-16. Dla miejsca 2 porównaj wartość z `Tabela16.SUMA` w wierszu 2.
-17. Sprawdź kilka kolejnych miejsc.
-18. Zweryfikuj, czy pól wygranych nie da się edytować ręcznie.
-19. Odśwież stronę.
-20. Sprawdź, czy stan widoczności obu kolumn nadal jest zachowany.
+      <div class="step-block">
+        <h3>3.4. Podział puli i obliczenia po potrąceniu opłaty</h3>
+        <ol>
+          <li>Przejdź do części dotyczącej podziału puli.</li>
+          <li>Sprawdź zestawienie kwot oraz procentowego potrącenia.</li>
+          <li>Upewnij się, że procent potrącenia zgadza się z wpisaną wcześniej opłatą organizacyjną.</li>
+          <li>Odszukaj tabelę z wyliczeniami dla dodatkowych wpłat.</li>
+          <li>Sprawdź, czy widać osobne kolumny dla kolejnych dodatkowych wpłat.</li>
+          <li>Dla pierwszych wpisów sprawdź, czy każda kwota została pomniejszona zgodnie z opłatą organizacyjną.</li>
+          <li>Przykład: jeżeli wpisano <code>100</code>, a opłata organizacyjna wynosi <code>10</code>, wynik powinien wynosić <code>90</code>.</li>
+          <li>Powtórz sprawdzenie dla kilku różnych kwot, na przykład <code>100</code>, <code>200</code> i <code>300</code>.</li>
+          <li>Sprawdź, czy końcowa suma w wierszu uwzględnia już pomniejszone wartości.</li>
+          <li>Jeżeli jest więcej niż 30 kolumn z dodatkowymi wpłatami, sprawdź, czy dalsze pola nadal można uzupełniać ręcznie.</li>
+        </ol>
+      </div>
 
-## 3.9. Test natychmiastowego wpływu checkboxów ELIMINATED
+      <div class="step-block">
+        <h3>3.5. Część grupowa</h3>
+        <ol>
+          <li>Przejdź do części grupowej.</li>
+          <li>Zaznacz kilku graczy jako wyeliminowanych, na przykład <code>G1</code>, <code>G2</code>, <code>G3</code>.</li>
+          <li>Sprawdź, czy znikają z listy aktywnych graczy i pojawiają się na liście graczy wyeliminowanych.</li>
+          <li>Sprawdź, czy otrzymują kolejne miejsca końcowe, na przykład 1, 2, 3.</li>
+          <li>Zmień kolejność jednego z nich przyciskami przesuwania w górę lub w dół.</li>
+          <li>Sprawdź, czy kolejność rzeczywiście się zmienia.</li>
+          <li>Odśwież stronę.</li>
+          <li>Sprawdź, czy kolejność została zapamiętana.</li>
+          <li>Przy graczach, którzy pozostali w grze, wpisz liczbę posiadanych żetonów.</li>
+          <li>Sprawdź, czy procenty zmieniają się po wpisaniu tych wartości.</li>
+        </ol>
+      </div>
 
-1. Otwórz równocześnie panele **Półfinał**, **Finał** i **Wypłaty** (np. w osobnych kartach lub przełączając sekcje).
-2. W `Tabela22` zaznacz `ELIMINATED` dla gracza półfinałowego.
-3. Sprawdź, czy od razu:
-   - pojawia się on w `Tabela22A`,
-   - znika z `Tabela FINAŁOWA`,
-   - zmienia się obsada miejsc w `Tabela24`.
-4. W `Tabela23` zaznacz `ELIMINATED` dla finalisty.
-5. Sprawdź, czy od razu zmienia się kolejność w `Tabela24`.
+      <div class="step-block">
+        <h3>3.6. Półfinał</h3>
+        <ol>
+          <li>Przejdź do części półfinałowej.</li>
+          <li>Sprawdź, czy widzisz tylko tych graczy, którzy przeszli dalej z poprzedniego etapu.</li>
+          <li>Dodaj co najmniej 2 półfinałowe stoły.</li>
+          <li>Nadaj im nazwy.</li>
+          <li>Przypisz graczy do tych stołów.</li>
+          <li>Sprawdź, czy gracze pojawiają się przy właściwych stołach.</li>
+          <li>Sprawdź, czy łączna liczba żetonów dla stołu jest widoczna obok jego nazwy.</li>
+          <li>Zaznacz dwóch graczy jako wyeliminowanych, na przykład <code>G4</code> i <code>G5</code>.</li>
+          <li>Sprawdź, czy automatycznie pojawiają się na liście graczy wyeliminowanych w półfinale.</li>
+          <li>Sprawdź, czy otrzymują kolejne miejsca końcowe.</li>
+          <li>Zmień ich kolejność przyciskami góra/dół.</li>
+          <li>Odśwież stronę i upewnij się, że kolejność oraz zaznaczenia pozostały zapisane.</li>
+          <li>Sprawdź listę graczy przewidzianych do finału.</li>
+          <li>Upewnij się, że są tam tylko osoby nadal grające.</li>
+          <li>Sprawdź, czy liczby żetonów w tej części są tylko do odczytu.</li>
+          <li>Sprawdź, czy procenty liczą się od łącznej liczby żetonów całego etapu.</li>
+        </ol>
+      </div>
 
-## 3.10. Test pamiętania stanu po restarcie aplikacji
+      <div class="step-block">
+        <h3>3.7. Finał</h3>
+        <ol>
+          <li>Przejdź do części finałowej.</li>
+          <li>Sprawdź, czy pokazują się ci sami gracze i te same liczby żetonów, które były widoczne na końcu półfinału.</li>
+          <li>Sprawdź, czy gracze są ustawieni od największej liczby żetonów do najmniejszej.</li>
+          <li>Upewnij się, że liczby żetonów nie da się tutaj zmieniać ręcznie.</li>
+          <li>Sprawdź, czy przy każdym finaleście jest pole do zaznaczenia, że odpadł.</li>
+          <li>Zaznacz jednego finalistę jako wyeliminowanego.</li>
+          <li>Odśwież stronę i sprawdź, czy zaznaczenie nadal jest widoczne.</li>
+          <li>Usuń zaznaczenie.</li>
+          <li>Ponownie odśwież stronę i sprawdź, czy nowy stan też został poprawnie zapamiętany.</li>
+        </ol>
+      </div>
 
-1. W `Tabela22` zaznacz kilku graczy jako `ELIMINATED`.
-2. Ustaw kolejność w `Tabela22A`.
-3. W `Tabela23` zaznacz `ELIMINATED` dla wybranego finalisty.
-4. W `Tabela24` włącz obie kolumny wygranych.
-5. Zrób pełne odświeżenie strony.
-6. Zamknij kartę i otwórz aplikację ponownie.
-7. Sprawdź, czy zostały zachowane:
-   - checkboxy `ELIMINATED` w półfinale,
-   - kolejność `Tabela22A`,
-   - checkboxy `ELIMINATED` w finale,
-   - widoczność kolumn wypłat.
+      <div class="step-block">
+        <h3>3.8. Wypłaty</h3>
+        <ol>
+          <li>Przejdź do części dotyczącej wypłat.</li>
+          <li>Sprawdź, czy liczba wierszy odpowiada liczbie wszystkich graczy dodanych na początku.</li>
+          <li>Sprawdź, czy końcowe miejsca są przydzielane najpierw graczom wyeliminowanym wcześniej, a potem kolejnym osobom według przebiegu turnieju.</li>
+          <li>Sprawdź, czy najwyższe miejsca zajmują gracze, którzy nadal pozostali w finale.</li>
+          <li>Wróć do finału, zaznacz jednego finalistę jako wyeliminowanego, a potem wróć do wypłat.</li>
+          <li>Sprawdź, czy klasyfikacja zmieniła się od razu.</li>
+          <li>Włącz pokazywanie kolumny z początkową wygraną.</li>
+          <li>Sprawdź, czy kolumna stała się widoczna.</li>
+          <li>Porównaj dla miejsca 1, 2 i kilku kolejnych miejsc, czy wartości odpowiadają wierszom z tabeli podziału puli.</li>
+          <li>Jeżeli miejsc jest więcej niż pozycji w tabeli podziału puli, sprawdź, czy dalsze wartości mają <code>0</code>.</li>
+          <li>Włącz pokazywanie kolumny z końcową wygraną.</li>
+          <li>Sprawdź, czy ta kolumna również stała się widoczna.</li>
+          <li>Porównaj kilka miejsc z końcowymi sumami w tabeli podziału puli.</li>
+          <li>Upewnij się, że wartości wygranych nie da się zmieniać ręcznie.</li>
+          <li>Odśwież stronę i sprawdź, czy widoczność obu kolumn została zapamiętana.</li>
+        </ol>
+      </div>
 
----
+      <div class="step-block">
+        <h3>3.9. Natychmiastowy wpływ zmian</h3>
+        <ol>
+          <li>Otwórz jednocześnie część półfinałową, finałową i wypłat, na przykład w osobnych kartach albo przełączając się między nimi.</li>
+          <li>W półfinale zaznacz jednego gracza jako wyeliminowanego.</li>
+          <li>Sprawdź, czy od razu pojawia się on na liście wyeliminowanych, znika z listy finalistów i wpływa na kolejność miejsc w wypłatach.</li>
+          <li>W finale zaznacz jednego finalistę jako wyeliminowanego.</li>
+          <li>Sprawdź, czy kolejność miejsc w wypłatach zmienia się od razu.</li>
+        </ol>
+      </div>
 
-## 4. Wynik końcowy testów
+      <div class="step-block">
+        <h3>3.10. Zapamiętywanie ustawień po ponownym uruchomieniu</h3>
+        <ol>
+          <li>W półfinale zaznacz kilku graczy jako wyeliminowanych.</li>
+          <li>Ustaw ich kolejność na liście graczy wyeliminowanych.</li>
+          <li>W finale zaznacz wybranego finalistę jako wyeliminowanego.</li>
+          <li>W wypłatach włącz obie dodatkowe kolumny z wygranymi.</li>
+          <li>Zrób pełne odświeżenie strony.</li>
+          <li>Zamknij kartę i otwórz stronę ponownie.</li>
+          <li>Sprawdź, czy wszystkie zaznaczenia, kolejność oraz widoczność kolumn zostały zachowane.</li>
+        </ol>
+      </div>
+    </section>
 
-Po przejściu całej checklisty użytkownik powinien potwierdzić, że:
-
-1. Moduł `Main` poprawnie obsługuje aktualności, regulamin, PIN-y, czat, gry i statystyki.
-2. Moduł `Second` poprawnie liczy rebuy w `Tabela16` po potrąceniu rake.
-3. `Tabela22A` automatycznie zbiera wyeliminowanych z półfinału i pozwala ustawiać kolejność.
-4. `Tabela23` jest poprawnie zsynchronizowana z finałem, sortuje po `STACK` i pamięta checkboxy `ELIMINATED`.
-5. `Tabela24` zawsze pokazuje wszystkich graczy i poprawnie przypisuje miejsca oraz wypłaty.
-6. Wszystkie kluczowe checkboxy i ustawienia są trwałe między odświeżeniami i restartami aplikacji.
+    <section>
+      <h2>4. Wynik końcowy testów</h2>
+      <ul class="summary-list">
+        <li>Część <strong>Pierwsza</strong> poprawnie obsługuje aktualności, regulamin, kody dostępu, rozmowy, gry i statystyki.</li>
+        <li>Część <strong>Druga</strong> poprawnie przelicza dodatkowe wpłaty po potrąceniu opłaty organizacyjnej.</li>
+        <li>Lista graczy wyeliminowanych w półfinale automatycznie zbiera właściwe osoby i pozwala ustawić ich kolejność.</li>
+        <li>Finał pokazuje właściwy zestaw graczy, zachowuje kolejność i pamięta zaznaczenia po odświeżeniu.</li>
+        <li>Wypłaty zawsze pokazują wszystkich graczy i poprawnie przypisują miejsca oraz wygrane.</li>
+        <li>Najważniejsze ustawienia są zapamiętywane po odświeżeniu i ponownym otwarciu strony.</li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>
