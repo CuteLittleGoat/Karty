@@ -104,7 +104,7 @@
 - `Tabela22` renderuje po jednej karcie na każdy wpis `semi.customTables[]`; karta pokazuje nazwę stołu, `ŁĄCZNY STACK` liczony jako suma stacków przypisanych graczy oraz wiersze `GRACZ / STACK / ELIMINATED`.
 - Checkbox `ELIMINATED` w `Tabela22` zapisuje się do `semi.assignments[playerId].eliminated`, a kolejność graczy wyeliminowanych w półfinale utrwala się w `semi.eliminatedOrder`; stan pozostaje po odświeżeniu i po ponownym wejściu do aplikacji.
 - `Tabela22A` pokazuje graczy wyeliminowanych w półfinale (`semi.assignments[playerId].eliminated === true`) w kolejności z `semi.eliminatedOrder` i pozwala zmieniać ją przyciskami `▲/▼` (`data-role="semi-eliminated-move"`).
-- `Tabela FINAŁOWA` buduje się dynamicznie z graczy przypisanych do stołów półfinałowych bez zaznaczonego `ELIMINATED` w finale; `STACK` jest readonly, pochodzi z `group.survivorStacks[playerId]`, `STÓŁ` jest tylko do odczytu, a `%` liczy się jako `finalPlayers[].stack / Tabela18.ŁĄCZNY STACK`.
+- `Tabela FINAŁOWA` buduje się dynamicznie z `semiRows` przypisanych do stołów półfinałowych i filtruje wyłącznie rekordy bez zaznaczonego `semi.assignments[playerId].eliminated`; `STACK` jest readonly, pochodzi z `group.survivorStacks[playerId]`, `STÓŁ` jest tylko do odczytu, a `%` liczy się jako `survivorStack / Tabela18.ŁĄCZNY STACK`.
 
 ### Wypłaty
 - `Tabela24` korzysta z pełnej klasyfikacji wszystkich graczy: miejsca od końca zajmują najpierw gracze z `group.eliminatedOrder`, potem gracze z `semi.eliminatedOrder`, a pozostałe miejsca uzupełniają finaliści posortowani po `STACK` malejąco; finaliści z zaznaczonym `final.eliminated[playerId]` trafiają za aktywnych finalistów.
@@ -197,9 +197,9 @@
 - `ensureTable12RebuyState(playerId)` utrzymuje stabilną referencję obiektu wpisu i zwraca ten sam obiekt po normalizacji; to spójny model z mutacyjnym przepływem `Dodaj Rebuy` / `Usuń Rebuy`.
 
 ### Podział puli (Tabela15/Tabela16)
-- `Tabela15` ma kolumny: `POT` i `PODZIAŁ`.
-- `Tabela15.POT` pobiera wartość z `Tabela14.POT`.
-- `Tabela15.PODZIAŁ` jest liczone jako: `Tabela15.POT` minus suma `PODZIAŁ PULI` od wiersza 4 do końca.
+- `Tabela15` ma kolumny: `BUY-IN` i `PODZIAŁ`.
+- `Tabela15.BUY-IN` pobiera wartość 1:1 z `Tabela14.BUY-IN`.
+- `Tabela15.PODZIAŁ` jest liczone jako: `Tabela14.POT` minus suma `PODZIAŁ PULI` od wiersza 4 do końca.
 - W `Tabela16` kolumna `PODZIAŁ PULI` ma tryb mieszany:
   - wiersze 1–3: wejście procentowe (`50` => render `50%`, obliczenia `0.5`),
   - wiersze 4+: wejście liczbowe bez `%` (`10` => obliczenia `10`).
@@ -210,6 +210,7 @@
 - Jeśli w modalach `Rebuy gracza` nie ma żadnej uzupełnionej wartości, `Tabela16` nie renderuje żadnej kolumny `REBUY`.
 - Komórki `REBUY1..REBUY30` są automatycznie przypisane do wierszy przez mapę biznesową i są readonly (jak `KWOTA`) z wartościami z modali `Rebuy gracza` pomniejszonymi o procent z `Tabela14` (`wartość * (1 - rakePercent)`).
 - Komórki od `REBUY31` wzwyż są renderowane dynamicznie, pozostają puste domyślnie (bez auto-przypisania do wiersza) i są edytowalne przez użytkownika (wartości ręczne są trzymane w `pool.rebuyValues`).
+- `Tabela16` używa klasy `.tournament-pool-table16`, która wymusza stałą szerokość kolumn i pól wejściowych pod 4 znaki.
 - Kolumny `MOD` są dynamiczne względem liczby kolumn `REBUY`: dla `0..12` widoczne jest `MOD1`, dla `13..20` widoczne są `MOD1` i `MOD2`, a dla `>20` widoczne są `MOD1`, `MOD2`, `MOD3`.
 - `SUMA` = `KWOTA + suma REBUY w wierszu + MOD1 + MOD2 + MOD3` (z uwzględnieniem widocznych kolumn MOD).
 

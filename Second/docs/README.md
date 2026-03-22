@@ -100,7 +100,7 @@
   - kolumna `LP` numeruje listę automatycznie,
   - kolumna `POZYCJA` pozwala zmieniać kolejność strzałkami `▲/▼`,
   - kolejność zapisuje się między sesjami.
-- **Tabela FINAŁOWA** pokazuje tylko graczy bez zaznaczonego `ELIMINATED` w półfinale.
+- **Tabela FINAŁOWA** pokazuje tylko graczy przypisanych do `Tabela22`, którzy nie mają zaznaczonego `ELIMINATED` w półfinale; lista nie zależy od checkboxów z panelu `Finał`.
   - jeśli żaden gracz nie spełnia warunku, zobaczysz sam nagłówek tabeli,
   - kolumna `STACK` jest tylko do odczytu,
   - kolumna `STÓŁ` uzupełnia się automatycznie,
@@ -183,7 +183,7 @@
 
 ### Podział puli
 1. `Tabela13` i `Tabela14` pobierają dane automatycznie z panelu `Wpłaty`.
-2. `Tabela15` pokazuje `POT` (z `Tabela14`) oraz `PODZIAŁ = POT - suma PODZIAŁ PULI od wiersza 4`.
+2. `Tabela15` pokazuje `BUY-IN` (skopiowany z `Tabela14.BUY-IN`) oraz `PODZIAŁ = Tabela14.POT - suma PODZIAŁ PULI od wiersza 4`.
 3. `Tabela16`:
    - kolumna `PODZIAŁ PULI`: wiersze 1–3 działają procentowo (`50` => `50%`, do obliczeń `0.5`), od wiersza 4 wpisy są liczbami bez `%` i bez dzielenia przez 100,
    - kolumna `KWOTA`: wiersze 1–3 = procent × `Tabela15.PODZIAŁ`, od wiersza 4 = przepisana wartość z `PODZIAŁ PULI`,
@@ -192,7 +192,8 @@
    - jeśli kolumn `REBUY` jest więcej niż 30, kolumny od `Rebuy31` wzwyż są renderowane bez auto-uzupełniania wierszy i pozostają edytowalne ręcznie,
    - komórki `REBUY` pokazują wartości wpisane w modalach `Rebuy gracza` i nie są nadpisywane przez wartości z `PODZIAŁ PULI`,
    - kolumny `MOD` są dynamiczne: dla `0..12` rebuy jest `MOD1` przed `SUMA`, dla `13..20` dochodzi `MOD2`, a powyżej 20 dochodzi `MOD3`,
-   - kolumna `SUMA` liczy się automatycznie.
+   - kolumna `SUMA` liczy się automatycznie,
+   - wszystkie pola edycyjne w `Tabela16` mają szerokość ustawioną tak, żeby mieściły 4 znaki.
 
 ### Faza grupowa
 1. `Tabela17` zawiera tylko 1 wiersz.
