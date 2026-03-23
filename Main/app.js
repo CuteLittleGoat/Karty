@@ -5506,7 +5506,7 @@ const initAdminCalculator = () => {
 
       const buyInCell = document.createElement("td");
       const buyInInput = document.createElement("input");
-      buyInInput.type = "text";
+      applyIntegerInputHints(buyInInput);
       buyInInput.className = "admin-input";
       buyInInput.value = row.buyIn;
       buyInInput.dataset.focusTarget = "admin-calculator";
@@ -5535,7 +5535,7 @@ const initAdminCalculator = () => {
 
       const payoutCell = document.createElement("td");
       const payoutInput = document.createElement("input");
-      payoutInput.type = "text";
+      applyIntegerInputHints(payoutInput);
       payoutInput.className = "admin-input";
       payoutInput.value = row.payout;
       payoutInput.dataset.focusTarget = "admin-calculator";

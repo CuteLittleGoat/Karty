@@ -472,7 +472,11 @@ Przycisk:
 - Numeracja `RebuyX` jest **globalna** dla aktywnego trybu kalkulatora (Tournament1/Tournament2/Cash): każde nowe pole dostaje kolejny numer względem wszystkich graczy w tym trybie.
 - Po usunięciu ostatniego rebuy u wybranego gracza aplikacja wykonuje globalną kompaktację numerów (`Rebuy` o numerach większych od usuniętego przesuwają się o `-1`), więc numeracja pozostaje bez luk.
 
-### 15.4. Cash — sposób liczenia Rake w Tabela8
+### 15.4. Cash — edycja Tabela9 na telefonie
+- W **Tabela9** pola **Buy-In** i **Wypłata** otwierają na telefonie numeryczną klawiaturę ekranową, więc możesz od razu wpisywać cyfry bez przełączania układu.
+- Kolumna **Rebuy** pozostaje przyciskiem otwierającym modal `Rebuy gracza`; po jego otwarciu każde pole `RebuyX` także korzysta z klawiatury numerycznej.
+
+### 15.5. Cash — sposób liczenia Rake w Tabela8
 - W trybie **Cash** kolumna **Rake** w **Tabela8** jest liczona ze wzoru:
   - `Rake = (Suma Buy-In z Tabela9 + Suma Rebuy z Tabela9) × % z Tabela8`.
 - W trybie **Cash** kolumna **Suma** w **Tabela7** pokazuje zawsze:
