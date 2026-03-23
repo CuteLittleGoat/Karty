@@ -19,9 +19,11 @@ Instrukcja jest podzielona na dwie części:
    - **Panel użytkownika** (zakładki: Aktualności, Regulamin, Strefa Gracza).
 5. Kliknięcie **Instrukcja** otwiera okno modalne z instrukcją; zamkniesz je przyciskiem `×`.
 6. W trybie użytkownika główna zielona ramka panelu jest rozciągnięta niemal na pełną szerokość ekranu: zaczyna się 1 px od lewej i kończy 1 px przed prawą krawędzią.
-7. W uruchomieniu PWA (aplikacja zainstalowana na urządzeniu) moduł Main nie wymusza orientacji — aplikacja działa zgodnie z ustawieniem orientacji urządzenia.
-8. Nazwa karty w przeglądarce dla modułu Main to **"Poker - rozgrywki"**.
-9. Po instalacji PWA aplikacja na urządzeniu również wyświetla nazwę **"Poker - rozgrywki"**.
+7. Jeśli otworzysz moduł w trybie użytkownika (bez `?admin=1`), przeglądarka może zaproponować instalację PWA lub dodanie aplikacji do ekranu głównego.
+8. Jeśli otworzysz moduł z parametrem `?admin=1`, wejście administracyjne działa jako zwykła strona/skróty URL — bez publikowania manifestu PWA dla tego adresu.
+9. W uruchomieniu PWA (aplikacja zainstalowana na urządzeniu) moduł Main nie wymusza orientacji — aplikacja działa zgodnie z ustawieniem orientacji urządzenia.
+10. Nazwa karty w przeglądarce dla modułu Main to **"Poker - rozgrywki"**.
+11. Po instalacji PWA aplikacja na urządzeniu również wyświetla nazwę **"Poker - rozgrywki"**.
 
 ---
 
