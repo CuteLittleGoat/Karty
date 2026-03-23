@@ -88,7 +88,12 @@
 - `calculators/{type}` zawiera stan kalkulatora oraz wersjonowane definicje, placeholdery i sesje robocze.
 - `Nekrolog_*` to osobny zestaw kolekcji do konfiguracji, snapshotów i zleceń odświeżania.
 
-## 6. Kalkulator Cash — logika Tabela7/Tabela8
+## 6. Kalkulator Cash — logika Tabela7/Tabela9
+- Funkcja `renderCashTable9` buduje wiersze `state.cash.table9Rows` z selektorem gracza, polami `Buy-In` i `Wypłata` oraz przyciskiem otwierającym modal `Rebuy`.
+- Pola `Buy-In` i `Wypłata` w `Tabela9` używają helpera `applyIntegerInputHints`, który ustawia `inputMode="numeric"`, `pattern="[0-9]*"` i `autocomplete="off"`; dzięki temu na urządzeniach mobilnych otwiera się klawiatura numeryczna bez zmiany mechaniki fokusu.
+- Modal `Rebuy gracza` korzysta z tego samego helpera dla każdego pola `RebuyX`, więc mobilne wpisy rebuy są spójne z pozostałymi polami liczbowymi aplikacji.
+
+## 7. Kalkulator Cash — logika Tabela7/Tabela8
 - Funkcja `getCashMetrics` wylicza wartości dla widoku Cash na podstawie danych z `state.cash.table9Rows` i `state.cash.table8Row.rake`.
 - W `Tabela7` kolumna **Suma** jest liczona bezpośrednio z danych wejściowych: `suma Buy-In z Tabela9 + suma Rebuy z Tabela9`.
 - Wartość **Rake** w `Tabela8` jest obliczana jako: `(suma Buy-In + suma Rebuy) × (procent / 100)`.
