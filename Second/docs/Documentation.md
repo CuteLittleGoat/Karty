@@ -199,7 +199,7 @@
 ### Podział puli (Tabela15/Tabela16)
 - `Tabela15` ma kolumny: `BUY-IN` i `PODZIAŁ`.
 - `Tabela15.BUY-IN` pobiera wartość 1:1 z `Tabela14.BUY-IN`.
-- `Tabela15.PODZIAŁ` jest liczone jako: `Tabela14.POT` minus suma `PODZIAŁ PULI` od wiersza 4 do końca.
+- `Tabela15.PODZIAŁ` jest liczone jako: `Tabela14.BUY-IN` minus suma `KWOTA` od wiersza 4 do końca (co dla wierszy 4+ jest równoważne sumie wpisów z `PODZIAŁ PULI`).
 - W `Tabela16` kolumna `PODZIAŁ PULI` ma tryb mieszany:
   - wiersze 1–3: wejście procentowe (`50` => render `50%`, obliczenia `0.5`),
   - wiersze 4+: wejście liczbowe bez `%` (`10` => obliczenia `10`).

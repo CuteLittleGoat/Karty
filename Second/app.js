@@ -1647,8 +1647,7 @@ const setupAdminTournament = (rootCard) => {
       const splitValues = splitRows.map((row, idx) => idx < 3 ? percentInputToDecimal(row.split) : toNumber(row.split));
       const sumFrom4th = splitValues.slice(3).reduce((sum, value) => sum + value, 0);
       const table15BuyIn = table11.buyIn;
-      const table15Pot = table11.pot;
-      const table15Split = table15Pot - sumFrom4th;
+      const table15Split = table15BuyIn - sumFrom4th;
 
       const rebuyLimit = 30;
       const distributed = adjustedRebuyValues.slice(0, rebuyLimit);
@@ -2327,8 +2326,8 @@ const setupUserView = (root) => {
           }
         });
       });
-      const potValue = toNumber(userTournamentState.payments?.table11?.pot);
-      const table15Split = potValue - sumFrom4th;
+      const buyInValue = toNumber(userTournamentState.payments?.table11?.buyIn);
+      const table15Split = buyInValue - sumFrom4th;
       const payoutDefaults = splitRows.map((row, idx) => {
         const amount = idx < 3 ? (splitValues[idx] || 0) * table15Split : splitValues[idx] || 0;
         const rebuySumRow = rebuyMatrix[idx].reduce((sum, value) => sum + toNumber(value), 0);
