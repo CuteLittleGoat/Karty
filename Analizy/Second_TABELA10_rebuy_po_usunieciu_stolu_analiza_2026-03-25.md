@@ -135,3 +135,35 @@ Dodatkowo warto:
 Problem nie jest błędem rachunkowym, tylko efektem obecnej reguły danych: rebuy są przypisane do gracza globalnie, a nie do aktywnego stołu. Dlatego po usunięciu stołu wartości pozostają.
 
 Wprowadzenie kasowania rebuy po usunięciu stołu jest możliwe. Najlepsza droga to czyszczenie `payments.table12Rebuys` dla graczy przypisanych do usuwanego stołu (Wariant A), opcjonalnie z potwierdzeniem użytkownika przed operacją.
+
+---
+
+
+## 8) Uzupełnienie (2026-03-25): co stanie się z numeracją `RebuyX` w wariantach z pkt 3
+
+### Prompt użytkownika (uzupełnienie)
+> Rozbuduj analizę Analizy/Second_TABELA10_rebuy_po_usunieciu_stolu_analiza_2026-03-25.md o wyjaśnienie co się stanie z numeracją "RebuyX" w wariantach opisanych w pkt3
+
+Zakładam obecną strukturę danych: `table12Rebuys[playerId]` to obiekt/mapa pól typu `Rebuy1`, `Rebuy2`, `Rebuy3` itd.
+
+### Wariant A (kasowanie `table12Rebuys[playerId]` po usunięciu stołu)
+- Numeracja `RebuyX` dla gracza z usuwanego stołu **znika w całości**, bo usuwany jest cały węzeł `table12Rebuys[playerId]`.
+- Gdy ten sam gracz później dostanie nowy stół i znów zacznie wpisywać rebuy, numeracja startuje od początku (praktycznie od `Rebuy1`, a kolejne indeksy są tworzone wg aktualnej logiki dodawania pozycji).
+- Nie ma ryzyka „dziur” po starych numerach, bo stare wpisy już nie istnieją.
+
+### Wariant B (brak kasowania danych, tylko filtrowanie w agregacji)
+- Numeracja `RebuyX` w danych **nie zmienia się** i nie jest resetowana.
+- Po usunięciu stołu wpisy `RebuyX` stają się tylko „niewidoczne” dla TABELA10/TABELA11 (bo gracz bez stołu nie jest uwzględniany w agregacji).
+- Po ponownym przypisaniu gracza do stołu stare `RebuyX` wracają; nowy wpis dostanie kolejny numer po najwyższym istniejącym indeksie (np. po `Rebuy3` pojawi się `Rebuy4`).
+- Efekt uboczny: użytkownik może odebrać to jako „samoczynny powrót” starych rebuy.
+
+### Wariant C (hybryda: filtrowanie + ręczne czyszczenie)
+- Domyślnie zachowuje się jak Wariant B: numeracja pozostaje i może zostać wznowiona od kolejnego indeksu.
+- Dopiero użycie akcji „Wyczyść rebuy graczy bez stołu” usuwa historyczne wpisy i tym samym resetuje numerację jak w Wariancie A.
+- W praktyce numeracja zależy od momentu czyszczenia:
+  - **przed czyszczeniem**: kontynuacja numerów,
+  - **po czyszczeniu**: start od początku (`Rebuy1`).
+
+### Wniosek praktyczny
+Jeżeli oczekiwane jest, aby po usunięciu stołu nie tylko znikały sumy, ale też nie wracały wcześniejsze pozycje i numeracja zaczynała „na czysto”, to tylko Wariant A (lub Wariant C z wykonanym czyszczeniem) daje taki efekt jednoznacznie i przewidywalnie.
+
