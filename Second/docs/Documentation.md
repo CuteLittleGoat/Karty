@@ -44,6 +44,7 @@
 
 ### Losowanie graczy — aktualny render
 - Nagłówek metadanych turnieju: grid `.t-section-grid`.
+- Nad siatką metadanych renderowany jest destrukcyjny przycisk `Wyzeruj Rebuy` (`data-role="reset-all-rebuy"`), osadzony w `.admin-table-actions`.
 - Pole `RAKE` działa w formacie procentowym zgodnym z modułem Main: użytkownik wpisuje wartość liczbową, a pole renderuje `wartość%`; obliczenia używają ułamka dziesiętnego (`10` => `0.10`).
 - Nad tabelą renderowany licznik: `Liczba dodanych graczy: X`.
 - Tabela `players-table` ma kolumny:
@@ -73,6 +74,17 @@
 - `delete-player` usuwa rekord gracza z `players` oraz czyści powiązane dane (`assignments`, `group.playerStacks`, `group.eliminated`, `group.eliminatedWins`, `group.survivorStacks`, `semi`).
 - Dodatkowo `delete-player` usuwa trwały wpis `payments.table12Rebuys[playerId]` przez `FieldValue.delete()` oraz sprawdza, czy po operacji nie został pusty układ `0 graczy i 0 stołów`.
 - Jeśli po usunięciu gracza stan turnieju spełnia warunek `players.length === 0 && tables.length === 0`, aplikacja automatycznie resetuje `payments.table12Rebuys` i `pool.rebuyValues`, bez usuwania dokumentu `second_tournament/state`.
+
+### Globalny reset Rebuy (Losowanie graczy)
+- Kliknięcie przycisku `Wyzeruj Rebuy` uruchamia `resetAllTable12Rebuys()`.
+- Operacja wymaga potwierdzenia `window.confirm` z ostrzeżeniem o nieodwracalności.
+- Po zatwierdzeniu funkcja:
+  - czyści `payments.table12Rebuys = {}` (usuwa wszystkie `RebuyX`),
+  - czyści `pool.rebuyValues = {}` (usuwa ręczne wpisy powiązane z kolumnami Rebuy w `Tabela16`),
+  - zamyka aktywny modal `Rebuy gracza` (jeśli był otwarty) i resetuje draft modalu.
+- Zapis do Firebase wykonuje `saveState({ deletedPaths: ["payments.table12Rebuys", "pool.rebuyValues"] })`, więc stare ścieżki są najpierw usuwane przez `FieldValue.delete()`, a następnie utrwalany jest nowy stan dokumentu.
+- Po sukcesie ustawiany jest komunikat statusu: `Wyzerowano wszystkie Rebuy.`
+- W trakcie operacji aktywna jest flaga `globalRebuyResetInProgress`, która blokuje wieloklik i czasowo wyłącza przycisk resetu.
 
 ### Losowanie stołów — status i wybór stołu
 - Usunięto górny, zbiorczy blok z polami `Nazwa` i `Łączna Suma` nad tabelą przypisań.

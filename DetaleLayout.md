@@ -5,6 +5,7 @@
 ## Moduł Second — Tournament of Poker
 - W nagłówku modułu `Second` po prawej stronie widoczna jest ta sama ikona `Pliki/Ikona.png` co w module `Main`, ustawiona po lewej stronie przycisku **Instrukcja** (układ poziomy w `.header-controls`).
 - Sekcja `Losowanie graczy` ma układ metadanych w siatce `.t-section-grid` oraz tabelę `players-table`.
+- W sekcji `Losowanie graczy` nad siatką metadanych dodano czerwony przycisk destrukcyjny **Wyzeruj Rebuy** (wariant `button.danger`) do globalnego resetu wszystkich wpisów `RebuyX`.
 - W polu `RAKE` zastosowano format procentowy jak w module Main: użytkownik wpisuje liczbę, a kontrolka wyświetla wartość z dopisanym `%` (np. `12%`) bez dodatkowego pomocniczego `<small>`.
 - Kolumna `PIN` używa kontrolki `.pin-control`:
   - pole wejściowe ma poszerzoną szerokość (`8ch`, min. `8ch`, max. `9ch`), aby mieścić pełne 5 cyfr PIN z zapasem wizualnym,

@@ -95,3 +95,58 @@ Po potwierdzeniu system powinien:
 ## 6) Rekomendacja
 
 Wdrożyć przycisk `Wyzeruj Rebuy` jako globalną, potwierdzaną operację hard reset dla wszystkich `RebuyX`. Takie podejście najpełniej realizuje cel operacyjny: szybki start nowej gry na tej samej bazie graczy, bez utraty konfiguracji kont.
+
+---
+
+## 7) Zmiany w kodzie po wdrożeniu
+
+Plik `Second/app.js`  
+Linia ~908  
+Było: `let table12RebuyModalDirty = false;`  
+Jest:  
+- `let table12RebuyModalDirty = false;`  
+- `let globalRebuyResetInProgress = false;`
+
+Plik `Second/app.js`  
+Linie ~1397-1438  
+Było: po `getAutomaticRebuyResetDeletedPaths` od razu zaczynał się helper `getPlayerRebuyTotal`.  
+Jest: dodany nowy helper `resetAllTable12Rebuys`, który:
+- pokazuje confirm: `Wyzerować wszystkie Rebuy?...`,
+- czyści `payments.table12Rebuys` i `pool.rebuyValues`,
+- zamyka modal rebuy jeśli był otwarty,
+- zapisuje zmiany przez `saveState({ deletedPaths: ["payments.table12Rebuys", "pool.rebuyValues"] })`,
+- ustawia komunikat `Wyzerowano wszystkie Rebuy.`
+
+Plik `Second/app.js`  
+Linie ~1638-1642 (sekcja `Losowanie graczy`)  
+Było:  
+`<div class="t-section-grid">` (siatka metadanych była pierwszym elementem sekcji).  
+Jest:  
+`<div class="admin-table-actions"><button type="button" class="danger" data-role="reset-all-rebuy" ...>Wyzeruj Rebuy</button></div>`  
+`<div class="t-section-grid">...`
+
+Plik `Second/app.js`  
+Linie ~2006-2009 (lista klikanych ról)  
+Było: brak roli `reset-all-rebuy`.  
+Jest: dodana rola `"reset-all-rebuy"` w `tournamentClickActionRoles`.
+
+Plik `Second/app.js`  
+Linie ~2100-2104 (obsługa `click`)  
+Było: brak gałęzi dla resetu globalnego rebuy.  
+Jest: dodana obsługa:
+- `if (role === "reset-all-rebuy") { await resetAllTable12Rebuys(); return; }`
+
+Plik `Second/docs/README.md`  
+Linie ~14-19  
+Było: instrukcja `Losowanie graczy` zaczynała się od kroków wypełniania pól metadanych.  
+Jest: dodany krok `1a` opisujący kliknięcie przycisku **Wyzeruj Rebuy**, potwierdzenie operacji i skutek resetu.
+
+Plik `Second/docs/Documentation.md`  
+Linie ~50-51, ~87-96  
+Było: brak opisu globalnego resetu Rebuy.  
+Jest: dodany opis przycisku `Wyzeruj Rebuy` oraz pełny opis techniczny działania `resetAllTable12Rebuys()`.
+
+Plik `DetaleLayout.md`  
+Linia ~9  
+Było: opis sekcji `Losowanie graczy` bez przycisku globalnego resetu rebuy.  
+Jest: dodany wpis o czerwonym przycisku destrukcyjnym **Wyzeruj Rebuy** nad siatką metadanych.
