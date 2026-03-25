@@ -111,12 +111,12 @@
 - Checkbox `ELIMINATED` zapisuje się na zdarzeniu `change` bez dodatkowych ścieżek usuwania; po kliknięciu aplikacja od razu wykonuje `render()`, więc gracz natychmiast przechodzi między `Tabela19A` i `Tabela19B`, a stan pozostaje po odświeżeniu. Odznaczenie checkboxa usuwa też gracza z `group.eliminatedOrder`, a ponowne zaznaczenie dopisuje go na końcu listy.
 
 ### Półfinał
-- `Tabela21` pobiera listę graczy z `Tabela19B`: kolumny `STACK` i `%` są tylko do odczytu i kopiują odpowiednio `group.survivorStacks[playerId]` oraz udział liczony względem `Tabela18.ŁĄCZNY STACK`.
+- `Tabela21` pobiera listę graczy z `Tabela19B`: kolumna `STACK` jest inputem liczbowym `data-role="semi-stack"` zapisującym `semi.assignments[playerId].stack`, którego wartością domyślną jest `group.survivorStacks[playerId]`; kolumna `%` liczy udział względem `Tabela18.ŁĄCZNY STACK` na bazie aktualnej wartości `semiStack` (po ewentualnej edycji).
 - `Tabela21.STÓŁ` jest selectem opartym o `semi.customTables[]`; wybór zapisuje `semi.assignments[playerId].tableId`.
-- `Tabela22` renderuje po jednej karcie na każdy wpis `semi.customTables[]`; karta pokazuje nazwę stołu, `ŁĄCZNY STACK` liczony jako suma stacków przypisanych graczy oraz wiersze `GRACZ / STACK / ELIMINATED`.
+- `Tabela22` renderuje po jednej karcie na każdy wpis `semi.customTables[]`; karta pokazuje nazwę stołu, `ŁĄCZNY STACK` liczony jako suma wartości `semiStack` (czyli stack po ewentualnej edycji w `Tabela21`) oraz wiersze `GRACZ / STACK / ELIMINATED`.
 - Checkbox `ELIMINATED` w `Tabela22` zapisuje się do `semi.assignments[playerId].eliminated`, a kolejność graczy wyeliminowanych w półfinale utrwala się w `semi.eliminatedOrder`; stan pozostaje po odświeżeniu i po ponownym wejściu do aplikacji.
 - `Tabela22A` pokazuje graczy wyeliminowanych w półfinale (`semi.assignments[playerId].eliminated === true`) w kolejności z `semi.eliminatedOrder` i pozwala zmieniać ją przyciskami `▲/▼` (`data-role="semi-eliminated-move"`).
-- `Tabela FINAŁOWA` buduje się dynamicznie z `semiRows` przypisanych do stołów półfinałowych i filtruje wyłącznie rekordy bez zaznaczonego `semi.assignments[playerId].eliminated`; `STACK` jest readonly, pochodzi z `group.survivorStacks[playerId]`, `STÓŁ` jest tylko do odczytu, a `%` liczy się jako `survivorStack / Tabela18.ŁĄCZNY STACK`.
+- `Tabela FINAŁOWA` buduje się dynamicznie z `semiRows` przypisanych do stołów półfinałowych i filtruje wyłącznie rekordy bez zaznaczonego `semi.assignments[playerId].eliminated`; `STACK` jest readonly, pochodzi z `semiStack` (nadpisany w `Tabela21` lub domyślnie z `group.survivorStacks[playerId]`), `STÓŁ` jest tylko do odczytu, a `%` liczy się jako `semiStack / Tabela18.ŁĄCZNY STACK`.
 
 ### Wypłaty
 - `Tabela24` korzysta z pełnej klasyfikacji wszystkich graczy: miejsca od końca zajmują najpierw gracze z `group.eliminatedOrder`, potem gracze z `semi.eliminatedOrder`, a pozostałe miejsca uzupełniają finaliści posortowani po `STACK` malejąco; finaliści z zaznaczonym `final.eliminated[playerId]` trafiają za aktywnych finalistów.
@@ -213,7 +213,7 @@
 - `Tabela15.BUY-IN` pobiera wartość 1:1 z `Tabela14.BUY-IN`.
 - `Tabela15.PODZIAŁ` jest liczone jako: `Tabela14.BUY-IN` minus suma `KWOTA` od wiersza 4 do końca (co dla wierszy 4+ jest równoważne sumie wpisów z `PODZIAŁ PULI`).
 - W `Tabela16` kolumna `PODZIAŁ PULI` ma tryb mieszany:
-  - wiersze 1–3: wejście procentowe (`50` => render `50%`, obliczenia `0.5`),
+  - wiersze 1–3: wejście procentowe (`50` => render `50%`, obliczenia `0.5`); pusty input ma fallback `50/30/20` dla odpowiednio wierszy `1/2/3`,
   - wiersze 4+: wejście liczbowe bez `%` (`10` => obliczenia `10`).
 - `KWOTA`:
   - wiersze 1–3: `podział (w postaci dziesiętnej) * Tabela15.PODZIAŁ`,
