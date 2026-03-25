@@ -9,6 +9,11 @@
 
 ### Losowanie graczy — pełna obsługa
 1. Nad tabelą uzupełnij pola: **ORGANIZATOR**, **BUY-IN**, **REBUY/ADD-ON**, **RAKE**, **STACK**, **REBUY/ADD-ON STACK**.
+1a. Nad sekcją pól metadanych kliknij czerwony przycisk **Wyzeruj Rebuy**, jeśli chcesz usunąć wszystkie wpisy `RebuyX` dla całego turnieju.
+   - po kliknięciu zobaczysz potwierdzenie z ostrzeżeniem, że operacja jest nieodwracalna,
+   - kliknij **OK**, aby wykonać reset globalny, albo **Anuluj**, żeby przerwać,
+   - po zatwierdzeniu wszystkie wartości `RebuyX` znikają dla wszystkich graczy, czyści się też ręczne mapowanie kolumn rebuy w `Tabela16`,
+   - lista graczy, PIN-y, statusy płatności i uprawnienia pozostają bez zmian.
 2. W polu **RAKE** wpisz wartość liczbową (np. `10`) — pole wyświetla ją jako `10%` i taka wartość procentowa jest używana w obliczeniach.
 3. Sprawdź licznik nad tabelą: **Liczba dodanych graczy: X**.
 4. Kliknij **Dodaj gracza**, aby utworzyć nowy wiersz.

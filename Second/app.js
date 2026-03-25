@@ -905,6 +905,7 @@ const setupAdminTournament = (rootCard) => {
   let table12RebuyActionInProgress = false;
   let table12RebuyModalDraft = null;
   let table12RebuyModalDirty = false;
+  let globalRebuyResetInProgress = false;
 
   const isTable12RebuyModalEditing = () => Boolean(activeTable12RebuyPlayerId && table12RebuyModalDraft);
 
@@ -1394,6 +1395,46 @@ const setupAdminTournament = (rootCard) => {
     return deletedPaths;
   };
 
+  const resetAllTable12Rebuys = async () => {
+    if (globalRebuyResetInProgress) {
+      tournamentStatusMessage = "Trwa już reset Rebuy. Poczekaj na zakończenie operacji.";
+      render();
+      return;
+    }
+
+    const confirmation = window.confirm(
+      "Wyzerować wszystkie Rebuy?\nTa operacja jest nieodwracalna i usunie wszystkie wpisy RebuyX."
+    );
+    if (!confirmation) {
+      return;
+    }
+
+    globalRebuyResetInProgress = true;
+    tournamentState.payments = tournamentState.payments || {};
+    tournamentState.pool = tournamentState.pool || {};
+    tournamentState.payments.table12Rebuys = {};
+    tournamentState.pool.rebuyValues = {};
+    table12RebuyModalDraft = null;
+    table12RebuyModalDirty = false;
+    if (activeTable12RebuyPlayerId) {
+      await closeTable12RebuyModal();
+    }
+    render();
+
+    pendingLocalWrites += 1;
+    try {
+      const saved = await saveState({ deletedPaths: ["payments.table12Rebuys", "pool.rebuyValues"] });
+      if (saved) {
+        tournamentStatusMessage = "Wyzerowano wszystkie Rebuy.";
+      }
+    } finally {
+      globalRebuyResetInProgress = false;
+      pendingLocalWrites = Math.max(0, pendingLocalWrites - 1);
+      commitDeferredSnapshotIfSafe();
+      render();
+    }
+  };
+
   const getPlayerRebuyTotal = (playerId) => {
     const state = ensureTable12RebuyState(playerId);
     return state.values.reduce((sum, value) => sum + toDigitsNumber(value), 0);
@@ -1597,6 +1638,9 @@ const setupAdminTournament = (rootCard) => {
 
       mount.innerHTML = `
         ${tournamentStatusMessage ? `<p class="builder-info">${esc(tournamentStatusMessage)}</p>` : ""}
+        <div class="admin-table-actions">
+          <button type="button" class="danger" data-role="reset-all-rebuy" ${globalRebuyResetInProgress ? "disabled" : ""}>Wyzeruj Rebuy</button>
+        </div>
         <div class="t-section-grid">
           <label>ORGANIZATOR <input class="admin-input" data-role="meta-organizer" type="text" value="${esc(tournamentState.organizer)}"></label>
           <label>BUY-IN <input class="admin-input" data-role="meta-buyin" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(tournamentState.buyIn)}"></label>
@@ -1962,6 +2006,7 @@ const setupAdminTournament = (rootCard) => {
     "delete-player",
     "add-table",
     "delete-table",
+    "reset-all-rebuy",
     "add-pool-mod-row",
     "remove-pool-mod-row",
     "open-table12-rebuy",
@@ -2057,6 +2102,10 @@ const setupAdminTournament = (rootCard) => {
         if (tournamentState.semi.assignments[key]?.tableId === tableId) tournamentState.semi.assignments[key].tableId = "";
       });
       deletedPaths = deletedPaths.concat(getAutomaticRebuyResetDeletedPaths());
+    }
+    if (role === "reset-all-rebuy") {
+      await resetAllTable12Rebuys();
+      return;
     }
     if (role === "open-table12-rebuy") {
       openTable12RebuyModal(target.dataset.playerId || "");
