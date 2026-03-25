@@ -97,6 +97,8 @@
   - `Opłacone` ma klasę `.payment-status-label.is-paid` (złoty napis + złota obwódka + glow).
 - Wybór stołu (`assign-table`) oraz półfinałowe przypisanie do stołu (`semi-assign-table`) zapisują się na zdarzeniu `change`, bez wymuszonego zapisu na `input`, co eliminuje znikanie rozwijanych list podczas wyboru.
 - Handler `click` wykonuje logikę wyłącznie dla ról-akcji (`add-player`, `delete-player`, `add-table`, itp.). Kontrolki formularza (`checkbox`, `select`, `input`) nie uruchamiają już globalnego `render()` przez `click`, dzięki czemu przełączenie statusu działa stabilnie na desktopie i mobile (tap).
+- `delete-table` dodatkowo usuwa `payments.table12Rebuys[playerId]` dla wszystkich graczy przypisanych do usuwanego stołu, od razu renumeruje globalne indeksy `RebuyX` bez luk (`1..N`) i przemapowuje `pool.rebuyValues` według mapy `stary indeks -> nowy indeks`.
+- Jeśli po `delete-table` otwarty jest modal `Rebuy gracza` dla gracza z usuwanego stołu, modal zostaje zamknięty przed zapisem stanu.
 
 ### Faza grupowa
 - `Tabela17` ma tylko kolumny `STACK GRACZA` oraz `REBUY/ADD-ON`; wartości są readonly i pochodzą z metadanych turnieju (`stack`, `rebuyStack`).
@@ -200,6 +202,7 @@
 - Dodanie nowej kolumny rebuy nadaje `nextIndex = max(indexes)+1` globalnie dla całego turnieju, ale maksimum liczone jest już tylko z wpisów aktywnych graczy (`players[].id`).
 - `Dodaj Rebuy` aktualizuje najpierw tylko lokalny draft i główny stan UI; zapis pustej kolumny do Firestore nie jest wykonywany od razu.
 - Usunięcie kolumny wykonuje globalną kompaktację (`index > removedIndex => index-1`) we wszystkich wpisach graczy.
+- Usunięcie stołu korzysta z pełnej renumeracji globalnej pozostałych kolumn (`oldIndex` sort rosnąco -> `newIndex = 1..N`), dzięki czemu znikają luki po indeksach należących do usuniętego stołu.
 - Po kompaktacji rebuy wykonywane jest też przenumerowanie `pool.rebuyValues` (kolumny `data-col-index`), aby ręczne wpisy w `Tabela16` pozostały przypisane do właściwych kolumn `RebuyX`.
 - Gdy zapis do Firestore nie powiedzie się, modal pokazuje lokalny komunikat błędu i nie utrwala lokalnej zmiany dla przycisku `Dodaj Rebuy`.
 - Komunikat diagnostyczny zawiera szczegóły błędu (`error.code` i `error.message`), aby ustalić przyczynę problemu przy `Dodaj Rebuy` / `Usuń Rebuy`.

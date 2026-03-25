@@ -51,6 +51,8 @@
 5. W tabeli stołu kolumna **BUY-IN** jest automatyczna i pobiera wartość z sekcji **Losowanie graczy** (pole `BUY-IN`) dla każdego przypisanego gracza — brak edycji w tej tabeli.
 6. Kliknij **Usuń** przy wybranym stole, aby go usunąć.
    - Czerwony przycisk **Usuń** jest kompaktowy i wyrównany do prawej krawędzi bloku (spójny wizualnie z przyciskami **Usuń** w sekcji **Losowanie graczy**).
+   - Usunięcie stołu usuwa też wszystkie wpisy `RebuyX` graczy przypisanych do tego stołu i od razu renumeruje globalnie pozostałe `RebuyX` od `Rebuy1` bez luk.
+   - Po tej renumeracji aplikacja automatycznie przemapowuje też ręczne wartości rebuy w `Tabela16`, żeby pozostały pod właściwymi kolumnami.
    - Jeżeli po usunięciu stołu nie ma już żadnych stołów i żadnych graczy, aplikacja automatycznie czyści dane rebuy oraz ręczne nadpisania rebuy w podziale puli.
 
 ### Wpłaty
@@ -179,6 +181,7 @@
    - nowe pole `RebuyX` po kliknięciu **Dodaj Rebuy** pojawia się najpierw lokalnie w modalu; zapis do Firebase następuje po zamknięciu modalu albo natychmiast po **Usuń Rebuy**,
    - numeracja `RebuyX` jest globalna dla całej `Tabela12` (wszyscy gracze) i przy dodawaniu zawsze dostaje kolejny numer globalny,
    - po usunięciu kolumny aplikacja kompaktuje numerację globalnie (numery większe od usuniętego przesuwają się o `-1`),
+   - po usunięciu całego stołu aplikacja usuwa rebuy przypisane do graczy z tego stołu i renumeruje globalnie wszystkie pozostałe indeksy `RebuyX` od `1..N` zgodnie z kolejnością starych indeksów,
    - jeżeli zapis nie powiedzie się (np. brak uprawnień/połączenia), modal pokaże komunikat błędu z kodem/opisem problemu i nie utrwali nowo dodanego `Rebuy`,
    - podczas zapisu przyciski `Dodaj Rebuy` i `Usuń Rebuy` są czasowo blokowane, żeby uniknąć podwójnego kliknięcia i łatwiej zdiagnozować problem.
    - podczas otwartego modalu snapshot z serwera dla tej sekcji jest odkładany do czasu zakończenia edycji, więc pierwszy wpis po dodaniu `Rebuy` nie jest już cofany przez starszy stan.

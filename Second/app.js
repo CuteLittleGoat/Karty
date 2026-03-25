@@ -1385,6 +1385,72 @@ const setupAdminTournament = (rootCard) => {
     remapPoolRebuyValuesAfterRemoval(removedIndex);
   };
 
+  const removeTable12RebuysForPlayersAndReindex = (playerIds) => {
+    const normalizedPlayerIds = Array.isArray(playerIds)
+      ? [...new Set(playerIds.filter((playerId) => typeof playerId === "string" && playerId.trim()))]
+      : [];
+    if (!normalizedPlayerIds.length) {
+      return [];
+    }
+
+    tournamentState.payments = tournamentState.payments || {};
+    tournamentState.payments.table12Rebuys = tournamentState.payments.table12Rebuys || {};
+    tournamentState.pool = tournamentState.pool || {};
+    tournamentState.pool.rebuyValues = tournamentState.pool.rebuyValues || {};
+
+    const deletedPaths = [];
+    normalizedPlayerIds.forEach((playerId) => {
+      const entry = tournamentState.payments.table12Rebuys[playerId];
+      if (!entry) {
+        return;
+      }
+      ensureTable12RebuyEntryShape(entry);
+      delete tournamentState.payments.table12Rebuys[playerId];
+      deletedPaths.push(`payments.table12Rebuys.${playerId}`);
+    });
+
+    const remainingEntries = getAllTable12RebuyEntries();
+    if (!remainingEntries.length) {
+      tournamentState.pool.rebuyValues = {};
+      deletedPaths.push("pool.rebuyValues");
+      return deletedPaths;
+    }
+
+    const oldToNewIndexMap = new Map();
+    remainingEntries.forEach((entry, idx) => {
+      oldToNewIndexMap.set(entry.index, idx + 1);
+    });
+
+    Object.keys(tournamentState.payments.table12Rebuys).forEach((playerId) => {
+      const rebuyState = ensureTable12RebuyState(playerId);
+      rebuyState.indexes = rebuyState.indexes.map((oldIndex) => oldToNewIndexMap.get(oldIndex) || oldIndex);
+      tournamentState.payments.table12Rebuys[playerId] = {
+        values: [...rebuyState.values],
+        indexes: [...rebuyState.indexes]
+      };
+    });
+
+    Object.keys(tournamentState.pool.rebuyValues).forEach((rowId) => {
+      const saved = tournamentState.pool.rebuyValues[rowId] || {};
+      const remapped = {};
+      Object.keys(saved).forEach((colKey) => {
+        const colIndex = Number(colKey);
+        if (!Number.isInteger(colIndex)) {
+          return;
+        }
+        const oldRebuyIndex = colIndex + 1;
+        const newRebuyIndex = oldToNewIndexMap.get(oldRebuyIndex);
+        if (!Number.isInteger(newRebuyIndex) || newRebuyIndex <= 0) {
+          return;
+        }
+        remapped[newRebuyIndex - 1] = saved[colKey];
+      });
+      tournamentState.pool.rebuyValues[rowId] = remapped;
+    });
+
+    return deletedPaths;
+  };
+
   const getAutomaticRebuyResetDeletedPaths = () => {
     const deletedPaths = [];
     if ((tournamentState.players || []).length === 0 && (tournamentState.tables || []).length === 0) {
@@ -2111,6 +2177,13 @@ const setupAdminTournament = (rootCard) => {
     }
     if (role === "delete-table") {
       const tableId = target.dataset.tableId;
+      const affectedPlayerIds = Object.keys(tournamentState.assignments).filter((playerId) => (
+        tournamentState.assignments[playerId]?.tableId === tableId
+      ));
+      deletedPaths = deletedPaths.concat(removeTable12RebuysForPlayersAndReindex(affectedPlayerIds));
+      if (activeTable12RebuyPlayerId && affectedPlayerIds.includes(activeTable12RebuyPlayerId)) {
+        await closeTable12RebuyModal();
+      }
       tournamentState.tables = tournamentState.tables.filter((table) => table.id !== tableId);
       delete tournamentState.tableEntries[tableId];
       Object.keys(tournamentState.assignments).forEach((key) => {
