@@ -105,3 +105,82 @@ Nie usuwać danych, tylko zmienić agregację tak, by liczyć rebuy tylko graczy
 
 ## Wniosek końcowy
 Da się wdrożyć oczekiwane zachowanie. Najbardziej spójne i zgodne z opisem użytkownika będzie czyszczenie rebuy graczy powiązanych z usuwanym stołem oraz pełna, globalna renumeracja pozostałych `RebuyX` (z jednoczesnym remapem `pool.rebuyValues`).
+
+## Realizacja rekomendacji (wdrożenie)
+
+### Prompt użytkownika
+> Przeczytaj analizę Analizy/Analiza_Second_Tabela10_Rebuy_po_usunieciu_stolu_2026-03-25.md i wprowadź rekomendowane rozwiązanie, aby zapewnić opisywaną funkcjonalność. Zadbaj o to, żeby funkcja przycisku "Wyzeruj Rebuy" w "Losowanie Graczy" się przy okazji nie popsuła.
+
+### Zmiany w kodzie
+
+Plik `Second/app.js`  
+Linie (blok `delete-table`)  
+Było:
+```js
+if (role === "delete-table") {
+  const tableId = target.dataset.tableId;
+  tournamentState.tables = tournamentState.tables.filter((table) => table.id !== tableId);
+  delete tournamentState.tableEntries[tableId];
+  Object.keys(tournamentState.assignments).forEach((key) => {
+    if (tournamentState.assignments[key]?.tableId === tableId) tournamentState.assignments[key].tableId = "";
+  });
+  Object.keys(tournamentState.semi.assignments).forEach((key) => {
+    if (tournamentState.semi.assignments[key]?.tableId === tableId) tournamentState.semi.assignments[key].tableId = "";
+  });
+  deletedPaths = deletedPaths.concat(getAutomaticRebuyResetDeletedPaths());
+}
+```
+Jest:
+```js
+if (role === "delete-table") {
+  const tableId = target.dataset.tableId;
+  const affectedPlayerIds = Object.keys(tournamentState.assignments).filter((playerId) => (
+    tournamentState.assignments[playerId]?.tableId === tableId
+  ));
+  deletedPaths = deletedPaths.concat(removeTable12RebuysForPlayersAndReindex(affectedPlayerIds));
+  if (activeTable12RebuyPlayerId && affectedPlayerIds.includes(activeTable12RebuyPlayerId)) {
+    await closeTable12RebuyModal();
+  }
+  tournamentState.tables = tournamentState.tables.filter((table) => table.id !== tableId);
+  delete tournamentState.tableEntries[tableId];
+  Object.keys(tournamentState.assignments).forEach((key) => {
+    if (tournamentState.assignments[key]?.tableId === tableId) tournamentState.assignments[key].tableId = "";
+  });
+  Object.keys(tournamentState.semi.assignments).forEach((key) => {
+    if (tournamentState.semi.assignments[key]?.tableId === tableId) tournamentState.semi.assignments[key].tableId = "";
+  });
+  deletedPaths = deletedPaths.concat(getAutomaticRebuyResetDeletedPaths());
+}
+```
+
+Plik `Second/app.js`  
+Linie (nowa funkcja renumeracji po usunięciu stołu)  
+Było:
+```js
+// brak dedykowanej funkcji do masowego usuwania rebuy graczy stołu + pełnej renumeracji 1..N
+```
+Jest:
+```js
+const removeTable12RebuysForPlayersAndReindex = (playerIds) => {
+  // usuwa payments.table12Rebuys dla graczy usuwanego stołu,
+  // buduje mapę oldIndex->newIndex na pozostałych wpisach,
+  // renumeruje indexes[] graczy,
+  // przemapowuje pool.rebuyValues,
+  // zwraca deletedPaths do saveState.
+};
+```
+
+### Zmiany dokumentacyjne
+
+Plik `Second/docs/README.md`  
+Linia (sekcja „Losowanie stołów”, krok 6)  
+Było:
+```md
+- Jeżeli po usunięciu stołu nie ma już żadnych stołów i żadnych graczy, aplikacja automatycznie czyści dane rebuy oraz ręczne nadpisania rebuy w podziale puli.
+```
+Jest:
+```md
+- Usunięcie stołu usuwa też wszystkie wpisy `RebuyX` graczy przypisanych do tego stołu i od razu renumeruje globalnie pozostałe `RebuyX` od `Rebuy1` bez luk.
+- Po tej renumeracji aplikacja automatycznie przemapowuje też ręczne wartości rebuy w `Tabela16`, żeby pozostały pod właściwymi kolumnami.
+- Jeżeli po usunięciu stołu nie ma już żadnych stołów i żadnych graczy, aplikacja automatycznie czyści dane rebuy oraz ręczne nadpisania rebuy w podziale puli.
+```
