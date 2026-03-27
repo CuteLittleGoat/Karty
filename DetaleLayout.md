@@ -30,6 +30,7 @@
 - W `Faza grupowa` tabele `Tabela19A` i `Tabela19B` korzystają ze standardowych pól `.admin-input`, a dynamiczne przenoszenie graczy między tabelami zależy od checkboxa `ELIMINATED` w `Tabela19`.
 - W `Tabela19A` dodano kolumnę `POZYCJA` z poziomym kontenerem `.group-position-controls`; przyciski `▲/▼` używają stylu `button.secondary` oraz pomocniczej klasy `.group-position-button`, która utrzymuje kompaktową szerokość zgodną z resztą aplikacji.
 - W `Półfinał` usunięto `Tabela20`, a w tabelach tworzonych po `Dodaj nowy stół` dodano kolumnę `Stack` przed `Eliminated`.
+- W panelu `Półfinał` kolumna `STACK` w `Tabela21` jest readonly i używa węższego pola `.t-stack-input` (96 px), a kolumna `STACK` w `Tabela FINAŁOWA` jest edytowalna, akceptuje wyłącznie cyfry (`type="text"`, `inputmode="numeric"`, `pattern="[0-9]*"`) i ma domyślną wartość `0`.
 - Kontrolka statusu płatności gracza (`.payment-status-toggle`) ma pełny obszar kliknięcia obejmujący całą pigułkę, z ukrytym inputem rozciągniętym na cały element.
 
 ## Moduł Main — modale „Szczegóły gry” (Gry admina i Gry użytkowników)

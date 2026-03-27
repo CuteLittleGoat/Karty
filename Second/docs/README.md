@@ -93,7 +93,7 @@
 
 ### Półfinał
 - **Tabela21** pokazuje graczy z `Tabela19B`.
-  - kolumna `STACK` jest domyślnie kopiowana z `Tabela19B`, ale Admin może ją edytować bezpośrednio w `Tabela21`,
+  - kolumna `STACK` jest nieedytowalna (tylko odczyt), domyślnie kopiowana z `Tabela19B` i ma taką samą węższą szerokość jak `STACK` w `Tabela FINAŁOWA`,
   - kolumna `%` jest liczona automatycznie względem `Tabela18.ŁĄCZNY STACK` i nie da się jej edytować tutaj,
   - kolumna `STÓŁ` jest listą rozwijaną z nazwami stołów dodanych przyciskiem **Dodaj nowy stół**.
 - **Tabela22**: dynamiczne stoły półfinałowe.
@@ -109,14 +109,15 @@
   - kolejność zapisuje się między sesjami.
 - **Tabela FINAŁOWA** pokazuje tylko graczy przypisanych do `Tabela22`, którzy nie mają zaznaczonego `ELIMINATED` w półfinale; lista nie zależy od checkboxów z panelu `Finał`.
   - jeśli żaden gracz nie spełnia warunku, zobaczysz sam nagłówek tabeli,
-  - kolumna `STACK` jest tylko do odczytu,
+  - kolumna `STACK` jest edytowalna, domyślnie ma wartość `0` i przyjmuje wyłącznie cyfry (także na urządzeniach mobilnych),
   - kolumna `STÓŁ` uzupełnia się automatycznie,
   - kolumna `%` liczy `STACK / ŁĄCZNY STACK z Tabela18`.
 
 ### Finał
 - **Tabela23**: LP, GRACZ, STACK, %, ELIMINATED.
-- Dane w tej tabeli są synchronizowane z `Tabela FINAŁOWA` z panelu `Półfinał` i sortowane malejąco po `STACK`.
+- Dane w tej tabeli są synchronizowane z `Tabela FINAŁOWA` z panelu `Półfinał` i sortowane malejąco po `STACK` wpisanym w `Tabela FINAŁOWA`.
 - `STACK` jest tylko do odczytu.
+
 - Checkbox `ELIMINATED` zapisuje się między sesjami i od razu wpływa na klasyfikację w `Tabela24`.
 - Pod tabelą widoczny jest stół pokerowy SVG.
 
