@@ -113,7 +113,7 @@
 - Checkbox `ELIMINATED` zapisuje się na zdarzeniu `change` bez dodatkowych ścieżek usuwania; po kliknięciu aplikacja od razu wykonuje `render()`, więc gracz natychmiast przechodzi między `Tabela19A` i `Tabela19B`, a stan pozostaje po odświeżeniu. Odznaczenie checkboxa usuwa też gracza z `group.eliminatedOrder`, a ponowne zaznaczenie dopisuje go na końcu listy.
 
 ### Półfinał
-- `Tabela21` pobiera listę graczy z `Tabela19B`: kolumna `STACK` jest polem tylko do odczytu (nieedytowalnym), pokazuje `semiStack` (domyślnie `group.survivorStacks[playerId]`) i używa tej samej, węższej szerokości co `STACK` w `Tabela FINAŁOWA`; kolumna `%` liczy udział względem `Tabela18.ŁĄCZNY STACK` na bazie `semiStack`.
+- `Tabela21` pobiera listę graczy z `Tabela19B`: kolumna `STACK` jest zwykłym tekstem w komórce `<td>` (bez inputa), pokazuje `semiStack` (domyślnie `group.survivorStacks[playerId]`) i używa klasy szerokości `t-stack-input`; kolumna `%` liczy udział względem `Tabela18.ŁĄCZNY STACK` na bazie `semiStack`.
 - `Tabela21.STÓŁ` jest selectem opartym o `semi.customTables[]`; wybór zapisuje `semi.assignments[playerId].tableId`.
 - `Tabela22` renderuje po jednej karcie na każdy wpis `semi.customTables[]`; karta pokazuje nazwę stołu, `ŁĄCZNY STACK` liczony jako suma wartości `semiStack` (czyli stack po ewentualnej edycji w `Tabela21`) oraz wiersze `GRACZ / STACK / ELIMINATED`.
 - Checkbox `ELIMINATED` w `Tabela22` zapisuje się do `semi.assignments[playerId].eliminated`, a kolejność graczy wyeliminowanych w półfinale utrwala się w `semi.eliminatedOrder`; stan pozostaje po odświeżeniu i po ponownym wejściu do aplikacji.

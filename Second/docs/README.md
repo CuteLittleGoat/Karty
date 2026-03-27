@@ -93,7 +93,7 @@
 
 ### Półfinał
 - **Tabela21** pokazuje graczy z `Tabela19B`.
-  - kolumna `STACK` jest nieedytowalna (tylko odczyt), domyślnie kopiowana z `Tabela19B` i ma taką samą węższą szerokość jak `STACK` w `Tabela FINAŁOWA`,
+  - kolumna `STACK` jest nieedytowalna (tylko odczyt), domyślnie kopiowana z `Tabela19B` i renderowana jako zwykły tekst w komórce `<td>` (bez inputa),
   - kolumna `%` jest liczona automatycznie względem `Tabela18.ŁĄCZNY STACK` i nie da się jej edytować tutaj,
   - kolumna `STÓŁ` jest listą rozwijaną z nazwami stołów dodanych przyciskiem **Dodaj nowy stół**.
 - **Tabela22**: dynamiczne stoły półfinałowe.
