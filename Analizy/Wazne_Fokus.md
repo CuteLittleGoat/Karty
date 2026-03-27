@@ -95,3 +95,45 @@ Wdrożyć ochronę przed nadpisaniem aktywnie edytowanego pola przez snapshot:
 - Trzymanie Backspace usuwa tekst liniowo do końca (bez „przeskoków”).
 - `Buy-In` w Tabela1 i `Wypłata`/`Nazwa` zachowują stabilny fokus podczas autozapisu.
 - Snapshot nadal synchronizuje dane, ale nie cofa aktywnej edycji użytkownika.
+
+---
+
+# Aktualizacja po wdrożeniu zmian (2026-03-27)
+
+## Prompt użytkownika
+"Zmodyfikuj moduł Second
+
+1. Panel \"Półfinał\". TABELA21. Kolumna STACK. Ma to być pole nieedytowalne. Tak jak w kolumnie GRACZ i LP w TABELA21. Dodatkowo zrób tę kolumnę węższą. Niech będzie takiej jak kolumna STACK w TABELA FINAŁOWA
+
+2. Panel \"Półfinał\". TABELA FINAŁOWA. Kolumna STACK. Ma to być pole edytowalne. Ma być możliwość tylko wpisania wartości liczbowej. Zadbaj o to, żeby nie powtórzył się błąd z Analizy/Wazne_Fokus.md oraz, żeby urządzenie mobilne nie przestawiało typu klawiatury i pozwalało wpisać tylko cyfry.
+2.1. Domyślnie ma być wartość 0
+2.2. W TABELA23 w kolumnie STACK ma być wyświetlana wartość jaką użytkownik wpisze w TABELA FINAŁOWA w kolumnie STACK."
+
+## Zmiany w kodzie (przed/po)
+
+Plik `Second/app.js`
+- Linia (sekcja budowania `Tabela FINAŁOWA`):
+  - Było: `...<td>${formatCellNumber(row.semiStack)}</td>...`
+  - Jest: `...<td><input class="admin-input t-stack-input" data-role="semi-final-stack" ... type="text" inputmode="numeric" pattern="[0-9]*" ...></td>...`
+- Linia (sekcja `Tabela21.STACK`):
+  - Było: `...<input class="admin-input" data-role="semi-stack" ... type="tel" ... data-focus-target="1" ...>`
+  - Jest: `...<input class="admin-input t-stack-input" data-role="semi-stack" ... type="text" ... readonly tabindex="-1" aria-readonly="true">`
+- Linia (sekcja mapowania finalistów do `Tabela23`):
+  - Było: `stack: String(formatCellNumber(row.semiStack)),`
+  - Jest: `stack: String(formatCellNumber(row.finalStack)),`
+- Linia (handler `input`):
+  - Było: lista ról do `digitsOnly(...)` bez `semi-final-stack`.
+  - Jest: lista ról do `digitsOnly(...)` zawiera także `semi-final-stack`.
+- Linia (handler `input`):
+  - Było: brak obsługi `semi-final-stack`.
+  - Jest: dodany zapis `semi.assignments[playerId].finalStack = target.value || "0"` + `render()`.
+
+Plik `Second/styles.css`
+- Linia (nowy styl szerokości stack):
+  - Było: brak dedykowanej klasy szerokości dla półfinałowych pól `STACK`.
+  - Jest:
+    - `.t-stack-input {`
+    - `  width: 96px;`
+    - `  min-width: 96px;`
+    - `  text-align: right;`
+    - `}`

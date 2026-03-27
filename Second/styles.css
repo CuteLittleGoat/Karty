@@ -419,6 +419,12 @@ select:disabled,
   box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18), 0 0 12px rgba(43, 227, 139, 0.18);
 }
 
+.t-stack-input {
+  width: 96px;
+  min-width: 96px;
+  text-align: right;
+}
+
 .admin-row-delete {
   padding: 8px 12px;
   font-size: 11px;

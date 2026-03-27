@@ -41,6 +41,10 @@ Dodatkowo dla każdego stołu:
 - Tabela22: LP, Gracz, Stack, Eliminated, %
 - Tabela Finałowa: LP, GRACZ, STACK, STÓŁ, %
 
+- Tabela21: `STACK` jest readonly i ma szerokość jak `STACK` w Tabeli Finałowej.
+- Tabela Finałowa: `STACK` jest edytowalny (tylko cyfry), domyślna wartość `0`.
+- Tabela23: `STACK` synchronizowany 1:1 z `Tabela Finałowa.STACK`.
+
 ### Finał
 - Tabela23: LP, GRACZ, STACK, %, Eliminated
 
