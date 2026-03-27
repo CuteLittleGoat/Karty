@@ -1886,7 +1886,7 @@ const setupAdminTournament = (rootCard) => {
           return `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td><input class="admin-input t-stack-input" data-role="semi-final-stack" data-player-id="${row.playerId}" type="text" inputmode="numeric" pattern="[0-9]*" value="${esc(String(formatCellNumber(row.finalStack)))}" data-focus-target="1" data-section="second-tournament-semi-final-stacks" data-row-id="${row.playerId}" data-column-key="stack"></td><td>${esc(row.semiTableName)}</td><td>${toPercentText(finalShare)}</td></tr>`;
         })
         .join("");
-      mount.innerHTML = `<h3>TABELA21</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>STÓŁ</th></tr></thead><tbody>${semiRows.map((row, idx) => `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td><input class="admin-input t-stack-input" data-role="semi-stack" data-player-id="${row.playerId}" type="text" inputmode="numeric" pattern="[0-9]*" value="${esc(String(formatCellNumber(row.semiStack)))}" readonly tabindex="-1" aria-readonly="true"></td><td>${toPercentText(row.semiShare)}</td><td><select class="admin-input" data-role="semi-assign-table" data-player-id="${row.playerId}"><option value="">-</option>${tournamentState.semi.customTables.map((table, tableIndex) => `<option value="${table.id}" ${row.semiTableId === table.id ? "selected" : ""}>${esc(table.name || `Stół${tableIndex + 1}`)}</option>`).join("")}</select></td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA22</h3><button type="button" class="secondary t-inline-add-button" data-role="add-semi-table">Dodaj nowy stół</button><div class="semi-tables">${customTables || "<p>Brak stołów półfinałowych.</p>"}</div>${semiEliminatedTable}<h3>TABELA FINAŁOWA</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>STÓŁ</th><th>%</th></tr></thead><tbody>${finalRowsMarkup || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div>`;
+      mount.innerHTML = `<h3>TABELA21</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>STÓŁ</th></tr></thead><tbody>${semiRows.map((row, idx) => `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td class="t-stack-input">${formatCellNumber(row.semiStack)}</td><td>${toPercentText(row.semiShare)}</td><td><select class="admin-input" data-role="semi-assign-table" data-player-id="${row.playerId}"><option value="">-</option>${tournamentState.semi.customTables.map((table, tableIndex) => `<option value="${table.id}" ${row.semiTableId === table.id ? "selected" : ""}>${esc(table.name || `Stół${tableIndex + 1}`)}</option>`).join("")}</select></td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA22</h3><button type="button" class="secondary t-inline-add-button" data-role="add-semi-table">Dodaj nowy stół</button><div class="semi-tables">${customTables || "<p>Brak stołów półfinałowych.</p>"}</div>${semiEliminatedTable}<h3>TABELA FINAŁOWA</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>STÓŁ</th><th>%</th></tr></thead><tbody>${finalRowsMarkup || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div>`;
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
@@ -1981,7 +1981,7 @@ const setupAdminTournament = (rootCard) => {
     const target = event.target;
     const role = target?.dataset?.role;
     if (!role) return;
-    if (["meta-buyin", "meta-rebuy", "meta-rake", "meta-stack", "meta-rebuystack", "player-pin", "table-entry", "group-stack", "group-eliminated-win", "group-survivor-stack", "pool-split", "pool-mod", "pool-rebuy-value", "semi-stack", "semi-final-stack"].includes(role)) {
+    if (["meta-buyin", "meta-rebuy", "meta-rake", "meta-stack", "meta-rebuystack", "player-pin", "table-entry", "group-stack", "group-eliminated-win", "group-survivor-stack", "pool-split", "pool-mod", "pool-rebuy-value", "semi-final-stack"].includes(role)) {
       target.value = digitsOnly(target.value);
     }
 
@@ -2018,15 +2018,6 @@ const setupAdminTournament = (rootCard) => {
     if (role === "group-stack") tournamentState.group.playerStacks[target.dataset.playerId] = target.value;
     if (role === "group-eliminated-win") tournamentState.group.eliminatedWins[target.dataset.playerId] = target.value || "0";
     if (role === "group-survivor-stack") tournamentState.group.survivorStacks[target.dataset.playerId] = target.value;
-    if (role === "semi-stack") {
-      tournamentState.semi.assignments[target.dataset.playerId] = {
-        ...(tournamentState.semi.assignments[target.dataset.playerId] || {}),
-        tableId: tournamentState.semi.assignments[target.dataset.playerId]?.tableId || "",
-        eliminated: !!tournamentState.semi.assignments[target.dataset.playerId]?.eliminated,
-        stack: target.value
-      };
-      render();
-    }
     if (role === "semi-final-stack") {
       tournamentState.semi.assignments[target.dataset.playerId] = {
         ...(tournamentState.semi.assignments[target.dataset.playerId] || {}),
