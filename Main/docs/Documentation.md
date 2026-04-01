@@ -164,3 +164,24 @@ Efekt techniczny:
 
 - W `initAdminCalculator` każdy wiersz rebuy (`table2Rows` i `table9Rows`) przechowuje parę `rebuys[]` + `rebuyIndexes[]`; dodawanie rebuy nadaje globalny numer `max+1` dla całego aktywnego trybu, a usunięcie rebuy wykonuje globalną kompaktację indeksów bez luk.
 - Tabela5 buduje kolumny `RebuyX` i mapowanie wartości po posortowanych `rebuyIndexes`, zamiast po samym `flatMap` kolejności graczy, dzięki czemu semantyka numeru `RebuyX` pozostaje spójna po dodawaniu/usuwaniu kolumn u różnych graczy.
+
+## Aktualizacja techniczna: Kalkulator (Organizacja + Żetony)
+- `Main/index.html`: w sidebarze kalkulatora dodano tryby `organization`, `chips-cash1`, `chips-cash2`, `chips-tournament1`, `chips-tournament2`.
+- `Main/app.js` (`initAdminCalculator`):
+  - rozszerzono listę trybów o `ALL_CALCULATOR_MODES`;
+  - dodano stany początkowe: `createInitialOrganizationState`, `createInitialChipsState`;
+  - dodano normalizację i serializację Firestore dla nowych trybów w `normalizeCalculatorModeState` i `serializeCalculatorModeState`;
+  - dodano renderery: `renderOrganizationTables`, `renderChipsTables`;
+  - dodano synchronizację wierszy `TABELAC` do `TABELAA` (`ensureChipsRows`);
+  - wszystkie nowe pola edycyjne mają metadane fokusu (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`) i korzystają z `applyIntegerInputHints`.
+- Obliczenia pól wynikowych w nowych tabelach są zaokrąglane w górę (`Math.ceil` przez `formatNumber`).
+- Persist danych: nowe tryby zapisują się do `calculators/{docId}` analogicznie do istniejących trybów.
+
+## Aktualizacja techniczna: separacja Gry admina od potwierdzeń i Najbliższej gry
+- `Main/app.js`:
+  - widok `Najbliższa gra` agreguje tylko `UserGames`;
+  - widok `Gry do potwierdzenia` (admin i gracz) pobiera aktywne gry tylko z `UserGames`;
+  - status admina w `Gry do potwierdzenia` raportuje już tylko źródło `UserGames`.
+
+## Aktualizacja techniczna: RebuyX i mobilna klawiatura
+- `Main/app.js`: w modalu rebuy kalkulatora każde pole `RebuyX` korzysta z `applyIntegerInputHints` (`type=text`, `inputmode=numeric`, `pattern=[0-9]*`) i sanitizacji cyfr.

@@ -194,3 +194,113 @@ Ewentualne brakujące pola mogą być tworzone leniwie przy pierwszym zapisie z 
 
 Zakres wymagań jest spójny i możliwy do wdrożenia bez ręcznych zmian w Firebase.
 Kluczowe ryzyka są po stronie UI/state-management (fokus, re-render, synchronizacja snapshotów), nie po stronie struktury bazy.
+
+---
+
+## Aktualizacja po wdrożeniu zmian w kodzie (2026-04-01)
+
+### Prompt użytkownika (kontekst)
+Przeczytaj analizę: Analizy/Zakladka_Organizacja.md
+Wprowadź rekomendowane rozwiązania zapewniające działanie zgodne z opisanymi wymaganiami.
+Po realizacji dopisz do analizy Analizy/Zakladka_Organizacja.md sekcję z dokładnym opisem dokonanych zmian w kodzie. Wszystkie zmiany we wszystkich plikach dokładnie opisz.
+
+### 1) Plik `Main/index.html`
+- Sekcja sidebaru zakładki `Kalkulator`:
+  - Było:
+    - `Tournament1`
+    - `Tournament2`
+    - `Cash`
+  - Jest:
+    - `Tournament1`
+    - `Tournament2`
+    - `Cash`
+    - `Organizacja`
+    - `Żetony cash1`
+    - `Żetony cash2`
+    - `Żetony tournament1`
+    - `Żetony tournament2`
+
+### 2) Plik `Main/app.js`
+
+#### 2.1. Rozszerzenie trybów kalkulatora
+- Było:
+  - tryby ograniczone do: `tournament1`, `tournament2`, `cash`.
+- Jest:
+  - dodane stałe: `ORGANIZATION_MODE`, `CHIPS_MODES`, `ALL_CALCULATOR_MODES`.
+  - dodane stany: `organization`, `chips-cash1`, `chips-cash2`, `chips-tournament1`, `chips-tournament2`.
+
+#### 2.2. Persist/normalizacja Firestore dla nowych trybów
+- Było:
+  - `normalizeCalculatorModeState` i `serializeCalculatorModeState` obsługiwały tylko `cash` i turnieje.
+- Jest:
+  - dodana obsługa struktur `organization.table1/table2Rows`.
+  - dodana obsługa struktur `tableAARows`, `tableAB`, `tableACRows` dla wszystkich trybów `Żetony ...`.
+
+#### 2.3. Organizacja — nowe tabele i obliczenia
+- Dodano `renderOrganizationTables()`:
+  - `TABELA1`: kolumny `KALKULATOR | ORGANIZACJA | POT`, 2 wiersze.
+  - procent w wierszu 1 wyświetlany jako `X%`, liczony jako `X/100`.
+  - `ORGANIZACJA = ceil(base * percent)`.
+  - `POT = ceil(base - organizacja)`.
+  - `TABELA2`: dynamiczne wiersze, `Dodaj/Usuń`, pierwsza kolumna z `%`, `PODZIAŁ = ceil(organizacja * percent)`.
+
+#### 2.4. Zakładki Żetony — nowe tabele i obliczenia
+- Dodano `renderChipsTables()`:
+  - `TABELAA`: `NOMINAŁ`, `SZTUK`, `STACK`, akcje `Dodaj/Usuń`.
+  - Podsumowanie `łącznie stack` = suma `STACK`.
+  - `TABELAB`: `L.GRACZY`, `STACK GRACZA`, `ŁĄCZNY STACK`.
+  - `TABELAC`: liczba wierszy synchronizowana z `TABELAA` (`ensureChipsRows`).
+  - W `TABELAC`:
+    - `NOMINAŁ` z `TABELAA` (readonly),
+    - `SZTUK` edytowalne,
+    - `SUMA = ceil(nominał * sztuk)`,
+    - `DLA WSZYSTKICH W SZT. = ceil(sztuk * l.graczy)`,
+    - `POZOSTAŁE ŻETONY = ceil(stack - dla_wszystkich)`.
+
+#### 2.5. Fokus + mobilna klawiatura
+- Było:
+  - dla nowych tabel brak implementacji.
+- Jest:
+  - wszystkie nowe pola wejściowe dostały komplet metadanych fokusu (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`).
+  - wszystkie nowe pola liczbowe korzystają z `applyIntegerInputHints` (`type=text`, `inputmode=numeric`, `pattern=[0-9]*`).
+
+#### 2.6. RebuyX w modalu „Rebuy gracza” (Kalkulator)
+- Było:
+  - input `RebuyX` ustawiany ręcznie jako `type="text"`.
+- Jest:
+  - input `RebuyX` konfigurowany przez `applyIntegerInputHints(input)` + sanitizacja cyfr.
+
+#### 2.7. Zaokrąglanie pól obliczalnych
+- Było:
+  - `formatNumber` używał `Math.round(...)`.
+- Jest:
+  - `formatNumber` używa `Math.ceil(...)` (zaokrąglenie w górę).
+
+#### 2.8. Separacja „Gry admina” od „Gry do potwierdzenia” i „Najbliższa gra”
+- Było:
+  - agregacja używała obu kolekcji: `Tables + UserGames`.
+- Jest:
+  - `Najbliższa gra`: dane tylko z `UserGames`.
+  - `Gry do potwierdzenia` (admin + gracz): dane tylko z `UserGames`.
+  - status admina zmieniony z `Tables + UserGames` na `UserGames`.
+
+### 3) Plik `Main/docs/README.md`
+- Dodano instrukcję UI dla nowych zakładek kalkulatora:
+  - `Organizacja` i `Żetony ...`.
+- Dodano sekcję o separacji źródeł danych:
+  - `Najbliższa gra` i `Gry do potwierdzenia` działają na `UserGames`.
+
+### 4) Plik `Main/docs/Documentation.md`
+- Dodano techniczny opis:
+  - nowych trybów kalkulatora,
+  - nowych struktur stanu i persistu,
+  - separacji źródeł danych dla potwierdzeń/najbliższej gry,
+  - wymuszenia numerycznej klawiatury dla `RebuyX`.
+
+### 5) Plik `DetaleLayout.md`
+- Dodano aktualny opis layoutu dla nowych przycisków i tabel kalkulatora (`Organizacja`, `Żetony ...`).
+
+### 6) Plik `Kolumny.md`
+- Dodano aktualny opis kolumn dla:
+  - `TABELA1`, `TABELA2` (Organizacja),
+  - `TABELAA`, `TABELAB`, `TABELAC` (Żetony).

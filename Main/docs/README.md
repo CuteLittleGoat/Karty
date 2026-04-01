@@ -583,3 +583,26 @@ Wskazówka użycia:
 1. W widoku użytkownika wejdź w **Strefa Gracza**.
 2. Ciemno-zielone panele sekcji (lewy panel przycisków i prawy panel treści) są dosunięte do szerokości karty: zaczynają się 1 px od lewej krawędzi zielonej ramki i kończą 1 px przed prawą krawędzią.
 3. Na telefonie napisy na przyciskach sekcji w **Strefa Gracza** (np. „Najbliższa Gra”, „Czat”, „Gry do Potwierdzenia”) są większe niż na desktopie, żeby były czytelniejsze.
+
+## 19. Kalkulator — nowe zakładki Organizacja i Żetony
+1. Wejdź do panelu **Admin** → zakładka **Kalkulator**.
+2. W panelu bocznym pod **Cash** masz nowe zakładki:
+   - **Organizacja**
+   - **Żetony cash1**
+   - **Żetony cash2**
+   - **Żetony tournament1**
+   - **Żetony tournament2**
+3. **Organizacja**:
+   - W `TABELA1` wpisz procent (wiersz 1, kolumna `KALKULATOR`) i bazę (wiersz 2, kolumna `KALKULATOR`).
+   - System pokaże `ORGANIZACJA` i `POT` automatycznie (zaokrąglenie w górę).
+   - W `TABELA2` możesz dodawać/usuwać wiersze (`Dodaj`/`Usuń`) i wpisywać procenty; kolumna `PODZIAŁ` liczy się automatycznie.
+4. **Zakładki Żetony** (każda niezależna):
+   - `TABELAA`: wpisz `NOMINAŁ` i `SZTUK`, `STACK` liczy się automatycznie, pod tabelą masz `łącznie stack`.
+   - `TABELAB`: wpisz `L.GRACZY` i `STACK GRACZA`, `ŁĄCZNY STACK` liczy się automatycznie.
+   - `TABELAC`: liczba wierszy jest synchronizowana z `TABELAA`; wpisujesz `SZTUK`, a pozostałe kolumny liczą się automatycznie.
+5. Wszystkie pola liczbowe w nowych tabelach mają mobilne wymuszenie klawiatury numerycznej.
+6. Dane każdej zakładki są zapisywane i wracają po odświeżeniu strony.
+
+## 20. Potwierdzenia i Najbliższa gra — źródło danych
+1. Zakładki **Najbliższa gra** i **Gry do potwierdzenia** korzystają tylko z gier z **Gry użytkowników** (`UserGames`).
+2. Gry dodane w **Gry admina** nie pojawiają się już w tych dwóch sekcjach.

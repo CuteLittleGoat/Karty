@@ -1905,7 +1905,7 @@ const synchronizeNextGamesConfirmations = async () => {
   };
 
   const [adminGames, userGames] = await Promise.all([
-    Promise.all(nextGamesState.adminGames.map(enrichWithConfirmations)),
+    Promise.all([]),
     Promise.all(nextGamesState.userGames.map(enrichWithConfirmations))
   ]);
 
@@ -1931,7 +1931,7 @@ const getCombinedOpenGames = () => {
     return dateValue.getTime() >= todayStart.getTime();
   };
 
-  return [...nextGamesState.adminGames, ...nextGamesState.userGames]
+  return [...nextGamesState.userGames]
     .filter((game) => !game.isClosed && isTodayOrFutureGame(game))
     .sort((a, b) => {
       const left = getDateSortValue(a.gameDate);
@@ -2018,11 +2018,8 @@ const initNextGamesView = () => {
     nextGamesState.userUnsubscribe();
   }
 
-  nextGamesState.adminUnsubscribe = db.collection(GAMES_COLLECTION)
-    .onSnapshot((snapshot) => {
-      nextGamesState.adminGames = mapSnapshot(snapshot, GAMES_COLLECTION);
-      void synchronizeNextGamesConfirmations();
-    });
+  nextGamesState.adminGames = [];
+  nextGamesState.adminUnsubscribe = null;
 
   nextGamesState.userUnsubscribe = db.collection(USER_GAMES_COLLECTION)
     .onSnapshot((snapshot) => {
@@ -2031,11 +2028,10 @@ const initNextGamesView = () => {
     });
 
   registerAdminRefreshHandler("adminNextGameTab", async () => {
-    const [adminGamesSnapshot, userGamesSnapshot] = await Promise.all([
-      db.collection(GAMES_COLLECTION).get({ source: "server" }),
+    const [userGamesSnapshot] = await Promise.all([
       db.collection(USER_GAMES_COLLECTION).get({ source: "server" })
     ]);
-    nextGamesState.adminGames = mapSnapshot(adminGamesSnapshot, GAMES_COLLECTION);
+    nextGamesState.adminGames = [];
     nextGamesState.userGames = mapSnapshot(userGamesSnapshot, USER_GAMES_COLLECTION);
     await synchronizeNextGamesConfirmations();
   });
@@ -2366,7 +2362,6 @@ const initUserConfirmations = () => {
     detailsModal.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
   };
-  const gamesCollectionName = getGamesCollectionName();
   const userGamesCollectionName = getUserGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
 
@@ -2384,7 +2379,7 @@ const initUserConfirmations = () => {
     body.innerHTML = "";
 
     try {
-      const games = await getActiveGamesForConfirmationsFromCollections(db, [gamesCollectionName, userGamesCollectionName], source);
+      const games = await getActiveGamesForConfirmationsFromCollections(db, [userGamesCollectionName], source);
 
       const visibleGames = [];
       for (const entry of games) {
@@ -3753,7 +3748,6 @@ const initAdminConfirmations = () => {
   }
 
   const db = firebaseApp.firestore();
-  const gamesCollectionName = getGamesCollectionName();
   const userGamesCollectionName = getUserGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
 
@@ -3762,7 +3756,7 @@ const initAdminConfirmations = () => {
     status.textContent = source === "server" ? "Odświeżanie danych..." : "Pobieranie danych...";
 
     try {
-      const games = await getActiveGamesForConfirmationsFromCollections(db, [gamesCollectionName, userGamesCollectionName], source);
+      const games = await getActiveGamesForConfirmationsFromCollections(db, [userGamesCollectionName], source);
 
       if (!games.length) {
         status.textContent = "Brak aktywnych gier do potwierdzenia.";
@@ -3907,7 +3901,7 @@ const initAdminConfirmations = () => {
         list.appendChild(wrapper);
       }
 
-      status.textContent = `Załadowano ${games.length} aktywnych gier (Tables + UserGames).`;
+      status.textContent = `Załadowano ${games.length} aktywnych gier (UserGames).`;
     } catch (error) {
       status.textContent = "Nie udało się pobrać listy potwierdzeń.";
     }
@@ -4344,6 +4338,9 @@ const initAdminCalculator = () => {
   const firebaseApp = getFirebaseApp();
   const CALCULATOR_COLLECTION = "calculators";
   const TOURNAMENT_MODES = new Set(["tournament1", "tournament2"]);
+  const ORGANIZATION_MODE = "organization";
+  const CHIPS_MODES = new Set(["chips-cash1", "chips-cash2", "chips-tournament1", "chips-tournament2"]);
+  const ALL_CALCULATOR_MODES = ["tournament1", "tournament2", "cash", ORGANIZATION_MODE, ...CHIPS_MODES];
 
   const createInitialState = () => ({
     table1Row: { id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" },
@@ -4359,19 +4356,35 @@ const initAdminCalculator = () => {
     table9Rows: [{ id: `table9-${Date.now()}-0`, playerId: "", playerName: "", buyIn: "0", payout: "0", rebuys: [], rebuyIndexes: [] }]
   });
 
+  const createInitialOrganizationState = () => ({
+    table1: { percent: "", base: "" },
+    table2Rows: [{ id: `org-table2-${Date.now()}-0`, percent: "" }]
+  });
+
+  const createInitialChipsState = () => ({
+    tableAARows: [{ id: `chips-aa-${Date.now()}-0`, nominal: "", count: "" }],
+    tableAB: { playersCount: "", playerStack: "" },
+    tableACRows: [{ id: `chips-ac-${Date.now()}-0`, count: "" }]
+  });
+
   const state = {
     mode: "tournament1",
     playerOptions: [],
     tournament1: createInitialState(),
     tournament2: createInitialState(),
     cash: createInitialCashState(),
+    organization: createInitialOrganizationState(),
+    "chips-cash1": createInitialChipsState(),
+    "chips-cash2": createInitialChipsState(),
+    "chips-tournament1": createInitialChipsState(),
+    "chips-tournament2": createInitialChipsState(),
     rebuyModal: {
       mode: null,
       rowId: null
     }
   };
 
-  const getModeState = () => (state.mode === "cash" ? state.cash : state[state.mode]);
+  const getModeState = () => state[state.mode];
   const getCalculatorDocId = (mode) => {
     if (mode === "tournament1") {
       return "tournament";
@@ -4399,7 +4412,7 @@ const initAdminCalculator = () => {
   };
   const formatNumber = (value) => {
     const normalized = Number.isFinite(value) ? value : 0;
-    return String(Math.round(normalized));
+    return String(Math.ceil(normalized));
   };
   const formatPercentDisplay = (value) => {
     const normalized = sanitizeInteger(value);
@@ -4417,6 +4430,59 @@ const initAdminCalculator = () => {
   };
 
   const normalizeCalculatorModeState = (mode, rawState) => {
+    if (mode === ORGANIZATION_MODE) {
+      const source = rawState && typeof rawState === "object" ? rawState : {};
+      const table1 = source.table1 && typeof source.table1 === "object" ? source.table1 : {};
+      const table2Rows = Array.isArray(source.table2Rows)
+        ? source.table2Rows.map((row, index) => {
+          const rowSource = row && typeof row === "object" ? row : {};
+          return {
+            id: typeof rowSource.id === "string" && rowSource.id.trim() ? rowSource.id.trim() : `org-table2-${Date.now()}-${index}`,
+            percent: sanitizeInteger(rowSource.percent)
+          };
+        }).filter((row) => row.id)
+        : [];
+      return {
+        table1: {
+          percent: sanitizeInteger(table1.percent),
+          base: sanitizeInteger(table1.base)
+        },
+        table2Rows: table2Rows.length ? table2Rows : [{ id: `org-table2-${Date.now()}-0`, percent: "" }]
+      };
+    }
+
+    if (CHIPS_MODES.has(mode)) {
+      const source = rawState && typeof rawState === "object" ? rawState : {};
+      const tableAARows = Array.isArray(source.tableAARows)
+        ? source.tableAARows.map((row, index) => {
+          const rowSource = row && typeof row === "object" ? row : {};
+          return {
+            id: typeof rowSource.id === "string" && rowSource.id.trim() ? rowSource.id.trim() : `chips-aa-${Date.now()}-${index}`,
+            nominal: sanitizeInteger(rowSource.nominal),
+            count: sanitizeInteger(rowSource.count)
+          };
+        }).filter((row) => row.id)
+        : [];
+      const tableAB = source.tableAB && typeof source.tableAB === "object" ? source.tableAB : {};
+      const tableACRows = Array.isArray(source.tableACRows)
+        ? source.tableACRows.map((row, index) => {
+          const rowSource = row && typeof row === "object" ? row : {};
+          return {
+            id: typeof rowSource.id === "string" && rowSource.id.trim() ? rowSource.id.trim() : `chips-ac-${Date.now()}-${index}`,
+            count: sanitizeInteger(rowSource.count)
+          };
+        }).filter((row) => row.id)
+        : [];
+      return {
+        tableAARows: tableAARows.length ? tableAARows : [{ id: `chips-aa-${Date.now()}-0`, nominal: "", count: "" }],
+        tableAB: {
+          playersCount: sanitizeInteger(tableAB.playersCount),
+          playerStack: sanitizeInteger(tableAB.playerStack)
+        },
+        tableACRows: tableACRows.length ? tableACRows : [{ id: `chips-ac-${Date.now()}-0`, count: "" }]
+      };
+    }
+
     if (mode === "cash") {
       const baseCashState = createInitialCashState();
       const source = rawState && typeof rawState === "object" ? rawState : {};
@@ -4504,6 +4570,43 @@ const initAdminCalculator = () => {
   };
 
   const serializeCalculatorModeState = (mode, modeState) => {
+    if (mode === ORGANIZATION_MODE) {
+      return {
+        table1: {
+          percent: sanitizeInteger(modeState.table1?.percent),
+          base: sanitizeInteger(modeState.table1?.base)
+        },
+        table2Rows: Array.isArray(modeState.table2Rows)
+          ? modeState.table2Rows.map((row, index) => ({
+            id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `org-table2-${Date.now()}-${index}`,
+            percent: sanitizeInteger(row.percent)
+          }))
+          : []
+      };
+    }
+
+    if (CHIPS_MODES.has(mode)) {
+      return {
+        tableAARows: Array.isArray(modeState.tableAARows)
+          ? modeState.tableAARows.map((row, index) => ({
+            id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `chips-aa-${Date.now()}-${index}`,
+            nominal: sanitizeInteger(row.nominal),
+            count: sanitizeInteger(row.count)
+          }))
+          : [],
+        tableAB: {
+          playersCount: sanitizeInteger(modeState.tableAB?.playersCount),
+          playerStack: sanitizeInteger(modeState.tableAB?.playerStack)
+        },
+        tableACRows: Array.isArray(modeState.tableACRows)
+          ? modeState.tableACRows.map((row, index) => ({
+            id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `chips-ac-${Date.now()}-${index}`,
+            count: sanitizeInteger(row.count)
+          }))
+          : []
+      };
+    }
+
     if (mode === "cash") {
       return {
         table8Row: {
@@ -4552,7 +4655,7 @@ const initAdminCalculator = () => {
   };
 
   const persistCalculatorModeState = (mode) => {
-    if (!firebaseApp || (!TOURNAMENT_MODES.has(mode) && mode !== "cash")) {
+    if (!firebaseApp || !ALL_CALCULATOR_MODES.includes(mode)) {
       return Promise.resolve();
     }
 
@@ -4930,7 +5033,7 @@ const initAdminCalculator = () => {
     row.rebuys.forEach((value, index) => {
       const td = document.createElement("td");
       const input = document.createElement("input");
-      input.type = "text";
+      applyIntegerInputHints(input);
       input.className = "admin-input";
       input.value = value;
       input.dataset.focusTarget = "admin-calculator-rebuy-modal";
@@ -5639,6 +5742,284 @@ const initAdminCalculator = () => {
     rootTable5.innerHTML = "";
   };
 
+  const getOrganizationMetrics = () => {
+    const modeState = state.organization;
+    const percentValue = parseInteger(modeState.table1.percent);
+    const baseValue = parseInteger(modeState.table1.base);
+    const organizationValue = Math.ceil(baseValue * (percentValue / 100));
+    const potValue = Math.ceil(baseValue - organizationValue);
+    return { percentValue, baseValue, organizationValue, potValue };
+  };
+
+  const ensureOrganizationRows = () => {
+    if (!Array.isArray(state.organization.table2Rows) || !state.organization.table2Rows.length) {
+      state.organization.table2Rows = [{ id: `org-table2-${Date.now()}-0`, percent: "" }];
+    }
+  };
+
+  const ensureChipsRows = (modeState) => {
+    if (!Array.isArray(modeState.tableAARows) || !modeState.tableAARows.length) {
+      modeState.tableAARows = [{ id: `chips-aa-${Date.now()}-0`, nominal: "", count: "" }];
+    }
+    modeState.tableACRows = modeState.tableAARows.map((row, index) => {
+      const current = modeState.tableACRows?.[index];
+      return {
+        id: typeof current?.id === "string" && current.id.trim() ? current.id.trim() : `chips-ac-${Date.now()}-${index}`,
+        count: sanitizeInteger(current?.count)
+      };
+    });
+  };
+
+  const renderOrganizationTables = () => {
+    const modeState = state.organization;
+    ensureOrganizationRows();
+    const metrics = getOrganizationMetrics();
+
+    rootTable1.innerHTML = "";
+    rootTable1.appendChild(createHeader("TABELA1"));
+    const table1 = document.createElement("table");
+    table1.className = "admin-data-table";
+    table1.innerHTML = "<thead><tr><th>KALKULATOR</th><th>ORGANIZACJA</th><th>POT</th></tr></thead>";
+    const tbody1 = document.createElement("tbody");
+    const row1 = document.createElement("tr");
+    const percentCell = document.createElement("td");
+    const percentInput = document.createElement("input");
+    applyIntegerInputHints(percentInput);
+    percentInput.className = "admin-input";
+    percentInput.value = formatPercentDisplay(modeState.table1.percent);
+    percentInput.dataset.focusTarget = "admin-calculator";
+    percentInput.dataset.section = "organization-table1";
+    percentInput.dataset.tableId = ORGANIZATION_MODE;
+    percentInput.dataset.rowId = "1";
+    percentInput.dataset.columnKey = "percent";
+    percentInput.addEventListener("focus", () => { percentInput.value = modeState.table1.percent; });
+    percentInput.addEventListener("input", () => {
+      modeState.table1.percent = sanitizeInteger(percentInput.value);
+      percentInput.value = modeState.table1.percent;
+      render();
+      schedulePersistCalculatorModeState(ORGANIZATION_MODE);
+    });
+    percentInput.addEventListener("blur", () => { percentInput.value = formatPercentDisplay(modeState.table1.percent); });
+    percentCell.appendChild(percentInput);
+    row1.append(percentCell, createReadonlyCell(formatNumber(metrics.organizationValue)), createReadonlyCell(formatNumber(metrics.potValue)));
+    tbody1.appendChild(row1);
+
+    const row2 = document.createElement("tr");
+    const baseCell = document.createElement("td");
+    const baseInput = document.createElement("input");
+    applyIntegerInputHints(baseInput);
+    baseInput.className = "admin-input";
+    baseInput.value = modeState.table1.base;
+    baseInput.dataset.focusTarget = "admin-calculator";
+    baseInput.dataset.section = "organization-table1";
+    baseInput.dataset.tableId = ORGANIZATION_MODE;
+    baseInput.dataset.rowId = "2";
+    baseInput.dataset.columnKey = "base";
+    baseInput.addEventListener("input", () => {
+      modeState.table1.base = sanitizeInteger(baseInput.value);
+      baseInput.value = modeState.table1.base;
+      render();
+      schedulePersistCalculatorModeState(ORGANIZATION_MODE);
+    });
+    baseCell.appendChild(baseInput);
+    row2.append(baseCell, createReadonlyCell(""), createReadonlyCell(""));
+    tbody1.appendChild(row2);
+    table1.appendChild(tbody1);
+    const scroll1 = createScroll();
+    scroll1.appendChild(table1);
+    rootTable1.appendChild(scroll1);
+
+    rootTable2.innerHTML = "";
+    rootTable2.appendChild(createHeader("TABELA2"));
+    const table2 = document.createElement("table");
+    table2.className = "admin-data-table";
+    table2.innerHTML = `<thead><tr><th>${formatNumber(metrics.organizationValue)}</th><th>PODZIAŁ</th><th></th></tr></thead>`;
+    const tbody2 = document.createElement("tbody");
+    modeState.table2Rows.forEach((row, index) => {
+      const tr = document.createElement("tr");
+      const percentValue = parseInteger(row.percent);
+      const percentRowCell = document.createElement("td");
+      const percentRowInput = document.createElement("input");
+      applyIntegerInputHints(percentRowInput);
+      percentRowInput.className = "admin-input";
+      percentRowInput.value = formatPercentDisplay(row.percent);
+      percentRowInput.dataset.focusTarget = "admin-calculator";
+      percentRowInput.dataset.section = "organization-table2";
+      percentRowInput.dataset.tableId = ORGANIZATION_MODE;
+      percentRowInput.dataset.rowId = row.id;
+      percentRowInput.dataset.columnKey = "percent";
+      percentRowInput.addEventListener("focus", () => { percentRowInput.value = row.percent; });
+      percentRowInput.addEventListener("input", () => {
+        row.percent = sanitizeInteger(percentRowInput.value);
+        percentRowInput.value = row.percent;
+        render();
+        schedulePersistCalculatorModeState(ORGANIZATION_MODE);
+      });
+      percentRowInput.addEventListener("blur", () => { percentRowInput.value = formatPercentDisplay(row.percent); });
+      percentRowCell.appendChild(percentRowInput);
+
+      const actions = document.createElement("td");
+      const actionsWrap = document.createElement("div");
+      actionsWrap.className = "admin-table-actions";
+      if (index === modeState.table2Rows.length - 1) {
+        const addBtn = document.createElement("button");
+        addBtn.type = "button";
+        addBtn.className = "secondary";
+        addBtn.textContent = "Dodaj";
+        addBtn.addEventListener("click", () => {
+          modeState.table2Rows.push({ id: `org-table2-${Date.now()}-${modeState.table2Rows.length}`, percent: "" });
+          render();
+          schedulePersistCalculatorModeState(ORGANIZATION_MODE);
+        });
+        actionsWrap.appendChild(addBtn);
+      }
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "danger admin-row-delete";
+      delBtn.textContent = "Usuń";
+      delBtn.disabled = modeState.table2Rows.length === 1;
+      delBtn.addEventListener("click", () => {
+        modeState.table2Rows = modeState.table2Rows.filter((entry) => entry.id !== row.id);
+        ensureOrganizationRows();
+        render();
+        schedulePersistCalculatorModeState(ORGANIZATION_MODE);
+      });
+      actionsWrap.appendChild(delBtn);
+      actions.appendChild(actionsWrap);
+      tr.append(percentRowCell, createReadonlyCell(formatNumber(metrics.organizationValue * (percentValue / 100))), actions);
+      tbody2.appendChild(tr);
+    });
+    table2.appendChild(tbody2);
+    const scroll2 = createScroll();
+    scroll2.appendChild(table2);
+    rootTable2.appendChild(scroll2);
+    rootTable3.innerHTML = "";
+    rootTable4.innerHTML = "";
+    rootTable5.innerHTML = "";
+  };
+
+  const renderChipsTables = () => {
+    const modeState = getModeState();
+    ensureChipsRows(modeState);
+    const playersCount = parseInteger(modeState.tableAB.playersCount);
+    const stackTotal = modeState.tableAARows.reduce((sum, row) => sum + Math.ceil(parseInteger(row.nominal) * parseInteger(row.count)), 0);
+
+    rootTable1.innerHTML = "";
+    rootTable1.appendChild(createHeader("TABELAA"));
+    const tableAA = document.createElement("table");
+    tableAA.className = "admin-data-table";
+    tableAA.innerHTML = "<thead><tr><th>NOMINAŁ</th><th>SZTUK</th><th>STACK</th><th></th></tr></thead>";
+    const tbodyAA = document.createElement("tbody");
+    modeState.tableAARows.forEach((row, index) => {
+      const tr = document.createElement("tr");
+      const nominalInput = document.createElement("input");
+      applyIntegerInputHints(nominalInput);
+      nominalInput.className = "admin-input";
+      nominalInput.value = row.nominal;
+      nominalInput.dataset.focusTarget = "admin-calculator";
+      nominalInput.dataset.section = "chips-aa";
+      nominalInput.dataset.tableId = state.mode;
+      nominalInput.dataset.rowId = row.id;
+      nominalInput.dataset.columnKey = "nominal";
+      nominalInput.addEventListener("input", () => { row.nominal = sanitizeInteger(nominalInput.value); nominalInput.value = row.nominal; render(); schedulePersistCalculatorModeState(state.mode); });
+      const countInput = document.createElement("input");
+      applyIntegerInputHints(countInput);
+      countInput.className = "admin-input";
+      countInput.value = row.count;
+      countInput.dataset.focusTarget = "admin-calculator";
+      countInput.dataset.section = "chips-aa";
+      countInput.dataset.tableId = state.mode;
+      countInput.dataset.rowId = row.id;
+      countInput.dataset.columnKey = "count";
+      countInput.addEventListener("input", () => { row.count = sanitizeInteger(countInput.value); countInput.value = row.count; render(); schedulePersistCalculatorModeState(state.mode); });
+      const nominalCell = document.createElement("td"); nominalCell.appendChild(nominalInput);
+      const countCell = document.createElement("td"); countCell.appendChild(countInput);
+      const actionsCell = document.createElement("td");
+      const wrap = document.createElement("div"); wrap.className = "admin-table-actions";
+      if (index === modeState.tableAARows.length - 1) {
+        const addBtn = document.createElement("button"); addBtn.type = "button"; addBtn.className = "secondary"; addBtn.textContent = "Dodaj";
+        addBtn.addEventListener("click", () => { modeState.tableAARows.push({ id: `chips-aa-${Date.now()}-${modeState.tableAARows.length}`, nominal: "", count: "" }); render(); schedulePersistCalculatorModeState(state.mode); });
+        wrap.appendChild(addBtn);
+      }
+      const delBtn = document.createElement("button"); delBtn.type = "button"; delBtn.className = "danger admin-row-delete"; delBtn.textContent = "Usuń"; delBtn.disabled = modeState.tableAARows.length === 1;
+      delBtn.addEventListener("click", () => { modeState.tableAARows = modeState.tableAARows.filter((entry) => entry.id !== row.id); ensureChipsRows(modeState); render(); schedulePersistCalculatorModeState(state.mode); });
+      wrap.appendChild(delBtn); actionsCell.appendChild(wrap);
+      tr.append(nominalCell, countCell, createReadonlyCell(formatNumber(parseInteger(row.nominal) * parseInteger(row.count))), actionsCell);
+      tbodyAA.appendChild(tr);
+    });
+    const sumRow = document.createElement("tr");
+    sumRow.append(createReadonlyCell("łącznie stack"), createReadonlyCell(""), createReadonlyCell(formatNumber(stackTotal)), createReadonlyCell(""));
+    tbodyAA.appendChild(sumRow);
+    tableAA.appendChild(tbodyAA);
+    const scrollAA = createScroll(); scrollAA.appendChild(tableAA); rootTable1.appendChild(scrollAA);
+
+    rootTable2.innerHTML = "";
+    rootTable2.appendChild(createHeader("TABELAB"));
+    const tableAB = document.createElement("table");
+    tableAB.className = "admin-data-table";
+    tableAB.innerHTML = "<thead><tr><th>L.GRACZY</th><th>STACK GRACZA</th><th>ŁĄCZNY STACK</th></tr></thead>";
+    const tbodyAB = document.createElement("tbody");
+    const trAB = document.createElement("tr");
+    const playersInput = document.createElement("input");
+    applyIntegerInputHints(playersInput);
+    playersInput.className = "admin-input";
+    playersInput.value = modeState.tableAB.playersCount;
+    playersInput.dataset.focusTarget = "admin-calculator";
+    playersInput.dataset.section = "chips-ab";
+    playersInput.dataset.tableId = state.mode;
+    playersInput.dataset.rowId = "0";
+    playersInput.dataset.columnKey = "playersCount";
+    playersInput.addEventListener("input", () => { modeState.tableAB.playersCount = sanitizeInteger(playersInput.value); playersInput.value = modeState.tableAB.playersCount; render(); schedulePersistCalculatorModeState(state.mode); });
+    const playerStackInput = document.createElement("input");
+    applyIntegerInputHints(playerStackInput);
+    playerStackInput.className = "admin-input";
+    playerStackInput.value = modeState.tableAB.playerStack;
+    playerStackInput.dataset.focusTarget = "admin-calculator";
+    playerStackInput.dataset.section = "chips-ab";
+    playerStackInput.dataset.tableId = state.mode;
+    playerStackInput.dataset.rowId = "0";
+    playerStackInput.dataset.columnKey = "playerStack";
+    playerStackInput.addEventListener("input", () => { modeState.tableAB.playerStack = sanitizeInteger(playerStackInput.value); playerStackInput.value = modeState.tableAB.playerStack; render(); schedulePersistCalculatorModeState(state.mode); });
+    const playersCell = document.createElement("td"); playersCell.appendChild(playersInput);
+    const stackCell = document.createElement("td"); stackCell.appendChild(playerStackInput);
+    trAB.append(playersCell, stackCell, createReadonlyCell(formatNumber(playersCount * parseInteger(modeState.tableAB.playerStack))));
+    tbodyAB.appendChild(trAB);
+    tableAB.appendChild(tbodyAB);
+    const scrollAB = createScroll(); scrollAB.appendChild(tableAB); rootTable2.appendChild(scrollAB);
+
+    rootTable3.innerHTML = "";
+    rootTable3.appendChild(createHeader("TABELAC"));
+    const tableAC = document.createElement("table");
+    tableAC.className = "admin-data-table";
+    tableAC.innerHTML = "<thead><tr><th>POZOSTAŁE ŻETONY</th><th>NOMINAŁ</th><th>SZTUK</th><th>SUMA</th><th>DLA WSZYSTKICH W SZT.</th></tr></thead>";
+    const tbodyAC = document.createElement("tbody");
+    modeState.tableAARows.forEach((row, index) => {
+      const acRow = modeState.tableACRows[index] ?? { id: `chips-ac-${Date.now()}-${index}`, count: "" };
+      const sztukValue = parseInteger(acRow.count);
+      const suma = Math.ceil(parseInteger(row.nominal) * sztukValue);
+      const forAll = Math.ceil(sztukValue * playersCount);
+      const stack = Math.ceil(parseInteger(row.nominal) * parseInteger(row.count));
+      const tr = document.createElement("tr");
+      const sztukInput = document.createElement("input");
+      applyIntegerInputHints(sztukInput);
+      sztukInput.className = "admin-input";
+      sztukInput.value = acRow.count;
+      sztukInput.dataset.focusTarget = "admin-calculator";
+      sztukInput.dataset.section = "chips-ac";
+      sztukInput.dataset.tableId = state.mode;
+      sztukInput.dataset.rowId = acRow.id;
+      sztukInput.dataset.columnKey = "count";
+      sztukInput.addEventListener("input", () => { acRow.count = sanitizeInteger(sztukInput.value); sztukInput.value = acRow.count; modeState.tableACRows[index] = acRow; render(); schedulePersistCalculatorModeState(state.mode); });
+      const sztukCell = document.createElement("td"); sztukCell.appendChild(sztukInput);
+      tr.append(createReadonlyCell(formatNumber(stack - forAll)), createReadonlyCell(formatNumber(parseInteger(row.nominal))), sztukCell, createReadonlyCell(formatNumber(suma)), createReadonlyCell(formatNumber(forAll)));
+      tbodyAC.appendChild(tr);
+    });
+    tableAC.appendChild(tbodyAC);
+    const scrollAC = createScroll(); scrollAC.appendChild(tableAC); rootTable3.appendChild(scrollAC);
+    rootTable4.innerHTML = "";
+    rootTable5.innerHTML = "";
+  };
+
   const render = () => {
     const focusState = getFocusedAdminInputState(calculatorContent);
     if (state.mode === "cash") {
@@ -5651,6 +6032,18 @@ const initAdminCalculator = () => {
       if (rebuyModal.classList.contains("is-visible")) {
         renderRebuyModal();
       }
+      return;
+    }
+
+    if (state.mode === ORGANIZATION_MODE) {
+      renderOrganizationTables();
+      restoreFocusedAdminInputState(calculatorContent, focusState);
+      return;
+    }
+
+    if (CHIPS_MODES.has(state.mode)) {
+      renderChipsTables();
+      restoreFocusedAdminInputState(calculatorContent, focusState);
       return;
     }
 
@@ -5668,7 +6061,7 @@ const initAdminCalculator = () => {
 
   modeButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      state.mode = TOURNAMENT_MODES.has(button.dataset.calculatorMode) || button.dataset.calculatorMode === "cash"
+      state.mode = ALL_CALCULATOR_MODES.includes(button.dataset.calculatorMode)
         ? button.dataset.calculatorMode
         : "tournament1";
       modeButtons.forEach((entry) => {
@@ -5689,12 +6082,12 @@ const initAdminCalculator = () => {
     return;
   }
 
-  ["tournament1", "tournament2", "cash"].forEach((mode) => {
+  ALL_CALCULATOR_MODES.forEach((mode) => {
     getCalculatorDocRef(mode).onSnapshot((snapshot) => {
       if (!snapshot.exists) {
         return;
       }
-      if (state.mode === mode && (isEditingSection(["table1", "table2", "table3", "table5", "table9"]) || hasPendingDebounceWithPrefix(`admin-calculator-${mode}`))) {
+      if (state.mode === mode && (isEditingSection(["table1", "table2", "table3", "table5", "table9", "organization-table1", "organization-table2", "chips-aa", "chips-ab", "chips-ac"]) || hasPendingDebounceWithPrefix(`admin-calculator-${mode}`))) {
         return;
       }
       state[mode] = normalizeCalculatorModeState(mode, snapshot.data());

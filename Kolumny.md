@@ -108,3 +108,12 @@ Dodatkowo dla każdego stołu:
 ### Modal „Rebuy gracza” (Second)
 - Kolumny dynamiczne: `Rebuy1..n` (numeracja globalna dla wszystkich wpisów `Tabela12`, niezależnie od aktualnie przypisanych graczy).
 - Szerokość każdej kolumny: `8ch` (jak w module Main).
+
+## Main — kolumny nowych tabel kalkulatora
+- Zakładka `Organizacja`:
+  - `TABELA1`: `KALKULATOR | ORGANIZACJA | POT`.
+  - `TABELA2`: `<dynamiczny nagłówek = wartość ORGANIZACJA> | PODZIAŁ | AKCJE`.
+- Zakładki `Żetony ...`:
+  - `TABELAA`: `NOMINAŁ | SZTUK | STACK | AKCJE`.
+  - `TABELAB`: `L.GRACZY | STACK GRACZA | ŁĄCZNY STACK`.
+  - `TABELAC`: `POZOSTAŁE ŻETONY | NOMINAŁ | SZTUK | SUMA | DLA WSZYSTKICH W SZT.`.
