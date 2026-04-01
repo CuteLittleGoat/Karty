@@ -173,6 +173,9 @@ Efekt techniczny:
   - dodano normalizację i serializację Firestore dla nowych trybów w `normalizeCalculatorModeState` i `serializeCalculatorModeState`;
   - dodano renderery: `renderOrganizationTables`, `renderChipsTables`;
   - dodano synchronizację wierszy `TABELAC` do `TABELAA` (`ensureChipsRows`);
+  - w `Organizacja -> TABELA2` przycisk `Dodaj` jest renderowany pod tabelą (`.admin-table-footer-actions`), a przycisk `Usuń` pozostaje w kolumnie akcji każdego wiersza;
+  - w `Żetony -> TABELAA` usunięto wiersz sumy z ciała tabeli; podsumowanie `Łącznie Stack` jest renderowane jako osobny tekst pod tabelą (`.admin-table-info`);
+  - w tabelach `TABELA2` (Organizacja) i `TABELAA` (Żetony) przyciski `Usuń` w wierszach są wyrównywane do prawej (`.admin-table-actions--row-end`);
   - wszystkie nowe pola edycyjne mają metadane fokusu (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`) i korzystają z `applyIntegerInputHints`.
 - Obliczenia pól wynikowych w nowych tabelach są zaokrąglane w górę (`Math.ceil` przez `formatNumber`).
 - Persist danych: nowe tryby zapisują się do `calculators/{docId}` analogicznie do istniejących trybów.
