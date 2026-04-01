@@ -174,6 +174,7 @@ Efekt techniczny:
   - dodano renderery: `renderOrganizationTables`, `renderChipsTables`;
   - dodano synchronizację wierszy `TABELAC` do `TABELAA` (`ensureChipsRows`);
   - wszystkie nowe pola edycyjne mają metadane fokusu (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`) i korzystają z `applyIntegerInputHints`.
+- `renderOrganizationTables` (`Main/app.js`): w `TABELA1` drugi wiersz pozostawia kolumny `ORGANIZACJA` i `POT` jako puste komórki `<td>` (bez readonly inputów), dzięki czemu tylko `KALKULATOR` ma pole edycyjne w tym wierszu.
 - Obliczenia pól wynikowych w nowych tabelach są zaokrąglane w górę (`Math.ceil` przez `formatNumber`).
 - Persist danych: nowe tryby zapisują się do `calculators/{docId}` analogicznie do istniejących trybów.
 

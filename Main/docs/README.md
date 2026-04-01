@@ -594,7 +594,8 @@ Wskazówka użycia:
    - **Żetony tournament2**
 3. **Organizacja**:
    - W `TABELA1` wpisz procent (wiersz 1, kolumna `KALKULATOR`) i bazę (wiersz 2, kolumna `KALKULATOR`).
-   - System pokaże `ORGANIZACJA` i `POT` automatycznie (zaokrąglenie w górę).
+   - System pokaże `ORGANIZACJA` i `POT` automatycznie (zaokrąglenie w górę) tylko w pierwszym wierszu.
+   - W drugim wierszu `TABELA1` pola pod kolumnami `ORGANIZACJA` i `POT` są celowo puste (bez kontrolek).
    - W `TABELA2` możesz dodawać/usuwać wiersze (`Dodaj`/`Usuń`) i wpisywać procenty; kolumna `PODZIAŁ` liczy się automatycznie.
 4. **Zakładki Żetony** (każda niezależna):
    - `TABELAA`: wpisz `NOMINAŁ` i `SZTUK`, `STACK` liczy się automatycznie, pod tabelą masz `łącznie stack`.
