@@ -598,7 +598,9 @@ Wskazówka użycia:
    - W drugim wierszu `TABELA1` pola pod kolumnami `ORGANIZACJA` i `POT` są celowo puste (bez kontrolek).
    - W `TABELA2` możesz dodawać/usuwać wiersze (`Dodaj`/`Usuń`) i wpisywać procenty; kolumna `PODZIAŁ` liczy się automatycznie.
 4. **Zakładki Żetony** (każda niezależna):
-   - `TABELAA`: wpisz `NOMINAŁ` i `SZTUK`, `STACK` liczy się automatycznie, pod tabelą masz `łącznie stack`.
+   - `TABELAA`: wpisz `NOMINAŁ` i `SZTUK`, `STACK` liczy się automatycznie.
+   - W `TABELAA` przycisk `Dodaj` jest pod tabelą po lewej, a `Usuń` po prawej stronie każdego wiersza.
+   - Pod `TABELAA` widzisz podsumowanie `Łącznie Stack: ...` jako informację tekstową (nie jako osobny wiersz tabeli).
    - `TABELAB`: wpisz `L.GRACZY` i `STACK GRACZA`, `ŁĄCZNY STACK` liczy się automatycznie.
    - `TABELAC`: liczba wierszy jest synchronizowana z `TABELAA`; wpisujesz `SZTUK`, a pozostałe kolumny liczą się automatycznie.
 5. Wszystkie pola liczbowe w nowych tabelach mają mobilne wymuszenie klawiatury numerycznej.

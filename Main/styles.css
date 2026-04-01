@@ -256,6 +256,23 @@ h1 {
   gap: var(--gap-2);
 }
 
+.admin-table-actions--row-end {
+  justify-content: flex-end;
+}
+
+.admin-table-footer-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+.admin-table-info {
+  margin: 0;
+  font-family: var(--font-text);
+  font-size: var(--fs-body);
+  color: rgba(237, 235, 230, 0.9);
+}
+
 .admin-table-scroll {
   overflow: auto;
   border-radius: var(--radius-sm);
