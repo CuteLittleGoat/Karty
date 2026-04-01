@@ -58,3 +58,8 @@
 - W module `Main` na mobile (`max-width: 720px`) przyciski nawigacyjne sekcji `Strefa Gracza` (`.player-zone-button`) mają większy font (`14px`) i ciaśniej kontrolowany odstęp liter (`0.12em`) dla lepszej czytelności.
 
 - Tabela rebuy gracza w modalu (`#adminCalculatorRebuyTable`) ma takie same reguły jak w Main: `width:auto`, `min-width:0`, `table-layout:fixed` oraz stałą szerokość kolumn `8ch`.
+
+## Main — Kalkulator: nowe sekcje Organizacja i Żetony
+- Sidebar kalkulatora zawiera dodatkowe przyciski trybów: `Organizacja`, `Żetony cash1`, `Żetony cash2`, `Żetony tournament1`, `Żetony tournament2`.
+- Nowe tabele korzystają ze standardowego stylu `admin-data-table` i pól `admin-input` (spójność wizualna z resztą Main).
+- Przyciski akcji w wierszach (`Dodaj`, `Usuń`) korzystają z istniejących klas `secondary` i `danger admin-row-delete`.
