@@ -62,5 +62,5 @@
 ## Main — Kalkulator: nowe sekcje Organizacja i Żetony
 - Sidebar kalkulatora zawiera dodatkowe przyciski trybów: `Organizacja`, `Żetony cash1`, `Żetony cash2`, `Żetony tournament1`, `Żetony tournament2`.
 - Nowe tabele korzystają ze standardowego stylu `admin-data-table` i pól `admin-input` (spójność wizualna z resztą Main).
-- W kalkulatorze Main (zakładki `Organizacja` i `Żetony`) przyciski `Dodaj` dla `TABELA2` i `TABELAA` są pod tabelą po lewej (`.admin-table-footer-actions`), a przyciski `Usuń` w wierszach są wyrównane do prawej (`.admin-table-actions--row-end`).
-- Pod `TABELAA` podsumowanie `Łącznie Stack` jest prezentowane jako osobna informacja tekstowa (`.admin-table-info`), a nie jako dodatkowy wiersz tabeli.
+- W `Organizacja` (`TABELA1`) drugi wiersz pozostawia kolumny `ORGANIZACJA` i `POT` bez pól wejściowych; aktywne pole edycji znajduje się tam wyłącznie w kolumnie `KALKULATOR`.
+- Przyciski akcji w wierszach (`Dodaj`, `Usuń`) korzystają z istniejących klas `secondary` i `danger admin-row-delete`.

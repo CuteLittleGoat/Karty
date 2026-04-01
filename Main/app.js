@@ -5822,7 +5822,9 @@ const initAdminCalculator = () => {
       schedulePersistCalculatorModeState(ORGANIZATION_MODE);
     });
     baseCell.appendChild(baseInput);
-    row2.append(baseCell, createReadonlyCell(""), createReadonlyCell(""));
+    const emptyOrganizationCell = document.createElement("td");
+    const emptyPotCell = document.createElement("td");
+    row2.append(baseCell, emptyOrganizationCell, emptyPotCell);
     tbody1.appendChild(row2);
     table1.appendChild(tbody1);
     const scroll1 = createScroll();
