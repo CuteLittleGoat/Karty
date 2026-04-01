@@ -113,7 +113,10 @@ Dodatkowo dla każdego stołu:
 - Zakładka `Organizacja`:
   - `TABELA1`: `KALKULATOR | ORGANIZACJA | POT`.
   - `TABELA2`: `<dynamiczny nagłówek = wartość ORGANIZACJA> | PODZIAŁ | AKCJE`.
+  - `TABELA2`: przycisk `Dodaj` jest pod tabelą po lewej, a `Usuń` jest po prawej stronie w każdym wierszu (kolumna `AKCJE`).
 - Zakładki `Żetony ...`:
   - `TABELAA`: `NOMINAŁ | SZTUK | STACK | AKCJE`.
+  - `TABELAA`: przycisk `Dodaj` jest pod tabelą po lewej, a `Usuń` jest po prawej stronie każdego wiersza w kolumnie `AKCJE`.
+  - `TABELAA`: `Łącznie Stack` nie jest osobnym wierszem tabeli — jest prezentowane jako tekst pod tabelą.
   - `TABELAB`: `L.GRACZY | STACK GRACZA | ŁĄCZNY STACK`.
   - `TABELAC`: `POZOSTAŁE ŻETONY | NOMINAŁ | SZTUK | SUMA | DLA WSZYSTKICH W SZT.`.

@@ -5189,7 +5189,7 @@ const initAdminCalculator = () => {
     table.innerHTML = `<thead><tr><th>LP</th><th>Gracz</th><th>Buy-In</th><th>Rebuy</th><th>Eliminated</th><th></th></tr></thead>`;
     const tbody = document.createElement("tbody");
 
-    modeState.table2Rows.forEach((row, index) => {
+    modeState.table2Rows.forEach((row) => {
       const tr = document.createElement("tr");
       const lpCell = document.createElement("td");
       lpCell.textContent = String(index + 1);
@@ -5835,7 +5835,7 @@ const initAdminCalculator = () => {
     table2.className = "admin-data-table";
     table2.innerHTML = `<thead><tr><th>${formatNumber(metrics.organizationValue)}</th><th>PODZIAŁ</th><th></th></tr></thead>`;
     const tbody2 = document.createElement("tbody");
-    modeState.table2Rows.forEach((row, index) => {
+    modeState.table2Rows.forEach((row) => {
       const tr = document.createElement("tr");
       const percentValue = parseInteger(row.percent);
       const percentRowCell = document.createElement("td");
@@ -5860,19 +5860,7 @@ const initAdminCalculator = () => {
 
       const actions = document.createElement("td");
       const actionsWrap = document.createElement("div");
-      actionsWrap.className = "admin-table-actions";
-      if (index === modeState.table2Rows.length - 1) {
-        const addBtn = document.createElement("button");
-        addBtn.type = "button";
-        addBtn.className = "secondary";
-        addBtn.textContent = "Dodaj";
-        addBtn.addEventListener("click", () => {
-          modeState.table2Rows.push({ id: `org-table2-${Date.now()}-${modeState.table2Rows.length}`, percent: "" });
-          render();
-          schedulePersistCalculatorModeState(ORGANIZATION_MODE);
-        });
-        actionsWrap.appendChild(addBtn);
-      }
+      actionsWrap.className = "admin-table-actions admin-table-actions--row-end";
       const delBtn = document.createElement("button");
       delBtn.type = "button";
       delBtn.className = "danger admin-row-delete";
@@ -5893,6 +5881,19 @@ const initAdminCalculator = () => {
     const scroll2 = createScroll();
     scroll2.appendChild(table2);
     rootTable2.appendChild(scroll2);
+    const table2FooterActions = document.createElement("div");
+    table2FooterActions.className = "admin-table-footer-actions";
+    const table2AddButton = document.createElement("button");
+    table2AddButton.type = "button";
+    table2AddButton.className = "secondary";
+    table2AddButton.textContent = "Dodaj";
+    table2AddButton.addEventListener("click", () => {
+      modeState.table2Rows.push({ id: `org-table2-${Date.now()}-${modeState.table2Rows.length}`, percent: "" });
+      render();
+      schedulePersistCalculatorModeState(ORGANIZATION_MODE);
+    });
+    table2FooterActions.appendChild(table2AddButton);
+    rootTable2.appendChild(table2FooterActions);
     rootTable3.innerHTML = "";
     rootTable4.innerHTML = "";
     rootTable5.innerHTML = "";
@@ -5910,7 +5911,7 @@ const initAdminCalculator = () => {
     tableAA.className = "admin-data-table";
     tableAA.innerHTML = "<thead><tr><th>NOMINAŁ</th><th>SZTUK</th><th>STACK</th><th></th></tr></thead>";
     const tbodyAA = document.createElement("tbody");
-    modeState.tableAARows.forEach((row, index) => {
+    modeState.tableAARows.forEach((row) => {
       const tr = document.createElement("tr");
       const nominalInput = document.createElement("input");
       applyIntegerInputHints(nominalInput);
@@ -5935,23 +5936,32 @@ const initAdminCalculator = () => {
       const nominalCell = document.createElement("td"); nominalCell.appendChild(nominalInput);
       const countCell = document.createElement("td"); countCell.appendChild(countInput);
       const actionsCell = document.createElement("td");
-      const wrap = document.createElement("div"); wrap.className = "admin-table-actions";
-      if (index === modeState.tableAARows.length - 1) {
-        const addBtn = document.createElement("button"); addBtn.type = "button"; addBtn.className = "secondary"; addBtn.textContent = "Dodaj";
-        addBtn.addEventListener("click", () => { modeState.tableAARows.push({ id: `chips-aa-${Date.now()}-${modeState.tableAARows.length}`, nominal: "", count: "" }); render(); schedulePersistCalculatorModeState(state.mode); });
-        wrap.appendChild(addBtn);
-      }
+      const wrap = document.createElement("div"); wrap.className = "admin-table-actions admin-table-actions--row-end";
       const delBtn = document.createElement("button"); delBtn.type = "button"; delBtn.className = "danger admin-row-delete"; delBtn.textContent = "Usuń"; delBtn.disabled = modeState.tableAARows.length === 1;
       delBtn.addEventListener("click", () => { modeState.tableAARows = modeState.tableAARows.filter((entry) => entry.id !== row.id); ensureChipsRows(modeState); render(); schedulePersistCalculatorModeState(state.mode); });
       wrap.appendChild(delBtn); actionsCell.appendChild(wrap);
       tr.append(nominalCell, countCell, createReadonlyCell(formatNumber(parseInteger(row.nominal) * parseInteger(row.count))), actionsCell);
       tbodyAA.appendChild(tr);
     });
-    const sumRow = document.createElement("tr");
-    sumRow.append(createReadonlyCell("łącznie stack"), createReadonlyCell(""), createReadonlyCell(formatNumber(stackTotal)), createReadonlyCell(""));
-    tbodyAA.appendChild(sumRow);
     tableAA.appendChild(tbodyAA);
     const scrollAA = createScroll(); scrollAA.appendChild(tableAA); rootTable1.appendChild(scrollAA);
+    const tableAAFooterActions = document.createElement("div");
+    tableAAFooterActions.className = "admin-table-footer-actions";
+    const tableAAAddButton = document.createElement("button");
+    tableAAAddButton.type = "button";
+    tableAAAddButton.className = "secondary";
+    tableAAAddButton.textContent = "Dodaj";
+    tableAAAddButton.addEventListener("click", () => {
+      modeState.tableAARows.push({ id: `chips-aa-${Date.now()}-${modeState.tableAARows.length}`, nominal: "", count: "" });
+      render();
+      schedulePersistCalculatorModeState(state.mode);
+    });
+    tableAAFooterActions.appendChild(tableAAAddButton);
+    rootTable1.appendChild(tableAAFooterActions);
+    const stackSummary = document.createElement("p");
+    stackSummary.className = "admin-table-info";
+    stackSummary.textContent = `Łącznie Stack: ${formatNumber(stackTotal)}`;
+    rootTable1.appendChild(stackSummary);
 
     rootTable2.innerHTML = "";
     rootTable2.appendChild(createHeader("TABELAB"));
