@@ -92,3 +92,26 @@ Na ten przypadek **najlepiej zacząć od Wariantu A (`:empty`)**, bo:
 - od razu usuwa zielone pasy tam, gdzie sloty są puste.
 
 Jeżeli w przyszłości pojawią się niestandardowe przypadki (np. sloty zawierające techniczne, ale niewidoczne elementy), można przejść na Wariant B z klasą sterowaną w JS.
+
+## Realizacja zmian w kodzie (2026-04-02)
+
+Plik Main/styles.css  
+Linia 525  
+Było: `/* brak reguły ukrywającej pusty wrapper */`  
+Jest: `.admin-calculator-table-wrap:empty { display: none; }`
+
+Plik Main/docs/Documentation.md  
+Linia 179  
+Było: `- w tabelach TABELA2 (Organizacja) i TABELAA (Żetony) przyciski Usuń...`  
+Jest: `- ... + doprecyzowanie, że puste sloty #adminCalculatorTable1..#adminCalculatorTable5 są ukrywane przez .admin-calculator-table-wrap:empty`
+
+Plik Main/docs/README.md  
+Linia 606  
+Było: `5. Wszystkie pola liczbowe...`  
+Jest: `5. Puste pasy pod TABELA2/TABELAC są ukrywane automatycznie...`
+
+Plik DetaleLayout.md  
+Linia 67  
+Było: `- Przyciski akcji w wierszach (Dodaj, Usuń)...`  
+Jest: `- ... + informacja o ukrywaniu pustych wrapperów .admin-calculator-table-wrap:empty`
+

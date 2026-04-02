@@ -603,8 +603,9 @@ Wskazówka użycia:
    - Pod `TABELAA` widzisz podsumowanie `Łącznie Stack: ...` jako informację tekstową (nie jako osobny wiersz tabeli).
    - `TABELAB`: wpisz `L.GRACZY` i `STACK GRACZA`, `ŁĄCZNY STACK` liczy się automatycznie.
    - `TABELAC`: liczba wierszy jest synchronizowana z `TABELAA`; wpisujesz `SZTUK`, a pozostałe kolumny liczą się automatycznie.
-5. Wszystkie pola liczbowe w nowych tabelach mają mobilne wymuszenie klawiatury numerycznej.
-6. Dane każdej zakładki są zapisywane i wracają po odświeżeniu strony.
+5. Puste pasy pod `TABELA2` (Organizacja) i pod `TABELAC` (zakładki Żetony) są ukrywane automatycznie — system chowa tylko puste kontenery, czyli takie bez nagłówka i bez tabeli.
+6. Wszystkie pola liczbowe w nowych tabelach mają mobilne wymuszenie klawiatury numerycznej.
+7. Dane każdej zakładki są zapisywane i wracają po odświeżeniu strony.
 
 ## 20. Potwierdzenia i Najbliższa gra — źródło danych
 1. Zakładki **Najbliższa gra** i **Gry do potwierdzenia** korzystają tylko z gier z **Gry użytkowników** (`UserGames`).
