@@ -501,3 +501,58 @@ a dopiero potem od debugowania samej funkcji przełączania zakładek.
   - Mogą wzmacniać objaw, ale rdzeń problemu nadal wskazuje na strategię aktualizacji i cache PWA po stronie kodu.
 - **Jak wyeliminować problem?**
   - Zmienić strategię SW + wdrożyć twarde wersjonowanie + kontrolowany mechanizm aktualizacji UI.
+
+---
+
+## Sekcja zmian w kodzie po wdrożeniu rekomendowanej naprawy (2026-04-02)
+
+### Plik `Main/service-worker.js`
+Linia 1  
+Było: `const CACHE_NAME = "karty-main-pwa-v4";`  
+Jest: `const APP_VERSION = "2026-04-02.1";` oraz `const CACHE_NAME = \`karty-main-pwa-${APP_VERSION}\`;`
+
+Linia 3-10  
+Było: cache app-shell bez wersjonowanych query (`./styles.css`, `./app.js`, `./pwa-config.js`, `./pwa-bootstrap.js`).  
+Jest: cache app-shell z wersjonowaniem (`./styles.css?v=2026-04-02.1`, `./app.js?v=2026-04-02.1`, `./pwa-config.js?v=2026-04-02.1`, `./pwa-bootstrap.js?v=2026-04-02.1`).
+
+Linia 13-31  
+Było: globalny `fetch` cache-first (`caches.match` -> `fetch`) dla wszystkich `GET`.  
+Jest: strategie per typ żądania:
+- `networkFirst()` dla HTML (`request.mode === "navigate"`),
+- `staleWhileRevalidate()` dla krytycznych JS/CSS,
+- `cacheFirst()` dla pozostałych statycznych zasobów,
+- filtr tylko dla `same-origin`.
+
+Linia 67  
+Było: brak obsługi komunikatów z klienta.  
+Jest: `self.addEventListener("message", ...)` z obsługą `SKIP_WAITING`.
+
+### Plik `Main/pwa-bootstrap.js`
+Linia 2  
+Było: tylko rejestracja SW po `window.load`.  
+Jest: rozszerzony bootstrap aktualizacji SW.
+
+Linia 16  
+Było: `navigator.serviceWorker.register("service-worker.js")`.  
+Jest: `navigator.serviceWorker.register("service-worker.js?v=2026-04-02.1")`.
+
+Linia 17-32  
+Było: brak logiki aktualizacji nowego workera.  
+Jest: obsługa `registration.waiting` i `updatefound` + wysyłanie `SKIP_WAITING` dla szybszego przejęcia nowej wersji.
+
+Linia 35  
+Było: brak reakcji na zmianę kontrolera SW.  
+Jest: nasłuch `controllerchange` i pojedynczy `window.location.reload()` (z ochroną `isRefreshing`).
+
+### Plik `Main/index.html`
+Linia 8  
+Było: `<script src="pwa-config.js"></script>`  
+Jest: `<script src="pwa-config.js?v=2026-04-02.1"></script>`
+
+Linia 15  
+Było: `<link rel="stylesheet" href="styles.css" />`  
+Jest: `<link rel="stylesheet" href="styles.css?v=2026-04-02.1" />`
+
+Linia 974-975  
+Było: `<script src="pwa-bootstrap.js"></script>` i `<script src="app.js"></script>`  
+Jest: `<script src="pwa-bootstrap.js?v=2026-04-02.1"></script>` i `<script src="app.js?v=2026-04-02.1"></script>`

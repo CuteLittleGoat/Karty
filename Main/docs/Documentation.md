@@ -7,9 +7,12 @@
 - `Main/pwa-config.js` — dynamiczne podpinanie manifestu PWA tylko dla wejścia użytkownika (bez `?admin=1`).
 - `Main/pwa-bootstrap.js` — rejestracja Service Workera po załadowaniu aplikacji.
 - `Main/manifest-any.webmanifest` — manifest PWA bez wymuszania orientacji; układ zależy od ustawień urządzenia.
-- `Main/service-worker.js` — podstawowy cache app-shell dla uruchamiania PWA i pracy offline dla statycznych zasobów.
+- `Main/service-worker.js` — wersjonowany cache PWA (`APP_VERSION`) i strategie per typ zasobu: `network-first` dla HTML, `stale-while-revalidate` dla krytycznych JS/CSS, `cache-first` dla pozostałych statycznych plików.
 
 ## 2. Aktualny zakres funkcjonalny tej wersji
+- Service Worker obsługuje komunikat `SKIP_WAITING`, dzięki czemu nowy worker może szybciej przejąć kontrolę po aktualizacji.
+- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`) z parametrem wersji (`?v=2026-04-02.1`) w celu twardego bustowania cache między release’ami.
+- `Main/pwa-bootstrap.js` nasłuchuje `updatefound` i `controllerchange`; po instalacji nowego workera wymusza jego aktywację i wykonuje pojedynczy `window.location.reload()`, aby użytkownik pracował na spójnym zestawie assetów.
 - W widoku użytkownika (`body` bez klasy `is-admin`) kontener `.page` ma szerokość `calc(100% - 2px)` oraz `padding-inline: 1px`, dzięki czemu zewnętrzna zielona ramka karty użytkownika jest odsunięta dokładnie o 1 px od lewej i prawej krawędzi ekranu.
 - W tej samej konfiguracji ukryto wewnętrzną obwódkę pseudo-elementu `.user-card::before`, aby lewa i prawa krawędź pierwszej (zewnętrznej) ramki miały dokładnie 1 px.
 - Widok użytkownika ma dedykowany przycisk `#userPanelRefresh` z etykietą „Odśwież” i statusem `#userPanelRefreshStatus`; akcja odświeża dane aktywnej zakładki bez `window.location.reload()`, dzięki czemu sesje PIN pozostają aktywne do resetu aplikacji.
@@ -160,7 +163,7 @@ Efekt techniczny:
 - Tytuł dokumentu (`<title>`) w `index.html` ustawiono na `Poker - rozgrywki`.
 - Manifest PWA ustawia nazwę instalowanej aplikacji na `Poker - rozgrywki` (`short_name`: `Poker`).
 - `start_url` w manifeście jest relatywny (`./index.html?...`), a `scope` ustawiony na `./`, co zapobiega błędom 404 dla hostingu pod prefiksem repozytorium.
-- Service Worker używa cache `karty-main-pwa-v4` i cache’uje także `pwa-config.js`, aby wymusić pobranie nowej konfiguracji PWA po wdrożeniu.
+- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-04-02.1`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
 
 - W `initAdminCalculator` każdy wiersz rebuy (`table2Rows` i `table9Rows`) przechowuje parę `rebuys[]` + `rebuyIndexes[]`; dodawanie rebuy nadaje globalny numer `max+1` dla całego aktywnego trybu, a usunięcie rebuy wykonuje globalną kompaktację indeksów bez luk.
 - Tabela5 buduje kolumny `RebuyX` i mapowanie wartości po posortowanych `rebuyIndexes`, zamiast po samym `flatMap` kolejności graczy, dzięki czemu semantyka numeru `RebuyX` pozostaje spójna po dodawaniu/usuwaniu kolumn u różnych graczy.
