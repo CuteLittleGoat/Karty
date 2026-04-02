@@ -50,3 +50,45 @@ Czyli praktycznie:
   - `renderChipsTables()` wypełnia `rootTable1..3`, a czyści `rootTable4..5`.
 - `Main/styles.css`: `.admin-calculator-table-wrap` nadaje tym kontenerom tło/obramowanie, więc puste kontenery są dalej widoczne.
 
+---
+
+## Uzupełnienie analizy (2026-04-02)
+
+### Prompt użytkownika (uzupełniający)
+"W analizie jest zapis:
+Nawet gdy slot jest pusty, zostaje widoczny jego wrapper CSS (.admin-calculator-table-wrap), więc wygląda jak zielony pas.
+
+Czy jest możliwość ustawienia w ten sposób, że jeżeli slot jest pusty to jest ukrywany z interfejsu? Jeżeli jest technicznie wymagany przez kod aplikacji to niech zostanie, ale jeżeli nie wyświetla żadnych informacji dla użytkownika to niech będzie ukryty z widoku. Czy da się tak zrobić?"
+
+### Krótka odpowiedź
+**Tak, da się to zrobić** i jest to bezpieczne, o ile ukrywamy tylko wizualnie puste sloty (nie usuwamy ich z DOM).
+
+### Ocena techniczna
+1. Kontenery `#adminCalculatorTable1..#adminCalculatorTable5` są potrzebne, bo kod inicjalizacji je pobiera i wymaga ich obecności.
+2. Jednocześnie kod wielu trybów zostawia część slotów pustych przez `innerHTML = ""`.
+3. Wniosek: najlepszy wariant to **zachować kontenery w HTML**, ale **chować je, gdy są puste**.
+
+### Rekomendowane warianty realizacji
+
+#### Wariant A (najprostszy): CSS `:empty`
+- Dodać regułę:
+  - `.admin-calculator-table-wrap:empty { display: none; }`
+- Efekt:
+  - Gdy slot nie ma żadnych dzieci (po `innerHTML = ""`), znika z interfejsu.
+  - Gdy kod doda nagłówek/tabelę (`appendChild(...)`), slot znów będzie widoczny.
+
+**Uwaga praktyczna:** selektor `:empty` nie działa, jeśli w środku zostanie np. spacja lub komentarz. Przy obecnym sposobie czyszczenia (`innerHTML = ""`) powinno działać poprawnie.
+
+#### Wariant B (bardziej kontrolowany): klasa `is-hidden`
+- Przy renderze po każdym `innerHTML = ""` dopisywać klasę ukrycia.
+- Po dodaniu treści usuwać klasę.
+- Plus: pełna kontrola i odporność na przypadki, gdy element nie jest formalnie `:empty`.
+- Minus: więcej zmian w JS.
+
+### Rekomendacja końcowa
+Na ten przypadek **najlepiej zacząć od Wariantu A (`:empty`)**, bo:
+- nie narusza logiki aplikacji,
+- nie wymaga przebudowy renderowania,
+- od razu usuwa zielone pasy tam, gdzie sloty są puste.
+
+Jeżeli w przyszłości pojawią się niestandardowe przypadki (np. sloty zawierające techniczne, ale niewidoczne elementy), można przejść na Wariant B z klasą sterowaną w JS.
