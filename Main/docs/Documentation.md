@@ -176,6 +176,7 @@ Efekt techniczny:
   - w `Organizacja -> TABELA2` przycisk `Dodaj` jest renderowany pod tabelą (`.admin-table-footer-actions`), a przycisk `Usuń` pozostaje w kolumnie akcji każdego wiersza;
   - w `Żetony -> TABELAA` usunięto wiersz sumy z ciała tabeli; podsumowanie `Łącznie Stack` jest renderowane jako osobny tekst pod tabelą (`.admin-table-info`);
   - w tabelach `TABELA2` (Organizacja) i `TABELAA` (Żetony) przyciski `Usuń` w wierszach są wyrównywane do prawej (`.admin-table-actions--row-end`);
+  - puste sloty kalkulatora `#adminCalculatorTable1..#adminCalculatorTable5` są automatycznie ukrywane w UI przez regułę CSS `.admin-calculator-table-wrap:empty { display: none; }`; dotyczy to wyłącznie pustych wrapperów (bez nagłówka i tabeli), więc np. puste pasy pod `TABELA2` i `TABELAC` nie są już renderowane wizualnie.
   - wszystkie nowe pola edycyjne mają metadane fokusu (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`) i korzystają z `applyIntegerInputHints`.
 - `renderOrganizationTables` (`Main/app.js`): w `TABELA1` drugi wiersz pozostawia kolumny `ORGANIZACJA` i `POT` jako puste komórki `<td>` (bez readonly inputów), dzięki czemu tylko `KALKULATOR` ma pole edycyjne w tym wierszu.
 - Obliczenia pól wynikowych w nowych tabelach są zaokrąglane w górę (`Math.ceil` przez `formatNumber`).
