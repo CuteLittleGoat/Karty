@@ -27,6 +27,16 @@ Instrukcja jest podzielona na dwie części:
 
 ---
 
+
+### 1.1. Aktualizacja aplikacji po wdrożeniu (PWA)
+
+1. Gdy administrator wdroży nową wersję, aplikacja automatycznie pobiera nowy kod w tle.
+2. W praktyce możesz zauważyć jedno automatyczne odświeżenie widoku (bez klikania przycisku przeglądarki).
+3. Po tym odświeżeniu przełączanie zakładek (np. w **Kalkulatorze**) powinno działać już na spójnej, aktualnej wersji.
+4. Jeśli urządzenie chwilowo jest offline, aplikacja może użyć lokalnej wersji z pamięci, a po powrocie sieci sama przejdzie na nową wersję.
+
+---
+
 ## 2. Sekcja użytkownika
 
 Sekcja użytkownika składa się z trzech zakładek: **Aktualności**, **Regulamin**, **Strefa Gracza**.
