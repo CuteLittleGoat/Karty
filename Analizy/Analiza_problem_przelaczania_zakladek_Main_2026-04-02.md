@@ -221,6 +221,279 @@ To powinno usunąć główne źródło problemu z „identyczną treścią po pr
 
 ---
 
+## Uzupełnienie analizy (2026-04-02) — ULTRA DOKŁADNY opis techniczny pod analizę innej aplikacji PWA
+
+### Prompt użytkownika (uzupełnienie kontekstu)
+Przeczytaj i rozbuduj analizę: Analizy/Analiza_problem_przelaczania_zakladek_Main_2026-04-02.md
+
+Mam też inną aplikację. Inny projekt. Używa też PWA i service-worker.js
+Opisz ULTRA DOKŁADNIE ten błąd od strony technicznej, gdzie mogą być przyczyny itd (zamiast ogólnego opisu użytkownika "nie odświeżają się tabele"). Ma ten opis służyć jako podstawa do analizy innej aplikacji.
+
+---
+
+## 1) Precyzyjna definicja problemu (język techniczny, nie użytkowy)
+
+Objaw „po przełączaniu zakładek widzę ten sam widok / te same dane” można technicznie opisać jako:
+
+1. **Niespójność wersji app-shella** (version skew):
+   - dokument HTML, bundle JS i style CSS nie pochodzą z tego samego release.
+2. **Niejednoznaczny stan klienta**:
+   - warstwa UI sygnalizuje zmianę kontekstu (aktywna zakładka), ale warstwa renderera operuje na nieaktualnym kodzie, nieobsługującym aktualnej mapy trybów/komponentów.
+3. **Warunki wyścigu (race conditions) między SW i stroną**:
+   - w trakcie aktywacji nowego SW jedna karta może być jeszcze kontrolowana przez stary worker, inna już przez nowy.
+4. **Rozjazd cache danych i cache kodu**:
+   - kod pochodzi z wersji A, odpowiedzi API z wersji B (lub odwrotnie), co skutkuje renderem fallbackowym albo „ostatnim poprawnym” widokiem.
+
+To nie jest jeden bug funkcji „switchTab”, tylko **klasa błędów spójności dystrybucji frontendu i stanu runtime**.
+
+---
+
+## 2) Anatomia awarii w PWA (krok po kroku)
+
+Poniżej typowy scenariusz, który dokładnie daje takie objawy:
+
+1. Deploy nowej wersji (`index.html` + nowy JS).
+2. Urządzenie A:
+   - ma stary SW,
+   - SW działa `cache-first`,
+   - zwraca stary `app.js` z cache.
+3. Jednocześnie HTML może być już nowy (np. z sieci lub odwrotnie: HTML stary, JS nowy).
+4. Nowy HTML posiada nowe identyfikatory/tryby zakładek, ale stary JS:
+   - nie zna części trybów,
+   - wpada w fallback renderera,
+   - lub odtwarza ostatni poprawny DOM (efekt: „wszędzie to samo”).
+5. Po wielu kliknięciach/odświeżeniach:
+   - następuje aktywacja nowego SW albo odświeżenie któregoś zasobu,
+   - zestaw plików staje się spójny,
+   - objaw znika „sam”.
+
+To tłumaczy nieregularność: inny telefon/inna karta/inny moment -> inny wynik.
+
+---
+
+## 3) Pełna mapa przyczyn (root-cause taxonomy)
+
+## A. Przyczyny w warstwie Service Worker
+
+### A1. Zła strategia cache dla app-shella
+- `cache-first` dla HTML/JS/CSS jest głównym źródłem utrzymywania starych wersji.
+- Dla aplikacji często deployowanej to strategia wysokiego ryzyka.
+
+### A2. Brak/niekonsekwentne wersjonowanie cache
+- Brak zmiany `CACHE_NAME` między release’ami.
+- Brak hashy w nazwach bundli.
+- Brak query-versioningu dla assetów statycznych.
+
+### A3. Nieprawidłowy lifecycle SW
+- `install` kończy się częściowym pre-cache.
+- `activate` nie czyści starych cache.
+- `skipWaiting` bez kontrolowanego reloadu powoduje „przeskok” wersji w losowym momencie pracy użytkownika.
+
+### A4. Zbyt szeroki `fetch` handler
+- Przechwytywanie wszystkich `GET` bez filtracji typu zasobu.
+- Niechcący cache’owane odpowiedzi dynamiczne/API.
+
+### A5. Błędy w kluczowaniu requestów
+- Pomijanie wariantów URL (query params, locale, auth context).
+- Odpowiedź niepasująca semantycznie do aktualnej zakładki trafia z cache.
+
+---
+
+## B. Przyczyny w warstwie przeglądarki/platformy
+
+### B1. Różnice implementacyjne (Chrome/Edge/Safari/WebView)
+- Inne timingi aktywacji SW.
+- Inna polityka ubijania kart w tle.
+- Inne limity pamięci/cache.
+
+### B2. Stan „installed PWA” vs karta w przeglądarce
+- Osobne procesy i osobne momenty aktualizacji.
+- Użytkownik testuje na telefonie „ikonkę PWA”, a na PC kartę WWW — to nie zawsze ta sama ścieżka aktualizacji.
+
+### B3. Długie sesje i resume z tła
+- Karta wraca po godzinach/dniach z pamięci procesu.
+- Kod JS jest „stary”, ale requesty danych już „nowe”.
+
+---
+
+## C. Przyczyny w warstwie aplikacyjnej (UI/state/data)
+
+### C1. Brak walidacji zgodności DOM↔kod
+- DOM zawiera tryb zakładki, którego nie ma w runtime enum.
+- Brak twardego błędu i brak fallbacku diagnostycznego.
+
+### C2. Nadmierne użycie stanu współdzielonego
+- Jeden store/obiekt stanu dla wielu zakładek bez izolacji per widok.
+- Przełączenie zakładki nie resetuje selektorów/filtrów.
+
+### C3. Render asynchroniczny bez kontroli „latest wins”
+- Dwa requesty równoległe; starszy kończy się później i nadpisuje nowszy widok.
+- Użytkownik widzi dane z poprzedniej zakładki.
+
+### C4. Degradacja do „last good render”
+- Gdy pipeline renderowania wykrywa błąd danych/schematu, framework pozostawia ostatni poprawny DOM.
+- Użytkownik interpretuje to jako „brak przełączenia”.
+
+### C5. Niezgodność kontraktu API
+- Front v2 oczekuje pola `x`, API (cache/proxy) oddaje format v1.
+- Renderer używa wartości domyślnej i wszystkie tabele wyglądają podobnie.
+
+---
+
+## D. Infrastruktura/CDN/proxy
+
+### D1. Niespójne TTL
+- `index.html` ma krótki TTL, bundle ma długi TTL (lub odwrotnie).
+- Powstaje mix wersji.
+
+### D2. Rewalidacja pośrednia
+- CDN oddaje `304` dla zasobu mimo faktycznej zmiany przez błędny ETag/Last-Modified.
+
+### D3. Częściowy rollout
+- Multi-region deploy: część użytkowników trafia na starą paczkę.
+- Połączenie z lokalnym SW multiplikuje efekt.
+
+---
+
+## 4) Co dokładnie dzieje się z punktu widzenia event loop i fetch pipeline
+
+1. Klik zakładki ustawia stan UI synchronnie (`state.mode = X`).
+2. Render odpala:
+   - część synchroniczna (DOM skeleton),
+   - część asynchroniczna (fetch danych, lazy import, transform).
+3. `fetch` przechodzi przez SW:
+   - SW zwraca odpowiedź z cache lub sieci.
+4. Jeśli odpowiedź jest „stara” albo nie dla tego trybu:
+   - transform może zwrócić pusty wynik/fallback,
+   - renderer nie zmienia struktury (pozostaje poprzednia tabela),
+   - aktywna zakładka i zawartość są logicznie rozdzielone.
+5. Dodatkowo in-flight request poprzedniej zakładki może dojechać później i nadpisać nowy widok.
+
+Wniosek: bez mechanizmów „request cancellation” i „render token” UI może wyświetlać semantycznie nie ten widok, który wskazuje nawigacja.
+
+---
+
+## 5) Objawy diagnostyczne i ich znaczenie
+
+### Objaw O1
+**Na jednym urządzeniu działa, na drugim nie**  
+=> wysoka korelacja z SW/cache/version skew, niska z „deterministycznym bugiem kliknięcia”.
+
+### Objaw O2
+**Po kilku/kilkunastu kliknięciach nagle wraca norma**  
+=> typowe dla aktywacji nowego SW, dogrania brakującego assetu albo wygrania wyścigu requestów.
+
+### Objaw O3
+**Zakładka aktywna wizualnie, ale treść „jak poprzednio”**  
+=> stan nawigacji aktualny, ale pipeline danych/renderu niezsynchronizowany.
+
+### Objaw O4
+**Występuje głównie po deployu**  
+=> problem dystrybucji wersji, nie stabilnej logiki biznesowej.
+
+---
+
+## 6) Metody reprodukcji kontrolowanej (do użycia w innym projekcie)
+
+1. Otwórz aplikację na wersji N i upewnij się, że SW + cache istnieją.
+2. Zdeployuj wersję N+1 z:
+   - nową zakładką albo zmianą mapy widoków.
+3. Bez czyszczenia danych:
+   - uruchom kartę/PWA,
+   - przełączaj zakładki szybko.
+4. W DevTools:
+   - sprawdź `Application -> Service Workers`,
+   - porównaj hash/treść `app.js` z sieci i z cache.
+5. Włącz throttling sieci + CPU, aby zwiększyć prawdopodobieństwo race condition.
+
+Jeśli błąd pojawia się częściej przy throttlingu i znika po clear storage — potwierdzasz warstwę cache/SW.
+
+---
+
+## 7) Instrumentacja, która daje „twarde dowody”
+
+## Co logować po stronie klienta
+1. `APP_VERSION`, `BUILD_ID`, commit SHA.
+2. `navigator.serviceWorker.controller?.scriptURL`.
+3. `registration.waiting/installing/active` + czasy przejść.
+4. Dla każdego renderu:
+   - `tab_id`,
+   - `render_token`,
+   - `data_version`,
+   - `response_source` (`cache`/`network` jeśli możliwe do oznaczenia).
+
+## Co logować w SW
+1. Dla każdego `fetch`:
+   - URL,
+   - strategia (`cache-first`, `network-first`, itp.),
+   - hit/miss cache,
+   - cache name.
+2. W `activate`:
+   - lista usuniętych cache.
+
+## Co to daje
+- Jednoznacznie widać, czy użytkownik uruchomił zakładkę na niespójnym zestawie assetów.
+- Można korelować incydenty z konkretnym release.
+
+---
+
+## 8) Kluczowe zabezpieczenia architektoniczne (dla dowolnej aplikacji PWA)
+
+1. **Atomiczność release app-shella**:
+   - HTML zawsze wskazuje na fingerprinted assets (np. `app.abc123.js`).
+2. **Strategia per zasób**:
+   - HTML: network-first,
+   - JS/CSS: stale-while-revalidate lub network-first,
+   - obrazy/fonty: cache-first,
+   - API: zwykle network-first + fallback.
+3. **Gating aktualizacji**:
+   - jeśli wykryto nowy SW, pokaż UI „odśwież aplikację”.
+4. **Render token / abort controller**:
+   - tylko najnowsza akcja użytkownika może finalizować render.
+5. **Schema/version check danych**:
+   - jeśli kontrakt danych niezgodny, pokaż kontrolowany błąd zamiast „starej tabeli”.
+6. **Defensywny fallback**:
+   - fallback musi być jawnie oznaczony (banner), nigdy „udawać” poprawnego widoku.
+
+---
+
+## 9) „Gotowy szablon diagnozy” dla innej aplikacji (checklista audytowa)
+
+1. Czy SW obsługuje wszystkie GET globalnie?
+2. Czy HTML i bundle mają spójne wersjonowanie?
+3. Czy `CACHE_NAME` zmienia się per deploy?
+4. Czy istnieje procedura `activate` czyszcząca stare cache?
+5. Czy UI informuje o nowej wersji i wymusza kontrolowany reload?
+6. Czy przełączanie zakładek ma izolację stanu per widok?
+7. Czy requesty poprzedniego widoku są anulowane po zmianie zakładki?
+8. Czy logowana jest wersja klienta i źródło odpowiedzi (cache/network)?
+9. Czy po deployu wykonywany jest smoke-test wszystkich zakładek?
+10. Czy incydent znika po „clear site data”?
+
+Jeśli odpowiedzi 1–5 są negatywne, to bardzo wysoka szansa, że problem jest „deployment/cache consistency”, nie stricte „bug tabeli”.
+
+---
+
+## 10) Podsumowanie techniczne do przeniesienia 1:1 do innego projektu
+
+Najbardziej użyteczny model mentalny tego błędu:
+
+- To **nie** „tabele się nie odświeżają”.
+- To **niespójność wersji warstwy prezentacji i danych**, zwykle indukowana przez SW cache policy + lifecycle update.
+- Objaw końcowy (identyczna treść między zakładkami) jest wtórny i może powstawać wieloma ścieżkami:
+  - stary renderer + nowa nawigacja,
+  - race condition renderów,
+  - fallback na ostatni poprawny DOM,
+  - niezgodny kontrakt danych.
+
+Dlatego analiza innej aplikacji PWA powinna zaczynać się od:
+1. mapy strategii cache per zasób,
+2. ścieżki aktualizacji SW,
+3. dowodów wersji runtime na urządzeniu z incydentem,
+a dopiero potem od debugowania samej funkcji przełączania zakładek.
+
+---
+
 ## Ocena końcowa (na pytanie użytkownika)
 - **Czy możliwa jest naprawa poprzez zmianę kodu?**
   - **Tak, zdecydowanie.**
