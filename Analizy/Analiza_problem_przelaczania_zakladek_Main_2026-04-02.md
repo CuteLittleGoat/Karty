@@ -129,3 +129,102 @@ Jeśli po takim teście problem znika, potwierdza to źródło po stronie cache/
 Na podstawie analizy kodu i symptomów produkcyjnych: **to najpewniej nie jest losowy bug kliknięć zakładek, tylko efekt utrzymywania starych assetów przez service worker/cache przeglądarki.**
 
 W obecnym wdrożeniu to ryzyko jest realne, bo cache strategia jest agresywnie cache-first dla kluczowych plików aplikacji.
+
+---
+
+## Uzupełnienie analizy (2026-04-02) — odpowiedź na dodatkowe pytanie
+
+### Prompt użytkownika (uzupełnienie kontekstu)
+Przeczytaj i rozbuduj analizę: Analizy/Analiza_problem_przelaczania_zakladek_Main_2026-04-02.md
+Odpowiedź na pytanie
+Czy możliwa jest naprawa poprzez zmianę w kodzie? Jakie proponujesz rozwiązania/zabezpieczenia, żeby wyeliminować ten problem?
+
+### Krótka odpowiedź
+**Tak — naprawa poprzez zmianę kodu jest możliwa i wskazana.**
+Najmocniejszy punkt ryzyka jest w strategii SW: obecny `fetch` działa globalnie jako **cache-first** (`caches.match` przed `fetch`) dla każdego GET, co sprzyja utrzymywaniu starego app-shella po deployu.
+
+### Dlaczego to wynika z kodu (potwierdzenie)
+1. `Main/service-worker.js`:
+   - SW cache’uje app-shell (`index.html`, `app.js`, `styles.css`, `pwa-*.js`) i ikonę.
+   - W `fetch` zwraca najpierw wpis z cache i dopiero przy braku robi request sieciowy.
+   - To oznacza, że nawet po nowym deployu urządzenie może długo pracować na starym JS.
+2. `Main/pwa-bootstrap.js`:
+   - rejestruje SW, ale nie ma ścieżki wymuszającej kontrolowaną aktualizację UI po instalacji nowej wersji.
+3. `Main/index.html` + `Main/app.js`:
+   - logika przełączania trybów kalkulatora jest spójna (przyciski `data-calculator-mode`, ustawienie `state.mode`, `render()` z dedykowanymi gałęziami dla `cash`, `organization`, `chips-*`, trybów turniejowych), więc sam mechanizm przełączania nie wygląda na główną przyczynę.
+
+---
+
+## Proponowane rozwiązania / zabezpieczenia (priorytety)
+
+### P1 (najważniejsze): zmiana strategii cache dla dokumentu i krytycznych assetów
+**Cel:** unikać sytuacji „stary JS + nowy HTML” albo odwrotnie.
+
+Rekomendacja:
+1. `index.html` → **network-first** z fallbackiem do cache (offline).
+2. `app.js`, `styles.css`, `pwa-config.js`, `pwa-bootstrap.js` →
+   - albo **stale-while-revalidate**,
+   - albo network-first z krótkim timeoutem i fallbackiem.
+3. Pozostałe zasoby statyczne (np. ikona) mogą zostać cache-first.
+
+Efekt: przy normalnym online po deployu użytkownik dostaje świeżą wersję zamiast starej.
+
+### P1: twarde wersjonowanie assetów
+1. Zmienna wersji w buildzie (np. `APP_VERSION=2026-04-02.1`) osadzana w:
+   - nazwie cache (`CACHE_NAME`),
+   - parametrach assetów w `index.html` (`app.js?v=...`, `styles.css?v=...`), lub hashach nazw plików.
+2. Przy każdym deployu automatycznie nowa wersja.
+
+Efekt: przeglądarka/SW nie pomyli starego i nowego zestawu plików.
+
+### P1: kontrolowany flow aktualizacji SW
+1. W kliencie nasłuch `registration.updatefound` / `controllerchange`.
+2. Komunikat „Dostępna nowa wersja — odśwież” + przycisk wymuszający reload.
+3. Opcjonalnie: `skipWaiting` + `clientsClaim` (już jest), ale domknięte przez jawny reload po przejęciu kontroli.
+
+Efekt: koniec „losowego” momentu, kiedy aplikacja przełącza się na nową wersję dopiero po wielu kliknięciach.
+
+### P2: ograniczenie zakresu cache w SW
+1. Nie przechwytuj bezwarunkowo wszystkich GET.
+2. Filtruj requesty po `event.request.destination` i URL.
+3. Dla API/Firestore (jeśli dotyczy) preferuj sieć, nie cache statyczny.
+
+Efekt: mniejsze ryzyko side-effectów i mniej nieprzewidywalnych zachowań między urządzeniami.
+
+### P2: zabezpieczenie runtime w `app.js`
+1. Dodać lekki „self-check” zgodności trybów:
+   - lista `data-calculator-mode` z DOM porównana z `ALL_CALCULATOR_MODES`.
+   - przy rozjeździe: status ostrzegawczy + fallback do bezpiecznego trybu + telemetry/log.
+2. Dodać log wersji frontu widoczny w panelu admina.
+
+Efekt: szybsza diagnostyka „mieszanych” wersji na produkcji.
+
+### P3: procedura wdrożeniowa (operacyjna)
+1. Po deployu wykonać automatyczny smoke-test:
+   - wejście w każdą zakładkę kalkulatora,
+   - asercja, że renderują się różne sekcje (nie identyczny DOM).
+2. W instrukcji dla admina dodać „hard refresh / clear site data” jako plan awaryjny po wydaniu krytycznym.
+
+Efekt: mniej zgłoszeń z produkcji i szybsze potwierdzenie poprawności release.
+
+---
+
+## Proponowany minimalny plan naprawczy (najbardziej opłacalny)
+1. Przebudować `fetch` w SW:
+   - HTML: network-first,
+   - krytyczne JS/CSS: stale-while-revalidate,
+   - reszta statyczna: cache-first.
+2. Wprowadzić automatyczne wersjonowanie `CACHE_NAME` i query/hash dla assetów.
+3. Dodać w UI sygnał „jest nowa wersja” + reload po `controllerchange`.
+
+To powinno usunąć główne źródło problemu z „identyczną treścią po przełączaniu zakładek” po wdrożeniach.
+
+---
+
+## Ocena końcowa (na pytanie użytkownika)
+- **Czy możliwa jest naprawa poprzez zmianę kodu?**
+  - **Tak, zdecydowanie.**
+- **Czy same ustawienia przeglądarki mogą to powodować?**
+  - Mogą wzmacniać objaw, ale rdzeń problemu nadal wskazuje na strategię aktualizacji i cache PWA po stronie kodu.
+- **Jak wyeliminować problem?**
+  - Zmienić strategię SW + wdrożyć twarde wersjonowanie + kontrolowany mechanizm aktualizacji UI.
