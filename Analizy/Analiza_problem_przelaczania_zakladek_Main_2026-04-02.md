@@ -258,6 +258,82 @@ Poniżej typowy scenariusz, który dokładnie daje takie objawy:
    - SW działa `cache-first`,
    - zwraca stary `app.js` z cache.
 3. Jednocześnie HTML może być już nowy (np. z sieci lub odwrotnie: HTML stary, JS nowy).
+
+---
+
+## Realizacja rekomendacji w kodzie (2026-04-02)
+
+### Prompt użytkownika
+Przeczytaj analizę Analizy/Odswiezanie.md i wprowadź rekomendowaną naprawę po stronie kodu.
+
+### Zmiany wdrożone
+
+Plik `Main/service-worker.js`  
+Linia 1  
+Było: `const CACHE_NAME = "karty-main-pwa-v4";`  
+Jest: `const CACHE_NAME = "karty-main-pwa-v5";`
+
+Plik `Main/service-worker.js`  
+Linie 27-38  
+Było:
+```js
+self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") {
+    return;
+  }
+
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request);
+    })
+  );
+});
+```
+Jest:
+```js
+self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") {
+    return;
+  }
+
+  const requestUrl = new URL(event.request.url);
+
+  if (!isSameOrigin(requestUrl)) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  if (isNavigationRequest(event.request)) {
+    event.respondWith(respondNetworkFirst(event.request));
+    return;
+  }
+
+  if (isCriticalAssetRequest(requestUrl)) {
+    event.respondWith(respondStaleWhileRevalidate(event.request));
+    return;
+  }
+
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => cachedResponse || fetch(event.request))
+  );
+});
+```
+
+Plik `Main/pwa-bootstrap.js`  
+Linia 3  
+Było: `void navigator.serviceWorker.register("service-worker.js");`  
+Jest: `void navigator.serviceWorker.register(\`service-worker.js?v=\${APP_VERSION}\`)`
+
+Plik `Main/pwa-bootstrap.js`  
+Dodano: obsługę `updatefound` + `SKIP_WAITING` oraz reload po `controllerchange`.
+
+Plik `Main/index.html`  
+Linie z assetami  
+Było: `styles.css`, `pwa-bootstrap.js`, `app.js`, `pwa-config.js` bez wersji.  
+Jest: `styles.css?v=2026-04-02.1`, `pwa-bootstrap.js?v=2026-04-02.1`, `app.js?v=2026-04-02.1`, `pwa-config.js?v=2026-04-02.1`.
 4. Nowy HTML posiada nowe identyfikatory/tryby zakładek, ale stary JS:
    - nie zna części trybów,
    - wpada w fallback renderera,

@@ -24,6 +24,7 @@ Instrukcja jest podzielona na dwie części:
 9. W uruchomieniu PWA (aplikacja zainstalowana na urządzeniu) moduł Main nie wymusza orientacji — aplikacja działa zgodnie z ustawieniem orientacji urządzenia.
 10. Nazwa karty w przeglądarce dla modułu Main to **"Poker - rozgrywki"**.
 11. Po instalacji PWA aplikacja na urządzeniu również wyświetla nazwę **"Poker - rozgrywki"**.
+12. Po wydaniu nowej wersji PWA aplikacja automatycznie przełączy się na nowy kod (bez ręcznego czyszczenia cache): może to wywołać jedno kontrolowane przeładowanie widoku.
 
 ---
 

@@ -153,14 +153,19 @@ Efekt techniczny:
 
 ## PWA (Main-only)
 - `index.html` ładuje `pwa-config.js`, który publikuje manifest PWA (`manifest-any.webmanifest`) tylko wtedy, gdy adres nie zawiera `?admin=1`.
-- Skrypt `pwa-bootstrap.js` rejestruje `service-worker.js`.
+- `index.html` wersjonuje krytyczne zasoby (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`) parametrem `?v=2026-04-02.1`, żeby wymuszać spójne pobieranie app-shella po deployu.
+- Skrypt `pwa-bootstrap.js` rejestruje `service-worker.js?v=2026-04-02.1`, nasłuchuje `updatefound`/`controllerchange`, aktywuje oczekującego workera (`postMessage: SKIP_WAITING`) i wykonuje pojedynczy kontrolowany reload po przejęciu kontroli przez nową wersję SW.
 - Uruchomienie z konfiguracji PWA (`?pwa=1&view=user`) wymusza tryb użytkownika: `getAdminMode()` zawsze zwraca `false` dla takiego startu.
 - Wejście administracyjne (`?admin=1`) nie publikuje manifestu, więc przeglądarka traktuje je jako zwykłą stronę/skróty URL zamiast instalowalnej aplikacji user-only.
 - Konfiguracja PWA nie wymusza orientacji ekranu.
 - Tytuł dokumentu (`<title>`) w `index.html` ustawiono na `Poker - rozgrywki`.
 - Manifest PWA ustawia nazwę instalowanej aplikacji na `Poker - rozgrywki` (`short_name`: `Poker`).
 - `start_url` w manifeście jest relatywny (`./index.html?...`), a `scope` ustawiony na `./`, co zapobiega błędom 404 dla hostingu pod prefiksem repozytorium.
-- Service Worker używa cache `karty-main-pwa-v4` i cache’uje także `pwa-config.js`, aby wymusić pobranie nowej konfiguracji PWA po wdrożeniu.
+- Service Worker używa cache `karty-main-pwa-v5`:
+  - dla nawigacji (`index.html`) stosuje strategię network-first z fallbackiem do cache,
+  - dla krytycznych assetów (`app.js`, `styles.css`, `pwa-config.js`, `pwa-bootstrap.js`) stosuje stale-while-revalidate,
+  - nie cache’uje żądań cross-origin (idą zawsze przez sieć),
+  - dla pozostałych lokalnych GET zachowuje fallback cache-first.
 
 - W `initAdminCalculator` każdy wiersz rebuy (`table2Rows` i `table9Rows`) przechowuje parę `rebuys[]` + `rebuyIndexes[]`; dodawanie rebuy nadaje globalny numer `max+1` dla całego aktywnego trybu, a usunięcie rebuy wykonuje globalną kompaktację indeksów bez luk.
 - Tabela5 buduje kolumny `RebuyX` i mapowanie wartości po posortowanych `rebuyIndexes`, zamiast po samym `flatMap` kolejności graczy, dzięki czemu semantyka numeru `RebuyX` pozostaje spójna po dodawaniu/usuwaniu kolumn u różnych graczy.
