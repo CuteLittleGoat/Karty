@@ -92,6 +92,9 @@
 - `calculators/{type}` zawiera stan kalkulatora oraz wersjonowane definicje, placeholdery i sesje robocze.
 - `Nekrolog_*` to osobny zestaw kolekcji do konfiguracji, snapshotów i zleceń odświeżania.
 
+## 6. Kalkulator Tournament — stabilność renderu Tabela2
+- W `initAdminCalculator` funkcja `renderTable2` iteruje po `table2Rows` z sygnaturą callbacka `(row, index)`, a kolumna `LP` jest wyliczana jako `index + 1`; eliminuje to błąd runtime podczas renderu Tournament i gwarantuje dokończenie sekwencji `renderTable1..renderTable5`.
+
 ## 6. Kalkulator Cash — logika Tabela7/Tabela9
 - Funkcja `renderCashTable9` buduje wiersze `state.cash.table9Rows` z selektorem gracza, polami `Buy-In` i `Wypłata` oraz przyciskiem otwierającym modal `Rebuy`.
 - Pola `Buy-In` i `Wypłata` w `Tabela9` używają helpera `applyIntegerInputHints`, który ustawia `inputMode="numeric"`, `pattern="[0-9]*"` i `autocomplete="off"`; dzięki temu na urządzeniach mobilnych otwiera się klawiatura numeryczna bez zmiany mechaniki fokusu.

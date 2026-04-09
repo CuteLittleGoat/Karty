@@ -54,3 +54,22 @@ Przyczyna problemu jest **lokalna i deterministyczna**: błąd referencji `index
 ## Ocena ryzyka
 - Ryzyko zmiany: niskie (jedna poprawka parametru callbacka).
 - Potencjalny wpływ pozytywny: wysoki (stabilny render i spójność tabel po wejściu w zakładkę).
+
+---
+
+## Sekcja zmian w kodzie po wdrożeniu rekomendowanej naprawy (2026-04-09)
+
+### Plik `Main/app.js`
+Linia 5192  
+Było: `modeState.table2Rows.forEach((row) => {`  
+Jest: `modeState.table2Rows.forEach((row, index) => {`
+
+### Plik `Main/docs/README.md`
+Linia 480  
+Było: *(brak tej linii w sekcji 15.2)*  
+Jest: `- W trybach **Tournament1/Tournament2** tabela graczy (Tabela2) renderuje się od razu po wejściu w zakładkę, a kolumna **LP** pokazuje kolejność 1..N dla każdego wiersza.`
+
+### Plik `Main/docs/Documentation.md`
+Linia 96  
+Było: *(brak opisu stabilności renderu Tabela2 dla Tournament)*  
+Jest: `- W \`initAdminCalculator\` funkcja \`renderTable2\` iteruje po \`table2Rows\` z sygnaturą callbacka \`(row, index)\`, a kolumna \`LP\` jest wyliczana jako \`index + 1\`; eliminuje to błąd runtime podczas renderu Tournament i gwarantuje dokończenie sekwencji \`renderTable1..renderTable5\`.`

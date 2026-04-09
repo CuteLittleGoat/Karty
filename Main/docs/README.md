@@ -477,6 +477,7 @@ W zależności od trybu dostępne są przyciski w wierszach:
 - **Dodaj Rebuy** — dopisanie kolejnego rebuy dla gracza,
 - **Usuń Rebuy** — usunięcie rebuy,
 - **Buy-In** (przycisk nagłówkowy) — zbiorcze ustawienie buy-in.
+- W trybach **Tournament1/Tournament2** tabela graczy (Tabela2) renderuje się od razu po wejściu w zakładkę, a kolumna **LP** pokazuje kolejność 1..N dla każdego wiersza.
 
 ### 15.3. Modal rebuy
 Przycisk:
