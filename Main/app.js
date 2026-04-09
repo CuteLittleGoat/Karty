@@ -5189,7 +5189,7 @@ const initAdminCalculator = () => {
     table.innerHTML = `<thead><tr><th>LP</th><th>Gracz</th><th>Buy-In</th><th>Rebuy</th><th>Eliminated</th><th></th></tr></thead>`;
     const tbody = document.createElement("tbody");
 
-    modeState.table2Rows.forEach((row) => {
+    modeState.table2Rows.forEach((row, index) => {
       const tr = document.createElement("tr");
       const lpCell = document.createElement("td");
       lpCell.textContent = String(index + 1);
