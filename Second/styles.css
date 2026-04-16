@@ -1974,14 +1974,6 @@ body.modal-open {
   color: #ffb3b3;
 }
 
-.poker-table-svg {
-  width: 100%;
-  max-width: 760px;
-  display: block;
-  margin: 12px auto;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 12px;
-}
 
 .payment-status-toggle {
   position: relative;

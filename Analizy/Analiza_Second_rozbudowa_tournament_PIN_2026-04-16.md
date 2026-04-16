@@ -326,3 +326,75 @@ Będzie: `/* blok usunięty jako nieużywany po usunięciu grafiki stołu z sekc
 ### Uwaga implementacyjna do planu
 
 Ponieważ dane są testowe, po wdrożeniu można jednorazowo zresetować dokument `second_tournament/state` do nowego, czystego schematu i rozpocząć walidację od scenariuszy kontrolnych (10 graczy: 19A/22A/23A). Dzięki temu testy końcowe będą jednoznaczne i bez wpływu starszych wpisów.
+
+## Aktualizacja po wdrożeniu zmian w kodzie (2026-04-16)
+
+Plik `Second/index.html`  
+Linia 134  
+Było: `<button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Losowanie graczy</button>`  
+Jest: `<button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Lista graczy</button>`
+
+Plik `Second/index.html`  
+Linia 135  
+Było: `<button class="admin-games-year-button" type="button" data-tournament-target="draw">Losowanie stołów</button>`  
+Jest: `<button class="admin-games-year-button" type="button" data-tournament-target="chatTab">Czat</button>`
+
+Plik `Second/index.html`  
+Linia 161  
+Było: `<button class="tab-button" type="button" data-target="chatTab" data-requires-player-pin="true">Czat</button>`  
+Jest: `<!-- usunięto osobną zakładkę Czat; czat działa jako sekcja Tournament -->`
+
+Plik `Second/app.js`  
+Linia 635  
+Było: `eliminated: {}`  
+Jest: `eliminated: {}, eliminatedOrder: []`
+
+Plik `Second/app.js`  
+Linia 717  
+Było: `const buildPlacementRows = ({ players, groupRows, semiRows, finalRows, payoutDefaults }) => {`  
+Jest: `const buildPlacementRowsFromQueues = ({ players, groupRows, semiRows, finalRows, payoutDefaults }) => {`
+
+Plik `Second/app.js`  
+Linia 722  
+Było: `[...groupRows, ...semiRows].forEach((row) => { ... });`  
+Jest: `[groupRows, semiRows, finalRows].forEach((queue) => { queue.forEach((row) => { ... }); });`
+
+Plik `Second/app.js`  
+Linia 786  
+Było: `{ key: "payments", label: "Wpłaty" },`  
+Jest: `{ key: "draw", label: "Losowanie stołów" },`
+
+Plik `Second/app.js`  
+Linia 1765  
+Było: `// brak sekcji admina dla chatTab w Tournament`  
+Jest: `if (activeSection === "chatTab") { ... }`
+
+Plik `Second/app.js`  
+Linia 1905  
+Było: `mount.innerHTML = ... TABELA23 ... <svg ... class="poker-table-svg">...</svg>;`  
+Jest: `mount.innerHTML = ... TABELA23 ... TABELA23A ...;`
+
+Plik `Second/app.js`  
+Linia 1959  
+Było: `finalRows: [...finalActivePlayers, ...finalEliminatedPlayers],`  
+Jest: `finalRows: finalEliminatedRows,`
+
+Plik `Second/app.js`  
+Linia 2068  
+Było: `if (role === "final-player-eliminated") tournamentState.final.eliminated[target.dataset.playerId] = target.checked;`  
+Jest: `if (role === "final-player-eliminated") { ... aktualizacja final.eliminated + final.eliminatedOrder ... }`
+
+Plik `Second/app.js`  
+Linia 2197  
+Było: `// brak obsługi data-role="final-eliminated-move"`  
+Jest: `if (role === "final-eliminated-move") { ... przestawianie final.eliminatedOrder ... }`
+
+Plik `Second/app.js`  
+Linia 2331  
+Było: `// chat renderowany wyłącznie jako osobna zakładka #chatTab`  
+Jest: `const renderUserChatSection = () => { ... chat renderowany wewnątrz Tournament ... };`
+
+Plik `Second/styles.css`  
+Linia 1977  
+Było: `.poker-table-svg { ... }`  
+Jest: `/* usunięte jako nieużywane po usunięciu grafiki stołu */`

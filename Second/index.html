@@ -131,7 +131,8 @@
                 <h3>Panel</h3>
               </div>
               <div class="admin-games-years-list player-zone-sections-list">
-                <button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Losowanie graczy</button>
+                <button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Lista graczy</button>
+                <button class="admin-games-year-button" type="button" data-tournament-target="chatTab">Czat</button>
                 <button class="admin-games-year-button" type="button" data-tournament-target="draw">Losowanie stołów</button>
                 <button class="admin-games-year-button" type="button" data-tournament-target="payments">Wpłaty</button>
                 <button class="admin-games-year-button" type="button" data-tournament-target="pool">Podział puli</button>
@@ -158,7 +159,6 @@
         <div class="user-panel">
           <div class="user-tabs" role="tablist" aria-label="Zakładki użytkownika">
             <button class="tab-button is-active" type="button" data-target="updatesTab">Aktualności</button>
-            <button class="tab-button" type="button" data-target="chatTab" data-requires-player-pin="true">Czat</button>
             <button class="tab-button" type="button" data-target="rulesTab">Regulamin</button>
             <button class="tab-button" type="button" data-target="tournamentTab" data-requires-player-pin="true">TOURNAMENT OF POKER</button>
           </div>
@@ -169,7 +169,7 @@
         </div>
           <div id="userPlayerPinGate" class="pin-gate user-access-pin-gate" aria-live="polite">
             <div class="pin-card">
-              <p class="pin-title">Wpisz PIN gracza, aby odblokować zakładki Czat i Tournament of Poker.</p>
+              <p class="pin-title">Wpisz PIN gracza, aby odblokować zakładkę Tournament of Poker.</p>
               <div class="pin-inputs">
                 <input id="userPlayerPinInput" type="tel" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" minlength="5" placeholder="PIN (5 cyfr)" />
                 <button id="userPlayerPinOpenButton" class="primary" type="button">Otwórz</button>
@@ -186,32 +186,6 @@
               <label for="latestMessageOutput">Najnowsze</label>
               <textarea id="latestMessageOutput" rows="25" readonly placeholder="Brak wiadomości od administratora."></textarea>
               <p id="newsOutputStatus" class="status-text" aria-live="polite">Ładowanie aktualności...</p>
-            </div>
-          </div>
-
-          <div id="chatTab" class="tab-panel" role="tabpanel">
-            <div class="pin-gate" aria-live="polite">
-              <div class="pin-card">
-                <p class="pin-title">Wpisz PIN z uprawnieniem Czat, aby dołączyć do rozmowy.</p>
-                <div class="pin-inputs">
-                  <input id="chatPinInput" type="tel" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" minlength="5" placeholder="PIN (5 cyfr)" />
-                  <button id="chatPinOpenButton" class="primary" type="button">Otwórz</button>
-                </div>
-                <p id="chatPinStatus" class="status-text"></p>
-              </div>
-            </div>
-            <div class="chat-content">
-              <div id="chatMessages" class="chat-messages">
-                <p class="chat-empty">Brak wiadomości.</p>
-              </div>
-              <div class="chat-form">
-                <label for="chatMessageInput">Twoja wiadomość</label>
-                <textarea id="chatMessageInput" rows="3" maxlength="600" placeholder="Napisz wiadomość do graczy..."></textarea>
-                <div class="chat-form-actions">
-                  <button id="chatSendButton" class="primary" type="button">Wyślij</button>
-                  <span id="chatStatus" class="status-text" aria-live="polite">Ładowanie czatu...</span>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -233,7 +207,8 @@
                   <h3>Panel</h3>
                 </div>
                 <div class="admin-games-years-list player-zone-sections-list">
-                  <button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Losowanie graczy</button>
+                  <button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Lista graczy</button>
+                  <button class="admin-games-year-button" type="button" data-tournament-target="chatTab">Czat</button>
                   <button class="admin-games-year-button" type="button" data-tournament-target="draw">Losowanie stołów</button>
                   <button class="admin-games-year-button" type="button" data-tournament-target="payments">Wpłaty</button>
                   <button class="admin-games-year-button" type="button" data-tournament-target="pool">Podział puli</button>

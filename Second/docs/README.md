@@ -4,10 +4,10 @@
 1. Otwórz `Second/index.html?admin=1`.
 2. W prawym górnym rogu znajdziesz ikonę `Pliki/Ikona.png` oraz przycisk **Instrukcja** — ikona jest po lewej stronie przycisku (tak samo jak w module Main).
 3. W górnym pasku kliknij **TOURNAMENT OF POKER**.
-4. W lewym panelu wybierz sekcję **Losowanie graczy**.
+4. W lewym panelu wybierz sekcję **Lista graczy**.
 5. Jeżeli chcesz wymusić pobranie z serwera dla tej zakładki, kliknij **Odśwież** w prawym górnym rogu panelu admina.
 
-### Losowanie graczy — pełna obsługa
+### Lista graczy — pełna obsługa
 1. Nad tabelą uzupełnij pola: **ORGANIZATOR**, **BUY-IN**, **REBUY/ADD-ON**, **RAKE**, **STACK**, **REBUY/ADD-ON STACK**.
 1a. Nad sekcją pól metadanych kliknij czerwony przycisk **Wyzeruj Rebuy**, jeśli chcesz usunąć wszystkie wpisy `RebuyX` dla całego turnieju.
    - po kliknięciu zobaczysz potwierdzenie z ostrzeżeniem, że operacja jest nieodwracalna,
@@ -30,7 +30,7 @@
 8. W kolumnie **Uprawnienia**:
    - widzisz aktualne uprawnienia jako badge,
    - kliknij **Edytuj** — otworzy się modal **Uprawnienia gracza** (jak w module Main),
-   - w modalu zaznacz/odznacz checkboxy: **Czat**, **Wpłaty**, **Podział Puli**, **Faza Grupowa**, **Półfinał**, **Finał**, **Wypłaty**,
+   - w modalu zaznacz/odznacz checkboxy: **Czat**, **Losowanie stołów**, **Wpłaty**, **Podział Puli**, **Faza Grupowa**, **Półfinał**, **Finał**, **Wypłaty**,
    - zamknij modal przyciskiem **✕**, kliknięciem poza oknem lub klawiszem `Esc`,
    - wybrane pozycje od razu pojawią się w kolumnie **Uprawnienia** jako lista badge.
 9. W kolumnie **Akcje** kliknij **Usuń**, aby skasować gracza z tabeli.
@@ -42,15 +42,15 @@
      - **Do zapłaty** — przycisk/pigułka z jasnoróżowym napisem i czerwonawą obwódką.
      - **Opłacone** — przycisk/pigułka ze złotym napisem i złotą obwódką.
    - **Stół**: wybierany z listy rozwijanej.
-2. Zmiana statusu płatności odbywa się w zakładce **Losowanie graczy** przez kliknięcie przycisku statusu (pigułka) w kolumnie **Status**.
+2. Zmiana statusu płatności odbywa się w zakładce **Lista graczy** przez kliknięcie przycisku statusu (pigułka) w kolumnie **Status**.
    - Zmiana jest od razu widoczna także w zakładce **Losowanie stołów**.
 3. Kliknij **Dodaj stół**.
    - Przycisk ma krótki format i nie rozciąga się na pełną szerokość sekcji.
    - Nowy stół dostaje domyślną nazwę w formacie **Stół1, Stół2, Stół3...**.
 4. Dla każdego dodanego stołu pojawia się osobny blok z tabelą i nagłówkiem: **Nazwa** + **Łączna Suma**.
-5. W tabeli stołu kolumna **BUY-IN** jest automatyczna i pobiera wartość z sekcji **Losowanie graczy** (pole `BUY-IN`) dla każdego przypisanego gracza — brak edycji w tej tabeli.
+5. W tabeli stołu kolumna **BUY-IN** jest automatyczna i pobiera wartość z sekcji **Lista graczy** (pole `BUY-IN`) dla każdego przypisanego gracza — brak edycji w tej tabeli.
 6. Kliknij **Usuń** przy wybranym stole, aby go usunąć.
-   - Czerwony przycisk **Usuń** jest kompaktowy i wyrównany do prawej krawędzi bloku (spójny wizualnie z przyciskami **Usuń** w sekcji **Losowanie graczy**).
+   - Czerwony przycisk **Usuń** jest kompaktowy i wyrównany do prawej krawędzi bloku (spójny wizualnie z przyciskami **Usuń** w sekcji **Lista graczy**).
    - Usunięcie stołu usuwa też wszystkie wpisy `RebuyX` graczy przypisanych do tego stołu i od razu renumeruje globalnie pozostałe `RebuyX` od `Rebuy1` bez luk.
    - Po tej renumeracji aplikacja automatycznie przemapowuje też ręczne wartości rebuy w `Tabela16`, żeby pozostały pod właściwymi kolumnami.
    - Jeżeli po usunięciu stołu nie ma już żadnych stołów i żadnych graczy, aplikacja automatycznie czyści dane rebuy oraz ręczne nadpisania rebuy w podziale puli.
@@ -115,11 +115,10 @@
 
 ### Finał
 - **Tabela23**: LP, GRACZ, STACK, %, ELIMINATED.
-- Dane w tej tabeli są synchronizowane z `Tabela FINAŁOWA` z panelu `Półfinał` i sortowane malejąco po `STACK` wpisanym w `Tabela FINAŁOWA`.
+- Dane w tej tabeli są synchronizowane z `Tabela FINAŁOWA` z panelu `Półfinał` i sortowane malejąco po `STACK`.
 - `STACK` jest tylko do odczytu.
-
-- Checkbox `ELIMINATED` zapisuje się między sesjami i od razu wpływa na klasyfikację w `Tabela24`.
-- Pod tabelą widoczny jest stół pokerowy SVG.
+- **Tabela23A** znajduje się pod `Tabela23` i zawiera tylko graczy z zaznaczonym `ELIMINATED`.
+- W `Tabela23A` strzałki `▲/▼` zmieniają kolejność eliminacji i zapisują ją między sesjami.
 
 ### Wypłaty
 - **Tabela24**: MIEJSCE, GRACZ oraz kolumny wygranych zależne od checkboxów nad tabelą.
@@ -127,11 +126,10 @@
   - gdy checkbox jest zaznaczony, kolumna jest widoczna także w widoku użytkownika,
   - gdy checkbox jest odznaczony, kolumna jest całkowicie ukryta,
   - stan checkboxów zapisuje się między sesjami i po restarcie aplikacji.
-- `Tabela24` zawsze pokazuje wszystkich graczy z panelu **Losowanie Graczy**.
+- `Tabela24` zawsze ma liczbę miejsc równą liczbie graczy z panelu **Lista graczy**.
   - miejsca od końca zajmują najpierw gracze z `Tabela19A`,
-  - potem wolne miejsca od końca zajmują gracze z `Tabela22A`,
-  - pozostałe miejsca zajmują finaliści z `Tabela23` posortowani po `STACK`,
-  - zaznaczenie `ELIMINATED` w `Tabela23` przenosi gracza za aktywnych finalistów.
+  - potem od końca gracze z `Tabela22A`,
+  - potem od końca gracze z `Tabela23A`.
 - Kolumny wygranych są tylko do odczytu.
   - `POCZĄTKOWA WYGRANA` pobiera `KWOTA` z tego samego miejsca w `Tabela16`,
   - `KOŃCOWA WYGRANA` pobiera `SUMA` z tego samego miejsca w `Tabela16`,
@@ -145,7 +143,7 @@
 3. Zewnętrzna zielona ramka panelu użytkownika ma po 1 px odstępu od lewej i prawej krawędzi ekranu oraz 1 px grubości na bocznych krawędziach.
 4. Bez wpisania PIN dostępne są tylko zakładki **Aktualności** i **Regulamin**.
 5. W górnej bramce PIN wpisz 5 cyfr przypisanych do gracza i kliknij **Otwórz**.
-6. Po poprawnym PIN aplikacja odblokuje zakładki **Czat** i **TOURNAMENT OF POKER** do czasu resetu/odświeżenia strony.
+6. Po poprawnym PIN aplikacja odblokuje zakładkę **TOURNAMENT OF POKER** do czasu resetu/odświeżenia strony.
 7. Kliknij zakładkę **TOURNAMENT OF POKER**.
 8. W lewym panelu zobaczysz tylko te przyciski sekcji, do których administrator nadał uprawnienia dla tego gracza; bez żadnego uprawnienia sidebar pozostanie pusty.
 9. Jeżeli administrator nie nadał żadnego uprawnienia turniejowego, panel boczny nie pokaże przycisków nawigacji i pojawi się komunikat informacyjny.
@@ -226,11 +224,11 @@
 2. Każdy taki panel zaczyna się 1 px od lewej krawędzi zewnętrznej zielonej ramki i kończy 1 px przed prawą krawędzią.
 
 
-## Odblokowanie zakładek i czatu PIN-em (widok użytkownika)
+## Odblokowanie dostępu PIN-em (widok użytkownika)
 1. Po wejściu do widoku użytkownika najpierw wpisz PIN w górnej bramce nad zakładkami.
 2. Bez tego kroku dostępne są wyłącznie **Aktualności** i **Regulamin**.
-3. Po poprawnej weryfikacji odblokują się zakładki **Czat** i **TOURNAMENT OF POKER**; ten stan jest pamiętany do czasu resetu lub odświeżenia strony.
-4. Wejdź do zakładki **Czat**.
+3. Po poprawnej weryfikacji odblokuje się zakładka **TOURNAMENT OF POKER**; ten stan jest pamiętany do czasu resetu lub odświeżenia strony.
+4. Wejdź do `TOURNAMENT OF POKER` i wybierz sekcję **Czat** w lewym panelu.
 5. W polu PIN czatu wpisz dokładnie 5 cyfr przypisanych do gracza i kliknij **Otwórz** (lub naciśnij Enter).
-6. Jeżeli PIN jest poprawny i gracz ma uprawnienie **Czat** nadane przez admina w sekcji **Losowanie graczy**, ukryje się panel PIN i pojawi się formularz wysyłki wiadomości.
+6. Jeżeli PIN jest poprawny i gracz ma uprawnienie **Czat** nadane przez admina w sekcji **Lista graczy**, ukryje się panel PIN i pojawi się formularz wysyłki wiadomości.
 7. Wysłane wiadomości publikują się z nazwą gracza skonfigurowaną przez admina.
