@@ -198,3 +198,131 @@ Do dopilnowania w kodzie:
 - Zmiana algorytmu TABELA24 wpływa na wyliczenia wypłat i może zmienić dotychczasowe wyniki historyczne.
 - Usuwając SVG z „Finał”, trzeba upewnić się, że żaden styl/JS nie zakłada obecności `.poker-table-svg`.
 - Dla pełnej zgodności UX warto zachować semantykę dostępu PIN analogiczną do Main (sekcje po uprawnieniach + czat jako jedyna sekcja interaktywna dla usera).
+
+---
+
+## Prompt użytkownika (rozbudowa analizy — 2026-04-16)
+
+> Przeczytaj i rozbuduj analizę Analizy/Analiza_Second_rozbudowa_tournament_PIN_2026-04-16.md  
+> Nic nie usuwaj tylko dodaj nowe informacje.
+>
+> Dodatkowa uwaga: Wszystkie obecne dane traktujemy jako testowe. Nie ma potrzeby zachowania danych historycznych.
+>
+> Następnie dodaj sekcję z planowanymi zmianami w kodzie. Dokładnie ją opisz według wzoru:
+>
+> [Nazwa pliku], linia: [Linia kodu]
+> Jest: [jest obecnie]
+> Będzie: [jak ma być po zmianie]
+
+## Rozbudowanie analizy (uzupełnienie)
+
+### Założenie nadrzędne: dane testowe i brak wymogu zachowania historii
+
+Na potrzeby wdrożenia przyjmujemy, że obecny stan danych jest **testowy**, a migracja kompatybilna wstecznie nie jest wymagana. W praktyce upraszcza to wdrożenie i pozwala:
+
+1. **Wprowadzać zmiany struktury stanu bez warstwy migracyjnej** (np. nowe pola w `final` i nowa logika budowania TABELA24).
+2. **Nadpisywać pola pochodne** (np. listy pozycji/porządki eliminacji) bez prób zachowania poprzednich układów.
+3. **Uprościć cleanup UI/DOM** (np. usunięcie osobnej zakładki `chatTab` z user-tabs i osadzenie czatu wewnątrz Tournament).
+4. **Utrzymać tylko spójność bieżącego stanu**, nie odtwarzanie dawnych wariantów logiki.
+
+### Konsekwencje techniczne tego założenia
+
+- Nie trzeba zachowywać zgodności z historycznym sposobem wyliczania TABELA24 (`buildPlacementRows` w obecnej postaci może zostać zastąpione nową funkcją).
+- Wystarczy normalizacja nowego modelu `tournamentState` po stronie `normalizeTournamentState(...)` i jednolity zapis do `second_tournament/state`.
+- Można usunąć nieużywany kod wizualizacji stołu finałowego (SVG + CSS), bez utrzymywania fallbacków.
+
+### Doprecyzowanie logiki PIN po przeniesieniu czatu do Tournament
+
+Po przeniesieniu czatu do panelu bocznego Tournament rekomendowany jest jeden spójny mechanizm:
+
+- PIN gracza odblokowuje sekcje zgodnie z uprawnieniami.
+- Sekcje turniejowe (players/draw/payments/pool/group/semi/final/payouts) w user view pozostają tylko do odczytu.
+- Sekcja `chatTab` w Tournament pozostaje jedyną interaktywną (wysyłanie wiadomości), ale tylko jeśli gracz ma uprawnienie „Czat”.
+
+Dzięki temu nie będzie podwójnego „gate” (osobno dla starego `#chatTab` i osobno dla Tournament).
+
+### Doprecyzowanie TABELA23A i wpływu na TABELA24
+
+- `TABELA23A` powinna być budowana wyłącznie z graczy z `TABELA23` mających `ELIMINATED = true`.
+- Kolejność `TABELA23A` musi być ręcznie przestawialna (▲/▼), analogicznie do 19A i 22A.
+- Źródłem dla końcowego fragmentu przypisań TABELA24 ma być kolejność z `TABELA23A`, nie surowa lista `finalPlayers`.
+
+To eliminuje niejednoznaczność i zapewnia deterministyczne przypisanie miejsc 1..N.
+
+## Planowane zmiany w kodzie (wg wzoru)
+
+Second/index.html, linia: 134  
+Jest: `<button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Losowanie graczy</button>`  
+Będzie: `<button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Lista graczy</button>`
+
+Second/index.html, linia: 236  
+Jest: `<button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Losowanie graczy</button>`  
+Będzie: `<button class="admin-games-year-button is-active" type="button" data-tournament-target="players">Lista graczy</button>`
+
+Second/index.html, linia: 161  
+Jest: `<button class="tab-button" type="button" data-target="chatTab" data-requires-player-pin="true">Czat</button>`  
+Będzie: `<!-- usunięte z głównych zakładek użytkownika; czat przeniesiony do sidebaru Tournament -->`
+
+Second/index.html, linia: 135  
+Jest: `<button class="admin-games-year-button" type="button" data-tournament-target="draw">Losowanie stołów</button>`  
+Będzie: `<button class="admin-games-year-button" type="button" data-tournament-target="chatTab">Czat</button><button class="admin-games-year-button" type="button" data-tournament-target="draw">Losowanie stołów</button>`
+
+Second/index.html, linia: 237  
+Jest: `<button class="admin-games-year-button" type="button" data-tournament-target="draw">Losowanie stołów</button>`  
+Będzie: `<button class="admin-games-year-button" type="button" data-tournament-target="chatTab">Czat</button><button class="admin-games-year-button" type="button" data-tournament-target="draw">Losowanie stołów</button>`
+
+Second/app.js, linia: 790  
+Jest: `{ key: "chatTab", label: "Czat" },`  
+Będzie: `{ key: "chatTab", label: "Czat" }, { key: "draw", label: "Losowanie stołów" },`
+
+Second/app.js, linia: 801  
+Jest: `payments: "Wpłaty",`  
+Będzie: `draw: "Losowanie stołów", payments: "Wpłaty",`
+
+Second/app.js, linia: 635  
+Jest: `eliminated: {}`  
+Będzie: `eliminated: {}, eliminatedOrder: []`
+
+Second/app.js, linia: 679  
+Jest: `state.final.eliminated = state.final.eliminated || {};`  
+Będzie: `state.final.eliminated = state.final.eliminated || {}; state.final.eliminatedOrder = Array.isArray(state.final.eliminatedOrder) ? state.final.eliminatedOrder.map((playerId) => String(playerId ?? "").trim()).filter(Boolean) : [];`
+
+Second/app.js, linia: 715  
+Jest: `const buildPlacementRows = ({ players, groupRows, semiRows, finalRows, payoutDefaults }) => {`  
+Będzie: `const buildPlacementRowsFromQueues = ({ players, groupRows, semiRows, finalRows, payoutDefaults }) => {`
+
+Second/app.js, linia: 720  
+Jest: `[...groupRows, ...semiRows].forEach((row) => {`  
+Będzie: `[groupRows, semiRows, finalRows].forEach((queue) => queue.forEach((row) => { ...wstawianie od końca... }));`
+
+Second/app.js, linia: 726  
+Jest: `let nextFromStart = 0;`  
+Będzie: `// usunięte — finalRows także są wkładane od końca jako trzecia kolejka`
+
+Second/app.js, linia: 1896  
+Jest: `const width = 700;`  
+Będzie: `// usunięte razem z całą geometrią SVG stołu`
+
+Second/app.js, linia: 1908  
+Jest: ``mount.innerHTML = `<h3>TABELA23</h3>...<svg ... class="poker-table-svg">...</svg>`;``  
+Będzie: ``mount.innerHTML = `<h3>TABELA23</h3>...</div><h3>TABELA23A</h3>...tabela eliminacji z przyciskami ▲/▼...`;``
+
+Second/app.js, linia: 1961  
+Jest: `finalRows: [...finalActivePlayers, ...finalEliminatedPlayers],`  
+Będzie: `finalRows: finalEliminatedRowsOrderedFromTable23A,`
+
+Second/app.js, linia: 2063  
+Jest: `if (target.checked && !tournamentState.semi.eliminatedOrder.includes(target.dataset.playerId)) {`  
+Będzie: `// analogiczna obsługa dodana także dla roli final-player-eliminated i listy tournamentState.final.eliminatedOrder`
+
+Second/app.js, linia: 2182  
+Jest: `const currentIndex = tournamentState.semi.eliminatedOrder.indexOf(playerId);`  
+Będzie: `// analogiczna gałąź dodana dla data-role="final-eliminated-move" i tablicy tournamentState.final.eliminatedOrder`
+
+Second/styles.css, linia: 1977  
+Jest: `.poker-table-svg { ... }`  
+Będzie: `/* blok usunięty jako nieużywany po usunięciu grafiki stołu z sekcji Finał */`
+
+### Uwaga implementacyjna do planu
+
+Ponieważ dane są testowe, po wdrożeniu można jednorazowo zresetować dokument `second_tournament/state` do nowego, czystego schematu i rozpocząć walidację od scenariuszy kontrolnych (10 graczy: 19A/22A/23A). Dzięki temu testy końcowe będą jednoznaczne i bez wpływu starszych wpisów.
