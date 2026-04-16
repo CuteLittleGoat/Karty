@@ -2,7 +2,7 @@
 
 ## Moduł Second — Tournament of Poker
 
-### Losowanie graczy
+### Lista graczy
 1. Status
 2. Nazwa
 3. PIN
@@ -16,7 +16,7 @@
 
 Dodatkowo dla każdego stołu:
 - Gracz
-- BUY-IN (tylko odczyt, wartość z sekcji Losowanie graczy)
+- BUY-IN (tylko odczyt, wartość z sekcji Lista graczy)
 
 ### Wpłaty
 - Tabela10: Buy-in, REBUY/ADD-ON, SUMA, licz. REBUY/ADD-ON
@@ -52,7 +52,7 @@ Dodatkowo dla każdego stołu:
 - Tabela24: MIEJSCE, GRACZ, POCZĄTKOWA WYGRANA, KOŃCOWA WYGRANA
 
 
-### Szerokości kolumn (Losowanie graczy)
+### Szerokości kolumn (Lista graczy)
 - Kolumna `Nazwa` (2): `min-width: 30ch`.
 - Kolumna `PIN` (3): `min-width: 14ch` (zwiększona szerokość dla 5-cyfrowego PIN).
 - Kolumna `Uprawnienia` (4): `min-width: 28ch`.
@@ -60,7 +60,7 @@ Dodatkowo dla każdego stołu:
 
 ### Losowanie stołów — kolumna Status
 - Kolumna `Status` zawiera wyłącznie etykietę statusu płatności (układ w `.payment-status-cell`, bez przycisku zmiany).
-- Zmiana statusu następuje w sekcji `Losowanie graczy` przez zaznaczenie/odznaczenie okrągłej kontrolki w kolumnie `Status`.
+- Zmiana statusu następuje w sekcji `Lista graczy` przez zaznaczenie/odznaczenie okrągłej kontrolki w kolumnie `Status`.
 
 ## Moduł Main — Ranking (Gry admina i Statystyki)
 1. Miejsce

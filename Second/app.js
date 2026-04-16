@@ -632,7 +632,8 @@ const createTournamentDefaultState = () => ({
     eliminatedOrder: []
   },
   final: {
-    eliminated: {}
+    eliminated: {},
+    eliminatedOrder: []
   },
   finalPlayers: [],
   payouts: {
@@ -677,6 +678,7 @@ const normalizeTournamentState = (value) => {
   state.semi.eliminatedOrder = Array.isArray(state.semi.eliminatedOrder) ? state.semi.eliminatedOrder.map((playerId) => String(playerId ?? "").trim()).filter(Boolean) : [];
   state.final = state.final || {};
   state.final.eliminated = state.final.eliminated || {};
+  state.final.eliminatedOrder = Array.isArray(state.final.eliminatedOrder) ? state.final.eliminatedOrder.map((playerId) => String(playerId ?? "").trim()).filter(Boolean) : [];
   state.finalPlayers = Array.isArray(state.finalPlayers) ? state.finalPlayers : [];
 
   state.payments = state.payments || {};
@@ -712,26 +714,19 @@ const syncOrderedPlayerIds = (orderedIds, rows, getPlayerId = (row) => row?.play
 
 const sortPlayersByStackDesc = (players) => [...players].sort((left, right) => toDigitsNumber(right.stack) - toDigitsNumber(left.stack));
 
-const buildPlacementRows = ({ players, groupRows, semiRows, finalRows, payoutDefaults }) => {
+const buildPlacementRowsFromQueues = ({ players, groupRows, semiRows, finalRows, payoutDefaults }) => {
   const totalPlayers = Array.isArray(players) ? players.length : 0;
   const placements = Array.from({ length: totalPlayers }, () => null);
   let nextFromEnd = totalPlayers - 1;
 
-  [...groupRows, ...semiRows].forEach((row) => {
-    if (nextFromEnd < 0) return;
-    placements[nextFromEnd] = row;
-    nextFromEnd -= 1;
-  });
-
-  let nextFromStart = 0;
-  finalRows.forEach((row) => {
-    while (nextFromStart < placements.length && placements[nextFromStart]) {
-      nextFromStart += 1;
-    }
-    if (nextFromStart < placements.length) {
-      placements[nextFromStart] = row;
-      nextFromStart += 1;
-    }
+  [groupRows, semiRows, finalRows].forEach((queue) => {
+    queue.forEach((row) => {
+      if (nextFromEnd < 0) {
+        return;
+      }
+      placements[nextFromEnd] = row;
+      nextFromEnd -= 1;
+    });
   });
 
   return placements.map((row, index) => ({
@@ -788,6 +783,7 @@ const normalizeTournamentPermissions = (value) => {
 
 const SECOND_AVAILABLE_PLAYER_PERMISSIONS = [
   { key: "chatTab", label: "Czat" },
+  { key: "draw", label: "Losowanie stołów" },
   { key: "payments", label: "Wpłaty" },
   { key: "pool", label: "Podział Puli" },
   { key: "group", label: "Faza Grupowa" },
@@ -798,6 +794,7 @@ const SECOND_AVAILABLE_PLAYER_PERMISSIONS = [
 
 const SECOND_TOURNAMENT_PERMISSION_MAP = {
   chatTab: "Czat",
+  draw: "Losowanie stołów",
   payments: "Wpłaty",
   pool: "Podział Puli",
   group: "Faza Grupowa",
@@ -1591,6 +1588,7 @@ const setupAdminTournament = (rootCard) => {
     tournamentState.semi.eliminatedOrder = Array.isArray(tournamentState.semi.eliminatedOrder) ? tournamentState.semi.eliminatedOrder : [];
     tournamentState.final = tournamentState.final || {};
     tournamentState.final.eliminated = tournamentState.final.eliminated || {};
+    tournamentState.final.eliminatedOrder = Array.isArray(tournamentState.final.eliminatedOrder) ? tournamentState.final.eliminatedOrder : [];
 
     const groupRows = groupedDrawRows.map((row) => {
       const rebuyState = ensureTable12RebuyState(row.playerId);
@@ -1695,6 +1693,10 @@ const setupAdminTournament = (rootCard) => {
     const sortedFinalPlayers = sortPlayersByStackDesc(tournamentState.finalPlayers);
     const finalActivePlayers = sortedFinalPlayers.filter((player) => !player.eliminated);
     const finalEliminatedPlayers = sortedFinalPlayers.filter((player) => player.eliminated);
+    const finalEliminatedDefaultRows = finalEliminatedPlayers.map((player) => ({ playerId: player.id, playerName: player.name }));
+    tournamentState.final.eliminatedOrder = syncOrderedPlayerIds(tournamentState.final.eliminatedOrder, finalEliminatedDefaultRows);
+    const finalEliminatedRowsById = new Map(finalEliminatedDefaultRows.map((row) => [row.playerId, row]));
+    const finalEliminatedRows = tournamentState.final.eliminatedOrder.map((playerId) => finalEliminatedRowsById.get(playerId)).filter(Boolean);
 
     if (activeSection === "players") {
       const playersRows = tournamentState.players.map((player) => {
@@ -1755,6 +1757,12 @@ const setupAdminTournament = (rootCard) => {
       }).join("");
 
       mount.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>GRACZ</th><th>STATUS</th><th>STÓŁ</th></tr></thead><tbody>${rows || '<tr><td colspan="3">Brak graczy.</td></tr>'}</tbody></table></div><div class="semi-tables">${perTableBlocks || "<p>Brak stołów.</p>"}</div><button type="button" class="secondary t-inline-add-button" data-role="add-table">Dodaj stół</button>`;
+      restoreTournamentEditableFocusState(container, focusState);
+      return;
+    }
+
+    if (activeSection === "chatTab") {
+      mount.innerHTML = '<p class="builder-info">Sekcja Czat jest dostępna dla użytkowników w panelu Tournament of Poker. Wiadomości wysyłane są w widoku użytkownika.</p>';
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
@@ -1893,19 +1901,8 @@ const setupAdminTournament = (rootCard) => {
 
     if (activeSection === "final") {
       const finalPlayers = sortedFinalPlayers;
-      const width = 700;
-      const height = 360;
-      const cx = width / 2;
-      const cy = height / 2;
-      const rx = 270;
-      const ry = 130;
-      const labels = finalPlayers.map((player, index) => {
-        const angle = (Math.PI * 2 * index) / Math.max(finalPlayers.length, 1) - Math.PI / 2;
-        const x = cx + Math.cos(angle) * (rx + 90);
-        const y = cy + Math.sin(angle) * (ry + 55);
-        return `<text x="${x}" y="${y}" fill="#ededdf" text-anchor="middle" font-size="13">${esc(player.name || "Gracz")} (${esc(player.stack || 0)})</text>`;
-      }).join("");
-      mount.innerHTML = `<h3>TABELA23</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>ELIMINATED</th></tr></thead><tbody>${finalPlayers.map((player, i) => { const finalShare = totalGroupStackBase > 0 ? toDigitsNumber(player.stack) / totalGroupStackBase : 0; return `<tr><td>${i + 1}</td><td>${esc(player.name)}</td><td>${formatCellNumber(toDigitsNumber(player.stack))}</td><td>${toPercentText(finalShare)}</td><td><input type="checkbox" data-role="final-player-eliminated" data-player-id="${player.id}" ${player.eliminated ? "checked" : ""}></td></tr>`; }).join("") || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div><svg viewBox="0 0 ${width} ${height}" class="poker-table-svg"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#0d5f3f" stroke="#d4af37" stroke-width="6"></ellipse>${labels}</svg>`;
+      const finalEliminatedTable = `<h3>TABELA23A</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>POZYCJA</th></tr></thead><tbody>${finalEliminatedRows.map((row, index) => `<tr><td>${index + 1}</td><td>${esc(row.playerName)}</td><td><div class="group-position-controls"><button class="secondary group-position-button" type="button" data-role="final-eliminated-move" data-player-id="${row.playerId}" data-direction="up" ${index === 0 ? "disabled" : ""}>▲</button><button class="secondary group-position-button" type="button" data-role="final-eliminated-move" data-player-id="${row.playerId}" data-direction="down" ${index === finalEliminatedRows.length - 1 ? "disabled" : ""}>▼</button></div></td></tr>`).join("") || '<tr><td colspan="3">Brak danych.</td></tr>'}</tbody></table></div>`;
+      mount.innerHTML = `<h3>TABELA23</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>ELIMINATED</th></tr></thead><tbody>${finalPlayers.map((player, i) => { const finalShare = totalGroupStackBase > 0 ? toDigitsNumber(player.stack) / totalGroupStackBase : 0; return `<tr><td>${i + 1}</td><td>${esc(player.name)}</td><td>${formatCellNumber(toDigitsNumber(player.stack))}</td><td>${toPercentText(finalShare)}</td><td><input type="checkbox" data-role="final-player-eliminated" data-player-id="${player.id}" ${player.eliminated ? "checked" : ""}></td></tr>`; }).join("") || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div>${finalEliminatedTable}`;
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
@@ -1954,11 +1951,11 @@ const setupAdminTournament = (rootCard) => {
       });
       const initialHeader = tournamentState.payouts.showInitial ? "<th>POCZĄTKOWA WYGRANA</th>" : "";
       const finalHeader = tournamentState.payouts.showFinal ? "<th>KOŃCOWA WYGRANA</th>" : "";
-      const payoutRowsState = buildPlacementRows({
+      const payoutRowsState = buildPlacementRowsFromQueues({
         players: tournamentState.players,
         groupRows: eliminatedRows,
         semiRows: semiEliminatedRows,
-        finalRows: [...finalActivePlayers, ...finalEliminatedPlayers],
+        finalRows: finalEliminatedRows,
         payoutDefaults
       });
       const payoutRows = payoutRowsState.map((player) => `<tr><td>${player.place}</td><td>${esc(player.playerName || "-")}</td>${tournamentState.payouts.showInitial ? `<td>${formatCellNumber(toNumber(player.initialWin))}</td>` : ""}${tournamentState.payouts.showFinal ? `<td>${formatCellNumber(toNumber(player.finalWin))}</td>` : ""}</tr>`).join("");
@@ -2067,7 +2064,15 @@ const setupAdminTournament = (rootCard) => {
         tournamentState.semi.eliminatedOrder = tournamentState.semi.eliminatedOrder.filter((playerId) => playerId !== target.dataset.playerId);
       }
     }
-    if (role === "final-player-eliminated") tournamentState.final.eliminated[target.dataset.playerId] = target.checked;
+    if (role === "final-player-eliminated") {
+      tournamentState.final.eliminated[target.dataset.playerId] = target.checked;
+      if (target.checked && !tournamentState.final.eliminatedOrder.includes(target.dataset.playerId)) {
+        tournamentState.final.eliminatedOrder.push(target.dataset.playerId);
+      }
+      if (!target.checked) {
+        tournamentState.final.eliminatedOrder = tournamentState.final.eliminatedOrder.filter((playerId) => playerId !== target.dataset.playerId);
+      }
+    }
     if (role === "toggle-payout-initial") tournamentState.payouts.showInitial = target.checked;
     if (role === "toggle-payout-final") tournamentState.payouts.showFinal = target.checked;
     if (["player-payment-status", "assign-table", "semi-assign-table", "semi-player-eliminated", "group-eliminated", "final-player-eliminated"].includes(role)) {
@@ -2109,7 +2114,8 @@ const setupAdminTournament = (rootCard) => {
     "add-semi-table",
     "remove-semi-table",
     "group-eliminated-move",
-    "semi-eliminated-move"
+    "semi-eliminated-move",
+    "final-eliminated-move"
   ]);
 
   container.addEventListener("click", async (event) => {
@@ -2157,6 +2163,7 @@ const setupAdminTournament = (rootCard) => {
       if (tournamentState.final?.eliminated) {
         delete tournamentState.final.eliminated[playerId];
       }
+      tournamentState.final.eliminatedOrder = (tournamentState.final.eliminatedOrder || []).filter((id) => id !== playerId);
       delete tournamentState.payments.table12Rebuys[playerId];
       tournamentState.finalPlayers = tournamentState.finalPlayers.filter((player) => player.id !== playerId);
       deletedPaths.push(`payments.table12Rebuys.${playerId}`);
@@ -2186,6 +2193,17 @@ const setupAdminTournament = (rootCard) => {
       }
       const [movedPlayerId] = tournamentState.semi.eliminatedOrder.splice(currentIndex, 1);
       tournamentState.semi.eliminatedOrder.splice(nextIndex, 0, movedPlayerId);
+    }
+    if (role === "final-eliminated-move") {
+      const playerId = target.dataset.playerId;
+      const direction = target.dataset.direction;
+      const currentIndex = tournamentState.final.eliminatedOrder.indexOf(playerId);
+      const nextIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+      if (currentIndex < 0 || nextIndex < 0 || nextIndex >= tournamentState.final.eliminatedOrder.length) {
+        return;
+      }
+      const [movedPlayerId] = tournamentState.final.eliminatedOrder.splice(currentIndex, 1);
+      tournamentState.final.eliminatedOrder.splice(nextIndex, 0, movedPlayerId);
     }
     if (role === "delete-table") {
       const tableId = target.dataset.tableId;
@@ -2288,15 +2306,14 @@ const setupUserView = (root) => {
   const newsStatus = root.querySelector("#newsOutputStatus");
   const rulesOutput = root.querySelector("#rulesOutput");
   const rulesStatus = root.querySelector("#rulesStatus");
-  const chatMessages = root.querySelector("#chatMessages");
-  const chatInput = root.querySelector("#chatMessageInput");
-  const chatSendButton = root.querySelector("#chatSendButton");
-  const chatStatus = root.querySelector("#chatStatus");
-  const chatPinInput = root.querySelector("#chatPinInput");
-  const chatPinOpenButton = root.querySelector("#chatPinOpenButton");
-  const chatPinStatus = root.querySelector("#chatPinStatus");
-  const chatGate = root.querySelector("#chatTab .pin-gate");
-  const chatContent = root.querySelector("#chatTab .chat-content");
+  let chatMessages = null;
+  let chatInput = null;
+  let chatSendButton = null;
+  let chatStatus = null;
+  let chatPinInput = null;
+  let chatPinOpenButton = null;
+  let chatPinStatus = null;
+  let chatDocsCache = [];
   const tournamentSection = root.querySelector("#tournamentTab .admin-games-section");
   const userPanelRefreshButton = root.querySelector("#userPanelRefresh");
   const userPanelRefreshStatus = root.querySelector("#userPanelRefreshStatus");
@@ -2310,6 +2327,13 @@ const setupUserView = (root) => {
 
   let userTournamentState = createTournamentDefaultState();
   let userTournamentSection = "players";
+
+  const renderUserChatSection = () => {
+    if (!tournamentSection) {
+      return;
+    }
+    tournamentSection.innerHTML = `<div class="pin-gate" aria-live="polite"><div class="pin-card"><p class="pin-title">Wpisz PIN z uprawnieniem Czat, aby dołączyć do rozmowy.</p><div class="pin-inputs"><input id="chatPinInput" type="tel" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" minlength="5" placeholder="PIN (5 cyfr)" /><button id="chatPinOpenButton" class="primary" type="button">Otwórz</button></div><p id="chatPinStatus" class="status-text"></p></div></div><div class="chat-content"><div id="chatMessages" class="chat-messages"><p class="chat-empty">Brak wiadomości.</p></div><div class="chat-form"><label for="chatMessageInput">Twoja wiadomość</label><textarea id="chatMessageInput" rows="3" maxlength="600" placeholder="Napisz wiadomość do graczy..."></textarea><div class="chat-form-actions"><button id="chatSendButton" class="primary" type="button">Wyślij</button><span id="chatStatus" class="status-text" aria-live="polite">Ładowanie czatu...</span></div></div></div>`;
+  };
 
   const getTournamentPlayerById = (playerId) => userTournamentState.players.find((player) => player.id === playerId) || null;
   const getTournamentPlayerByPin = (pin) => {
@@ -2393,15 +2417,64 @@ const setupUserView = (root) => {
     renderTournamentButtonsForPlayer();
   };
 
+  const bindUserChatControls = () => {
+    chatMessages = root.querySelector("#chatMessages");
+    chatInput = root.querySelector("#chatMessageInput");
+    chatSendButton = root.querySelector("#chatSendButton");
+    chatStatus = root.querySelector("#chatStatus");
+    chatPinInput = root.querySelector("#chatPinInput");
+    chatPinOpenButton = root.querySelector("#chatPinOpenButton");
+    chatPinStatus = root.querySelector("#chatPinStatus");
+    renderChatMessages();
+    if (chatPinStatus && getSecondChatPinGateState() && getVerifiedChatPlayer()) {
+      const verifiedPlayer = getVerifiedChatPlayer();
+      chatPinStatus.textContent = `PIN poprawny. Witaj ${verifiedPlayer?.name || "graczu"}.`;
+    } else if (chatPinStatus) {
+      chatPinStatus.textContent = "Wpisz PIN z uprawnieniem Czat, aby odblokować wysyłanie wiadomości.";
+    }
+  };
+
+  const renderChatMessages = () => {
+    if (!chatMessages) {
+      return;
+    }
+    chatMessages.innerHTML = "";
+    if (!chatDocsCache.length) {
+      const empty = document.createElement("p");
+      empty.className = "chat-empty";
+      empty.textContent = "Brak wiadomości.";
+      chatMessages.appendChild(empty);
+      return;
+    }
+    chatDocsCache.forEach((doc) => {
+      const data = typeof doc.data === "function" ? doc.data() : doc;
+      const item = document.createElement("article");
+      item.className = "admin-chat-item";
+
+      const meta = document.createElement("div");
+      meta.className = "admin-chat-meta";
+      meta.textContent = `${typeof data.authorName === "string" ? data.authorName : "Gracz"} • ${formatChatTimestamp(data.createdAt)}`;
+
+      const text = document.createElement("p");
+      text.className = "admin-chat-text";
+      text.textContent = typeof data.text === "string" ? data.text : "";
+
+      item.append(meta, text);
+      chatMessages.appendChild(item);
+    });
+  };
+
   const updateSecondChatVisibility = () => {
     const verifiedPlayer = getVerifiedChatPlayer();
     const isAllowed = getSecondChatPinGateState() && Boolean(verifiedPlayer) && isSecondPlayerAllowedForChat(verifiedPlayer);
-    if (chatGate) {
-      chatGate.classList.toggle("is-hidden", isAllowed);
-      chatGate.hidden = isAllowed;
+    const localChatGate = tournamentSection?.querySelector(".pin-gate");
+    const localChatContent = tournamentSection?.querySelector(".chat-content");
+    if (localChatGate) {
+      localChatGate.classList.toggle("is-hidden", isAllowed);
+      localChatGate.hidden = isAllowed;
     }
-    if (chatContent) {
-      chatContent.classList.toggle("is-visible", isAllowed);
+    if (localChatContent) {
+      localChatContent.classList.toggle("is-visible", isAllowed);
     }
     if (chatInput) {
       chatInput.disabled = !isAllowed;
@@ -2420,6 +2493,13 @@ const setupUserView = (root) => {
     const allowedTargets = renderTournamentButtonsForPlayer();
     if (!allowedTargets.length) {
       tournamentSection.innerHTML = '<p class="builder-info">Brak dostępnych paneli Tournament of Poker dla tego PIN-u.</p>';
+      return;
+    }
+
+    if (userTournamentSection === "chatTab") {
+      renderUserChatSection();
+      bindUserChatControls();
+      updateSecondChatVisibility();
       return;
     }
 
@@ -2508,12 +2588,18 @@ const setupUserView = (root) => {
         const player = userTournamentState.players.find((item) => item.id === playerId);
         return { playerId, playerName: player?.name || "-" };
       });
-      const sortedUserFinalPlayers = sortPlayersByStackDesc(userTournamentState.finalPlayers || []);
-      const payoutRowsState = buildPlacementRows({
+      const userFinalEliminatedRows = syncOrderedPlayerIds(
+        userTournamentState.final?.eliminatedOrder,
+        sortPlayersByStackDesc(userTournamentState.finalPlayers || []).filter((player) => player.eliminated).map((player) => ({ playerId: player.id, playerName: player.name || "-" }))
+      ).map((playerId) => {
+        const player = userTournamentState.players.find((item) => item.id === playerId);
+        return { playerId, playerName: player?.name || "-" };
+      });
+      const payoutRowsState = buildPlacementRowsFromQueues({
         players: userTournamentState.players,
         groupRows: userGroupRows,
         semiRows: userSemiRows,
-        finalRows: sortedUserFinalPlayers.filter((player) => !player.eliminated).concat(sortedUserFinalPlayers.filter((player) => player.eliminated)),
+        finalRows: userFinalEliminatedRows,
         payoutDefaults
       });
       const payoutRows = payoutRowsState.map((player) => `<tr><td>${player.place}</td><td>${player.playerName || "-"}</td>${showInitial ? `<td>${formatCellNumber(toNumber(player.initialWin))}</td>` : ""}${showFinal ? `<td>${formatCellNumber(toNumber(player.finalWin))}</td>` : ""}</tr>`).join("");
@@ -2628,7 +2714,7 @@ const setupUserView = (root) => {
           return;
         }
 
-        if (activeTabId === "chatTab") {
+        if (activeTabId === "tournamentTab" && userTournamentSection === "chatTab") {
           await db.collection(SECOND_CHAT_COLLECTION).orderBy("createdAt", "asc").limit(200).get({ source: "server" });
           setRefreshStatus("Czat został odświeżony.");
           return;
@@ -2679,12 +2765,6 @@ const setupUserView = (root) => {
 
   const db = firebaseApp.firestore();
 
-  if (chatPinInput) {
-    chatPinInput.addEventListener("input", () => {
-      chatPinInput.value = digitsOnly(chatPinInput.value).slice(0, 5);
-    });
-  }
-
   const verifyChatPin = () => {
     const pin = digitsOnly(chatPinInput?.value || "").slice(0, 5);
     if (pin.length !== 5) {
@@ -2713,10 +2793,35 @@ const setupUserView = (root) => {
     updateSecondChatVisibility();
   };
 
-  chatPinOpenButton?.addEventListener("click", verifyChatPin);
-  chatPinInput?.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
+  root.addEventListener("input", (event) => {
+    if (!(event.target instanceof HTMLInputElement)) {
+      return;
+    }
+    if (event.target.id === "chatPinInput") {
+      event.target.value = digitsOnly(event.target.value).slice(0, 5);
+    }
+  });
+
+  root.addEventListener("keydown", (event) => {
+    if (!(event.target instanceof HTMLInputElement)) {
+      return;
+    }
+    if (event.target.id === "chatPinInput" && event.key === "Enter") {
       verifyChatPin();
+    }
+  });
+
+  root.addEventListener("click", (event) => {
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    if (!target) {
+      return;
+    }
+    if (target.id === "chatPinOpenButton") {
+      verifyChatPin();
+      return;
+    }
+    if (target.id === "chatSendButton") {
+      void sendChatMessage();
     }
   });
 
@@ -2758,35 +2863,8 @@ const setupUserView = (root) => {
 
   db.collection(SECOND_CHAT_COLLECTION).orderBy("createdAt", "asc").limit(200).onSnapshot(
     (snapshot) => {
-      if (!chatMessages) {
-        return;
-      }
-
-      const docs = snapshot.docs;
-      chatMessages.innerHTML = "";
-      if (!docs.length) {
-        const empty = document.createElement("p");
-        empty.className = "chat-empty";
-        empty.textContent = "Brak wiadomości.";
-        chatMessages.appendChild(empty);
-      } else {
-        docs.forEach((doc) => {
-          const data = doc.data();
-          const item = document.createElement("article");
-          item.className = "admin-chat-item";
-
-          const meta = document.createElement("div");
-          meta.className = "admin-chat-meta";
-          meta.textContent = `${typeof data.authorName === "string" ? data.authorName : "Gracz"} • ${formatChatTimestamp(data.createdAt)}`;
-
-          const text = document.createElement("p");
-          text.className = "admin-chat-text";
-          text.textContent = typeof data.text === "string" ? data.text : "";
-
-          item.append(meta, text);
-          chatMessages.appendChild(item);
-        });
-      }
+      chatDocsCache = snapshot.docs;
+      renderChatMessages();
       if (chatStatus) {
         chatStatus.textContent = "Czat zsynchronizowany.";
       }
@@ -2828,7 +2906,7 @@ const setupUserView = (root) => {
     }
   );
 
-  chatSendButton?.addEventListener("click", async () => {
+  const sendChatMessage = async () => {
     const verifiedPlayer = getVerifiedChatPlayer();
     if (!getSecondChatPinGateState() || !verifiedPlayer || !isSecondPlayerAllowedForChat(verifiedPlayer)) {
       if (chatStatus) {
@@ -2877,7 +2955,7 @@ const setupUserView = (root) => {
         chatSendButton.disabled = false;
       }
     }
-  });
+  };
 
   if (chatPinStatus && getSecondChatPinGateState() && getVerifiedChatPlayer()) {
     const verifiedPlayer = getVerifiedChatPlayer();

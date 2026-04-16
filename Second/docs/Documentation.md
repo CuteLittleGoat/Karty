@@ -17,7 +17,7 @@
 ### Edycja uprawnień gracza (modal)
 - Zamiast `window.prompt` używany jest dedykowany modal: `#secondPlayerPermissionsModal` w `Second/index.html`.
 - Inicjalizacja i obsługa: `initSecondPlayerPermissionsModal(...)` w `Second/app.js`.
-- Aktualna lista uprawnień (`SECOND_AVAILABLE_PLAYER_PERMISSIONS`): `Czat`, `Wpłaty`, `Podział Puli`, `Faza Grupowa`, `Półfinał`, `Finał`, `Wypłaty`.
+- Aktualna lista uprawnień (`SECOND_AVAILABLE_PLAYER_PERMISSIONS`): `Czat`, `Losowanie stołów`, `Wpłaty`, `Podział Puli`, `Faza Grupowa`, `Półfinał`, `Finał`, `Wypłaty`.
 - Każdy checkbox aktualizuje `player.permissions` jako tablicę unikalnych etykiet i natychmiast zapisuje zmiany do `second_tournament/state`.
 - Modal wspiera trzy sposoby zamknięcia: przycisk `✕`, kliknięcie w overlay i klawisz `Escape`.
 - Widok tabeli graczy renderuje wybrane uprawnienia jako badge (`.permission-badge`) w kolumnie `Uprawnienia`.
@@ -42,7 +42,7 @@
 - Pozostałe sekcje: `tables`, `assignments`, `tableEntries`, `payments`, `pool`, `group`, `semi`, `finalPlayers`, `payouts`.
 - Sekcja `payouts` przechowuje flagi `showInitial` i `showFinal`, które sterują widocznością wartości wypłat w tabeli renderowanej dla admina i użytkownika.
 
-### Losowanie graczy — aktualny render
+### Lista graczy — aktualny render
 - Nagłówek metadanych turnieju: grid `.t-section-grid`.
 - Nad siatką metadanych renderowany jest destrukcyjny przycisk `Wyzeruj Rebuy` (`data-role="reset-all-rebuy"`), osadzony w `.admin-table-actions`.
 - Pole `RAKE` działa w formacie procentowym zgodnym z modułem Main: użytkownik wpisuje wartość liczbową, a pole renderuje `wartość%`; obliczenia używają ułamka dziesiętnego (`10` => `0.10`).
@@ -75,7 +75,7 @@
 - Dodatkowo `delete-player` usuwa trwały wpis `payments.table12Rebuys[playerId]` przez `FieldValue.delete()` oraz sprawdza, czy po operacji nie został pusty układ `0 graczy i 0 stołów`.
 - Jeśli po usunięciu gracza stan turnieju spełnia warunek `players.length === 0 && tables.length === 0`, aplikacja automatycznie resetuje `payments.table12Rebuys` i `pool.rebuyValues`, bez usuwania dokumentu `second_tournament/state`.
 
-### Globalny reset Rebuy (Losowanie graczy)
+### Globalny reset Rebuy (Lista graczy)
 - Kliknięcie przycisku `Wyzeruj Rebuy` uruchamia `resetAllTable12Rebuys()`.
 - Operacja wymaga potwierdzenia `window.confirm` z ostrzeżeniem o nieodwracalności.
 - Po zatwierdzeniu funkcja:
@@ -122,7 +122,7 @@
 
 ### Wypłaty
 - `Tabela23` pobiera `STACK` bezpośrednio z wartości wpisanych w `Tabela FINAŁOWA` (`semi.assignments[playerId].finalStack`) i sortuje finalistów malejąco po tym polu; `STACK` w `Tabela23` pozostaje readonly.
-- `Tabela24` korzysta z pełnej klasyfikacji wszystkich graczy: miejsca od końca zajmują najpierw gracze z `group.eliminatedOrder`, potem gracze z `semi.eliminatedOrder`, a pozostałe miejsca uzupełniają finaliści posortowani po `STACK` malejąco; finaliści z zaznaczonym `final.eliminated[playerId]` trafiają za aktywnych finalistów.
+- `Tabela24` korzysta z kolejek eliminacji: miejsca od końca zajmują kolejno gracze z `group.eliminatedOrder`, następnie `semi.eliminatedOrder`, a następnie `final.eliminatedOrder` (czyli `Tabela23A`).
 - Liczba wierszy `Tabela24` jest zawsze równa liczbie graczy w `players[]`.
 - Kolumny `POCZĄTKOWA WYGRANA` i `KOŃCOWA WYGRANA` są readonly i pobierają odpowiednio `KWOTA` oraz `SUMA` z tego samego miejsca w `Tabela16`; jeśli miejsc w `Tabela24` jest więcej niż wierszy w `Tabela16`, reszta otrzymuje `0`.
 - Checkboxy `data-role="toggle-payout-initial"` i `data-role="toggle-payout-final"` sterują realną widocznością kolumn w tabeli administratora i użytkownika, a ich stan jest utrwalany w `payouts.showInitial` / `payouts.showFinal`.
@@ -145,7 +145,7 @@
 
 ### Przyciski dodawania — zmiana layoutu
 - Dodano klasę `t-inline-add-button` dla przycisków `Dodaj gracza`, `Dodaj stół`, `Dodaj` (Podział puli) i `Dodaj nowy stół`.
-- Przycisk usuwania stołu (`data-role="delete-table"`) używa klas `.admin-row-delete.draw-table-delete`, dzięki czemu jest kompaktowy jak w `Losowanie graczy` i wyrównany do prawej krawędzi karty stołu.
+- Przycisk usuwania stołu (`data-role="delete-table"`) używa klas `.admin-row-delete.draw-table-delete`, dzięki czemu jest kompaktowy jak w `Lista graczy` i wyrównany do prawej krawędzi karty stołu.
 - Styl `#adminTournamentRoot .t-inline-add-button` ustawia `justify-self: flex-start` oraz `width: auto`, co eliminuje rozciąganie przycisku na pełną szerokość kontenera grid.
 - Czerwone przyciski testowe w sekcji `Finał` pozostały bez zmian.
 
@@ -157,7 +157,7 @@
 - Stan lokalny użytkownika jest normalizowany przez `normalizeTournamentState`, dzięki czemu brakujące pola nie psują renderu UI.
 
 ### Render sekcji użytkownika
-- Zakładki `Czat` i `TOURNAMENT OF POKER` są ukryte do czasu poprawnej weryfikacji głównego PIN-u użytkownika (`#userPlayerPinInput`, `#userPlayerPinOpenButton`).
+- Zakładka `TOURNAMENT OF POKER` jest ukryta do czasu poprawnej weryfikacji głównego PIN-u użytkownika (`#userPlayerPinInput`, `#userPlayerPinOpenButton`).
 - Stan tej weryfikacji jest przechowywany w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`), więc użytkownik wpisuje PIN tylko raz do resetu lub odświeżenia strony.
 - Po wejściu do `TOURNAMENT OF POKER` przyciski `data-tournament-target` są filtrowane per gracz; bez odpowiednich uprawnień nie renderują się przyciski nawigacji do paneli.
 - Użytkownik może przełączać dostępne sekcje przez przyciski `data-tournament-target`.
@@ -179,7 +179,7 @@
 
 ### Automatyczne przeliczenia
 - `Tabela10`:
-  - `BUY-IN` z metadanych turnieju (Losowanie graczy),
+  - `BUY-IN` z metadanych turnieju (Lista graczy),
   - `REBUY/ADD-ON` z metadanych turnieju,
   - `SUMA` jako `suma BUY-IN z Tabela12 + suma REBUY z Tabela12`,
   - `LICZ. REBUY/ADD-ON` jako liczba uzupełnionych pól rebuy w modalach `Rebuy gracza` (bez sumowania wartości).
@@ -246,11 +246,11 @@
 
 
 ### PIN użytkownika, czat i uprawnienia
-- Główna bramka PIN użytkownika korzysta z kontrolek `#userPlayerPinInput`, `#userPlayerPinOpenButton`, `#userPlayerPinStatus`; po poprawnej weryfikacji odsłania zakładki `Czat` i `TOURNAMENT OF POKER`.
+- Główna bramka PIN użytkownika korzysta z kontrolek `#userPlayerPinInput`, `#userPlayerPinOpenButton`, `#userPlayerPinStatus`; po poprawnej weryfikacji odsłania zakładkę `TOURNAMENT OF POKER`.
 - Weryfikacja głównego PIN porównuje 5-cyfrową wartość z `players[].pin` w stanie `second_tournament/state` i zapisuje sesję w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`).
 - Nawigacja wewnątrz `TOURNAMENT OF POKER` filtruje przyciski zgodnie z mapą `SECOND_TOURNAMENT_PERMISSION_MAP`; każdy przycisk panelu wymaga przypisanego uprawnienia z mapy `SECOND_TOURNAMENT_PERMISSION_MAP`, więc bez żadnego uprawnienia sidebar nie pokazuje żadnej nawigacji.
-- Wejście PIN czatu nadal korzysta z `#chatPinInput`, `#chatPinOpenButton`, `#chatPinStatus`.
-- Weryfikacja PIN czatu porównuje 5-cyfrową wartość z `players[].pin` w stanie `second_tournament/state`.
+- Sekcja czatu jest renderowana wewnątrz panelu Tournament (`data-tournament-target="chatTab"`) i używa kontrolek `#chatPinInput`, `#chatPinOpenButton`, `#chatPinStatus`.
+- Weryfikacja PIN czatu porównuje 5-cyfrową wartość z `players[].pin` w stanie `second_tournament/state`; po poprawnej weryfikacji odblokowuje wysyłkę wiadomości tylko w sekcji `Czat`.
 - Dostęp do wysyłki wiadomości jest nadawany tylko graczom z uprawnieniem `Czat` (pole `players[].permissions`).
 - Stan weryfikacji sesji czatu jest zapisywany w `sessionStorage` (`secondChatPinVerified`, `secondChatPlayerId`), dzięki czemu użytkownik wpisuje PIN do czatu raz na sesję przeglądarki.
 - Wysyłka wiadomości do `second_chat_messages` zapisuje `authorName` z `players[].name` zweryfikowanego gracza.
@@ -261,3 +261,10 @@
 - `saveState()` zapisuje ostatni błąd w `saveState.lastError`, a moduł loguje błędy do konsoli (`[Second] saveState error`, `[Second][Table12Rebuy] ...`) dla szybszej diagnostyki.
 - Automatyczny reset rebuy po stanie `0 graczy i 0 stołów` działa przez czyszczenie pól wewnątrz dokumentu (`payments.table12Rebuys`, `pool.rebuyValues`), więc nie koliduje z ochroną przed usunięciem ostatniego dokumentu z kolekcji Firebase.
 - Zamknięcie modala (`X`, klik poza modalem, ESC) zamyka okno bez dodatkowych opóźnień, jak w Main.
+
+
+### Finał i wypłaty — aktualna logika
+- W sekcji `final` administrator widzi `Tabela23` oraz `Tabela23A` (bez wizualizacji SVG stołu).
+- `Tabela23A` budowana jest z graczy oznaczonych `ELIMINATED` w `Tabela23`; kolejność jest sterowana przez `final.eliminatedOrder` i przyciski `final-eliminated-move` (`▲/▼`).
+- `Tabela24` jest wyliczana funkcją `buildPlacementRowsFromQueues(...)` i obsadza miejsca od końca w kolejności kolejek: `Tabela19A` → `Tabela22A` → `Tabela23A`.
+- Liczba wierszy `Tabela24` zawsze odpowiada aktualnej liczbie graczy z sekcji `players` (`Lista graczy`).

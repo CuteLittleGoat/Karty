@@ -4,20 +4,20 @@
 - Efekt uzyskano przez pełną szerokość kontenera `.page` w trybie użytkownika (`calc(100% - 2px)`, `padding-inline: 1px`) oraz wyłączenie wewnętrznej pseudo-ramki `.user-card::before`.
 ## Moduł Second — Tournament of Poker
 - W nagłówku modułu `Second` po prawej stronie widoczna jest ta sama ikona `Pliki/Ikona.png` co w module `Main`, ustawiona po lewej stronie przycisku **Instrukcja** (układ poziomy w `.header-controls`).
-- Sekcja `Losowanie graczy` ma układ metadanych w siatce `.t-section-grid` oraz tabelę `players-table`.
-- W sekcji `Losowanie graczy` nad siatką metadanych dodano czerwony przycisk destrukcyjny **Wyzeruj Rebuy** (wariant `button.danger`) do globalnego resetu wszystkich wpisów `RebuyX`.
+- Sekcja `Lista graczy` ma układ metadanych w siatce `.t-section-grid` oraz tabelę `players-table`.
+- W sekcji `Lista graczy` nad siatką metadanych dodano czerwony przycisk destrukcyjny **Wyzeruj Rebuy** (wariant `button.danger`) do globalnego resetu wszystkich wpisów `RebuyX`.
 - W polu `RAKE` zastosowano format procentowy jak w module Main: użytkownik wpisuje liczbę, a kontrolka wyświetla wartość z dopisanym `%` (np. `12%`) bez dodatkowego pomocniczego `<small>`.
 - Kolumna `PIN` używa kontrolki `.pin-control`:
   - pole wejściowe ma poszerzoną szerokość (`8ch`, min. `8ch`, max. `9ch`), aby mieścić pełne 5 cyfr PIN z zapasem wizualnym,
   - obok pola znajduje się przycisk `Losuj` (`.admin-pin-random`).
 - Kolumna `Uprawnienia` prezentuje bieżące uprawnienia jako badge (`.permissions-tags`, `.permission-badge`) i zawiera przycisk `Edytuj` (`.admin-permissions-edit`).
 - Przycisk `Edytuj` w kolumnie `Uprawnienia` otwiera modal `Uprawnienia gracza` (`#secondPlayerPermissionsModal`) o wyglądzie spójnym z modalami modułu Main (nagłówek, przycisk zamknięcia `✕`, overlay, karta `modal-card-sm`).
-- W modalu lista `.permissions-list` zawiera uprawnienia `Czat`, `Wpłaty`, `Podział Puli`, `Faza Grupowa`, `Półfinał`, `Finał`, `Wypłaty`; zaznaczenie opcji steruje widocznością odpowiednich paneli użytkownika.
-- W widoku użytkownika modułu `Second` nad zakładkami działa dodatkowa bramka `.pin-gate.user-access-pin-gate`, wykorzystująca ten sam styl karty PIN co sekcja czatu; po poprawnym PIN ukrywa się bez zmiany layoutu całej karty.
+- W modalu lista `.permissions-list` zawiera uprawnienia `Czat`, `Losowanie stołów`, `Wpłaty`, `Podział Puli`, `Faza Grupowa`, `Półfinał`, `Finał`, `Wypłaty`; zaznaczenie opcji steruje widocznością odpowiednich paneli użytkownika.
+- W widoku użytkownika modułu `Second` nad zakładkami działa dodatkowa bramka `.pin-gate.user-access-pin-gate`; po poprawnym PIN odblokowuje wejście do `TOURNAMENT OF POKER` bez zmiany layoutu całej karty.
 - Ostatnia kolumna `Akcje` zawiera przycisk `Usuń` (`.admin-row-delete`) wyrównany do prawej strony.
 - W sekcji `Losowanie stołów` przycisk usuwania stołu ma klasy `.admin-row-delete.draw-table-delete`: zachowuje kompaktowy rozmiar i jest dosunięty do prawej krawędzi bloku stołu (`justify-self: end`).
 - Nad tabelą prezentowany jest licznik liczby graczy (tekst informacyjny `.builder-info`).
-- Wiersze statusu w `Losowanie graczy` używają przycisku-pigułki `.payment-status-toggle` z ukrytym inputem oraz etykietą statusu wewnątrz przycisku; wariant jest kompaktowy, aby pasował proporcją do pozostałych kontrolek.
+- Wiersze statusu w `Lista graczy` używają przycisku-pigułki `.payment-status-toggle` z ukrytym inputem oraz etykietą statusu wewnątrz przycisku; wariant jest kompaktowy, aby pasował proporcją do pozostałych kontrolek.
 
 - Przyciski dodawania w module `Second` (Dodaj gracza / Dodaj stół / Dodaj / Dodaj nowy stół) mają klasę `.t-inline-add-button` i są wyrównane do lewej (`justify-self: flex-start`) z naturalną szerokością (`width: auto`) zamiast pełnej szerokości kontenera.
 - Czerwone przyciski testowe w sekcji `Finał` pozostają bez zmian kolorystycznych i rozmiarowych.
@@ -65,3 +65,5 @@
 - W `Organizacja` (`TABELA1`) drugi wiersz pozostawia kolumny `ORGANIZACJA` i `POT` bez pól wejściowych; aktywne pole edycji znajduje się tam wyłącznie w kolumnie `KALKULATOR`.
 - Przyciski akcji w wierszach (`Dodaj`, `Usuń`) korzystają z istniejących klas `secondary` i `danger admin-row-delete`.
 - Puste wrappery sekcji kalkulatora (`.admin-calculator-table-wrap`) są ukrywane regułą `:empty`, dlatego niewykorzystane sloty pod `TABELA2` i `TABELAC` nie tworzą już zielonych pasów w UI.
+
+- W panelu `Finał` usunięto wizualizację stołu (`.poker-table-svg`); sekcja pokazuje `Tabela23` oraz `Tabela23A` z przyciskami pozycji `▲/▼`.
