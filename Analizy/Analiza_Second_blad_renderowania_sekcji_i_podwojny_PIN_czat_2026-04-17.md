@@ -424,3 +424,94 @@ Jest: opis diagnostyki obejmuje rozszerzone pola (`errorName`, `errorMessage`, l
 Plik `Second/docs/README.md`  
 Było: instrukcja mówiła o ogólnym komunikacie `Nie udało się wyrenderować tej sekcji. Spróbuj odświeżyć dane.`  
 Jest: instrukcja wyjaśnia, że komunikat zawiera nazwę sekcji, etap i szczegół błędu dla szybszego namierzenia przyczyny.
+
+---
+
+## Dodatkowa aktualizacja analizy po wdrożeniu (2026-04-17, incydent: „po wejściu w Czat inne sekcje nie nadpisują widoku”)
+
+### Prompt użytkownika
+Przeczytaj i dopisz do analizy `Analizy/Analiza_Second_blad_renderowania_sekcji_i_podwojny_PIN_czat_2026-04-17.md` nowe wnioski.
+
+Po wdrożeniu rekomendowanej naprawy w widoku użytkownika ponownie występuje problem polegający na tym, że jak klikam na zakładki na panelu bocznym to nie pojawiają się nowe dane.
+
+Kroki jakie wykonuję:
+1. Wchodzę na stronę https://cutelittlegoat.github.io/Karty/Second/index.html
+2. Wpisuję PIN
+3. Wchodzę w zakładkę Tournament of Poker
+4. Domyślnie podświetla się panel "Wpłaty" z informacją "Brak dostępnych paneli Tournament of Poker dla tego PIN-u."
+5. Klikam na zakładkę "Czat". Dane wyświetlają się prawidłowo
+6. Klikam na inną zakładkę. Wciąż wyświetlają się dane z zakładki "Czat". Mogę nawet wpisywać wiadomości.
+7. Przeładowuję stronę
+8. Klikam na zakładkę "Tournament of Poker" (nie ma ponownego pytania o PIN)
+9. Zakładki wyświetlają komunikat "Trwa ładowanie danych turnieju..."
+10. Klikam na zakładkę "Czat".
+11. Klikam na inną zakładkę. Wciąż wyświetlają się dane z zakładki "Czat". Mogę nawet wpisywać wiadomości.
+
+### Nowe wnioski (na podstawie objawu i bieżącej architektury)
+
+1. **Regresja wygląda na problem przełączania stanu sekcji, nie na samą jakość danych turnieju.**
+   Charakterystyczny objaw to „sticky chat”: po wejściu w `chatTab` kolejne kliknięcia zmieniają intencję użytkownika, ale widok pozostaje czatem.
+
+2. **Najbardziej prawdopodobny punkt awarii to tor: `click -> userTournamentSection -> renderUserTournament()` przy przejściu z `chatTab` na sekcje dane.**
+   Czat renderuje się w osobnej gałęzi i działa, natomiast przejście na pozostałe sekcje nie finalizuje podmiany `tournamentSection.innerHTML`.
+
+3. **Komunikat „Trwa ładowanie danych turnieju...” po odświeżeniu + brak ponownego pytania o PIN wskazuje na konflikt między stanem trwałym (PIN zapamiętany) i stanem runtime (`isUserTournamentLoaded`).**
+   Innymi słowy: sesja PIN pozostaje aktywna, ale odświeżenie danych turniejowych bywa niespójne czasowo i UI może wejść w stan pośredni.
+
+4. **Skoro po wejściu w Czat użytkownik nadal może pisać, to warstwa autoryzacji działa, ale warstwa nawigacji sekcji po stronie user-view nie domyka cyklu renderu.**
+   To oddziela problem od PIN i od uprawnień czatu.
+
+5. **W produkcji (GitHub Pages) trzeba brać pod uwagę cache starego bundla JS.**
+   Wzorzec „część zmian działa, część wygląda jak stary błąd” jest spójny z mieszaniem wersji po deployu (stary `app.js` + nowe dane, albo odwrotnie).
+
+### Sugerowane rozwiązanie (priorytetowo)
+
+#### A) Twarda instrumentacja przełączania sekcji (diagnostyka 1:1)
+Dodać log diagnostyczny przy kliknięciu przycisku sidebar i na wejściu do `renderUserTournament()`:
+- `requestedSection`, `previousSection`, `finalSection`,
+- `isUserTournamentLoaded`,
+- `allowedTargets`,
+- `isUserPinGateOpen`, `verifiedUserId`,
+- znacznik czasu.
+
+Cel: jednoznacznie potwierdzić, czy kliknięcie faktycznie przechodzi przez render i czy sekcja nie jest nadpisywana z powrotem do `chatTab`.
+
+#### B) Wymuszenie jednoznacznego „unmountu czatu” przy wyjściu z `chatTab`
+Przed renderem sekcji innej niż `chatTab` wykonać:
+1. `chatInput/chatSendButton/chatMessages = null` (reset referencji),
+2. usunięcie klas widoczności czatu,
+3. dopiero potem podmiana `tournamentSection.innerHTML` nową sekcją.
+
+Cel: wykluczyć sytuację, w której aktywny stan czatu utrzymuje poprzedni DOM lub zachowanie mimo zmiany sekcji.
+
+#### C) Ochrona przed „powrotem” do starej sekcji przez asynchroniczny rerender
+Wprowadzić licznik wersji renderu (np. `renderToken`):
+- każdy `renderUserTournament()` inkrementuje token,
+- asynchroniczne callbacki (snapshot/refresh) renderują tylko gdy token jest nadal aktualny.
+
+Cel: jeśli po kliknięciu użytkownika przyjdzie opóźniony rerender, nie może nadpisać świeżo wybranej sekcji.
+
+#### D) Uporządkowanie stanu po reloadzie
+Przy starcie widoku usera:
+1. jeśli `isUserTournamentLoaded === false` -> blokada przełączania sekcji turniejowych,
+2. po pierwszym poprawnym snapshotcie dopiero aktywacja sidebaru,
+3. jeśli PIN z local storage jest ustawiony, walidacja gracza po snapshotcie i dopiero wtedy odblokowanie paneli.
+
+Cel: usunięcie stanu pośredniego „PIN jest / dane jeszcze niegotowe”, który generuje nieintuicyjne przejścia.
+
+#### E) Minimalizacja ryzyka cache po deployu
+Dla `Second/app.js` dodać strategię cache-busting:
+- wersjonowany query param w `index.html` (np. `app.js?v=2026-04-17-2`),
+- lub fingerprint pliku.
+
+Cel: użytkownik nie powinien uruchamiać mieszanki starego i nowego kodu po wdrożeniu hotfixu.
+
+### Kryteria potwierdzenia naprawy (dla zgłoszonego scenariusza)
+
+1. Po wejściu w `Czat` i kliknięciu dowolnej innej zakładki (`Wpłaty/Podział puli/Faza grupowa/Półfinał/Finał/Wypłaty`) zawartość główna zawsze zmienia się na wybraną sekcję.
+2. Po odświeżeniu strony i wejściu w `Tournament of Poker` nie ma „zawieszenia” na stanie pośrednim; sekcje działają po załadowaniu snapshotu.
+3. Brak możliwości pisania wiadomości poza `chatTab` (textarea nie jest widoczna/aktywna po zmianie sekcji).
+4. Log diagnostyczny jednoznacznie pokazuje sekwencję: klik -> render sekcji -> finalny stan sekcji, bez nieoczekiwanego powrotu do `chatTab`.
+
+### Podsumowanie
+Nowy incydent sugeruje regresję w mechanice przełączania sekcji po wejściu do czatu oraz możliwy konflikt stanu trwałego (zapamiętany PIN) ze stanem runtime po odświeżeniu. Najbezpieczniejsza ścieżka to: instrumentacja klik/render, twardy unmount czatu przy opuszczaniu `chatTab`, ochrona przed asynchronicznym nadpisaniem renderu oraz cache-busting po deployu.
