@@ -162,7 +162,8 @@
 - Stan tej weryfikacji jest przechowywany w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`), więc użytkownik wpisuje PIN tylko raz do resetu lub odświeżenia strony.
 - Po wejściu do `TOURNAMENT OF POKER` przyciski `data-tournament-target` są filtrowane per gracz; bez odpowiednich uprawnień nie renderują się przyciski nawigacji do paneli.
 - Użytkownik może przełączać dostępne sekcje przez przyciski `data-tournament-target`.
-- Render każdej sekcji użytkownika jest osłonięty bezpiecznym fallbackiem (`try/catch`): przy wyjątku pokazywany jest komunikat o błędzie renderowania, dzięki czemu poprzednia sekcja (np. `Czat`) nie zostaje „zamrożona” jako widok po kliknięciu innej zakładki.
+- Render każdej sekcji użytkownika jest osłonięty bezpiecznym fallbackiem (`try/catch`): przy wyjątku pokazywany jest komunikat o błędzie renderowania, a log błędu zawiera nazwę aktywnej sekcji (`section`) dla szybszej diagnostyki.
+- Przed obliczeniami sekcji read-only (`pool/group/semi/final/payouts`) stosowana jest defensywna normalizacja rekordów (`players`, `tables`, `assignments`, `table12Rebuys`), żeby pojedyncze uszkodzone rekordy nie wywoływały globalnego błędu renderu.
 - Sekcje z aktywną prezentacją danych:
   - `pool`: read-only `Tabela13`, `Tabela14`, `Tabela15`, `Tabela16`,
   - `group`: read-only `Tabela17`, `Tabela18`, `Tabela19`, `Tabela19A`, `Tabela19B`,
@@ -170,7 +171,7 @@
   - `final`: read-only `Tabela23`, `Tabela23A`,
   - `payments`: podgląd pól `payments.table10` i `payments.table11`,
   - `payouts`: tabela miejsc i wygranych zależna od flag `payouts.showInitial` / `payouts.showFinal`.
-- `chatTab` pozostaje jedyną sekcją z możliwością wpisywania danych po stronie użytkownika (po przejściu bramki PIN czatu).
+- `chatTab` pozostaje jedyną sekcją z możliwością wpisywania danych po stronie użytkownika.
 - W sidebarze `TOURNAMENT OF POKER` przycisk `Czat` jest renderowany jako ostatni przycisk na liście.
 
 ### Ręczne odświeżanie
@@ -257,7 +258,8 @@
 - Weryfikacja głównego PIN porównuje 5-cyfrową wartość z `players[].pin` w stanie `second_tournament/state` i zapisuje sesję w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`).
 - Nawigacja wewnątrz `TOURNAMENT OF POKER` filtruje przyciski zgodnie z mapą `SECOND_TOURNAMENT_PERMISSION_MAP`; każdy przycisk panelu wymaga przypisanego uprawnienia z mapy `SECOND_TOURNAMENT_PERMISSION_MAP`, więc bez żadnego uprawnienia sidebar nie pokazuje żadnej nawigacji.
 - Sekcja czatu jest renderowana wewnątrz panelu Tournament (`data-tournament-target="chatTab"`) i używa kontrolek `#chatPinInput`, `#chatPinOpenButton`, `#chatPinStatus`.
-- Weryfikacja PIN czatu porównuje 5-cyfrową wartość z `players[].pin` w stanie `second_tournament/state`; po poprawnej weryfikacji odblokowuje wysyłkę wiadomości tylko w sekcji `Czat`.
+- Po poprawnej weryfikacji głównego PIN-u użytkownika aplikacja automatycznie preautoryzuje czat dla tego samego gracza, jeżeli ma on uprawnienie `Czat` (brak drugiego wymuszonego wpisywania PIN przy wejściu do `chatTab`).
+- Weryfikacja PIN czatu nadal działa jako fallback techniczny i dodatkowa ścieżka odblokowania (np. gdy otworzono zakładkę `Czat` bez wcześniejszej weryfikacji głównej sesji).
 - Dostęp do wysyłki wiadomości jest nadawany tylko graczom z uprawnieniem `Czat` (pole `players[].permissions`).
 - Stan weryfikacji sesji czatu jest zapisywany w `sessionStorage` (`secondChatPinVerified`, `secondChatPlayerId`), dzięki czemu użytkownik wpisuje PIN do czatu raz na sesję przeglądarki.
 - Wysyłka wiadomości do `second_chat_messages` zapisuje `authorName` z `players[].name` zweryfikowanego gracza.

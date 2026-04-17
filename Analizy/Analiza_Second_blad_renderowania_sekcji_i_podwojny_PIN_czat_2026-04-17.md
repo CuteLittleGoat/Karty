@@ -122,3 +122,104 @@ Wtedy drugi PIN praktycznie nie występuje, ale mechanizm technicznie pozostaje.
 
 ## Podsumowanie
 Błąd renderowania jest skutkiem wyjątku runtime w rozszerzonym rendererze user-view (a nie problemem odświeżania czy połączenia z Firebase). Dodatkowy PIN dla czatu wynika z dwóch niezależnych mechanizmów autoryzacji sesyjnej. Najlepsza ścieżka: rozdzielenie obliczeń per sekcja + unifikacja autoryzacji PIN między user-view i czatem.
+
+---
+
+## Sekcja wdrożenia (2026-04-17) — wykonane zmiany w kodzie
+
+### Plik `Second/app.js`
+
+Linie (sekcja autoryzacji czatu)
+
+Było:
+```js
+if (userTournamentSection === "chatTab") {
+  renderUserChatSection();
+  bindUserChatControls();
+  updateSecondChatVisibility();
+  return;
+}
+```
+
+Jest:
+```js
+if (userTournamentSection === "chatTab") {
+  renderUserChatSection();
+  bindUserChatControls();
+  tryAutoAuthorizeChatFromUserPin();
+  updateSecondChatVisibility();
+  return;
+}
+```
+
+Linie (sekcja weryfikacji głównego PIN)
+
+Było:
+```js
+setSecondUserPinGateState(true);
+setSecondUserVerifiedPlayerId(matchedPlayer.id);
+if (userPinStatus) {
+  userPinStatus.textContent = `PIN poprawny. Witaj ${matchedPlayer.name || "graczu"}.`;
+}
+```
+
+Jest:
+```js
+setSecondUserPinGateState(true);
+setSecondUserVerifiedPlayerId(matchedPlayer.id);
+tryAutoAuthorizeChatFromUserPin();
+if (userPinStatus) {
+  userPinStatus.textContent = `PIN poprawny. Witaj ${matchedPlayer.name || "graczu"}.`;
+}
+```
+
+Linie (sekcja renderowania read-only)
+
+Było:
+```js
+const userGroupedDrawRows = [];
+let userLpCounter = 1;
+userTournamentState.tables.forEach((table) => {
+  userTournamentState.players.forEach((player) => {
+    if ((userTournamentState.assignments[player.id]?.tableId || "") === table.id) {
+```
+
+Jest:
+```js
+const safeUserPlayers = Array.isArray(userTournamentState.players)
+  ? userTournamentState.players.filter((player) => player && typeof player === "object")
+  : [];
+const safeUserTables = Array.isArray(userTournamentState.tables)
+  ? userTournamentState.tables.filter((table) => table && typeof table === "object")
+  : [];
+const safeUserAssignments = userTournamentState.assignments && typeof userTournamentState.assignments === "object"
+  ? userTournamentState.assignments
+  : {};
+const safeTable12Rebuys = userTournamentState.payments?.table12Rebuys && typeof userTournamentState.payments?.table12Rebuys === "object"
+  ? userTournamentState.payments.table12Rebuys
+  : {};
+
+const userGroupedDrawRows = [];
+let userLpCounter = 1;
+safeUserTables.forEach((table) => {
+  safeUserPlayers.forEach((player) => {
+    if (!player?.id || !table?.id) {
+      return;
+    }
+    if ((safeUserAssignments[player.id]?.tableId || "") === table.id) {
+```
+
+Linie (diagnostyka błędów renderu)
+
+Było:
+```js
+console.error("Błąd renderowania sekcji turnieju użytkownika:", error);
+```
+
+Jest:
+```js
+console.error("Błąd renderowania sekcji turnieju użytkownika:", {
+  section: userTournamentSection,
+  error
+});
+```

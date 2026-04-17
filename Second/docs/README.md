@@ -232,6 +232,6 @@
 2. Bez tego kroku dostępne są wyłącznie **Aktualności** i **Regulamin**.
 3. Po poprawnej weryfikacji odblokuje się zakładka **TOURNAMENT OF POKER**; ten stan jest pamiętany do czasu resetu lub odświeżenia strony.
 4. Wejdź do `TOURNAMENT OF POKER` i wybierz sekcję **Czat** w lewym panelu.
-5. W polu PIN czatu wpisz dokładnie 5 cyfr przypisanych do gracza i kliknij **Otwórz** (lub naciśnij Enter).
-6. Jeżeli PIN jest poprawny i gracz ma uprawnienie **Czat** nadane przez admina w sekcji **Lista graczy**, ukryje się panel PIN i pojawi się formularz wysyłki wiadomości.
+5. Jeżeli gracz ma uprawnienie **Czat**, formularz wysyłki wiadomości odblokuje się automatycznie po poprawnej weryfikacji głównego PIN-u użytkownika (bez ponownego wpisywania PIN przy wejściu do sekcji **Czat**).
+6. Jeżeli gracz nie ma uprawnienia **Czat**, sekcja pozostaje zablokowana i nie pozwala wysyłać wiadomości.
 7. Wysłane wiadomości publikują się z nazwą gracza skonfigurowaną przez admina.
