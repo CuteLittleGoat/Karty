@@ -621,3 +621,10 @@ Wskazówka użycia:
 ## 20. Potwierdzenia i Najbliższa gra — źródło danych
 1. Zakładki **Najbliższa gra** i **Gry do potwierdzenia** korzystają tylko z gier z **Gry użytkowników** (`UserGames`).
 2. Gry dodane w **Gry admina** nie pojawiają się już w tych dwóch sekcjach.
+
+## 21. Repozytorium DataVault i plik `data.json`
+1. W katalogu głównym projektu znajduje się plik `data.json` zawierający aktualną konfigurację repozytorium DataVault.
+2. Każdy wpis repozytorium ma pole `displayName`, które należy traktować jako jedyny tekst do wyświetlenia w UI (bez dopisywania znaczników przekreślenia).
+3. Status repozytorium jest rozdzielony od nazwy i przekazywany przez pola `status`, `isActive` oraz `isStrikethrough`.
+4. Jeżeli `isStrikethrough=false`, nazwa repozytorium ma być prezentowana standardowo (bez przekreślenia).
+5. Do walidacji stanu używaj pól logicznych (`isActive`, `isStrikethrough`), a nie analizy tekstu nazwy.

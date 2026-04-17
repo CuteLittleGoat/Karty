@@ -196,3 +196,20 @@ Efekt techniczny:
 
 ## Aktualizacja techniczna: RebuyX i mobilna klawiatura
 - `Main/app.js`: w modalu rebuy kalkulatora każde pole `RebuyX` korzysta z `applyIntegerInputHints` (`type=text`, `inputmode=numeric`, `pattern=[0-9]*`) i sanitizacji cyfr.
+
+## DataVault: aktualny kontrakt danych (`data.json`)
+- Dodano współdzielony plik `data.json` w katalogu głównym repozytorium jako źródło prawdy dla metadanych DataVault.
+- Struktura dokumentu:
+  - `schemaVersion`: wersja kontraktu JSON.
+  - `updatedAt`: znacznik czasu ISO-8601 ostatniej aktualizacji danych.
+  - `dataVault.repositories[]`: lista repozytoriów z polami:
+    - `id`: stabilny identyfikator techniczny,
+    - `displayName`: tekst nazwy do renderu w UI,
+    - `status`: status biznesowy (`active`/`archived`),
+    - `isActive`: flaga aktywności,
+    - `isStrikethrough`: flaga prezentacji przekreślenia.
+- Rekomendowane mapowanie UI:
+  - warstwa widoku renderuje wyłącznie `displayName`;
+  - decyzję o stylu przekreślenia podejmuje wyłącznie na podstawie `isStrikethrough`;
+  - logikę domenową opiera o `status` i `isActive`.
+- Rozdzielenie nazwy (`displayName`) od stylu (`isStrikethrough`) eliminuje przypadkowe przekreślanie nazw wynikające z parsowania tekstu.

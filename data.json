@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "2026-04-17.datavault.repositories.v1",
+  "updatedAt": "2026-04-17T00:00:00Z",
+  "dataVault": {
+    "repositories": [
+      {
+        "id": "main",
+        "displayName": "Main",
+        "status": "active",
+        "isActive": true,
+        "isStrikethrough": false
+      },
+      {
+        "id": "second",
+        "displayName": "Second",
+        "status": "active",
+        "isActive": true,
+        "isStrikethrough": false
+      }
+    ]
+  }
+}

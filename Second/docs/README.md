@@ -244,3 +244,10 @@
 4. W panelu admina, w `TOURNAMENT OF POKER -> Czat`, dostępna jest moderacja:
    - usuwanie pojedynczych wiadomości,
    - czyszczenie wiadomości starszych niż 30 dni.
+
+## 21. Repozytorium DataVault i plik `data.json`
+1. W katalogu głównym projektu znajduje się plik `data.json` zawierający aktualną konfigurację repozytorium DataVault.
+2. Każdy wpis repozytorium ma pole `displayName`, które należy traktować jako jedyny tekst do wyświetlenia w UI (bez dopisywania znaczników przekreślenia).
+3. Status repozytorium jest rozdzielony od nazwy i przekazywany przez pola `status`, `isActive` oraz `isStrikethrough`.
+4. Jeżeli `isStrikethrough=false`, nazwa repozytorium ma być prezentowana standardowo (bez przekreślenia).
+5. Do walidacji stanu używaj pól logicznych (`isActive`, `isStrikethrough`), a nie analizy tekstu nazwy.
