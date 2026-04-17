@@ -103,3 +103,21 @@ Z zachowaniem zasady:
 
 ## Podsumowanie
 Problem nie wynika z Firebase ani z uprawnień, tylko z braku implementacji renderu części sekcji Tournament of Poker po stronie użytkownika. Sekcje `pool`, `group`, `semi` i `final` trafiają do fallbacku z komunikatem administracyjnym. Naprawa polega na dopisaniu read-only rendererów tych sekcji w `renderUserTournament()`.
+
+## Zrealizowane zmiany w kodzie (wdrożenie rekomendacji)
+
+Plik `Second/app.js`
+- Linia (sekcja fallback w `renderUserTournament`)
+  - Było: `tournamentSection.innerHTML = '<p class="builder-info">Dane tej sekcji są zapisywane do Firebase i dostępne w panelu administratora.</p>';`
+  - Jest: dodane kompletne read-only renderery dla sekcji `pool`, `group`, `semi`, `final`, a fallback pozostał tylko dla realnie nieobsługiwanych kluczy.
+- Linia (sekcja `payouts`)
+  - Było: lokalne obliczanie `userRebuyValues` i `userRakePercent` wyłącznie na potrzeby `payouts`.
+  - Jest: sekcja `payouts` używa wcześniej wyliczonych wspólnych wartości (`userAdjustedRebuyValues`, `userAllRebuyValues`) pochodzących z tego samego modelu danych co nowe read-only sekcje.
+
+Plik `Second/index.html`
+- Linia (sidebar `Tournament of Poker` w adminie)
+  - Było: `<button ... data-tournament-target="chatTab">Czat</button>` zaraz po `Lista graczy`.
+  - Jest: `<button ... data-tournament-target="chatTab">Czat</button>` przeniesiony na sam dół listy (za `Wypłaty`).
+- Linia (sidebar `Tournament of Poker` w userze)
+  - Było: `<button ... data-tournament-target="chatTab">Czat</button>` zaraz po `Lista graczy`.
+  - Jest: `<button ... data-tournament-target="chatTab">Czat</button>` przeniesiony na sam dół listy (za `Wypłaty`).
