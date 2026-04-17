@@ -277,3 +277,36 @@
 - `Tabela23A` budowana jest z graczy oznaczonych `ELIMINATED` w `Tabela23`; kolejność jest sterowana przez `final.eliminatedOrder` i przyciski `final-eliminated-move` (`▲/▼`).
 - `Tabela24` jest wyliczana funkcją `buildPlacementRowsFromQueues(...)` i obsadza miejsca od końca w kolejności kolejek: `Tabela19A` → `Tabela22A` → `Tabela23A`.
 - Liczba wierszy `Tabela24` zawsze odpowiada aktualnej liczbie graczy z sekcji `players` (`Lista graczy`).
+
+## Aktualizacja techniczna 2026-04-17 (Tournament of Poker)
+
+### 1. Stabilizacja renderu user-view po PIN
+- Funkcja `verifyUserPin()` po zmianie stanu PIN wywołuje:
+  - `updateProtectedTabsVisibility()`
+  - `renderUserTournament()`
+- Cel: usunąć efekt „starego fallbacku” po poprawnym PIN.
+
+### 2. Wspólny helper podziału puli
+- `getPoolSplitDisplay(row, index)` został wyniesiony do helpera globalnego modułu.
+- Dzięki temu sekcja user `pool` korzysta z tej samej logiki wyświetlania co admin i nie ma ryzyka `ReferenceError` z powodu zakresu funkcji.
+
+### 3. Sanityzacja danych turniejowych user-view
+- Przed obliczeniami/renderem dodano filtrację elementów tablic do obiektów dla:
+  - `semi.customTables` (użycie przez `safeUserSemiCustomTables`),
+  - `pool.mods` (sekcje `pool` i `payouts`).
+- Cel: odporność na historyczne dane z wpisami `null` i redukcja wejść do `catch` renderera.
+
+### 4. Spójność sekcji `Wpłaty` admin/user
+- W user-view sekcja `payments` renderuje układ tabel:
+  - `TABELA10`, `TABELA11`, `TABELA12`
+- Dane pochodzą z tych samych wyliczeń co pozostałe sekcje użytkownika, ale bez elementów edycyjnych.
+
+### 5. Czat w Tournament of Poker (admin)
+- Sekcja `chatTab` w `setupAdminTournament()` renderuje panel moderacyjny wiadomości czatu turniejowego.
+- Dodano:
+  - `cleanupTournamentChatMessages()` — batch delete wiadomości z `expireAt <= now`,
+  - `deleteTournamentChatMessage(messageId)` — usuwanie pojedynczej wiadomości,
+  - snapshot `tournamentChatQuery` dla live-sync i statusu.
+- Dodane role akcji kliknięć:
+  - `tournament-chat-cleanup`,
+  - `tournament-chat-delete-message`.
