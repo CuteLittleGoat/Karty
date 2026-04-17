@@ -285,3 +285,49 @@ Do czasu pełnego refaktoru:
 - Każda z sekcji `Wpłaty/Podział puli/Faza grupowa/Półfinał/Finał/Wypłaty` renderuje się niezależnie.
 - Celowy błąd danych w jednej sekcji nie psuje pozostałych.
 - W logach jest jednoznaczna informacja, która sekcja i który etap obliczeń został przerwany.
+
+---
+
+## Aktualizacja analizy po wdrożeniu (2026-04-17, naprawa izolacji renderu sekcji użytkownika)
+
+### Prompt użytkownika
+Przeczytaj analizę `Analizy/Analiza_Second_blad_renderowania_sekcji_i_podwojny_PIN_czat_2026-04-17.md` i wprowadź rekomendowaną naprawę opisaną w sekcji "Aktualizacja analizy po wdrożeniu (2026-04-17, incydent: „Nie udało się wyrenderować tej sekcji” w każdej zakładce poza Czat)".
+
+### Zmiany — plik `Second/app.js`
+
+Plik `Second/app.js`  
+Linia 2716  
+Było: `console.error("Błąd renderowania sekcji turnieju użytkownika:", { section: userTournamentSection, error });`  
+Jest: `console.error("Błąd renderowania sekcji turnieju użytkownika:", { section: userTournamentSection, stage, error });`
+
+Plik `Second/app.js`  
+Linia 2725  
+Było: sekcja `payments` kończyła się wcześniej, ale kolejne sekcje (`pool/group/semi/final/payouts`) były zależne od jednego wspólnego bloku obliczeń uruchamianego przed warunkami sekcji.  
+Jest: każda sekcja (`payments`, `pool`, `group`, `semi`, `final`, `payouts`) ma własny blok `try/catch` i renderuje się niezależnie.
+
+Plik `Second/app.js`  
+Linia 2650  
+Było: brak wydzielonego modelu danych dla sekcji użytkownika; obliczenia były wykonywane globalnie w jednym torze.  
+Jest: dodane `buildUserBaseViewModel()` (sanityzacja i dane bazowe) oraz `buildAdvancedViewModel()` (dane dla `group/semi/final/payouts`) uruchamiane dopiero dla aktywnej sekcji.
+
+Plik `Second/app.js`  
+Linia 2852  
+Było: wyjątek w obliczeniach `pool` mógł przerwać pełny render i pokazać fallback dla całej sekcji użytkownika po przełączeniu.  
+Jest: `pool` liczone i renderowane lokalnie we własnym `try/catch` (z osobnym `stage: "pool"` w logu).
+
+Plik `Second/app.js`  
+Linia 2949  
+Było: wyjątek podczas budowy `payouts` mógł propagować się przez wspólny tor i skutkować globalnym komunikatem dla całego flow.  
+Jest: `payouts` posiada lokalny tor obliczeń i osobny `try/catch` (z `stage: "payouts"`), bez wpływu na inne zakładki.
+
+### Zmiany dokumentacyjne po wdrożeniu
+
+Plik `Second/docs/Documentation.md`  
+Linia (sekcja „Render sekcji użytkownika”)  
+Było: opis jednego ogólnego fallbacku i wspólnego toru normalizacji dla wielu sekcji.  
+Jest: opis renderu per sekcja (`try/catch` per zakładka), logowania `section + stage`, oraz view-modeli `buildUserBaseViewModel` / `buildAdvancedViewModel`.
+
+Plik `Second/docs/README.md`  
+Linia (sekcja „Tournament of Poker w panelu użytkownika”)  
+Było: brak jawnej informacji o izolacji awarii między zakładkami.  
+Jest: dopisana instrukcja, że błąd danych w jednej zakładce nie blokuje renderu pozostałych sekcji.
