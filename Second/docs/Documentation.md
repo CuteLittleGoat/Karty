@@ -162,14 +162,15 @@
 - Stan tej weryfikacji jest przechowywany w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`), więc użytkownik wpisuje PIN tylko raz do resetu lub odświeżenia strony.
 - Po wejściu do `TOURNAMENT OF POKER` przyciski `data-tournament-target` są filtrowane per gracz; bez odpowiednich uprawnień nie renderują się przyciski nawigacji do paneli.
 - Użytkownik może przełączać dostępne sekcje przez przyciski `data-tournament-target`.
-- Render każdej sekcji użytkownika jest osłonięty bezpiecznym fallbackiem (`try/catch`): przy wyjątku pokazywany jest komunikat o błędzie renderowania, a log błędu zawiera nazwę aktywnej sekcji (`section`) dla szybszej diagnostyki.
-- Przed obliczeniami sekcji read-only (`pool/group/semi/final/payouts`) stosowana jest defensywna normalizacja rekordów (`players`, `tables`, `assignments`, `table12Rebuys`), żeby pojedyncze uszkodzone rekordy nie wywoływały globalnego błędu renderu.
+- Każda sekcja użytkownika (`payments`, `pool`, `group`, `semi`, `final`, `payouts`) renderuje się w osobnym bloku `try/catch`, więc wyjątek w jednej sekcji nie blokuje pozostałych sekcji.
+- Log błędu użytkownika zawiera teraz `section` i `stage` (np. `pool`, `payouts`) dla szybszej diagnostyki błędów danych historycznych.
+- Przed obliczeniami sekcji read-only stosowana jest defensywna normalizacja rekordów (`players`, `tables`, `assignments`, `table12Rebuys`, `semi.customTables`, `pool.mods`) na poziomie view-modeli (`buildUserBaseViewModel`, `buildAdvancedViewModel`).
 - Sekcje z aktywną prezentacją danych:
   - `pool`: read-only `Tabela13`, `Tabela14`, `Tabela15`, `Tabela16`,
   - `group`: read-only `Tabela17`, `Tabela18`, `Tabela19`, `Tabela19A`, `Tabela19B`,
   - `semi`: read-only `Tabela21`, `Tabela22`, `Tabela22A`, `Tabela FINAŁOWA`,
   - `final`: read-only `Tabela23`, `Tabela23A`,
-  - `payments`: podgląd pól `payments.table10` i `payments.table11`,
+  - `payments`: read-only `Tabela10`, `Tabela11`, `Tabela12` (układ i semantyka zgodna z panelem admina, bez akcji edycyjnych),
   - `payouts`: tabela miejsc i wygranych zależna od flag `payouts.showInitial` / `payouts.showFinal`.
 - `chatTab` pozostaje jedyną sekcją z możliwością wpisywania danych po stronie użytkownika.
 - W sidebarze `TOURNAMENT OF POKER` przycisk `Czat` jest renderowany jako ostatni przycisk na liście.
