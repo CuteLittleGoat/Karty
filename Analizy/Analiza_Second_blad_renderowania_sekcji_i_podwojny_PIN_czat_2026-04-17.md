@@ -331,3 +331,54 @@ Plik `Second/docs/README.md`
 Linia (sekcja „Tournament of Poker w panelu użytkownika”)  
 Było: brak jawnej informacji o izolacji awarii między zakładkami.  
 Jest: dopisana instrukcja, że błąd danych w jednej zakładce nie blokuje renderu pozostałych sekcji.
+
+---
+
+## Dodatkowa analiza po wdrożeniu (2026-04-17): błąd renderowania wszystkich sekcji poza „Czat”
+
+### Prompt użytkownika
+Przeczytaj i dopisz do analizy `Analizy/Analiza_Second_blad_renderowania_sekcji_i_podwojny_PIN_czat_2026-04-17.md` nowe wnioski.
+
+Po wdrożeniu rekomendowanej naprawy w widoku użytkownika w każdej zakładce (poza "Czat") wyświetlana jest informacja "Nie udało si wyrenderować tej sekcji. Spróbuj odświeżyć dane."
+
+Przeprowadź analizę czemu i znajdź rozwiązanie.
+
+### Nowe ustalenia (root cause)
+
+1. Błąd nie dotyczy pojedynczej zakładki, tylko wspólnego kroku budowy modelu danych user-view.
+2. Wszystkie sekcje użytkownika poza `chatTab` przechodzą przez `buildUserBaseViewModel()` (bezpośrednio lub przez `buildAdvancedViewModel()`).
+3. W `buildUserBaseViewModel()` użyto:
+   - `Object.values(safeTable12Rebuys).flatMap(...)`
+4. To jest punkt krytyczny kompatybilności: `Array.prototype.flatMap` nie jest wspierane w części starszych środowisk (szczególnie starsze WebView/legacy przeglądarki).
+5. Gdy środowisko nie obsługuje `flatMap`, rzucany jest runtime error (`...flatMap is not a function`), który trafia do `catch` i kończy się komunikatem:
+   - „Nie udało się wyrenderować tej sekcji. Spróbuj odświeżyć dane.”
+
+Dlaczego pasuje do objawu:
+- `chatTab` nie korzysta z `buildUserBaseViewModel()` → działa,
+- `payments/pool/group/semi/final/payouts` korzystają → wszystkie wpadają w ten sam fallback błędu.
+
+### Rozwiązanie (zalecane)
+
+#### Hotfix (minimalny, bez zmiany logiki biznesowej)
+Zastąpić użycie `flatMap` implementacją kompatybilną wstecz, np. przez `reduce`:
+
+- Zamiast:
+  - `Object.values(...).flatMap(...)`
+- Użyć:
+  - `Object.values(...).reduce((acc, entry) => { ... acc.push(...); return acc; }, [])`
+
+Efekt:
+- ten sam wynik danych,
+- brak zależności od `flatMap`,
+- sekcje user-view renderują się także w środowiskach legacy.
+
+#### Dodatkowe zabezpieczenie diagnostyczne
+W `renderSectionError(stage, error)` dopisać tymczasowo szczegółowy status w UI (np. kod etapu + treść `error.message` w trybie debug), żeby w przyszłości szybciej wykrywać źródło błędu produkcyjnego bez ręcznego odtwarzania.
+
+### Kryterium potwierdzenia po poprawce
+1. Po PIN w user-view sekcje `Wpłaty`, `Podział puli`, `Faza grupowa`, `Półfinał`, `Finał`, `Wypłaty` renderują się bez fallbacku błędu.
+2. `Czat` nadal działa bez regresji.
+3. Test w przeglądarce docelowej użytkownika (tej, gdzie występował problem) nie zgłasza już błędu renderowania sekcji.
+
+### Podsumowanie
+Najbardziej prawdopodobna przyczyna obecnej regresji to użycie `flatMap` w wspólnej ścieżce budowy view-modelu user-view. To tłumaczy wzorzec „działa tylko Czat, reszta sekcji nie renderuje się”. Najszybsza i najbezpieczniejsza naprawa to zamiana `flatMap` na `reduce` + lekkie wzmocnienie diagnostyki błędów renderowania.
