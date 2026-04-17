@@ -14,6 +14,7 @@
 - Przycisk `Edytuj` w kolumnie `Uprawnienia` otwiera modal `Uprawnienia gracza` (`#secondPlayerPermissionsModal`) o wyglądzie spójnym z modalami modułu Main (nagłówek, przycisk zamknięcia `✕`, overlay, karta `modal-card-sm`).
 - W modalu lista `.permissions-list` zawiera uprawnienia `Czat`, `Losowanie stołów`, `Wpłaty`, `Podział Puli`, `Faza Grupowa`, `Półfinał`, `Finał`, `Wypłaty`; zaznaczenie opcji steruje widocznością odpowiednich paneli użytkownika.
 - W widoku użytkownika modułu `Second` nad zakładkami działa dodatkowa bramka `.pin-gate.user-access-pin-gate`; po poprawnym PIN odblokowuje wejście do `TOURNAMENT OF POKER` bez zmiany layoutu całej karty.
+- W panelu bocznym `TOURNAMENT OF POKER` (admin i user) przycisk `Czat` jest umieszczony jako ostatni element listy sekcji.
 - Ostatnia kolumna `Akcje` zawiera przycisk `Usuń` (`.admin-row-delete`) wyrównany do prawej strony.
 - W sekcji `Losowanie stołów` przycisk usuwania stołu ma klasy `.admin-row-delete.draw-table-delete`: zachowuje kompaktowy rozmiar i jest dosunięty do prawej krawędzi bloku stołu (`justify-self: end`).
 - Nad tabelą prezentowany jest licznik liczby graczy (tekst informacyjny `.builder-info`).

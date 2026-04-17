@@ -162,9 +162,14 @@
 - Po wejściu do `TOURNAMENT OF POKER` przyciski `data-tournament-target` są filtrowane per gracz; bez odpowiednich uprawnień nie renderują się przyciski nawigacji do paneli.
 - Użytkownik może przełączać dostępne sekcje przez przyciski `data-tournament-target`.
 - Sekcje z aktywną prezentacją danych:
+  - `pool`: read-only `Tabela13`, `Tabela14`, `Tabela15`, `Tabela16`,
+  - `group`: read-only `Tabela17`, `Tabela18`, `Tabela19`, `Tabela19A`, `Tabela19B`,
+  - `semi`: read-only `Tabela21`, `Tabela22`, `Tabela22A`, `Tabela FINAŁOWA`,
+  - `final`: read-only `Tabela23`, `Tabela23A`,
   - `payments`: podgląd pól `payments.table10` i `payments.table11`,
   - `payouts`: tabela miejsc i wygranych zależna od flag `payouts.showInitial` / `payouts.showFinal`.
-- Dla pozostałych dozwolonych sekcji renderowany jest komunikat informacyjny o zapisie danych w panelu administratora.
+- `chatTab` pozostaje jedyną sekcją z możliwością wpisywania danych po stronie użytkownika (po przejściu bramki PIN czatu).
+- W sidebarze `TOURNAMENT OF POKER` przycisk `Czat` jest renderowany jako ostatni przycisk na liście.
 
 ### Ręczne odświeżanie
 - Przycisk `#userPanelRefresh` dla aktywnej zakładki `tournamentTab` wykonuje `get({ source: "server" })` dla `second_tournament/state`, co wymusza pobranie najnowszych danych z Firestore.

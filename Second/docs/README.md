@@ -151,7 +151,8 @@
 10a. Po kliknięciu dowolnego przycisku w lewym sidebarze zawartość wybranej sekcji powinna pojawić się od razu w dużym panelu po prawej; jeżeli panel pozostaje pusty, oznacza to błąd aplikacji, a nie brak uprawnień.
 11. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
 12. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.
-13. Pozostałe sekcje zakładki turniejowej w panelu użytkownika pokazują komunikat informacyjny — dane są zapisywane i edytowane w panelu administratora.
+13. Sekcje `Podział puli`, `Faza grupowa`, `Półfinał` i `Finał` pokazują pełny podgląd danych turniejowych w trybie tylko do odczytu.
+14. W panelu bocznym `TOURNAMENT OF POKER` przycisk `Czat` jest na samym dole listy sekcji.
 
 ### Stabilność wpisywania danych (autozapis)
 - Wszystkie pola edytowalne w panelu turniejowym mają zabezpieczenie przed utratą fokusu podczas automatycznego zapisu i odświeżeń z Firebase.
