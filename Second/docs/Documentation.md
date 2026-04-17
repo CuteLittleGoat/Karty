@@ -163,8 +163,8 @@
 - Po wejściu do `TOURNAMENT OF POKER` przyciski `data-tournament-target` są filtrowane per gracz; bez odpowiednich uprawnień nie renderują się przyciski nawigacji do paneli.
 - Użytkownik może przełączać dostępne sekcje przez przyciski `data-tournament-target`.
 - Każda sekcja użytkownika (`payments`, `pool`, `group`, `semi`, `final`, `payouts`) renderuje się w osobnym bloku `try/catch`, więc wyjątek w jednej sekcji nie blokuje pozostałych sekcji.
-- Log błędu użytkownika zawiera teraz `section` i `stage` (np. `pool`, `payouts`) dla szybszej diagnostyki błędów danych historycznych.
-- Przed obliczeniami sekcji read-only stosowana jest defensywna normalizacja rekordów (`players`, `tables`, `assignments`, `table12Rebuys`, `semi.customTables`, `pool.mods`) na poziomie view-modeli (`buildUserBaseViewModel`, `buildAdvancedViewModel`).
+- Log błędu użytkownika zawiera teraz komplet diagnostyczny: `section`, `stage`, `errorName`, `errorMessage`, `playersCount`, `tablesCount`, `poolModsCount`, `semiCustomTablesCount`, co pozwala szybciej ustalić czy problem dotyczy danych wejściowych czy konkretnego etapu obliczeń.
+- Przed obliczeniami sekcji read-only stosowana jest defensywna normalizacja rekordów (`players`, `tables`, `assignments`, `table12Rebuys`, `semi.customTables`, `pool.mods`) na poziomie view-modeli (`buildUserBaseViewModel`, `buildAdvancedViewModel`), a agregacja wartości `table12Rebuys` działa przez `reduce` (bez `flatMap`) dla zgodności ze starszymi środowiskami WebView/przeglądarek.
 - Sekcje z aktywną prezentacją danych:
   - `pool`: read-only `Tabela13`, `Tabela14`, `Tabela15`, `Tabela16`,
   - `group`: read-only `Tabela17`, `Tabela18`, `Tabela19`, `Tabela19A`, `Tabela19B`,

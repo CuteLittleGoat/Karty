@@ -150,7 +150,7 @@
 9. Jeżeli administrator nie nadał żadnego uprawnienia turniejowego, panel boczny nie pokaże przycisków nawigacji i pojawi się komunikat informacyjny.
 10. Dane w dostępnych sekcjach są pobierane automatycznie z dokumentu Firebase `second_tournament/state` i odświeżają się na żywo po zmianach wykonanych przez administratora.
 10a. Po kliknięciu dowolnego przycisku w lewym sidebarze zawartość wybranej sekcji pojawia się od razu w dużym panelu po prawej.
-10b. Gdyby wystąpił błąd renderowania konkretnej sekcji (np. nietypowy format danych), aplikacja pokaże komunikat `Nie udało się wyrenderować tej sekcji. Spróbuj odświeżyć dane.` zamiast pozostawienia poprzedniego widoku.
+10b. Gdyby wystąpił błąd renderowania konkretnej sekcji (np. nietypowy format danych), aplikacja pokaże komunikat z nazwą sekcji, etapem i krótkim szczegółem błędu (np. `Nie udało się wyrenderować sekcji „pool” (etap: pool)... Szczegóły: TypeError ...`) zamiast pozostawienia poprzedniego widoku.
 10c. Każda sekcja turniejowa renderuje się niezależnie: awaria danych w jednej zakładce nie blokuje pozostałych zakładek (np. błąd w `Półfinał` nie zatrzymuje `Wpłaty`).
 11. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
 12. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.
