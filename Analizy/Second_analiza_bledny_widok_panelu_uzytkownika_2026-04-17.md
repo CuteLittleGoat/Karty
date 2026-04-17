@@ -125,3 +125,40 @@ Najbardziej prawdopodobna przyczyna błędu to kombinacja:
 - oraz **niewystarczającej walidacji/normalizacji danych przed renderem sekcji turniejowych**.
 
 Porównanie z Main wskazuje, że stabilniejszy model to: centralne sterowanie aktywną sekcją, bardziej defensywny model danych i brak dublowania logiki aktywacji UI.
+
+## Zrealizowane zmiany w kodzie (wdrożenie rekomendowanej naprawy)
+
+Plik `Second/app.js`  
+Linia (obszar normalizacji stanu)  
+Było: `state.finalPlayers = Array.isArray(state.finalPlayers) ? state.finalPlayers : [];`  
+Jest: `state.finalPlayers = asArray(state.finalPlayers);` oraz dodane bezpieczne helpery `asArray` i `asObject` użyte do wymuszenia typów dla `players`, `tables`, `assignments`, `payments`, `pool`, `group`, `semi`, `final`, `payouts`.
+
+Plik `Second/app.js`  
+Linia (obszar setupUserView, stan ładowania)  
+Było: `let userTournamentSection = "players";`  
+Jest: `let userTournamentSection = "players";` + `let isUserTournamentLoaded = false;` oraz blokada `userPinOpenButton.disabled = true` do czasu pierwszego snapshotu.
+
+Plik `Second/app.js`  
+Linia (obszar renderUserTournament)  
+Było: brak strażnika ładowania i brak fallbacku błędu renderu.  
+Jest: wstępny guard `if (!isUserTournamentLoaded) { ... }` oraz osłona `try/catch` z komunikatem: `Nie udało się wyrenderować tej sekcji. Spróbuj odświeżyć dane.`
+
+Plik `Second/app.js`  
+Linia (obszar verifyUserPin)  
+Było: walidacja PIN wykonywana zawsze po kliknięciu, niezależnie od tego czy snapshot turnieju został już pobrany.  
+Jest: weryfikacja PIN jest blokowana do czasu gotowości danych (`isUserTournamentLoaded`) i pokazuje komunikat `Trwa ładowanie danych turnieju. Spróbuj ponownie za chwilę.`
+
+Plik `Second/app.js`  
+Linia (obszar onSnapshot dla second_tournament/state)  
+Było: po snapshotcie aktualizowany był tylko `userTournamentState`.  
+Jest: po snapshotcie ustawiana jest gotowość `isUserTournamentLoaded = true` i odblokowanie przycisku PIN (`userPinOpenButton.disabled = false`).
+
+Plik `Second/docs/README.md`  
+Linia (sekcja instrukcji użytkownika dla panelu turniejowego)  
+Było: brak informacji o blokadzie przycisku PIN podczas ładowania i brak opisu fallbacku renderowania sekcji.  
+Jest: dodane punkty `5a` i `10b` opisujące stan ładowania (`Trwa ładowanie danych turnieju...`) oraz komunikat awaryjny renderowania sekcji.
+
+Plik `Second/docs/Documentation.md`  
+Linia (sekcje synchronizacji i renderu widoku użytkownika)  
+Było: ogólny opis normalizacji i renderu bez szczegółów o guardach typu / ładowaniu / fallbacku.  
+Jest: doprecyzowane wymuszenie typów w `normalizeTournamentState`, dodany opis flagi `isUserTournamentLoaded` oraz fallbacku `try/catch` dla renderowania sekcji użytkownika.

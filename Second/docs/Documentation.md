@@ -154,13 +154,15 @@
 ### Synchronizacja z Firebase
 - Funkcja: `setupUserView(root)` w `Second/app.js`.
 - Dane sekcji turniejowej użytkownika są pobierane z `second_tournament/state` przez `onSnapshot`.
-- Stan lokalny użytkownika jest normalizowany przez `normalizeTournamentState`, dzięki czemu brakujące pola nie psują renderu UI.
+- Stan lokalny użytkownika jest normalizowany przez `normalizeTournamentState`, która wymusza bezpieczne typy (`players`, `tables`, `finalPlayers` jako tablice; `assignments`, `payments`, `pool`, `group`, `semi`, `final`, `payouts` jako obiekty), dzięki czemu brakujące lub starsze pola nie psują renderu UI.
+- Do czasu pierwszego snapshotu obowiązuje flaga gotowości danych (`isUserTournamentLoaded`): przycisk otwierania PIN użytkownika jest zablokowany, a UI pokazuje komunikat ładowania zamiast walidacji PIN na pustym stanie.
 
 ### Render sekcji użytkownika
 - Zakładka `TOURNAMENT OF POKER` jest ukryta do czasu poprawnej weryfikacji głównego PIN-u użytkownika (`#userPlayerPinInput`, `#userPlayerPinOpenButton`).
 - Stan tej weryfikacji jest przechowywany w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`), więc użytkownik wpisuje PIN tylko raz do resetu lub odświeżenia strony.
 - Po wejściu do `TOURNAMENT OF POKER` przyciski `data-tournament-target` są filtrowane per gracz; bez odpowiednich uprawnień nie renderują się przyciski nawigacji do paneli.
 - Użytkownik może przełączać dostępne sekcje przez przyciski `data-tournament-target`.
+- Render każdej sekcji użytkownika jest osłonięty bezpiecznym fallbackiem (`try/catch`): przy wyjątku pokazywany jest komunikat o błędzie renderowania, dzięki czemu poprzednia sekcja (np. `Czat`) nie zostaje „zamrożona” jako widok po kliknięciu innej zakładki.
 - Sekcje z aktywną prezentacją danych:
   - `pool`: read-only `Tabela13`, `Tabela14`, `Tabela15`, `Tabela16`,
   - `group`: read-only `Tabela17`, `Tabela18`, `Tabela19`, `Tabela19A`, `Tabela19B`,
