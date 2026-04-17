@@ -161,3 +161,59 @@ Najlepszy jest model hybrydowy:
 
 ## Podsumowanie
 Problem nie jest pojedynczym bugiem, tylko nakładaniem się kilku warstw: kolejność renderu po PIN, krucha normalizacja danych dla sekcji turniejowych, błąd zakresu helpera dla `pool` oraz niespójny UX dwóch wejść do czatu admina. Rekomendowane jest etapowe ustabilizowanie renderu i wydzielenie wspólnych view-modeli, aby user-view był 1:1 zgodny z admin-view (bez możliwości edycji, z wyjątkiem wysyłania wiadomości w czacie).
+
+---
+
+## Sekcja wdrożenia zmian w kodzie (2026-04-17)
+
+### Prompt użytkownika
+Przeczytaj analizę `Analizy/Analiza_Second_blad_renderowania_sekcji_i_podwojny_PIN_czat_2026-04-17.md` i wprowadź rekomendowane rozwiązanie, aby:
+- użytkownik po jednym PIN widział uprawnione sekcje,
+- użytkownik miał spójne dane względem admina (readonly, poza czatem),
+- naprawić błąd renderowania sekcji,
+- naprawić działanie Czat w widoku admina Tournament of Poker.
+
+### Zmiany — plik `Second/app.js`
+
+1) Wspólny helper dla podziału puli dostępny globalnie (naprawa błędu zakresu)
+- Było:
+  - helper `getPoolSplitDisplay(...)` był zdefiniowany lokalnie tylko w gałęzi renderu admina `pool`.
+- Jest:
+  - helper `getPoolSplitDisplay(...)` przeniesiony na poziom globalny obok `getPoolSplitValueForCalculation(...)`, dzięki czemu user-view `pool` nie wywołuje już niezdefiniowanej funkcji.
+
+2) Natychmiastowy rerender po weryfikacji PIN użytkownika
+- Było:
+  - po `verifyUserPin()` wywoływane było wyłącznie `updateProtectedTabsVisibility()`.
+- Jest:
+  - po poprawnym i błędnym PIN wykonywane są: `updateProtectedTabsVisibility(); renderUserTournament();`.
+
+3) Ujednolicenie sekcji `Wpłaty` user-view do układu tabel admina (readonly)
+- Było:
+  - user-view miał skrócony widok pól input readonly (bez tabel `TABELA10/11/12`).
+- Jest:
+  - user-view renderuje `TABELA10`, `TABELA11`, `TABELA12` analogicznie do admina, z tym że bez akcji edycyjnych.
+
+4) Twarda sanityzacja danych historycznych przed renderem user-view
+- Było:
+  - użycie `semi.customTables` i `pool.mods` bez pełnej filtracji elementów mogło wywołać wyjątki przy danych z `null`/nieobiektowymi wpisami.
+- Jest:
+  - dodane filtrowanie do tablic obiektów dla:
+    - `safeUserSemiCustomTables`,
+    - `splitRows` w sekcjach `pool` i `payouts`.
+
+5) Czat Tournament of Poker w adminie — realna moderacja
+- Było:
+  - zakładka `Czat` w turnieju wyświetlała tylko komunikat informacyjny.
+- Jest:
+  - w sekcji `chatTab` admina renderowany jest panel moderacji wiadomości:
+    - usuwanie pojedynczej wiadomości,
+    - czyszczenie wiadomości starszych niż 30 dni,
+    - status synchronizacji i odświeżanie danych przez snapshot.
+
+6) Rejestracja zdarzeń i odświeżania dla moderacji czatu turniejowego
+- Było:
+  - brak akcji click dla moderacji czatu w sekcji tournament.
+- Jest:
+  - dodane role akcji: `tournament-chat-cleanup`, `tournament-chat-delete-message`,
+  - dodane metody obsługi: `cleanupTournamentChatMessages()`, `deleteTournamentChatMessage()`.
+

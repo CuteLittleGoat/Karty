@@ -760,6 +760,10 @@ const getPoolSplitValueForCalculation = (splitValue, index) => {
   const normalizedValue = String(splitValue ?? "").trim();
   return normalizedValue || getPoolDefaultSplitValue(index);
 };
+const getPoolSplitDisplay = (row, index) => {
+  const value = getPoolSplitValueForCalculation(row?.split, index);
+  return index < 3 ? formatPercentDisplay(value) : digitsOnly(value);
+};
 const toDigitsNumber = (value) => Number(digitsOnly(value));
 const getAlternatingTableGroupClass = (rows, getTableKey) => {
   let previousTableKey = Symbol("initial");
@@ -924,6 +928,55 @@ const setupAdminTournament = (rootCard) => {
   let table12RebuyModalDraft = null;
   let table12RebuyModalDirty = false;
   let globalRebuyResetInProgress = false;
+  let tournamentChatDocs = [];
+  let tournamentChatStatusMessage = "Ładowanie czatu turniejowego...";
+  let tournamentChatLoaded = false;
+
+  const renderTournamentAdminChatSection = () => {
+    const chatRows = tournamentChatDocs.map((doc) => {
+      const data = doc.data();
+      return `<article class="admin-chat-item"><div class="admin-chat-meta">${esc(typeof data.authorName === "string" ? data.authorName : "Gracz")} • ${esc(formatChatTimestamp(data.createdAt))}</div><p class="admin-chat-text">${esc(typeof data.text === "string" ? data.text : "")}</p><div class="admin-chat-item-actions"><button type="button" class="danger admin-chat-delete" data-role="tournament-chat-delete-message" data-message-id="${doc.id}">Usuń</button></div></article>`;
+    }).join("");
+    mount.innerHTML = `<div class="admin-table-actions"><button type="button" class="danger" data-role="tournament-chat-cleanup" ${!tournamentChatLoaded ? "disabled" : ""}>Wyczyść wiadomości starsze niż 30 dni</button><span class="status-text">${esc(tournamentChatStatusMessage)}</span></div><div class="chat-messages">${chatRows || '<p class="chat-empty">Brak wiadomości czatu do moderacji.</p>'}</div>`;
+  };
+
+  const cleanupTournamentChatMessages = async () => {
+    tournamentChatStatusMessage = "Czyszczenie wiadomości starszych niż 30 dni...";
+    renderTournamentAdminChatSection();
+    let deletedCount = 0;
+    try {
+      const now = firebaseApp.firestore.Timestamp.now();
+      while (true) {
+        const expiredSnapshot = await db.collection(SECOND_CHAT_COLLECTION).where("expireAt", "<=", now).limit(200).get();
+        if (expiredSnapshot.empty) break;
+        const batch = db.batch();
+        expiredSnapshot.docs.forEach((doc) => {
+          batch.delete(doc.ref);
+          deletedCount += 1;
+        });
+        await batch.commit();
+      }
+      tournamentChatStatusMessage = deletedCount ? `Usunięto wiadomości: ${deletedCount}.` : "Brak wiadomości starszych niż 30 dni.";
+    } catch (error) {
+      tournamentChatStatusMessage = "Nie udało się wyczyścić starych wiadomości.";
+    }
+    renderTournamentAdminChatSection();
+  };
+
+  const deleteTournamentChatMessage = async (messageId) => {
+    if (!messageId) {
+      return;
+    }
+    tournamentChatStatusMessage = "Usuwanie wiadomości...";
+    renderTournamentAdminChatSection();
+    try {
+      await db.collection(SECOND_CHAT_COLLECTION).doc(messageId).delete();
+      tournamentChatStatusMessage = "Wiadomość usunięta.";
+    } catch (error) {
+      tournamentChatStatusMessage = "Nie udało się usunąć wiadomości.";
+    }
+    renderTournamentAdminChatSection();
+  };
 
   const isTable12RebuyModalEditing = () => Boolean(activeTable12RebuyPlayerId && table12RebuyModalDraft);
 
@@ -1778,7 +1831,7 @@ const setupAdminTournament = (rootCard) => {
     }
 
     if (activeSection === "chatTab") {
-      mount.innerHTML = '<p class="builder-info">Sekcja Czat jest dostępna dla użytkowników w panelu Tournament of Poker. Wiadomości wysyłane są w widoku użytkownika.</p>';
+      renderTournamentAdminChatSection();
       restoreTournamentEditableFocusState(container, focusState);
       return;
     }
@@ -1848,10 +1901,6 @@ const setupAdminTournament = (rootCard) => {
       const userRebuySum = rebuyMatrix.flat().reduce((sum, value) => sum + toNumber(value), 0);
       const undistributedRemainder = Math.max(0, overflow - Math.max(0, userRebuySum - distributed.reduce((sum, value) => sum + value, 0)));
       const modColumns = rebuyColumns > 20 ? ["mod1", "mod2", "mod3"] : rebuyColumns > 12 ? ["mod1", "mod2"] : ["mod1"];
-      const getPoolSplitDisplay = (row, index) => {
-        const value = getPoolSplitValueForCalculation(row.split, index);
-        return index < 3 ? formatPercentDisplay(value) : digitsOnly(value);
-      };
       const renderModInput = (row, modKey) => `<td><input class="admin-input" data-role="pool-mod" data-mod-key="${modKey}" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row[modKey] || "")}"></td>`;
       const renderRebuyColumn = (row, rowIndex, colIdx) => {
         const rebuyNumber = colIdx + 1;
@@ -2131,7 +2180,9 @@ const setupAdminTournament = (rootCard) => {
     "remove-semi-table",
     "group-eliminated-move",
     "semi-eliminated-move",
-    "final-eliminated-move"
+    "final-eliminated-move",
+    "tournament-chat-cleanup",
+    "tournament-chat-delete-message"
   ]);
 
   container.addEventListener("click", async (event) => {
@@ -2140,6 +2191,14 @@ const setupAdminTournament = (rootCard) => {
     const role = actionElement?.dataset?.role;
     if (!role) return;
     if (!tournamentClickActionRoles.has(role)) return;
+    if (role === "tournament-chat-cleanup") {
+      await cleanupTournamentChatMessages();
+      return;
+    }
+    if (role === "tournament-chat-delete-message") {
+      await deleteTournamentChatMessage(target.dataset.messageId || "");
+      return;
+    }
 
     if (role === "add-player") {
       tournamentState.players.push({ id: crypto.randomUUID(), name: "", pin: "", permissions: "", status: false });
@@ -2274,8 +2333,25 @@ const setupAdminTournament = (rootCard) => {
     }
   });
 
+  const tournamentChatQuery = db.collection(SECOND_CHAT_COLLECTION).orderBy("createdAt", "asc").limit(200);
+  tournamentChatQuery.onSnapshot((snapshot) => {
+    tournamentChatDocs = snapshot.docs;
+    tournamentChatLoaded = true;
+    tournamentChatStatusMessage = snapshot.empty ? "Brak wiadomości do moderacji." : "Czat zsynchronizowany.";
+    if (activeSection === "chatTab") {
+      render();
+    }
+  }, () => {
+    tournamentChatLoaded = true;
+    tournamentChatStatusMessage = "Nie udało się pobrać czatu turniejowego.";
+    if (activeSection === "chatTab") {
+      render();
+    }
+  });
+
   registerAdminRefreshHandler("adminTournamentTab", async () => {
     const snapshot = await docRef.get({ source: "server" });
+    await tournamentChatQuery.get({ source: "server" });
     tournamentState = normalizeTournamentState(snapshot.data());
     tournamentStatusMessage = "";
     render();
@@ -2569,13 +2645,6 @@ const setupUserView = (root) => {
         return;
       }
 
-      if (userTournamentSection === "payments") {
-        const t10 = userTournamentState.payments?.table10 || {};
-        const t11 = userTournamentState.payments?.table11 || {};
-        tournamentSection.innerHTML = `<div class="t-section-grid"><label>Stół 10 — Buy-In <input class="admin-input" readonly value="${t10.buyIn || ""}"></label><label>Stół 10 — Rebuy/Add-On <input class="admin-input" readonly value="${t10.rebuyAddOn || ""}"></label><label>Stół 10 — Suma <input class="admin-input" readonly value="${t10.sum || ""}"></label><label>Stół 10 — Liczba Rebuy <input class="admin-input" readonly value="${t10.rebuyCount || ""}"></label><label>Stół 11 — Procent <input class="admin-input" readonly value="${t11.percent || ""}"></label><label>Stół 11 — Rake <input class="admin-input" readonly value="${t11.rake || ""}"></label><label>Stół 11 — Buy-In <input class="admin-input" readonly value="${t11.buyIn || ""}"></label><label>Stół 11 — Rebuy/Add-On <input class="admin-input" readonly value="${t11.rebuyAddOn || ""}"></label><label>Stół 11 — Pula <input class="admin-input" readonly value="${t11.pot || ""}"></label></div>`;
-        return;
-      }
-
       const safeUserPlayers = Array.isArray(userTournamentState.players)
         ? userTournamentState.players.filter((player) => player && typeof player === "object")
         : [];
@@ -2630,6 +2699,19 @@ const setupUserView = (root) => {
         pot: 0
       };
       userTable11.pot = userTable11.buyIn + userTable11.rebuyAddOn;
+      if (userTournamentSection === "payments") {
+        const paymentsStripeClasses = getAlternatingTableGroupClass(userGroupedDrawRows, (row) => row.tableId);
+        const userPlayerBuyInById = Object.fromEntries(userGroupedDrawRows.map((row) => [row.playerId, userBuyInValue]));
+        const getUserPlayerRebuyTotal = (playerId) => {
+          const state = safeTable12Rebuys[playerId];
+          if (!state || !Array.isArray(state.values)) {
+            return 0;
+          }
+          return state.values.reduce((sum, value) => sum + toDigitsNumber(value), 0);
+        };
+        tournamentSection.innerHTML = `<h3>TABELA10</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZ. REBUY/ADD-ON</th></tr></thead><tbody><tr><td>${formatCellNumber(userTable10.buyIn)}</td><td>${formatCellNumber(userTable10.rebuyAddOn)}</td><td>${formatCellNumber(userTable10.sum)}</td><td>${formatCellNumber(userTable10.rebuyCount)}</td></tr></tbody></table></div><h3>TABELA11</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${toPercentText(userTable11.percent)}</td><td>${formatCellNumber(userTable11.rake)}</td><td>${formatCellNumber(userTable11.buyIn)}</td><td>${formatCellNumber(userTable11.rebuyAddOn)}</td><td>${formatCellNumber(userTable11.pot)}</td></tr></tbody></table></div><h3>TABELA12</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>STÓŁ</th><th>GRACZ</th><th>BUY-IN</th><th>REBUY</th></tr></thead><tbody>${userGroupedDrawRows.map((row, index) => `<tr class="${paymentsStripeClasses[index]}"><td>${row.lp}</td><td>${esc(row.tableName)}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(userPlayerBuyInById[row.playerId] || 0)}</td><td>${formatCellNumber(getUserPlayerRebuyTotal(row.playerId))}</td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div>`;
+        return;
+      }
       const userStackValue = toDigitsNumber(userTournamentState.stack);
       const userRebuyStackValue = toDigitsNumber(userTournamentState.rebuyStack);
       const userGroupRows = userGroupedDrawRows.map((row) => {
@@ -2669,7 +2751,10 @@ const setupUserView = (root) => {
           share
         };
       });
-      const userSemiTableNameById = (tableId) => userTournamentState.semi?.customTables?.find((table) => table.id === tableId)?.name || "";
+      const safeUserSemiCustomTables = Array.isArray(userTournamentState.semi?.customTables)
+        ? userTournamentState.semi.customTables.filter((table) => table && typeof table === "object")
+        : [];
+      const userSemiTableNameById = (tableId) => safeUserSemiCustomTables.find((table) => table.id === tableId)?.name || "";
       const userSemiRowsAll = userSurvivorRowsWithValues.map((row) => {
         const assignment = userTournamentState.semi?.assignments?.[row.playerId] || {};
         const overrideStack = toDigitsNumber(assignment.stack);
@@ -2684,7 +2769,7 @@ const setupUserView = (root) => {
           semiEliminated: !!assignment.eliminated
         };
       });
-      const userSemiTables = (Array.isArray(userTournamentState.semi?.customTables) ? userTournamentState.semi.customTables : []).map((table) => {
+      const userSemiTables = safeUserSemiCustomTables.map((table) => {
         const rows = userSemiRowsAll.filter((row) => row.semiTableId === table.id);
         const totalStack = rows.reduce((sum, row) => sum + row.semiStack, 0);
         return { ...table, rows, totalStack };
@@ -2716,7 +2801,7 @@ const setupUserView = (root) => {
         .filter(Boolean);
 
     if (userTournamentSection === "pool") {
-      const splitRows = Array.isArray(userTournamentState.pool?.mods) ? userTournamentState.pool.mods : [];
+      const splitRows = Array.isArray(userTournamentState.pool?.mods) ? userTournamentState.pool.mods.filter((row) => row && typeof row === "object") : [];
       const splitValues = splitRows.map((row, idx) => idx < 3 ? percentInputToDecimal(getPoolSplitValueForCalculation(row.split, idx)) : toNumber(row.split));
       const sumFrom4th = splitValues.slice(3).reduce((sum, value) => sum + value, 0);
       const table15BuyIn = toNumber(userTournamentState.payments?.table11?.buyIn) || userTable11.buyIn;
@@ -2791,7 +2876,7 @@ const setupUserView = (root) => {
     if (userTournamentSection === "payouts") {
       const showInitial = !!userTournamentState.payouts?.showInitial;
       const showFinal = !!userTournamentState.payouts?.showFinal;
-      const splitRows = Array.isArray(userTournamentState.pool?.mods) ? userTournamentState.pool.mods : [];
+      const splitRows = Array.isArray(userTournamentState.pool?.mods) ? userTournamentState.pool.mods.filter((row) => row && typeof row === "object") : [];
       const splitValues = splitRows.map((row, idx) => idx < 3 ? percentInputToDecimal(getPoolSplitValueForCalculation(row.split, idx)) : toNumber(row.split));
       const sumFrom4th = splitValues.slice(3).reduce((sum, value) => sum + value, 0);
       const adjustedUserRebuyValues = userAdjustedRebuyValues;
@@ -2934,6 +3019,7 @@ const setupUserView = (root) => {
         userPinStatus.textContent = "Błędny PIN.";
       }
       updateProtectedTabsVisibility();
+      renderUserTournament();
       return;
     }
 
@@ -2944,6 +3030,7 @@ const setupUserView = (root) => {
       userPinStatus.textContent = `PIN poprawny. Witaj ${matchedPlayer.name || "graczu"}.`;
     }
     updateProtectedTabsVisibility();
+    renderUserTournament();
   };
 
   userPinOpenButton?.addEventListener("click", verifyUserPin);

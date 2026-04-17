@@ -235,3 +235,11 @@
 5. Jeżeli gracz ma uprawnienie **Czat**, formularz wysyłki wiadomości odblokuje się automatycznie po poprawnej weryfikacji głównego PIN-u użytkownika (bez ponownego wpisywania PIN przy wejściu do sekcji **Czat**).
 6. Jeżeli gracz nie ma uprawnienia **Czat**, sekcja pozostaje zablokowana i nie pozwala wysyłać wiadomości.
 7. Wysłane wiadomości publikują się z nazwą gracza skonfigurowaną przez admina.
+
+### Aktualizacja 2026-04-17 — PIN użytkownika, spójność Wpłat i Czat admina w turnieju
+1. W widoku użytkownika po wpisaniu poprawnego PIN i kliknięciu **Otwórz** sekcja turniejowa odświeża się natychmiast (bez potrzeby przełączania zakładek).
+2. Zakładka **Wpłaty** w widoku użytkownika pokazuje teraz ten sam układ `TABELA10`, `TABELA11`, `TABELA12` co w panelu admina, ale wyłącznie w trybie odczytu.
+3. Jeśli dane historyczne zawierają niepełne wpisy (`null`) w sekcjach turniejowych, aplikacja filtruje je przed renderem, żeby uniknąć komunikatu o błędzie renderowania.
+4. W panelu admina, w `TOURNAMENT OF POKER -> Czat`, dostępna jest moderacja:
+   - usuwanie pojedynczych wiadomości,
+   - czyszczenie wiadomości starszych niż 30 dni.
