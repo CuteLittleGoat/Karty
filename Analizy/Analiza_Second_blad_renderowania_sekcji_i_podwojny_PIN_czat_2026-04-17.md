@@ -382,3 +382,45 @@ W `renderSectionError(stage, error)` dopisać tymczasowo szczegółowy status w 
 
 ### Podsumowanie
 Najbardziej prawdopodobna przyczyna obecnej regresji to użycie `flatMap` w wspólnej ścieżce budowy view-modelu user-view. To tłumaczy wzorzec „działa tylko Czat, reszta sekcji nie renderuje się”. Najszybsza i najbezpieczniejsza naprawa to zamiana `flatMap` na `reduce` + lekkie wzmocnienie diagnostyki błędów renderowania.
+
+---
+
+## Wdrożenie zmian (2026-04-17, hotfix po „Dodatkowa analiza po wdrożeniu: błąd renderowania wszystkich sekcji poza Czat”)
+
+### Prompt użytkownika
+Przeczytaj analizę `Analizy/Analiza_Second_blad_renderowania_sekcji_i_podwojny_PIN_czat_2026-04-17.md`
+
+Wprowadź rekomendowaną naprawę po ostatniej aktualizacji "Dodatkowa analiza po wdrożeniu (2026-04-17): błąd renderowania wszystkich sekcji poza „Czat”".
+Dodatkowo rozbuduj komunikat błędów, żeby dokładnie móc namierzyć przyczynę.
+
+### Zmiany — plik `Second/app.js`
+
+Plik `Second/app.js`  
+Linia 2680  
+Było: `.flatMap((entry) => Array.isArray(entry?.values) ? entry.values.filter((value) => typeof value === "string" || typeof value === "number") : [])`  
+Jest: `.reduce((acc, entry) => { if (!Array.isArray(entry?.values)) return acc; entry.values.forEach((value) => { if (typeof value === "string" || typeof value === "number") acc.push(value); }); return acc; }, [])`
+
+Plik `Second/app.js`  
+Linia 2725  
+Było: `tournamentSection.innerHTML = '<p class="builder-info">Nie udało się wyrenderować tej sekcji. Spróbuj odświeżyć dane.</p>';`  
+Jest: `tournamentSection.innerHTML = '<p class="builder-info">Nie udało się wyrenderować sekcji „...”(etap: ...)</p><p class="builder-info">Szczegóły: ErrorName: ErrorMessage</p>';`
+
+Plik `Second/app.js`  
+Linia 2716  
+Było: log zawierał tylko `section`, `stage`, `error`.  
+Jest: log zawiera `section`, `stage`, `errorName`, `errorMessage`, `playersCount`, `tablesCount`, `poolModsCount`, `semiCustomTablesCount` oraz pełny obiekt `error`.
+
+Plik `Second/app.js`  
+Linia 3033  
+Było: globalny `catch` renderował ogólny komunikat bez szczegółów (`Nie udało się wyrenderować tej sekcji...`).  
+Jest: globalny `catch` renderuje komunikat diagnostyczny z `section`, stałym `stage: global` i szczegółem `errorName/errorMessage`, oraz loguje rozszerzony zestaw metryk wejścia.
+
+### Zmiany dokumentacyjne
+
+Plik `Second/docs/Documentation.md`  
+Było: opis diagnostyki obejmował tylko `section` i `stage`.  
+Jest: opis diagnostyki obejmuje rozszerzone pola (`errorName`, `errorMessage`, liczniki struktur) oraz informację o kompatybilnej agregacji przez `reduce` zamiast `flatMap`.
+
+Plik `Second/docs/README.md`  
+Było: instrukcja mówiła o ogólnym komunikacie `Nie udało się wyrenderować tej sekcji. Spróbuj odświeżyć dane.`  
+Jest: instrukcja wyjaśnia, że komunikat zawiera nazwę sekcji, etap i szczegół błędu dla szybszego namierzenia przyczyny.

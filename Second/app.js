@@ -2677,7 +2677,17 @@ const setupUserView = (root) => {
           });
         });
         const userAllRebuyValues = Object.values(safeTable12Rebuys)
-          .flatMap((entry) => Array.isArray(entry?.values) ? entry.values.filter((value) => typeof value === "string" || typeof value === "number") : [])
+          .reduce((acc, entry) => {
+            if (!Array.isArray(entry?.values)) {
+              return acc;
+            }
+            entry.values.forEach((value) => {
+              if (typeof value === "string" || typeof value === "number") {
+                acc.push(value);
+              }
+            });
+            return acc;
+          }, [])
           .filter((value) => String(value ?? "").trim())
           .map((value) => toDigitsNumber(value));
         const userBuyInValue = toDigitsNumber(userTournamentState.buyIn);
@@ -2714,12 +2724,21 @@ const setupUserView = (root) => {
       };
 
       const renderSectionError = (stage, error) => {
-        console.error("Błąd renderowania sekcji turnieju użytkownika:", {
+        const diagnostics = {
           section: userTournamentSection,
           stage,
+          errorName: error?.name || "Error",
+          errorMessage: error?.message || "Brak szczegółów błędu",
+          playersCount: Array.isArray(userTournamentState.players) ? userTournamentState.players.length : 0,
+          tablesCount: Array.isArray(userTournamentState.tables) ? userTournamentState.tables.length : 0,
+          poolModsCount: Array.isArray(userTournamentState.pool?.mods) ? userTournamentState.pool.mods.length : 0,
+          semiCustomTablesCount: Array.isArray(userTournamentState.semi?.customTables) ? userTournamentState.semi.customTables.length : 0
+        };
+        console.error("Błąd renderowania sekcji turnieju użytkownika:", {
+          ...diagnostics,
           error
         });
-        tournamentSection.innerHTML = '<p class="builder-info">Nie udało się wyrenderować tej sekcji. Spróbuj odświeżyć dane.</p>';
+        tournamentSection.innerHTML = `<p class="builder-info">Nie udało się wyrenderować sekcji „${esc(userTournamentSection)}” (etap: ${esc(stage)}). Sprawdź dane turniejowe i spróbuj odświeżyć.</p><p class="builder-info">Szczegóły: ${esc(`${diagnostics.errorName}: ${diagnostics.errorMessage}`)}</p>`;
       };
 
       if (userTournamentSection === "payments") {
@@ -3020,11 +3039,21 @@ const setupUserView = (root) => {
 
       tournamentSection.innerHTML = '<p class="builder-info">Dane tej sekcji są zapisywane do Firebase i dostępne w panelu administratora.</p>';
     } catch (error) {
-      console.error("Błąd renderowania sekcji turnieju użytkownika:", {
+      const diagnostics = {
         section: userTournamentSection,
+        stage: "global",
+        errorName: error?.name || "Error",
+        errorMessage: error?.message || "Brak szczegółów błędu",
+        playersCount: Array.isArray(userTournamentState.players) ? userTournamentState.players.length : 0,
+        tablesCount: Array.isArray(userTournamentState.tables) ? userTournamentState.tables.length : 0,
+        poolModsCount: Array.isArray(userTournamentState.pool?.mods) ? userTournamentState.pool.mods.length : 0,
+        semiCustomTablesCount: Array.isArray(userTournamentState.semi?.customTables) ? userTournamentState.semi.customTables.length : 0
+      };
+      console.error("Błąd renderowania sekcji turnieju użytkownika:", {
+        ...diagnostics,
         error
       });
-      tournamentSection.innerHTML = '<p class="builder-info">Nie udało się wyrenderować tej sekcji. Spróbuj odświeżyć dane.</p>';
+      tournamentSection.innerHTML = `<p class="builder-info">Nie udało się wyrenderować sekcji „${esc(userTournamentSection)}” (etap: global). Sprawdź dane turniejowe i spróbuj odświeżyć.</p><p class="builder-info">Szczegóły: ${esc(`${diagnostics.errorName}: ${diagnostics.errorMessage}`)}</p>`;
     }
   };
 
