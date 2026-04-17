@@ -642,11 +642,24 @@ const createTournamentDefaultState = () => ({
   }
 });
 
+const asArray = (value) => (Array.isArray(value) ? value : []);
+const asObject = (value) => (value && typeof value === "object" && !Array.isArray(value) ? value : {});
+
 const normalizeTournamentState = (value) => {
   const state = {
     ...createTournamentDefaultState(),
     ...(value && typeof value === "object" ? value : {})
   };
+  state.players = asArray(state.players);
+  state.tables = asArray(state.tables);
+  state.assignments = asObject(state.assignments);
+  state.tableEntries = asObject(state.tableEntries);
+  state.payments = asObject(state.payments);
+  state.pool = asObject(state.pool);
+  state.group = asObject(state.group);
+  state.semi = asObject(state.semi);
+  state.final = asObject(state.final);
+  state.payouts = asObject(state.payouts);
   if (!Array.isArray(state.pool?.splits) || !state.pool.splits.length) {
     state.pool = state.pool || {};
     state.pool.splits = [{ id: crypto.randomUUID(), buyIn: "", split: "" }];
@@ -679,7 +692,10 @@ const normalizeTournamentState = (value) => {
   state.final = state.final || {};
   state.final.eliminated = state.final.eliminated || {};
   state.final.eliminatedOrder = Array.isArray(state.final.eliminatedOrder) ? state.final.eliminatedOrder.map((playerId) => String(playerId ?? "").trim()).filter(Boolean) : [];
-  state.finalPlayers = Array.isArray(state.finalPlayers) ? state.finalPlayers : [];
+  state.finalPlayers = asArray(state.finalPlayers);
+  state.pool.rebuyValues = asObject(state.pool.rebuyValues);
+  state.payouts.showInitial = !!state.payouts.showInitial;
+  state.payouts.showFinal = !!state.payouts.showFinal;
 
   state.payments = state.payments || {};
   state.payments.table12Rebuys = state.payments.table12Rebuys || {};
@@ -2327,6 +2343,14 @@ const setupUserView = (root) => {
 
   let userTournamentState = createTournamentDefaultState();
   let userTournamentSection = "players";
+  let isUserTournamentLoaded = false;
+
+  if (userPinOpenButton) {
+    userPinOpenButton.disabled = true;
+  }
+  if (userPinStatus) {
+    userPinStatus.textContent = "Trwa ładowanie danych turnieju...";
+  }
 
   const renderUserChatSection = () => {
     if (!tournamentSection) {
@@ -2358,6 +2382,17 @@ const setupUserView = (root) => {
     return getTournamentPlayerById(playerId);
   };
   const renderTournamentButtonsForPlayer = () => {
+    if (!isUserTournamentLoaded) {
+      tournamentButtons.forEach((button) => {
+        button.style.display = "none";
+        button.classList.remove("is-active");
+      });
+      if (userTournamentStatus) {
+        userTournamentStatus.textContent = "Trwa ładowanie danych turnieju...";
+      }
+      return [];
+    }
+
     const verifiedPlayer = getVerifiedUserPlayer();
     const isVerified = getSecondUserPinGateState() && Boolean(verifiedPlayer);
     const allowedButtons = [];
@@ -2490,39 +2525,45 @@ const setupUserView = (root) => {
       return;
     }
 
+    if (!isUserTournamentLoaded) {
+      tournamentSection.innerHTML = '<p class="builder-info">Trwa ładowanie danych turnieju...</p>';
+      return;
+    }
+
     const allowedTargets = renderTournamentButtonsForPlayer();
     if (!allowedTargets.length) {
       tournamentSection.innerHTML = '<p class="builder-info">Brak dostępnych paneli Tournament of Poker dla tego PIN-u.</p>';
       return;
     }
 
-    if (userTournamentSection === "chatTab") {
-      renderUserChatSection();
-      bindUserChatControls();
-      updateSecondChatVisibility();
-      return;
-    }
+    try {
+      if (userTournamentSection === "chatTab") {
+        renderUserChatSection();
+        bindUserChatControls();
+        updateSecondChatVisibility();
+        return;
+      }
 
-    if (userTournamentSection === "players") {
-      tournamentSection.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table players-table"><thead><tr><th>Status</th><th>Gracz</th><th>PIN</th><th>Uprawnienia</th></tr></thead><tbody>${userTournamentState.players.map((player) => `<tr><td>${player.status ? "Aktywny" : "Nieaktywny"}</td><td>${player.name || "-"}</td><td>${digitsOnly(player.pin).slice(0, 5) || "-"}</td><td>${normalizeTournamentPermissions(player.permissions).join(", ") || "-"}</td></tr>`).join("") || '<tr><td colspan="4">Brak graczy.</td></tr>'}</tbody></table></div>`;
-      return;
-    }
+      if (userTournamentSection === "players") {
+        tournamentSection.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table players-table"><thead><tr><th>Status</th><th>Gracz</th><th>PIN</th><th>Uprawnienia</th></tr></thead><tbody>${userTournamentState.players.map((player) => `<tr><td>${player.status ? "Aktywny" : "Nieaktywny"}</td><td>${player.name || "-"}</td><td>${digitsOnly(player.pin).slice(0, 5) || "-"}</td><td>${normalizeTournamentPermissions(player.permissions).join(", ") || "-"}</td></tr>`).join("") || '<tr><td colspan="4">Brak graczy.</td></tr>'}</tbody></table></div>`;
+        return;
+      }
 
-    if (userTournamentSection === "draw") {
-      tournamentSection.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Status wpłaty</th><th>Stół</th></tr></thead><tbody>${userTournamentState.players.map((player) => {
-        const assignment = userTournamentState.assignments[player.id] || { status: "Do zapłaty", tableId: "" };
-        const tableName = userTournamentState.tables.find((table) => table.id === assignment.tableId)?.name || "-";
-        return `<tr><td>${player.name || "-"}</td><td>${assignment.status || "Do zapłaty"}</td><td>${tableName}</td></tr>`;
-      }).join("") || '<tr><td colspan="3">Brak przypisań.</td></tr>'}</tbody></table></div>`;
-      return;
-    }
+      if (userTournamentSection === "draw") {
+        tournamentSection.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Status wpłaty</th><th>Stół</th></tr></thead><tbody>${userTournamentState.players.map((player) => {
+          const assignment = userTournamentState.assignments[player.id] || { status: "Do zapłaty", tableId: "" };
+          const tableName = userTournamentState.tables.find((table) => table.id === assignment.tableId)?.name || "-";
+          return `<tr><td>${player.name || "-"}</td><td>${assignment.status || "Do zapłaty"}</td><td>${tableName}</td></tr>`;
+        }).join("") || '<tr><td colspan="3">Brak przypisań.</td></tr>'}</tbody></table></div>`;
+        return;
+      }
 
-    if (userTournamentSection === "payments") {
-      const t10 = userTournamentState.payments?.table10 || {};
-      const t11 = userTournamentState.payments?.table11 || {};
-      tournamentSection.innerHTML = `<div class="t-section-grid"><label>Stół 10 — Buy-In <input class="admin-input" readonly value="${t10.buyIn || ""}"></label><label>Stół 10 — Rebuy/Add-On <input class="admin-input" readonly value="${t10.rebuyAddOn || ""}"></label><label>Stół 10 — Suma <input class="admin-input" readonly value="${t10.sum || ""}"></label><label>Stół 10 — Liczba Rebuy <input class="admin-input" readonly value="${t10.rebuyCount || ""}"></label><label>Stół 11 — Procent <input class="admin-input" readonly value="${t11.percent || ""}"></label><label>Stół 11 — Rake <input class="admin-input" readonly value="${t11.rake || ""}"></label><label>Stół 11 — Buy-In <input class="admin-input" readonly value="${t11.buyIn || ""}"></label><label>Stół 11 — Rebuy/Add-On <input class="admin-input" readonly value="${t11.rebuyAddOn || ""}"></label><label>Stół 11 — Pula <input class="admin-input" readonly value="${t11.pot || ""}"></label></div>`;
-      return;
-    }
+      if (userTournamentSection === "payments") {
+        const t10 = userTournamentState.payments?.table10 || {};
+        const t11 = userTournamentState.payments?.table11 || {};
+        tournamentSection.innerHTML = `<div class="t-section-grid"><label>Stół 10 — Buy-In <input class="admin-input" readonly value="${t10.buyIn || ""}"></label><label>Stół 10 — Rebuy/Add-On <input class="admin-input" readonly value="${t10.rebuyAddOn || ""}"></label><label>Stół 10 — Suma <input class="admin-input" readonly value="${t10.sum || ""}"></label><label>Stół 10 — Liczba Rebuy <input class="admin-input" readonly value="${t10.rebuyCount || ""}"></label><label>Stół 11 — Procent <input class="admin-input" readonly value="${t11.percent || ""}"></label><label>Stół 11 — Rake <input class="admin-input" readonly value="${t11.rake || ""}"></label><label>Stół 11 — Buy-In <input class="admin-input" readonly value="${t11.buyIn || ""}"></label><label>Stół 11 — Rebuy/Add-On <input class="admin-input" readonly value="${t11.rebuyAddOn || ""}"></label><label>Stół 11 — Pula <input class="admin-input" readonly value="${t11.pot || ""}"></label></div>`;
+        return;
+      }
 
     const userGroupedDrawRows = [];
     let userLpCounter = 1;
@@ -2798,7 +2839,11 @@ const setupUserView = (root) => {
       return;
     }
 
-    tournamentSection.innerHTML = '<p class="builder-info">Dane tej sekcji są zapisywane do Firebase i dostępne w panelu administratora.</p>';
+      tournamentSection.innerHTML = '<p class="builder-info">Dane tej sekcji są zapisywane do Firebase i dostępne w panelu administratora.</p>';
+    } catch (error) {
+      console.error("Błąd renderowania sekcji turnieju użytkownika:", error);
+      tournamentSection.innerHTML = '<p class="builder-info">Nie udało się wyrenderować tej sekcji. Spróbuj odświeżyć dane.</p>';
+    }
   };
 
   tournamentButtons.forEach((button) => {
@@ -2836,6 +2881,13 @@ const setupUserView = (root) => {
   }
 
   const verifyUserPin = () => {
+    if (!isUserTournamentLoaded) {
+      if (userPinStatus) {
+        userPinStatus.textContent = "Trwa ładowanie danych turnieju. Spróbuj ponownie za chwilę.";
+      }
+      return;
+    }
+
     const pin = digitsOnly(userPinInput?.value || "").slice(0, 5);
     if (pin.length !== 5) {
       if (userPinStatus) {
@@ -3070,6 +3122,10 @@ const setupUserView = (root) => {
   db.collection(SECOND_TOURNAMENT_COLLECTION).doc(SECOND_TOURNAMENT_DOCUMENT).onSnapshot(
     (snapshot) => {
       userTournamentState = normalizeTournamentState(snapshot.data());
+      isUserTournamentLoaded = true;
+      if (userPinOpenButton) {
+        userPinOpenButton.disabled = false;
+      }
       const verifiedUserPlayer = getVerifiedUserPlayer();
       if (!verifiedUserPlayer) {
         setSecondUserPinGateState(false);

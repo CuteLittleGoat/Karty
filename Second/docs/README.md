@@ -143,12 +143,14 @@
 3. Zewnętrzna zielona ramka panelu użytkownika ma po 1 px odstępu od lewej i prawej krawędzi ekranu oraz 1 px grubości na bocznych krawędziach.
 4. Bez wpisania PIN dostępne są tylko zakładki **Aktualności** i **Regulamin**.
 5. W górnej bramce PIN wpisz 5 cyfr przypisanych do gracza i kliknij **Otwórz**.
+5a. Jeżeli dane turnieju są jeszcze pobierane, przycisk **Otwórz** jest tymczasowo zablokowany, a pod polem PIN zobaczysz komunikat `Trwa ładowanie danych turnieju...`.
 6. Po poprawnym PIN aplikacja odblokuje zakładkę **TOURNAMENT OF POKER** do czasu resetu/odświeżenia strony.
 7. Kliknij zakładkę **TOURNAMENT OF POKER**.
 8. W lewym panelu zobaczysz tylko te przyciski sekcji, do których administrator nadał uprawnienia dla tego gracza; bez żadnego uprawnienia sidebar pozostanie pusty.
 9. Jeżeli administrator nie nadał żadnego uprawnienia turniejowego, panel boczny nie pokaże przycisków nawigacji i pojawi się komunikat informacyjny.
 10. Dane w dostępnych sekcjach są pobierane automatycznie z dokumentu Firebase `second_tournament/state` i odświeżają się na żywo po zmianach wykonanych przez administratora.
-10a. Po kliknięciu dowolnego przycisku w lewym sidebarze zawartość wybranej sekcji powinna pojawić się od razu w dużym panelu po prawej; jeżeli panel pozostaje pusty, oznacza to błąd aplikacji, a nie brak uprawnień.
+10a. Po kliknięciu dowolnego przycisku w lewym sidebarze zawartość wybranej sekcji pojawia się od razu w dużym panelu po prawej.
+10b. Gdyby wystąpił błąd renderowania konkretnej sekcji (np. nietypowy format danych), aplikacja pokaże komunikat `Nie udało się wyrenderować tej sekcji. Spróbuj odświeżyć dane.` zamiast pozostawienia poprzedniego widoku.
 11. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
 12. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.
 13. Sekcje `Podział puli`, `Faza grupowa`, `Półfinał` i `Finał` pokazują pełny podgląd danych turniejowych w trybie tylko do odczytu.
