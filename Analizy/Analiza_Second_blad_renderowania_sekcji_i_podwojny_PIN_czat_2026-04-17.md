@@ -217,3 +217,71 @@ Przeczytaj analizę `Analizy/Analiza_Second_blad_renderowania_sekcji_i_podwojny_
   - dodane role akcji: `tournament-chat-cleanup`, `tournament-chat-delete-message`,
   - dodane metody obsługi: `cleanupTournamentChatMessages()`, `deleteTournamentChatMessage()`.
 
+
+---
+
+## Aktualizacja analizy po wdrożeniu (2026-04-17, incydent: „Nie udało się wyrenderować tej sekcji” w każdej zakładce poza Czat)
+
+### Prompt użytkownika (kontekst tej aktualizacji)
+Przeczytaj i dopisz do analizy Analizy/Analiza_Second_blad_renderowania_sekcji_i_podwojny_PIN_czat_2026-04-17.md nowe wnioski.
+
+Po wdrożeniu rekomendowanej naprawy w widoku użytkownika w każdej zakładce (poza "Czat") wyświetlana jest informacja "Nie udało się wyrenderować tej sekcji. Spróbuj odświeżyć dane."
+
+Przeprowadź analizę czemu i znajdź rozwiązanie.
+
+### Nowe ustalenia (dlaczego błąd jest globalny dla prawie wszystkich sekcji)
+
+1. **W `renderUserTournament()` nadal istnieje jeden wspólny, szeroki `try/catch` dla całego renderu sekcji użytkownika.**
+   To oznacza, że pojedynczy wyjątek runtime w dowolnym fragmencie obliczeń skutkuje zawsze tym samym fallbackiem: „Nie udało się wyrenderować tej sekcji...”.
+
+2. **Poza `chatTab` (i poza prostymi gałęziami) render sekcji opiera się na łańcuchu wspólnych obliczeń na danych turniejowych.**
+   Jeżeli dane historyczne zawierają wpisy o nietypowym kształcie (np. rekordy po starszych wersjach), wyjątek pojawia się przed wygenerowaniem HTML konkretnej sekcji.
+
+3. **To tłumaczy obserwację „działa tylko Czat”:**
+   `chatTab` ma własny szybki `return` i nie przechodzi przez problematyczny tor obliczeń tabel turniejowych.
+
+4. **Obecny fallback zaciera źródło błędu dla użytkownika końcowego.**
+   W UI widoczny jest tylko komunikat ogólny; szczegół jest wyłącznie w `console.error`, więc produkcyjnie symptom wygląda jak „wszystkie zakładki są zepsute”.
+
+### Najbardziej prawdopodobny mechanizm po wdrożeniu
+
+Po wdrożeniu rozszerzono user-view o render 1:1 z adminem (TABELA10+). To zwiększyło liczbę obliczeń wykonywanych podczas renderu sekcji użytkownika i przez to:
+- wzrosła wrażliwość na dane niespójne z aktualnym modelem,
+- nadal brak pełnej izolacji „obliczenia per-sekcja”,
+- pojedynczy wyjątek propaguje się na cały render (poza Czat).
+
+### Rozwiązanie (docelowe i odporne)
+
+#### A. Izolacja obliczeń per sekcja (najważniejsze)
+Zamiast jednego wspólnego bloku obliczeń:
+- `payments` budować wyłącznie z danych wymaganych dla `payments`,
+- `pool` wyłącznie z danych dla `pool`,
+- analogicznie `group`, `semi`, `final`, `payouts`.
+
+Każda sekcja powinna mieć własny mini-`try/catch`, aby błąd w `semi` nie blokował `payments`.
+
+#### B. Normalizacja wejścia bezpośrednio przed renderem sekcji
+Przed każdą gałęzią sekcji robić jawne „safe” mapowanie:
+- tablice: tylko elementy-obiekty,
+- obiekty map: tylko plain object,
+- liczby: zawsze przez helper (`toNumber`, `toDigitsNumber`),
+- identyfikatory: string trim + fallback.
+
+#### C. Diagnostyka produkcyjna (żeby nie wracać do „ślepego” fallbacku)
+Do logu błędu dopisać:
+- aktywną sekcję,
+- etap obliczeń (np. `buildPoolViewModel`),
+- kluczowe długości struktur (`playersCount`, `tablesCount`, `poolModsCount`),
+- próbkę problematycznego rekordu (zanonimizowaną).
+
+#### D. Szybki hotfix operacyjny
+Do czasu pełnego refaktoru:
+1) podzielić obecny `try/catch` na kilka bloków per sekcja,
+2) w pierwszej kolejności odseparować `payments` od obliczeń `semi/final/payouts`,
+3) przy błędzie sekcyjnym renderować sekcję minimalną (np. tabela z komunikatem i podstawowymi danymi), zamiast pustego fallbacku globalnego.
+
+### Kryterium potwierdzenia naprawy
+- `Czat` działa jak dotąd.
+- Każda z sekcji `Wpłaty/Podział puli/Faza grupowa/Półfinał/Finał/Wypłaty` renderuje się niezależnie.
+- Celowy błąd danych w jednej sekcji nie psuje pozostałych.
+- W logach jest jednoznaczna informacja, która sekcja i który etap obliczeń został przerwany.
