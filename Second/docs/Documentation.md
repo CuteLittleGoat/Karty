@@ -181,6 +181,8 @@
   - `payouts`: tabela miejsc i wygranych zależna od flag `payouts.showInitial` / `payouts.showFinal`.
 - `chatTab` pozostaje jedyną sekcją z możliwością wpisywania danych po stronie użytkownika.
 - Widok ma dwa niezależne mount pointy: `#userTournamentDataMount` (sekcje readonly) i `#userTournamentChatMount` (czat). Przełączenie sekcji pokazuje tylko jeden mount, co eliminuje efekt „sticky chat”.
+- Render użytkownika najpierw przełącza aktywny mount (`#userTournamentDataMount` / `#userTournamentChatMount`), a dopiero później waliduje obecność `readonlyTables.rTournamentState`; dzięki temu komunikat o braku kopii `r*` nie zostawia już widoku „przyklejonego” do czatu.
+- Render admina sekcji turniejowych jest osłonięty globalnym `try/catch`; w przypadku wyjątku (np. niespójne dane `pool`) UI pokazuje komunikat błędu zamiast poprzedniej sekcji, co usuwa efekt „Podział puli pokazuje poprzednią zakładkę”.
 - Po wyjściu z `chatTab` wykonywany jest twardy reset referencji runtime czatu (`chatInput`, `chatSendButton`, `chatMessages`, statusy PIN), dzięki czemu kolejne sekcje zawsze renderują własny DOM i nie dziedziczą aktywnego formularza czatu.
 - Render sekcji posiada token wersji (`userTournamentRenderToken`): gdy pojawi się opóźniony render z wcześniejszego stanu, jest przerywany jako „stale token”, co chroni przed asynchronicznym nadpisaniem widoku.
 - W sidebarze `TOURNAMENT OF POKER` przycisk `Czat` jest renderowany jako ostatni przycisk na liście.
