@@ -152,6 +152,9 @@
 10a. Po kliknięciu dowolnego przycisku w lewym sidebarze zawartość wybranej sekcji pojawia się od razu w dużym panelu po prawej.
 10b. Gdyby wystąpił błąd renderowania konkretnej sekcji (np. nietypowy format danych), aplikacja pokaże komunikat z nazwą sekcji, etapem i krótkim szczegółem błędu (np. `Nie udało się wyrenderować sekcji „pool” (etap: pool)... Szczegóły: TypeError ...`) zamiast pozostawienia poprzedniego widoku.
 10c. Każda sekcja turniejowa renderuje się niezależnie: awaria danych w jednej zakładce nie blokuje pozostałych zakładek (np. błąd w `Półfinał` nie zatrzymuje `Wpłaty`).
+10d. Gdy klikniesz sekcję zanim zakończy się pierwszy odczyt turnieju z Firebase, aplikacja nie przełączy jeszcze widoku i pokaże status `Trwa ładowanie danych turnieju...`; po snapshotcie kliknięcia działają normalnie.
+10e. Po przejściu z `Czat` do innej sekcji formularz wiadomości jest zawsze odmontowywany; nie da się pisać wiadomości poza zakładką `Czat`.
+10f. W konsoli przeglądarki dostępny jest log `"[Second][UserTournament]"` (kliknięcie, render, snapshot), który pokazuje docelową sekcję i ułatwia diagnostykę „sticky chat”.
 11. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
 12. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.
 13. Sekcje `Podział puli`, `Faza grupowa`, `Półfinał` i `Finał` pokazują pełny podgląd danych turniejowych w trybie tylko do odczytu.
