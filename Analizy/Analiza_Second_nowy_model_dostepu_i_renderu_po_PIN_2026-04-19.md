@@ -180,3 +180,83 @@ Nowy model spełnia to przez:
 ## 6) Podsumowanie
 
 Dotychczasowe próby były sensowne, ale naprawiały objawy w istniejącym, złożonym rendererze. Proponowane rozwiązanie to zmiana architektury sterowania UI: **kontrakt sesji po PIN + router sekcji + osobne mount pointy dla czatu i danych readonly**. To podejście jest jakościowo inne i celuje bezpośrednio w źródło obecnej niestabilności (konflikt stanu i renderu), a nie tylko w pojedyncze skutki uboczne.
+
+---
+
+## Sekcja wdrożenia zmian w kodzie (2026-04-19)
+
+### Prompt użytkownika
+Przeczytaj analizy: `Analizy/Analiza_Second_blad_renderowania_sekcji_i_podwojny_PIN_czat_2026-04-17.md` i `Analizy/Analiza_Second_blad_renderowania_sekcji_i_podwojny_PIN_czat_2026-04-17.md`
+
+Następnie wprowadź rozwiązanie z `Analizy/Analiza_Second_nowy_model_dostepu_i_renderu_po_PIN_2026-04-19.md`
+
+### Zmiany — plik `Second/index.html`
+
+Plik `Second/index.html`  
+Linia 226  
+Było: `                  <p class="builder-info" data-tournament-text>Strona w budowie</p>`  
+Jest: `                  <div id="userTournamentDataMount"> ... </div><div id="userTournamentChatMount" hidden></div>`
+
+Plik `Second/index.html`  
+Linia 275  
+Było: `    <script src="app.js?v=2026-04-19-1" type="module"></script>`  
+Jest: `    <script src="app.js?v=2026-04-19-2" type="module"></script>`
+
+### Zmiany — plik `Second/app.js`
+
+Plik `Second/app.js`  
+Linia 2412  
+Było: `  const tournamentSection = root.querySelector("#tournamentTab .admin-games-section");`  
+Jest: `  const tournamentSection = ...; const tournamentDataMount = ...; const tournamentChatMount = ...;`
+
+Plik `Second/app.js`  
+Linia 2423  
+Było: `  let userTournamentSection = "players";`  
+Jest: `  let userTournamentSection = "players"; let userTournamentSession = { playerId, allowedSections, chatAllowed, readonly, isVerified };`
+
+Plik `Second/app.js`  
+Linia 2480  
+Było: brak kontraktu sesji i routera sekcji.  
+Jest: dodane funkcje `buildUserTournamentSession(...)`, `applyUserTournamentSession(...)`, `syncTournamentMountVisibility(...)`, `navigateToUserTournamentSection(...)`.
+
+Plik `Second/app.js`  
+Linia 2460  
+Było: `renderUserChatSection()` renderował czat bezpośrednio do `tournamentSection.innerHTML`.  
+Jest: `renderUserChatSection()` renderuje czat do dedykowanego mounta `#userTournamentChatMount`.
+
+Plik `Second/app.js`  
+Linia 2530  
+Było: uprawnienia sekcji liczone ad hoc z `getSecondUserPinGateState()` + `getVerifiedUserPlayer()`.  
+Jest: uprawnienia i aktywna sekcja wynikają z `userTournamentSession` (jedno źródło prawdy po PIN).
+
+Plik `Second/app.js`  
+Linia 2720  
+Było: cały render danych i czatu używał wspólnego `tournamentSection.innerHTML`.  
+Jest: sekcje readonly renderują do `dataMount`, czat renderuje do `chatMount`, a widoczność mountów przełącza `syncTournamentMountVisibility(...)`.
+
+Plik `Second/app.js`  
+Linia 3210  
+Było: kliknięcie w sidebar bezpośrednio ustawiało `userTournamentSection` i odpalało render.  
+Jest: kliknięcie sidebaru przechodzi przez `navigateToUserTournamentSection(...)` z walidacją dozwolonych sekcji.
+
+Plik `Second/app.js`  
+Linia 3270  
+Było: `verifyUserPin()` ustawiał tylko storage + odświeżenie widoczności.  
+Jest: `verifyUserPin()` dodatkowo buduje kontrakt sesji (`applyUserTournamentSession`) dla poprawnego i błędnego PIN-u.
+
+Plik `Second/app.js`  
+Linia 3490  
+Było: po snapshotcie nie było odświeżenia kontraktu sesji użytkownika.  
+Jest: po snapshotcie następuje `applyUserTournamentSession(verifiedUserPlayer, { preserveSection: true })`, dzięki czemu snapshot odświeża dane bez wymuszania zmiany aktywnej zakładki.
+
+### Zmiany — dokumentacja modułu `Second`
+
+Plik `Second/docs/README.md`  
+Linia 138  
+Było: brak opisu jawnego kontraktu sesji po PIN.  
+Jest: dodany punkt o budowie sesji gracza po PIN i deterministycznym wyborze pierwszej dozwolonej sekcji.
+
+Plik `Second/docs/Documentation.md`  
+Linia 268  
+Było: brak opisu routera sekcji i oddzielnych mount pointów danych/czatu.  
+Jest: dodany opis `userTournamentSession`, `navigateToUserTournamentSection(...)` oraz rozdzielenia `#userTournamentDataMount` i `#userTournamentChatMount`.

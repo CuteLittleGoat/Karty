@@ -2407,6 +2407,8 @@ const setupUserView = (root) => {
   let chatPinStatus = null;
   let chatDocsCache = [];
   const tournamentSection = root.querySelector("#tournamentTab .admin-games-section");
+  const tournamentDataMount = root.querySelector("#userTournamentDataMount");
+  const tournamentChatMount = root.querySelector("#userTournamentChatMount");
   const userPanelRefreshButton = root.querySelector("#userPanelRefresh");
   const userPanelRefreshStatus = root.querySelector("#userPanelRefreshStatus");
   const userPinGate = root.querySelector("#userPlayerPinGate");
@@ -2419,6 +2421,13 @@ const setupUserView = (root) => {
 
   let userTournamentState = createTournamentDefaultState();
   let userTournamentSection = "players";
+  let userTournamentSession = {
+    playerId: "",
+    allowedSections: [],
+    chatAllowed: false,
+    readonly: true,
+    isVerified: false
+  };
   let isUserTournamentLoaded = false;
   let userTournamentRenderToken = 0;
 
@@ -2452,10 +2461,10 @@ const setupUserView = (root) => {
   }
 
   const renderUserChatSection = () => {
-    if (!tournamentSection) {
+    if (!tournamentChatMount) {
       return;
     }
-    tournamentSection.innerHTML = `<div class="pin-gate" aria-live="polite"><div class="pin-card"><p class="pin-title">Wpisz PIN z uprawnieniem Czat, aby dołączyć do rozmowy.</p><div class="pin-inputs"><input id="chatPinInput" type="tel" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" minlength="5" placeholder="PIN (5 cyfr)" /><button id="chatPinOpenButton" class="primary" type="button">Otwórz</button></div><p id="chatPinStatus" class="status-text"></p></div></div><div class="chat-content"><div id="chatMessages" class="chat-messages"><p class="chat-empty">Brak wiadomości.</p></div><div class="chat-form"><label for="chatMessageInput">Twoja wiadomość</label><textarea id="chatMessageInput" rows="3" maxlength="600" placeholder="Napisz wiadomość do graczy..."></textarea><div class="chat-form-actions"><button id="chatSendButton" class="primary" type="button">Wyślij</button><span id="chatStatus" class="status-text" aria-live="polite">Ładowanie czatu...</span></div></div></div>`;
+    tournamentChatMount.innerHTML = `<div class="pin-gate" aria-live="polite"><div class="pin-card"><p class="pin-title">Wpisz PIN z uprawnieniem Czat, aby dołączyć do rozmowy.</p><div class="pin-inputs"><input id="chatPinInput" type="tel" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" minlength="5" placeholder="PIN (5 cyfr)" /><button id="chatPinOpenButton" class="primary" type="button">Otwórz</button></div><p id="chatPinStatus" class="status-text"></p></div></div><div class="chat-content"><div id="chatMessages" class="chat-messages"><p class="chat-empty">Brak wiadomości.</p></div><div class="chat-form"><label for="chatMessageInput">Twoja wiadomość</label><textarea id="chatMessageInput" rows="3" maxlength="600" placeholder="Napisz wiadomość do graczy..."></textarea><div class="chat-form-actions"><button id="chatSendButton" class="primary" type="button">Wyślij</button><span id="chatStatus" class="status-text" aria-live="polite">Ładowanie czatu...</span></div></div></div>`;
   };
 
   const getTournamentPlayerById = (playerId) => userTournamentState.players.find((player) => player.id === playerId) || null;
@@ -2480,6 +2489,54 @@ const setupUserView = (root) => {
     }
     return getTournamentPlayerById(playerId);
   };
+  const buildUserTournamentSession = (player) => {
+    if (!player) {
+      return {
+        playerId: "",
+        allowedSections: [],
+        chatAllowed: false,
+        readonly: true,
+        isVerified: false
+      };
+    }
+    const allowedSections = SECOND_AVAILABLE_PLAYER_PERMISSIONS
+      .map((permission) => permission.key)
+      .filter((sectionKey) => sectionKey !== "chatTab" && isSecondPlayerAllowedForTournamentSection(player, sectionKey));
+    const chatAllowed = isSecondPlayerAllowedForTournamentSection(player, "chatTab");
+    return {
+      playerId: player.id || "",
+      allowedSections,
+      chatAllowed,
+      readonly: true,
+      isVerified: true
+    };
+  };
+  const syncTournamentMountVisibility = (sectionKey) => {
+    if (!tournamentDataMount || !tournamentChatMount) {
+      return;
+    }
+    const isChatSection = sectionKey === "chatTab";
+    tournamentDataMount.hidden = isChatSection;
+    tournamentChatMount.hidden = !isChatSection;
+  };
+  const applyUserTournamentSession = (player, options = {}) => {
+    const nextSession = buildUserTournamentSession(player);
+    userTournamentSession = nextSession;
+    const { preserveSection = false } = options;
+    if (nextSession.allowedSections.includes(userTournamentSection) && preserveSection) {
+      return nextSession;
+    }
+    if (nextSession.allowedSections.length > 0) {
+      userTournamentSection = nextSession.allowedSections[0];
+      return nextSession;
+    }
+    if (nextSession.chatAllowed) {
+      userTournamentSection = "chatTab";
+      return nextSession;
+    }
+    userTournamentSection = "players";
+    return nextSession;
+  };
   const renderTournamentButtonsForPlayer = () => {
     if (!isUserTournamentLoaded) {
       tournamentButtons.forEach((button) => {
@@ -2492,15 +2549,15 @@ const setupUserView = (root) => {
       return [];
     }
 
-    const verifiedPlayer = getVerifiedUserPlayer();
-    const isVerified = getSecondUserPinGateState() && Boolean(verifiedPlayer);
+    const isVerified = userTournamentSession.isVerified;
     const allowedButtons = [];
 
     tournamentButtons.forEach((button, index) => {
       const sectionKey = button.dataset.tournamentTarget || "";
-      const isAllowed = isVerified && isSecondPlayerAllowedForTournamentSection(verifiedPlayer, sectionKey);
+      const isAllowed = isVerified
+        && (userTournamentSession.allowedSections.includes(sectionKey) || (sectionKey === "chatTab" && userTournamentSession.chatAllowed));
       button.style.display = isAllowed ? "block" : "none";
-      button.classList.toggle("is-active", isAllowed && allowedButtons.length === 0 && userTournamentSection === sectionKey);
+      button.classList.toggle("is-active", isAllowed && userTournamentSection === sectionKey);
       if (isAllowed) {
         allowedButtons.push(button);
       }
@@ -2522,7 +2579,7 @@ const setupUserView = (root) => {
 
     const allowedTargets = allowedButtons.map((button) => button.dataset.tournamentTarget || "");
     if (!allowedTargets.includes(userTournamentSection)) {
-      userTournamentSection = allowedTargets[0] || "players";
+      userTournamentSection = userTournamentSession.allowedSections[0] || (userTournamentSession.chatAllowed ? "chatTab" : "players");
     }
     allowedButtons.forEach((button) => {
       button.classList.toggle("is-active", button.dataset.tournamentTarget === userTournamentSection);
@@ -2531,8 +2588,7 @@ const setupUserView = (root) => {
   };
 
   const updateProtectedTabsVisibility = () => {
-    const verifiedPlayer = getVerifiedUserPlayer();
-    const isVerified = getSecondUserPinGateState() && Boolean(verifiedPlayer);
+    const isVerified = userTournamentSession.isVerified;
 
     if (userPinGate) {
       userPinGate.classList.toggle("is-hidden", isVerified);
@@ -2601,8 +2657,8 @@ const setupUserView = (root) => {
   const updateSecondChatVisibility = () => {
     const verifiedPlayer = getVerifiedChatPlayer();
     const isAllowed = getSecondChatPinGateState() && Boolean(verifiedPlayer) && isSecondPlayerAllowedForChat(verifiedPlayer);
-    const localChatGate = tournamentSection?.querySelector(".pin-gate");
-    const localChatContent = tournamentSection?.querySelector(".chat-content");
+    const localChatGate = tournamentChatMount?.querySelector(".pin-gate");
+    const localChatContent = tournamentChatMount?.querySelector(".chat-content");
     if (localChatGate) {
       localChatGate.classList.toggle("is-hidden", isAllowed);
       localChatGate.hidden = isAllowed;
@@ -2628,16 +2684,50 @@ const setupUserView = (root) => {
     setSecondChatVerifiedPlayerId(verifiedUserPlayer.id);
     return true;
   };
+  const navigateToUserTournamentSection = (targetSection, source = "unknown") => {
+    if (!isUserTournamentLoaded) {
+      if (userTournamentStatus) {
+        userTournamentStatus.textContent = "Trwa ładowanie danych turnieju...";
+      }
+      return false;
+    }
+    const requestedSection = String(targetSection || "");
+    const allowedTargets = [
+      ...userTournamentSession.allowedSections,
+      ...(userTournamentSession.chatAllowed ? ["chatTab"] : [])
+    ];
+    if (!allowedTargets.includes(requestedSection)) {
+      logUserTournamentTransition("section_navigation_blocked", {
+        source,
+        requestedSection,
+        allowedTargets
+      });
+      return false;
+    }
+    const previousSection = userTournamentSection;
+    userTournamentSection = requestedSection;
+    logUserTournamentTransition("section_navigation", {
+      source,
+      previousSection,
+      finalSection: userTournamentSection,
+      allowedTargets
+    });
+    renderUserTournament();
+    return true;
+  };
 
   const renderUserTournament = () => {
     if (!tournamentSection) {
       return;
     }
+    const dataMount = tournamentDataMount || tournamentSection;
+    const chatMount = tournamentChatMount || tournamentSection;
 
     const renderToken = ++userTournamentRenderToken;
 
     if (!isUserTournamentLoaded) {
-      tournamentSection.innerHTML = '<p class="builder-info">Trwa ładowanie danych turnieju...</p>';
+      syncTournamentMountVisibility("players");
+      dataMount.innerHTML = '<p class="builder-info">Trwa ładowanie danych turnieju...</p>';
       logUserTournamentTransition("render_waiting_for_snapshot", {
         renderToken
       });
@@ -2651,12 +2741,17 @@ const setupUserView = (root) => {
       allowedTargets
     });
     if (!allowedTargets.length) {
-      tournamentSection.innerHTML = '<p class="builder-info">Brak dostępnych paneli Tournament of Poker dla tego PIN-u.</p>';
+      syncTournamentMountVisibility("players");
+      dataMount.innerHTML = '<p class="builder-info">Brak dostępnych paneli Tournament of Poker dla tego PIN-u.</p>';
+      if (chatMount !== dataMount) {
+        chatMount.innerHTML = "";
+      }
       return;
     }
 
     try {
       if (userTournamentSection === "chatTab") {
+        syncTournamentMountVisibility("chatTab");
         renderUserChatSection();
         bindUserChatControls();
         tryAutoAuthorizeChatFromUserPin();
@@ -2664,6 +2759,7 @@ const setupUserView = (root) => {
         return;
       }
 
+      syncTournamentMountVisibility(userTournamentSection);
       if (renderToken !== userTournamentRenderToken) {
         logUserTournamentTransition("render_abort_stale_token", {
           renderToken,
@@ -2676,12 +2772,12 @@ const setupUserView = (root) => {
       resetUserTournamentChatRuntime();
 
       if (userTournamentSection === "players") {
-        tournamentSection.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table players-table"><thead><tr><th>Status</th><th>Gracz</th><th>PIN</th><th>Uprawnienia</th></tr></thead><tbody>${userTournamentState.players.map((player) => `<tr><td>${player.status ? "Aktywny" : "Nieaktywny"}</td><td>${player.name || "-"}</td><td>${digitsOnly(player.pin).slice(0, 5) || "-"}</td><td>${normalizeTournamentPermissions(player.permissions).join(", ") || "-"}</td></tr>`).join("") || '<tr><td colspan="4">Brak graczy.</td></tr>'}</tbody></table></div>`;
+        dataMount.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table players-table"><thead><tr><th>Status</th><th>Gracz</th><th>PIN</th><th>Uprawnienia</th></tr></thead><tbody>${userTournamentState.players.map((player) => `<tr><td>${player.status ? "Aktywny" : "Nieaktywny"}</td><td>${player.name || "-"}</td><td>${digitsOnly(player.pin).slice(0, 5) || "-"}</td><td>${normalizeTournamentPermissions(player.permissions).join(", ") || "-"}</td></tr>`).join("") || '<tr><td colspan="4">Brak graczy.</td></tr>'}</tbody></table></div>`;
         return;
       }
 
       if (userTournamentSection === "draw") {
-        tournamentSection.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Status wpłaty</th><th>Stół</th></tr></thead><tbody>${userTournamentState.players.map((player) => {
+        dataMount.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Status wpłaty</th><th>Stół</th></tr></thead><tbody>${userTournamentState.players.map((player) => {
           const assignment = userTournamentState.assignments[player.id] || { status: "Do zapłaty", tableId: "" };
           const tableName = userTournamentState.tables.find((table) => table.id === assignment.tableId)?.name || "-";
           return `<tr><td>${player.name || "-"}</td><td>${assignment.status || "Do zapłaty"}</td><td>${tableName}</td></tr>`;
@@ -2782,7 +2878,7 @@ const setupUserView = (root) => {
           ...diagnostics,
           error
         });
-        tournamentSection.innerHTML = `<p class="builder-info">Nie udało się wyrenderować sekcji „${esc(userTournamentSection)}” (etap: ${esc(stage)}). Sprawdź dane turniejowe i spróbuj odświeżyć.</p><p class="builder-info">Szczegóły: ${esc(`${diagnostics.errorName}: ${diagnostics.errorMessage}`)}</p>`;
+        dataMount.innerHTML = `<p class="builder-info">Nie udało się wyrenderować sekcji „${esc(userTournamentSection)}” (etap: ${esc(stage)}). Sprawdź dane turniejowe i spróbuj odświeżyć.</p><p class="builder-info">Szczegóły: ${esc(`${diagnostics.errorName}: ${diagnostics.errorMessage}`)}</p>`;
       };
 
       if (userTournamentSection === "payments") {
@@ -2803,7 +2899,7 @@ const setupUserView = (root) => {
             }
             return state.values.reduce((sum, value) => sum + toDigitsNumber(value), 0);
           };
-          tournamentSection.innerHTML = `<h3>TABELA10</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZ. REBUY/ADD-ON</th></tr></thead><tbody><tr><td>${formatCellNumber(userTable10.buyIn)}</td><td>${formatCellNumber(userTable10.rebuyAddOn)}</td><td>${formatCellNumber(userTable10.sum)}</td><td>${formatCellNumber(userTable10.rebuyCount)}</td></tr></tbody></table></div><h3>TABELA11</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${toPercentText(userTable11.percent)}</td><td>${formatCellNumber(userTable11.rake)}</td><td>${formatCellNumber(userTable11.buyIn)}</td><td>${formatCellNumber(userTable11.rebuyAddOn)}</td><td>${formatCellNumber(userTable11.pot)}</td></tr></tbody></table></div><h3>TABELA12</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>STÓŁ</th><th>GRACZ</th><th>BUY-IN</th><th>REBUY</th></tr></thead><tbody>${userGroupedDrawRows.map((row, index) => `<tr class="${paymentsStripeClasses[index]}"><td>${row.lp}</td><td>${esc(row.tableName)}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(userPlayerBuyInById[row.playerId] || 0)}</td><td>${formatCellNumber(getUserPlayerRebuyTotal(row.playerId))}</td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div>`;
+          dataMount.innerHTML = `<h3>TABELA10</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZ. REBUY/ADD-ON</th></tr></thead><tbody><tr><td>${formatCellNumber(userTable10.buyIn)}</td><td>${formatCellNumber(userTable10.rebuyAddOn)}</td><td>${formatCellNumber(userTable10.sum)}</td><td>${formatCellNumber(userTable10.rebuyCount)}</td></tr></tbody></table></div><h3>TABELA11</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${toPercentText(userTable11.percent)}</td><td>${formatCellNumber(userTable11.rake)}</td><td>${formatCellNumber(userTable11.buyIn)}</td><td>${formatCellNumber(userTable11.rebuyAddOn)}</td><td>${formatCellNumber(userTable11.pot)}</td></tr></tbody></table></div><h3>TABELA12</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>STÓŁ</th><th>GRACZ</th><th>BUY-IN</th><th>REBUY</th></tr></thead><tbody>${userGroupedDrawRows.map((row, index) => `<tr class="${paymentsStripeClasses[index]}"><td>${row.lp}</td><td>${esc(row.tableName)}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(userPlayerBuyInById[row.playerId] || 0)}</td><td>${formatCellNumber(getUserPlayerRebuyTotal(row.playerId))}</td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div>`;
           return;
         } catch (error) {
           renderSectionError("payments", error);
@@ -2956,7 +3052,7 @@ const setupUserView = (root) => {
             const rebuyCells = rebuyMatrix[idx].map((value) => `<td data-rebuy-column>${formatCellNumber(toNumber(value))}</td>`).join("");
             return `<tr><td>${idx + 1}</td><td>${esc(getPoolSplitDisplay(row, idx))}</td><td>${formatCellNumber(rowSums[idx]?.amount || 0)}</td>${rebuyCells}<td>${formatCellNumber(toNumber(row.mod1))}</td><td>${formatCellNumber(toNumber(row.mod2))}</td><td>${formatCellNumber(toNumber(row.mod3))}</td><td>${formatCellNumber(rowSums[idx]?.total || 0)}</td></tr>`;
           };
-          tournamentSection.innerHTML = `<h3>TABELA13</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZBA REBUY</th></tr></thead><tbody><tr><td>${formatCellNumber(userTable10.buyIn)}</td><td>${formatCellNumber(userTable10.rebuyAddOn)}</td><td>${formatCellNumber(userTable10.sum)}</td><td>${formatCellNumber(userTable10.rebuyCount)}</td></tr></tbody></table></div><h3>TABELA14</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${toPercentText(userTable11.percent)}</td><td>${formatCellNumber(userTable11.rake)}</td><td>${formatCellNumber(userTable11.buyIn)}</td><td>${formatCellNumber(userTable11.rebuyAddOn)}</td><td>${formatCellNumber(userTable11.pot)}</td></tr></tbody></table></div><h3>TABELA15</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>PODZIAŁ</th></tr></thead><tbody><tr><td>${formatCellNumber(table15BuyIn)}</td><td>${formatCellNumber(table15Split)}</td></tr></tbody></table></div><h3>TABELA16</h3><div class="admin-table-scroll"><table class="admin-data-table tournament-pool-table16"><thead><tr>${renderTable16Header()}</tr></thead><tbody>${splitRows.map((row, idx) => renderTable16Row(row, idx)).join("") || '<tr><td colspan="8">Brak danych.</td></tr>'}</tbody></table></div>`;
+          dataMount.innerHTML = `<h3>TABELA13</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>SUMA</th><th>LICZBA REBUY</th></tr></thead><tbody><tr><td>${formatCellNumber(userTable10.buyIn)}</td><td>${formatCellNumber(userTable10.rebuyAddOn)}</td><td>${formatCellNumber(userTable10.sum)}</td><td>${formatCellNumber(userTable10.rebuyCount)}</td></tr></tbody></table></div><h3>TABELA14</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>%</th><th>RAKE</th><th>BUY-IN</th><th>REBUY/ADD-ON</th><th>POT</th></tr></thead><tbody><tr><td>${toPercentText(userTable11.percent)}</td><td>${formatCellNumber(userTable11.rake)}</td><td>${formatCellNumber(userTable11.buyIn)}</td><td>${formatCellNumber(userTable11.rebuyAddOn)}</td><td>${formatCellNumber(userTable11.pot)}</td></tr></tbody></table></div><h3>TABELA15</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>BUY-IN</th><th>PODZIAŁ</th></tr></thead><tbody><tr><td>${formatCellNumber(table15BuyIn)}</td><td>${formatCellNumber(table15Split)}</td></tr></tbody></table></div><h3>TABELA16</h3><div class="admin-table-scroll"><table class="admin-data-table tournament-pool-table16"><thead><tr>${renderTable16Header()}</tr></thead><tbody>${splitRows.map((row, idx) => renderTable16Row(row, idx)).join("") || '<tr><td colspan="8">Brak danych.</td></tr>'}</tbody></table></div>`;
           return;
         } catch (error) {
           renderSectionError("pool", error);
@@ -2967,7 +3063,7 @@ const setupUserView = (root) => {
       if (userTournamentSection === "group") {
         try {
           const { userStackValue, userRebuyStackValue, userGroupedByTable, userTotalGroupStackBase, userGroupRows, userGroupStripeClasses, userEliminatedRows, userSurvivorRowsWithValues } = buildAdvancedViewModel();
-          tournamentSection.innerHTML = `<h3>TABELA17</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>STACK GRACZA</th><th>REBUY/ADD-ON</th></tr></thead><tbody><tr><td>${formatCellNumber(userStackValue)}</td><td>${formatCellNumber(userRebuyStackValue)}</td></tr></tbody></table></div><h3>TABELA18</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr>${userGroupedByTable.map(({ table }) => `<th class="table18-dynamic-header">${esc(table.name)}</th>`).join("")}<th>ŁĄCZNY STACK</th></tr></thead><tbody><tr>${userGroupedByTable.map(({ stack }) => `<td>${formatCellNumber(stack)}</td>`).join("")}<td>${formatCellNumber(userTotalGroupStackBase)}</td></tr></tbody></table></div><h3>TABELA19</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>STÓŁ</th><th>GRACZ</th><th>ELIMINATED</th><th>STACK</th><th>REBUY/ADD-ON</th></tr></thead><tbody>${userGroupRows.map((row, idx) => `<tr class="${userGroupStripeClasses[idx]}"><td>${row.lp}</td><td>${esc(row.tableName)}</td><td>${esc(row.playerName)}</td><td>${row.eliminated ? "Tak" : "Nie"}</td><td>${formatCellNumber(row.stackAmount)}</td><td>${formatCellNumber(row.rebuyAddOnAmount)}</td></tr>`).join("") || '<tr><td colspan="6">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA19A</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>WYELIMINOWANI GRACZE</th><th>WYGRANA</th></tr></thead><tbody>${userEliminatedRows.map((row, index) => `<tr><td>${index + 1}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(toNumber(userTournamentState.group?.eliminatedWins?.[row.playerId] || "0"))}</td></tr>`).join("") || '<tr><td colspan="3">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA19B</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>STÓŁ</th><th>GRACZ</th><th>STACK</th><th>%</th></tr></thead><tbody>${userSurvivorRowsWithValues.map((row, index) => `<tr><td>${index + 1}</td><td>${esc(row.tableName)}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(row.survivorStack)}</td><td>${toPercentText(row.share)}</td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div>`;
+          dataMount.innerHTML = `<h3>TABELA17</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>STACK GRACZA</th><th>REBUY/ADD-ON</th></tr></thead><tbody><tr><td>${formatCellNumber(userStackValue)}</td><td>${formatCellNumber(userRebuyStackValue)}</td></tr></tbody></table></div><h3>TABELA18</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr>${userGroupedByTable.map(({ table }) => `<th class="table18-dynamic-header">${esc(table.name)}</th>`).join("")}<th>ŁĄCZNY STACK</th></tr></thead><tbody><tr>${userGroupedByTable.map(({ stack }) => `<td>${formatCellNumber(stack)}</td>`).join("")}<td>${formatCellNumber(userTotalGroupStackBase)}</td></tr></tbody></table></div><h3>TABELA19</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>STÓŁ</th><th>GRACZ</th><th>ELIMINATED</th><th>STACK</th><th>REBUY/ADD-ON</th></tr></thead><tbody>${userGroupRows.map((row, idx) => `<tr class="${userGroupStripeClasses[idx]}"><td>${row.lp}</td><td>${esc(row.tableName)}</td><td>${esc(row.playerName)}</td><td>${row.eliminated ? "Tak" : "Nie"}</td><td>${formatCellNumber(row.stackAmount)}</td><td>${formatCellNumber(row.rebuyAddOnAmount)}</td></tr>`).join("") || '<tr><td colspan="6">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA19A</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>WYELIMINOWANI GRACZE</th><th>WYGRANA</th></tr></thead><tbody>${userEliminatedRows.map((row, index) => `<tr><td>${index + 1}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(toNumber(userTournamentState.group?.eliminatedWins?.[row.playerId] || "0"))}</td></tr>`).join("") || '<tr><td colspan="3">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA19B</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>STÓŁ</th><th>GRACZ</th><th>STACK</th><th>%</th></tr></thead><tbody>${userSurvivorRowsWithValues.map((row, index) => `<tr><td>${index + 1}</td><td>${esc(row.tableName)}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(row.survivorStack)}</td><td>${toPercentText(row.share)}</td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div>`;
           return;
         } catch (error) {
           renderSectionError("group", error);
@@ -2986,7 +3082,7 @@ const setupUserView = (root) => {
               const finalShare = userTotalGroupStackBase > 0 ? row.finalStack / userTotalGroupStackBase : 0;
               return `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(row.finalStack)}</td><td>${esc(row.semiTableName)}</td><td>${toPercentText(finalShare)}</td></tr>`;
             }).join("");
-          tournamentSection.innerHTML = `<h3>TABELA21</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>STÓŁ</th></tr></thead><tbody>${userSemiRowsAll.map((row, idx) => `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(row.semiStack)}</td><td>${toPercentText(row.semiShare)}</td><td>${esc(row.semiTableName || "-")}</td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA22</h3><div class="semi-tables">${userCustomTables || "<p>Brak stołów półfinałowych.</p>"}</div><h3>TABELA22A</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th></tr></thead><tbody>${userSemiEliminatedRows.map((row, index) => `<tr><td>${index + 1}</td><td>${esc(row.playerName)}</td></tr>`).join("") || '<tr><td colspan="2">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA FINAŁOWA</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>STÓŁ</th><th>%</th></tr></thead><tbody>${userSemiFinalRows || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div>`;
+          dataMount.innerHTML = `<h3>TABELA21</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>STÓŁ</th></tr></thead><tbody>${userSemiRowsAll.map((row, idx) => `<tr><td>${idx + 1}</td><td>${esc(row.playerName)}</td><td>${formatCellNumber(row.semiStack)}</td><td>${toPercentText(row.semiShare)}</td><td>${esc(row.semiTableName || "-")}</td></tr>`).join("") || '<tr><td colspan="5">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA22</h3><div class="semi-tables">${userCustomTables || "<p>Brak stołów półfinałowych.</p>"}</div><h3>TABELA22A</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th></tr></thead><tbody>${userSemiEliminatedRows.map((row, index) => `<tr><td>${index + 1}</td><td>${esc(row.playerName)}</td></tr>`).join("") || '<tr><td colspan="2">Brak danych.</td></tr>'}</tbody></table></div><h3>TABELA FINAŁOWA</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>STÓŁ</th><th>%</th></tr></thead><tbody>${userSemiFinalRows || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div>`;
           return;
         } catch (error) {
           renderSectionError("semi", error);
@@ -2997,7 +3093,7 @@ const setupUserView = (root) => {
       if (userTournamentSection === "final") {
         try {
           const { userSortedFinalPlayers, userTotalGroupStackBase, userFinalEliminatedRows } = buildAdvancedViewModel();
-          tournamentSection.innerHTML = `<h3>TABELA23</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>ELIMINATED</th></tr></thead><tbody>${userSortedFinalPlayers.map((player, i) => { const finalShare = userTotalGroupStackBase > 0 ? toDigitsNumber(player.stack) / userTotalGroupStackBase : 0; return `<tr><td>${i + 1}</td><td>${esc(player.name || "-")}</td><td>${formatCellNumber(toDigitsNumber(player.stack))}</td><td>${toPercentText(finalShare)}</td><td>${player.eliminated ? "Tak" : "Nie"}</td></tr>`; }).join("") || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div><h3>TABELA23A</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th></tr></thead><tbody>${userFinalEliminatedRows.map((row, index) => `<tr><td>${index + 1}</td><td>${esc(row.playerName)}</td></tr>`).join("") || '<tr><td colspan="2">Brak danych.</td></tr>'}</tbody></table></div>`;
+          dataMount.innerHTML = `<h3>TABELA23</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th><th>STACK</th><th>%</th><th>ELIMINATED</th></tr></thead><tbody>${userSortedFinalPlayers.map((player, i) => { const finalShare = userTotalGroupStackBase > 0 ? toDigitsNumber(player.stack) / userTotalGroupStackBase : 0; return `<tr><td>${i + 1}</td><td>${esc(player.name || "-")}</td><td>${formatCellNumber(toDigitsNumber(player.stack))}</td><td>${toPercentText(finalShare)}</td><td>${player.eliminated ? "Tak" : "Nie"}</td></tr>`; }).join("") || '<tr><td colspan="5">Brak graczy.</td></tr>'}</tbody></table></div><h3>TABELA23A</h3><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>LP</th><th>GRACZ</th></tr></thead><tbody>${userFinalEliminatedRows.map((row, index) => `<tr><td>${index + 1}</td><td>${esc(row.playerName)}</td></tr>`).join("") || '<tr><td colspan="2">Brak danych.</td></tr>'}</tbody></table></div>`;
           return;
         } catch (error) {
           renderSectionError("final", error);
@@ -3073,7 +3169,7 @@ const setupUserView = (root) => {
             payoutDefaults
           });
           const payoutRows = payoutRowsState.map((player) => `<tr><td>${player.place}</td><td>${player.playerName || "-"}</td>${showInitial ? `<td>${formatCellNumber(toNumber(player.initialWin))}</td>` : ""}${showFinal ? `<td>${formatCellNumber(toNumber(player.finalWin))}</td>` : ""}</tr>`).join("");
-          tournamentSection.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Miejsce</th><th>Gracz</th>${showInitial ? "<th>Początkowa wygrana</th>" : ""}${showFinal ? "<th>Końcowa wygrana</th>" : ""}</tr></thead><tbody>${payoutRows || `<tr><td colspan="${2 + Number(showInitial) + Number(showFinal)}">Brak danych.</td></tr>`}</tbody></table></div>`;
+          dataMount.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Miejsce</th><th>Gracz</th>${showInitial ? "<th>Początkowa wygrana</th>" : ""}${showFinal ? "<th>Końcowa wygrana</th>" : ""}</tr></thead><tbody>${payoutRows || `<tr><td colspan="${2 + Number(showInitial) + Number(showFinal)}">Brak danych.</td></tr>`}</tbody></table></div>`;
           return;
         } catch (error) {
           renderSectionError("payouts", error);
@@ -3081,7 +3177,7 @@ const setupUserView = (root) => {
         }
       }
 
-      tournamentSection.innerHTML = '<p class="builder-info">Dane tej sekcji są zapisywane do Firebase i dostępne w panelu administratora.</p>';
+      dataMount.innerHTML = '<p class="builder-info">Dane tej sekcji są zapisywane do Firebase i dostępne w panelu administratora.</p>';
     } catch (error) {
       const diagnostics = {
         section: userTournamentSection,
@@ -3097,7 +3193,7 @@ const setupUserView = (root) => {
         ...diagnostics,
         error
       });
-      tournamentSection.innerHTML = `<p class="builder-info">Nie udało się wyrenderować sekcji „${esc(userTournamentSection)}” (etap: global). Sprawdź dane turniejowe i spróbuj odświeżyć.</p><p class="builder-info">Szczegóły: ${esc(`${diagnostics.errorName}: ${diagnostics.errorMessage}`)}</p>`;
+      dataMount.innerHTML = `<p class="builder-info">Nie udało się wyrenderować sekcji „${esc(userTournamentSection)}” (etap: global). Sprawdź dane turniejowe i spróbuj odświeżyć.</p><p class="builder-info">Szczegóły: ${esc(`${diagnostics.errorName}: ${diagnostics.errorMessage}`)}</p>`;
     }
   };
 
@@ -3107,35 +3203,7 @@ const setupUserView = (root) => {
         return;
       }
       const requestedSection = button.dataset.tournamentTarget || "players";
-      const previousSection = userTournamentSection;
-      const allowedTargets = renderTournamentButtonsForPlayer();
-      if (!isUserTournamentLoaded) {
-        logUserTournamentTransition("section_click_blocked_loading", {
-          requestedSection,
-          previousSection,
-          allowedTargets
-        });
-        if (userTournamentStatus) {
-          userTournamentStatus.textContent = "Trwa ładowanie danych turnieju...";
-        }
-        return;
-      }
-      if (allowedTargets.length && !allowedTargets.includes(requestedSection)) {
-        logUserTournamentTransition("section_click_blocked_permissions", {
-          requestedSection,
-          previousSection,
-          allowedTargets
-        });
-        return;
-      }
-      userTournamentSection = requestedSection;
-      logUserTournamentTransition("section_click", {
-        requestedSection,
-        previousSection,
-        finalSection: userTournamentSection,
-        allowedTargets
-      });
-      renderUserTournament();
+      navigateToUserTournamentSection(requestedSection, "sidebar_click");
     });
   });
 
@@ -3183,6 +3251,7 @@ const setupUserView = (root) => {
     if (!matchedPlayer) {
       setSecondUserPinGateState(false);
       setSecondUserVerifiedPlayerId("");
+      applyUserTournamentSession(null);
       if (userPinStatus) {
         userPinStatus.textContent = "Błędny PIN.";
       }
@@ -3193,6 +3262,7 @@ const setupUserView = (root) => {
 
     setSecondUserPinGateState(true);
     setSecondUserVerifiedPlayerId(matchedPlayer.id);
+    applyUserTournamentSession(matchedPlayer);
     tryAutoAuthorizeChatFromUserPin();
     if (userPinStatus) {
       userPinStatus.textContent = `PIN poprawny. Witaj ${matchedPlayer.name || "graczu"}.`;
@@ -3416,9 +3486,12 @@ const setupUserView = (root) => {
       if (!verifiedUserPlayer) {
         setSecondUserPinGateState(false);
         setSecondUserVerifiedPlayerId("");
+        applyUserTournamentSession(null);
         if (userPinStatus) {
           userPinStatus.textContent = "Wpisz PIN gracza, aby odblokować dodatkowe zakładki.";
         }
+      } else {
+        applyUserTournamentSession(verifiedUserPlayer, { preserveSection: true });
       }
       const verifiedPlayer = getVerifiedChatPlayer();
       if (!verifiedPlayer || !isSecondPlayerAllowedForChat(verifiedPlayer)) {
@@ -3439,7 +3512,9 @@ const setupUserView = (root) => {
     },
     () => {
       if (tournamentSection) {
-        tournamentSection.innerHTML = '<p class="builder-info">Nie udało się pobrać danych turnieju z Firebase.</p>';
+        const mount = tournamentDataMount || tournamentSection;
+        syncTournamentMountVisibility("players");
+        mount.innerHTML = '<p class="builder-info">Nie udało się pobrać danych turnieju z Firebase.</p>';
       }
     }
   );
