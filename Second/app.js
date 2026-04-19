@@ -1898,7 +1898,7 @@ const setupAdminTournament = (rootCard) => {
         };
       });
 
-      const userRebuySum = rebuyMatrix.flat().reduce((sum, value) => sum + toNumber(value), 0);
+      const userRebuySum = rebuyMatrix.reduce((sum, rowValues) => sum + rowValues.reduce((rowSum, value) => rowSum + toNumber(value), 0), 0);
       const undistributedRemainder = Math.max(0, overflow - Math.max(0, userRebuySum - distributed.reduce((sum, value) => sum + value, 0)));
       const modColumns = rebuyColumns > 20 ? ["mod1", "mod2", "mod3"] : rebuyColumns > 12 ? ["mod1", "mod2"] : ["mod1"];
       const renderModInput = (row, modKey) => `<td><input class="admin-input" data-role="pool-mod" data-mod-key="${modKey}" data-id="${row.id}" type="tel" inputmode="numeric" pattern="[0-9]*" value="${esc(row[modKey] || "")}"></td>`;

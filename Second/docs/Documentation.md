@@ -245,6 +245,7 @@
 - `Tabela16` używa klasy `.tournament-pool-table16`, która wymusza stałą szerokość kolumn i pól wejściowych pod 4 znaki.
 - Kolumny `MOD` są dynamiczne względem liczby kolumn `REBUY`: dla `0..12` widoczne jest `MOD1`, dla `13..20` widoczne są `MOD1` i `MOD2`, a dla `>20` widoczne są `MOD1`, `MOD2`, `MOD3`.
 - `SUMA` = `KWOTA + suma REBUY w wierszu + MOD1 + MOD2 + MOD3` (z uwzględnieniem widocznych kolumn MOD).
+- Obliczanie sumy wszystkich komórek `REBUY` używa zagnieżdżonego `reduce` (bez `Array.prototype.flat`), co utrzymuje zgodność renderu sekcji `Podział puli` ze starszymi środowiskami WebView/przeglądarkami.
 
 ### Faza grupowa
 - `group` przechowuje dodatkowo `eliminatedOrder`, `eliminatedWins` oraz `survivorStacks`, które zasilają odpowiednio ranking `Tabela19A` i dane `Tabela19B`.

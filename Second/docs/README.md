@@ -208,6 +208,7 @@
    - komórki `REBUY` pokazują wartości wpisane w modalach `Rebuy gracza` i nie są nadpisywane przez wartości z `PODZIAŁ PULI`,
    - kolumny `MOD` są dynamiczne: dla `0..12` rebuy jest `MOD1` przed `SUMA`, dla `13..20` dochodzi `MOD2`, a powyżej 20 dochodzi `MOD3`,
    - kolumna `SUMA` liczy się automatycznie,
+   - sumowanie wartości REBUY działa przez zagnieżdżone `reduce`, co utrzymuje poprawne renderowanie także w starszych WebView/przeglądarkach bez `Array.prototype.flat`.
    - wszystkie pola edycyjne w `Tabela16` mają szerokość ustawioną tak, żeby mieściły 4 znaki.
 
 ### Faza grupowa
