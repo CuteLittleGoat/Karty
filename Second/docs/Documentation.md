@@ -162,6 +162,8 @@
 - Stan tej weryfikacji jest przechowywany w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`), więc użytkownik wpisuje PIN tylko raz do resetu lub odświeżenia strony.
 - Po wejściu do `TOURNAMENT OF POKER` przyciski `data-tournament-target` są filtrowane per gracz; bez odpowiednich uprawnień nie renderują się przyciski nawigacji do paneli.
 - Użytkownik może przełączać dostępne sekcje przez przyciski `data-tournament-target`.
+- Kliknięcie przycisku sekcji jest blokowane do czasu `isUserTournamentLoaded === true`; podczas ładowania użytkownik dostaje komunikat `Trwa ładowanie danych turnieju...`, co eliminuje stan pośredni po odświeżeniu strony.
+- Przy każdym kliknięciu sekcji i każdym starcie renderu zapisywany jest log diagnostyczny `console.info("[Second][UserTournament]")` z polami `requestedSection`, `previousSection`, `finalSection`, `allowedTargets`, `isUserTournamentLoaded`, `isUserPinGateOpen`, `verifiedUserId` i timestampem.
 - Każda sekcja użytkownika (`payments`, `pool`, `group`, `semi`, `final`, `payouts`) renderuje się w osobnym bloku `try/catch`, więc wyjątek w jednej sekcji nie blokuje pozostałych sekcji.
 - Log błędu użytkownika zawiera teraz komplet diagnostyczny: `section`, `stage`, `errorName`, `errorMessage`, `playersCount`, `tablesCount`, `poolModsCount`, `semiCustomTablesCount`, co pozwala szybciej ustalić czy problem dotyczy danych wejściowych czy konkretnego etapu obliczeń.
 - Przed obliczeniami sekcji read-only stosowana jest defensywna normalizacja rekordów (`players`, `tables`, `assignments`, `table12Rebuys`, `semi.customTables`, `pool.mods`) na poziomie view-modeli (`buildUserBaseViewModel`, `buildAdvancedViewModel`), a agregacja wartości `table12Rebuys` działa przez `reduce` (bez `flatMap`) dla zgodności ze starszymi środowiskami WebView/przeglądarek.
@@ -173,6 +175,8 @@
   - `payments`: read-only `Tabela10`, `Tabela11`, `Tabela12` (układ i semantyka zgodna z panelem admina, bez akcji edycyjnych),
   - `payouts`: tabela miejsc i wygranych zależna od flag `payouts.showInitial` / `payouts.showFinal`.
 - `chatTab` pozostaje jedyną sekcją z możliwością wpisywania danych po stronie użytkownika.
+- Po wyjściu z `chatTab` wykonywany jest twardy reset referencji runtime czatu (`chatInput`, `chatSendButton`, `chatMessages`, statusy PIN), dzięki czemu kolejne sekcje zawsze renderują własny DOM i nie dziedziczą aktywnego formularza czatu.
+- Render sekcji posiada token wersji (`userTournamentRenderToken`): gdy pojawi się opóźniony render z wcześniejszego stanu, jest przerywany jako „stale token”, co chroni przed asynchronicznym nadpisaniem widoku.
 - W sidebarze `TOURNAMENT OF POKER` przycisk `Czat` jest renderowany jako ostatni przycisk na liście.
 
 ### Ręczne odświeżanie

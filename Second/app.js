@@ -2420,6 +2420,29 @@ const setupUserView = (root) => {
   let userTournamentState = createTournamentDefaultState();
   let userTournamentSection = "players";
   let isUserTournamentLoaded = false;
+  let userTournamentRenderToken = 0;
+
+  const logUserTournamentTransition = (eventName, details = {}) => {
+    console.info("[Second][UserTournament]", {
+      event: eventName,
+      timestamp: new Date().toISOString(),
+      previousSection: userTournamentSection,
+      isUserTournamentLoaded,
+      isUserPinGateOpen: getSecondUserPinGateState(),
+      verifiedUserId: getSecondUserVerifiedPlayerId(),
+      ...details
+    });
+  };
+
+  const resetUserTournamentChatRuntime = () => {
+    chatMessages = null;
+    chatInput = null;
+    chatSendButton = null;
+    chatStatus = null;
+    chatPinInput = null;
+    chatPinOpenButton = null;
+    chatPinStatus = null;
+  };
 
   if (userPinOpenButton) {
     userPinOpenButton.disabled = true;
@@ -2611,12 +2634,22 @@ const setupUserView = (root) => {
       return;
     }
 
+    const renderToken = ++userTournamentRenderToken;
+
     if (!isUserTournamentLoaded) {
       tournamentSection.innerHTML = '<p class="builder-info">Trwa ładowanie danych turnieju...</p>';
+      logUserTournamentTransition("render_waiting_for_snapshot", {
+        renderToken
+      });
       return;
     }
 
     const allowedTargets = renderTournamentButtonsForPlayer();
+    logUserTournamentTransition("render_start", {
+      renderToken,
+      requestedSection: userTournamentSection,
+      allowedTargets
+    });
     if (!allowedTargets.length) {
       tournamentSection.innerHTML = '<p class="builder-info">Brak dostępnych paneli Tournament of Poker dla tego PIN-u.</p>';
       return;
@@ -2630,6 +2663,17 @@ const setupUserView = (root) => {
         updateSecondChatVisibility();
         return;
       }
+
+      if (renderToken !== userTournamentRenderToken) {
+        logUserTournamentTransition("render_abort_stale_token", {
+          renderToken,
+          latestToken: userTournamentRenderToken,
+          finalSection: userTournamentSection
+        });
+        return;
+      }
+
+      resetUserTournamentChatRuntime();
 
       if (userTournamentSection === "players") {
         tournamentSection.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table players-table"><thead><tr><th>Status</th><th>Gracz</th><th>PIN</th><th>Uprawnienia</th></tr></thead><tbody>${userTournamentState.players.map((player) => `<tr><td>${player.status ? "Aktywny" : "Nieaktywny"}</td><td>${player.name || "-"}</td><td>${digitsOnly(player.pin).slice(0, 5) || "-"}</td><td>${normalizeTournamentPermissions(player.permissions).join(", ") || "-"}</td></tr>`).join("") || '<tr><td colspan="4">Brak graczy.</td></tr>'}</tbody></table></div>`;
@@ -3062,7 +3106,35 @@ const setupUserView = (root) => {
       if (button.style.display === "none") {
         return;
       }
-      userTournamentSection = button.dataset.tournamentTarget || "players";
+      const requestedSection = button.dataset.tournamentTarget || "players";
+      const previousSection = userTournamentSection;
+      const allowedTargets = renderTournamentButtonsForPlayer();
+      if (!isUserTournamentLoaded) {
+        logUserTournamentTransition("section_click_blocked_loading", {
+          requestedSection,
+          previousSection,
+          allowedTargets
+        });
+        if (userTournamentStatus) {
+          userTournamentStatus.textContent = "Trwa ładowanie danych turnieju...";
+        }
+        return;
+      }
+      if (allowedTargets.length && !allowedTargets.includes(requestedSection)) {
+        logUserTournamentTransition("section_click_blocked_permissions", {
+          requestedSection,
+          previousSection,
+          allowedTargets
+        });
+        return;
+      }
+      userTournamentSection = requestedSection;
+      logUserTournamentTransition("section_click", {
+        requestedSection,
+        previousSection,
+        finalSection: userTournamentSection,
+        allowedTargets
+      });
       renderUserTournament();
     });
   });
@@ -3358,6 +3430,11 @@ const setupUserView = (root) => {
       }
       updateProtectedTabsVisibility();
       updateSecondChatVisibility();
+      logUserTournamentTransition("snapshot_applied", {
+        requestedSection: userTournamentSection,
+        playersCount: Array.isArray(userTournamentState.players) ? userTournamentState.players.length : 0,
+        tablesCount: Array.isArray(userTournamentState.tables) ? userTournamentState.tables.length : 0
+      });
       renderUserTournament();
     },
     () => {

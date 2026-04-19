@@ -515,3 +515,54 @@ Cel: użytkownik nie powinien uruchamiać mieszanki starego i nowego kodu po wdr
 
 ### Podsumowanie
 Nowy incydent sugeruje regresję w mechanice przełączania sekcji po wejściu do czatu oraz możliwy konflikt stanu trwałego (zapamiętany PIN) ze stanem runtime po odświeżeniu. Najbezpieczniejsza ścieżka to: instrumentacja klik/render, twardy unmount czatu przy opuszczaniu `chatTab`, ochrona przed asynchronicznym nadpisaniem renderu oraz cache-busting po deployu.
+
+---
+
+## Wdrożenie zmian (2026-04-19, naprawa regresji „sticky chat” + stabilizacja przełączania sekcji)
+
+### Prompt użytkownika
+Przeczytaj analizę `Analizy/Analiza_Second_blad_renderowania_sekcji_i_podwojny_PIN_czat_2026-04-17.md` i wprowadź rekomendowane rozwiązanie.
+
+### Zmiany — plik `Second/app.js`
+
+Plik `Second/app.js`  
+Linia (sekcja stanu user-view)  
+Było: brak dedykowanej instrumentacji przełączania sekcji Tournament po stronie użytkownika.  
+Jest: dodane `logUserTournamentTransition(...)` logujące `requestedSection`, `previousSection`, `finalSection`, `allowedTargets`, `isUserTournamentLoaded`, `isUserPinGateOpen`, `verifiedUserId` i timestamp.
+
+Plik `Second/app.js`  
+Linia (sekcja renderu Tournament user-view)  
+Było: po wejściu w `chatTab` kolejne renderowanie innych sekcji mogło dziedziczyć aktywne referencje runtime czatu.  
+Jest: dodany `resetUserTournamentChatRuntime()` wykonywany przy renderze sekcji innych niż `chatTab` (`chatMessages`, `chatInput`, `chatSendButton`, `chatStatus`, `chatPinInput`, `chatPinOpenButton`, `chatPinStatus` ustawiane na `null`).
+
+Plik `Second/app.js`  
+Linia (sekcja renderu Tournament user-view)  
+Było: brak ochrony przed opóźnionym/starym renderem, który mógł nadpisać nowo wybraną sekcję.  
+Jest: dodany licznik `userTournamentRenderToken`; każdy render dostaje własny token i jest przerywany, jeśli token jest już nieaktualny (`render_abort_stale_token`).
+
+Plik `Second/app.js`  
+Linia (obsługa kliknięcia sidebaru Tournament)  
+Było: kliknięcie sekcji zawsze ustawiało `userTournamentSection` i uruchamiało render, nawet w stanie ładowania snapshotu.  
+Jest: kliknięcie sekcji jest blokowane, gdy `isUserTournamentLoaded === false` (status: `Trwa ładowanie danych turnieju...`), z osobnym logiem `section_click_blocked_loading`; dodatkowo dodana walidacja uprawnień sekcji (`section_click_blocked_permissions`).
+
+Plik `Second/app.js`  
+Linia (snapshot `second_tournament/state`)  
+Było: snapshot tylko aktualizował stan i renderował sekcję.  
+Jest: snapshot dodatkowo loguje zdarzenie `snapshot_applied` z licznikami struktur (`playersCount`, `tablesCount`) i aktywną sekcją.
+
+### Zmiany — plik `Second/index.html`
+
+Plik `Second/index.html`  
+Linia 267  
+Było: `<script src="app.js" type="module"></script>`  
+Jest: `<script src="app.js?v=2026-04-19-1" type="module"></script>`
+
+### Zmiany dokumentacyjne po wdrożeniu
+
+Plik `Second/docs/Documentation.md`  
+Było: dokumentacja opisywała izolację per sekcja i diagnostykę błędów renderu, ale bez opisu blokady kliknięcia w stanie ładowania, tokenu renderu i resetu runtime czatu.  
+Jest: dopisany opis blokady kliknięć do czasu pełnego snapshotu, logów przejść sekcji (`[Second][UserTournament]`), tokenu renderu oraz twardego resetu referencji czatu po wyjściu z `chatTab`.
+
+Plik `Second/docs/README.md`  
+Było: instrukcja opisywała niezależność renderu sekcji i komunikaty błędów, ale bez jawnych wskazówek dotyczących zachowania po wyjściu z `Czat` i podczas ładowania snapshotu.  
+Jest: dopisane punkty `10d-10f` o blokadzie przełączania podczas ładowania, odmontowaniu formularza czatu poza `Czat` oraz logach diagnostycznych dla incydentu „sticky chat”.
