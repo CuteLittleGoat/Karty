@@ -227,3 +227,41 @@ Linia 152
 Linia 158
 - Było: dokumentacja nie opisywała generatora kopii `r*`.
 - Jest: dodany opis techniczny `buildTournamentReadonlyCopies`, zapisu `readonlyTables` i twardej zasady „user czyta tylko `rTournamentState`”.
+
+---
+
+## Zrealizowane zmiany po zgłoszeniu błędu renderu zakładek (2026-04-19)
+
+### Prompt użytkownika
+Po wprowadzeniu zmian opisanych w `Analizy/Analiza_Second_kopie_tabel_readonly_rPrefiks_2026-04-19.md` pojawia się komunikat:
+`Brak kopii readonly (r*). Poproś administratora o zapis danych turnieju.`
+
+Po przełączeniu na `Czat` dane czatu są widoczne, ale po przejściu na inne zakładki dalej zostaje widok czatu.
+Dodatkowo w widoku admina zakładka `Podział puli` potrafi pokazywać poprzednią zakładkę zamiast własnej.
+
+### Plik `Second/app.js`
+Linia 2806
+- Było: walidacja `readonlyTables.rTournamentState` wykonywała się przed `syncTournamentMountVisibility(userTournamentSection)`.
+- Jest: `syncTournamentMountVisibility(userTournamentSection)` wykonuje się od razu po wyjściu z gałęzi `chatTab`, jeszcze przed walidacją `readonlyTables.rTournamentState`.
+
+Linia 1638
+- Było: `render()` admina nie miał globalnego `try/catch`, więc wyjątek w trakcie renderu mógł zostawić na ekranie poprzednią sekcję.
+- Jest: cały `render()` admina jest osłonięty `try/catch`; w `catch` renderowany jest komunikat błędu sekcji z nazwą `activeSection` i szczegółem błędu.
+
+### Plik `Second/docs/README.md`
+Linia 159
+- Było: komunikat o braku kopii `r*` nie precyzował zachowania przy przełączeniu z `Czat`.
+- Jest: dopisano, że przy braku kopii `r*` widok poprawnie przełącza się z `Czat` na panel danych i nie pozostaje na czacie.
+
+Linia 95
+- Było: sekcja `Podział puli` nie opisywała zachowania przy błędzie renderu.
+- Jest: dopisano, że przy niespójnych danych pokazywany jest komunikat błędu zamiast pozostawienia poprzedniej zakładki.
+
+### Plik `Second/docs/Documentation.md`
+Linia 184
+- Było: brak informacji o kolejności przełączania mountów względem walidacji `readonlyTables.rTournamentState`.
+- Jest: dopisano, że mount przełączany jest przed walidacją `readonlyTables`, co eliminuje efekt „sticky chat”.
+
+Linia 185
+- Było: brak informacji o globalnej osłonie renderu admina.
+- Jest: dopisano, że render admina sekcji turniejowych działa w `try/catch`, a przy wyjątku pokazuje komunikat błędu zamiast poprzedniego widoku.

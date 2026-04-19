@@ -1635,8 +1635,9 @@ const setupAdminTournament = (rootCard) => {
   };
 
   const render = () => {
-    const focusState = getTournamentEditableFocusState(container);
-    const groupedDrawRows = buildGroupedRows(tournamentState.assignments);
+    try {
+      const focusState = getTournamentEditableFocusState(container);
+      const groupedDrawRows = buildGroupedRows(tournamentState.assignments);
 
     const buyInValue = toDigitsNumber(tournamentState.buyIn);
     const drawTotalsByTable = {};
@@ -2080,7 +2081,11 @@ const setupAdminTournament = (rootCard) => {
       return;
     }
 
-    mount.innerHTML = '<p class="builder-info">Brak widoku dla wybranej sekcji.</p>';
+      mount.innerHTML = '<p class="builder-info">Brak widoku dla wybranej sekcji.</p>';
+    } catch (error) {
+      console.error("Błąd renderowania sekcji admina turnieju:", { activeSection, error });
+      mount.innerHTML = `<p class="builder-info">Nie udało się wyrenderować sekcji „${esc(activeSection)}”.</p><p class="builder-info">Szczegóły: ${esc(error?.message || "Brak szczegółów błędu.")}</p>`;
+    }
   };
 
   container.addEventListener("input", async (event) => {
@@ -2803,14 +2808,14 @@ const setupUserView = (root) => {
         return;
       }
 
+      syncTournamentMountVisibility(userTournamentSection);
+
       const readonlyTournamentStateRaw = userTournamentState.readonlyTables?.rTournamentState;
       if (!readonlyTournamentStateRaw || typeof readonlyTournamentStateRaw !== "object") {
         dataMount.innerHTML = '<p class="builder-info">Brak kopii readonly (r*). Poproś administratora o zapis danych turnieju.</p>';
         return;
       }
       const readonlyTournamentState = normalizeTournamentState(readonlyTournamentStateRaw);
-
-      syncTournamentMountVisibility(userTournamentSection);
       if (renderToken !== userTournamentRenderToken) {
         logUserTournamentTransition("render_abort_stale_token", {
           renderToken,

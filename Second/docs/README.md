@@ -69,6 +69,7 @@
 
 ### Podział puli
 - **Tabela13**, **Tabela14**, **Tabela15**, **Tabela16**.
+- Jeśli dane sekcji `Podział puli` są chwilowo niespójne, panel pokaże czytelny komunikat błędu zamiast pozostawienia poprzedniej zakładki na ekranie.
 - Przyciskami **Dodaj** i **Usuń** pod `Tabela16` zarządzasz liczbą wierszy podziału puli.
 - Przycisk **Dodaj** jest krótki i wyrównany do lewej, spójnie z pozostałymi przyciskami dodawania.
 
@@ -150,7 +151,7 @@
 9. Jeżeli administrator nie nadał żadnego uprawnienia turniejowego, panel boczny nie pokaże przycisków nawigacji i pojawi się komunikat informacyjny.
 9a. Po poprawnym PIN aplikacja buduje sesję gracza (lista dozwolonych sekcji + uprawnienie Czat) i automatycznie otwiera pierwszą dozwoloną sekcję danych; poprzednia sekcja z wcześniejszej sesji nie jest używana.
 9b. Dane turniejowe użytkownika są czytane wyłącznie z kopii readonly `r*` zapisanych przez administratora.
-9c. Jeśli kopie `r*` nie są jeszcze dostępne, w sekcji danych pojawi się komunikat o konieczności zapisu przez administratora.
+9c. Jeśli kopie `r*` nie są jeszcze dostępne, w sekcji danych pojawi się komunikat o konieczności zapisu przez administratora, ale widok poprawnie przełączy się z `Czat` na panel danych (bez efektu „zawieszenia” na czacie).
 10. Dane w dostępnych sekcjach są pobierane automatycznie z dokumentu Firebase `second_tournament/state` i odświeżają się na żywo po zmianach wykonanych przez administratora.
 10a. Po kliknięciu dowolnego przycisku w lewym sidebarze zawartość wybranej sekcji pojawia się od razu w dużym panelu po prawej.
 10b. Gdyby wystąpił błąd renderowania konkretnej sekcji (np. nietypowy format danych), aplikacja pokaże komunikat z nazwą sekcji, etapem i krótkim szczegółem błędu (np. `Nie udało się wyrenderować sekcji „pool” (etap: pool)... Szczegóły: TypeError ...`) zamiast pozostawienia poprzedniego widoku.
