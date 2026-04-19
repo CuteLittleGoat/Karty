@@ -148,12 +148,13 @@
 7. Kliknij zakładkę **TOURNAMENT OF POKER**.
 8. W lewym panelu zobaczysz tylko te przyciski sekcji, do których administrator nadał uprawnienia dla tego gracza; bez żadnego uprawnienia sidebar pozostanie pusty.
 9. Jeżeli administrator nie nadał żadnego uprawnienia turniejowego, panel boczny nie pokaże przycisków nawigacji i pojawi się komunikat informacyjny.
+9a. Po poprawnym PIN aplikacja buduje sesję gracza (lista dozwolonych sekcji + uprawnienie Czat) i automatycznie otwiera pierwszą dozwoloną sekcję danych; poprzednia sekcja z wcześniejszej sesji nie jest używana.
 10. Dane w dostępnych sekcjach są pobierane automatycznie z dokumentu Firebase `second_tournament/state` i odświeżają się na żywo po zmianach wykonanych przez administratora.
 10a. Po kliknięciu dowolnego przycisku w lewym sidebarze zawartość wybranej sekcji pojawia się od razu w dużym panelu po prawej.
 10b. Gdyby wystąpił błąd renderowania konkretnej sekcji (np. nietypowy format danych), aplikacja pokaże komunikat z nazwą sekcji, etapem i krótkim szczegółem błędu (np. `Nie udało się wyrenderować sekcji „pool” (etap: pool)... Szczegóły: TypeError ...`) zamiast pozostawienia poprzedniego widoku.
 10c. Każda sekcja turniejowa renderuje się niezależnie: awaria danych w jednej zakładce nie blokuje pozostałych zakładek (np. błąd w `Półfinał` nie zatrzymuje `Wpłaty`).
 10d. Gdy klikniesz sekcję zanim zakończy się pierwszy odczyt turnieju z Firebase, aplikacja nie przełączy jeszcze widoku i pokaże status `Trwa ładowanie danych turnieju...`; po snapshotcie kliknięcia działają normalnie.
-10e. Po przejściu z `Czat` do innej sekcji formularz wiadomości jest zawsze odmontowywany; nie da się pisać wiadomości poza zakładką `Czat`.
+10e. `Czat` i sekcje turniejowe mają osobne obszary renderu; po przejściu z `Czat` do innej sekcji formularz wiadomości jest odmontowywany, a przejścia nie „zawieszają” widoku na czacie.
 10f. W konsoli przeglądarki dostępny jest log `"[Second][UserTournament]"` (kliknięcie, render, snapshot), który pokazuje docelową sekcję i ułatwia diagnostykę „sticky chat”.
 11. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
 12. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.

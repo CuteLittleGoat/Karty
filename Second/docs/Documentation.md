@@ -162,6 +162,8 @@
 - Stan tej weryfikacji jest przechowywany w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`), więc użytkownik wpisuje PIN tylko raz do resetu lub odświeżenia strony.
 - Po wejściu do `TOURNAMENT OF POKER` przyciski `data-tournament-target` są filtrowane per gracz; bez odpowiednich uprawnień nie renderują się przyciski nawigacji do paneli.
 - Użytkownik może przełączać dostępne sekcje przez przyciski `data-tournament-target`.
+- Po poprawnym PIN tworzony jest jawny kontrakt sesji użytkownika (`userTournamentSession`): `playerId`, `allowedSections`, `chatAllowed`, `readonly`, `isVerified`; to jedyne źródło prawdy o dostępie do sekcji.
+- Przełączanie sekcji działa przez router `navigateToUserTournamentSection(targetSection, source)`, który blokuje niedozwolone cele i nie pozwala snapshotowi Firestore samodzielnie zmieniać aktywnej zakładki.
 - Kliknięcie przycisku sekcji jest blokowane do czasu `isUserTournamentLoaded === true`; podczas ładowania użytkownik dostaje komunikat `Trwa ładowanie danych turnieju...`, co eliminuje stan pośredni po odświeżeniu strony.
 - Przy każdym kliknięciu sekcji i każdym starcie renderu zapisywany jest log diagnostyczny `console.info("[Second][UserTournament]")` z polami `requestedSection`, `previousSection`, `finalSection`, `allowedTargets`, `isUserTournamentLoaded`, `isUserPinGateOpen`, `verifiedUserId` i timestampem.
 - Każda sekcja użytkownika (`payments`, `pool`, `group`, `semi`, `final`, `payouts`) renderuje się w osobnym bloku `try/catch`, więc wyjątek w jednej sekcji nie blokuje pozostałych sekcji.
@@ -175,6 +177,7 @@
   - `payments`: read-only `Tabela10`, `Tabela11`, `Tabela12` (układ i semantyka zgodna z panelem admina, bez akcji edycyjnych),
   - `payouts`: tabela miejsc i wygranych zależna od flag `payouts.showInitial` / `payouts.showFinal`.
 - `chatTab` pozostaje jedyną sekcją z możliwością wpisywania danych po stronie użytkownika.
+- Widok ma dwa niezależne mount pointy: `#userTournamentDataMount` (sekcje readonly) i `#userTournamentChatMount` (czat). Przełączenie sekcji pokazuje tylko jeden mount, co eliminuje efekt „sticky chat”.
 - Po wyjściu z `chatTab` wykonywany jest twardy reset referencji runtime czatu (`chatInput`, `chatSendButton`, `chatMessages`, statusy PIN), dzięki czemu kolejne sekcje zawsze renderują własny DOM i nie dziedziczą aktywnego formularza czatu.
 - Render sekcji posiada token wersji (`userTournamentRenderToken`): gdy pojawi się opóźniony render z wcześniejszego stanu, jest przerywany jako „stale token”, co chroni przed asynchronicznym nadpisaniem widoku.
 - W sidebarze `TOURNAMENT OF POKER` przycisk `Czat` jest renderowany jako ostatni przycisk na liście.
