@@ -185,3 +185,45 @@ Aby to zadziałało długofalowo, kluczowe są:
 - migracja danych historycznych,
 - twarda zasada „user czyta tylko `r*`”.
 
+
+---
+
+## Zrealizowane zmiany w kodzie (2026-04-19)
+
+### Prompt użytkownika
+Przeczytaj analizy:
+- `Analizy/Analiza_Second_blad_renderowania_sekcji_i_podwojny_PIN_czat_2026-04-17.md`
+- `Analizy/Analiza_Second_brak_danych_w_zakladkach_uzytkownika_2026-04-17.md`
+
+Następnie cofnij wszystkie opisane tam zmiany i wdroż model kopii tabel readonly z prefiksem `r` dla wszystkich tabel w widoku użytkownika.
+
+### Plik `Second/app.js`
+Linia 635
+- Było: brak pola `readonlyTables` w stanie turnieju.
+- Jest: dodane `readonlyTables` z polami `generatedAt` i `rTournamentState` w `createTournamentDefaultState()`.
+
+Linia 709
+- Było: `normalizeTournamentState()` nie normalizował `readonlyTables`.
+- Jest: normalizacja `readonlyTables` + walidacja `generatedAt` i `rTournamentState`.
+
+Linia 716
+- Było: brak generatora kopii readonly.
+- Jest: nowa funkcja `buildTournamentReadonlyCopies(sourceState)` tworząca kopie `r*` (w tym `rTournamentState`) przed zapisem.
+
+Linia 1338
+- Było: `saveState()` zapisywał tylko `tournamentState`.
+- Jest: `saveState()` najpierw buduje kopie `tournamentState.readonlyTables = buildTournamentReadonlyCopies(tournamentState)` i dopiero potem zapisuje dokument.
+
+Linia 2802
+- Było: render usera czytał bezpośrednio `userTournamentState`.
+- Jest: render usera (poza `chatTab`) czyta wyłącznie `readonlyTables.rTournamentState`; przy braku kopii pokazuje komunikat o konieczności zapisu przez admina.
+
+### Plik `Second/docs/README.md`
+Linia 152
+- Było: brak opisu modelu `r*`.
+- Jest: dopisane zasady działania widoku użytkownika wyłącznie na kopiach readonly `r*`.
+
+### Plik `Second/docs/Documentation.md`
+Linia 158
+- Było: dokumentacja nie opisywała generatora kopii `r*`.
+- Jest: dodany opis techniczny `buildTournamentReadonlyCopies`, zapisu `readonlyTables` i twardej zasady „user czyta tylko `rTournamentState`”.
