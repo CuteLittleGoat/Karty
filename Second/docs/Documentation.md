@@ -155,6 +155,9 @@
 - Funkcja: `setupUserView(root)` w `Second/app.js`.
 - Dane sekcji turniejowej użytkownika są pobierane z `second_tournament/state` przez `onSnapshot`.
 - Stan lokalny użytkownika jest normalizowany przez `normalizeTournamentState`, która wymusza bezpieczne typy (`players`, `tables`, `finalPlayers` jako tablice; `assignments`, `payments`, `pool`, `group`, `semi`, `final`, `payouts` jako obiekty), dzięki czemu brakujące lub starsze pola nie psują renderu UI.
+- Przed zapisem turnieju administrator generuje pełną kopię readonly modelu tabel (`buildTournamentReadonlyCopies`) i zapisuje ją do `readonlyTables` (`rTournamentState` + klucze `r*`).
+- Widok użytkownika sekcji turniejowych (`players`, `draw`, `payments`, `pool`, `group`, `semi`, `final`, `payouts`) czyta wyłącznie `readonlyTables.rTournamentState` i nie renderuje modeli edycyjnych admina.
+- Jeżeli `readonlyTables.rTournamentState` nie istnieje, widok usera pokazuje komunikat o braku kopii readonly i nie przechodzi na źródłowe tabele admina.
 - Do czasu pierwszego snapshotu obowiązuje flaga gotowości danych (`isUserTournamentLoaded`): przycisk otwierania PIN użytkownika jest zablokowany, a UI pokazuje komunikat ładowania zamiast walidacji PIN na pustym stanie.
 
 ### Render sekcji użytkownika

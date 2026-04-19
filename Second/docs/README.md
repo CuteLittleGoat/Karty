@@ -149,6 +149,8 @@
 8. W lewym panelu zobaczysz tylko te przyciski sekcji, do których administrator nadał uprawnienia dla tego gracza; bez żadnego uprawnienia sidebar pozostanie pusty.
 9. Jeżeli administrator nie nadał żadnego uprawnienia turniejowego, panel boczny nie pokaże przycisków nawigacji i pojawi się komunikat informacyjny.
 9a. Po poprawnym PIN aplikacja buduje sesję gracza (lista dozwolonych sekcji + uprawnienie Czat) i automatycznie otwiera pierwszą dozwoloną sekcję danych; poprzednia sekcja z wcześniejszej sesji nie jest używana.
+9b. Dane turniejowe użytkownika są czytane wyłącznie z kopii readonly `r*` zapisanych przez administratora.
+9c. Jeśli kopie `r*` nie są jeszcze dostępne, w sekcji danych pojawi się komunikat o konieczności zapisu przez administratora.
 10. Dane w dostępnych sekcjach są pobierane automatycznie z dokumentu Firebase `second_tournament/state` i odświeżają się na żywo po zmianach wykonanych przez administratora.
 10a. Po kliknięciu dowolnego przycisku w lewym sidebarze zawartość wybranej sekcji pojawia się od razu w dużym panelu po prawej.
 10b. Gdyby wystąpił błąd renderowania konkretnej sekcji (np. nietypowy format danych), aplikacja pokaże komunikat z nazwą sekcji, etapem i krótkim szczegółem błędu (np. `Nie udało się wyrenderować sekcji „pool” (etap: pool)... Szczegóły: TypeError ...`) zamiast pozostawienia poprzedniego widoku.
@@ -159,6 +161,7 @@
 11. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
 12. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.
 13. Sekcje `Podział puli`, `Faza grupowa`, `Półfinał` i `Finał` pokazują pełny podgląd danych turniejowych w trybie tylko do odczytu.
+13a. W tym trybie użytkownik nie widzi tabel edycyjnych admina — wyświetlane są tylko kopie readonly `r*` (Typ A).
 14. W panelu bocznym `TOURNAMENT OF POKER` przycisk `Czat` jest na samym dole listy sekcji.
 
 ### Stabilność wpisywania danych (autozapis)
