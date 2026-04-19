@@ -58,3 +58,30 @@ Dodać prosty test/regresję renderu `pool` (np. smoke test wywołujący ścież
 
 ## Podsumowanie
 Błąd nie wynika z danych turnieju, tylko z nieprawidłowego zakresu funkcji po stronie frontendu (`scope mismatch`). Naprawa polega na przeniesieniu/ujednoliceniu definicji `formatPercentDisplay` i `getPoolSplitDisplay` do wspólnego zakresu.
+
+## Wdrożone zmiany w kodzie (realizacja rekomendacji)
+
+Plik `Second/app.js`  
+Linia 801  
+Było: `const getPoolDefaultSplitValue = (index) => (index === 0 ? "50" : index === 1 ? "30" : index === 2 ? "20" : "");`  
+Jest: `const formatPercentDisplay = (value) => {`
+
+Plik `Second/app.js`  
+Linia 1401  
+Było: `const toPercentDigits = (value) => {`  
+Jest: `const percentInputToDecimal = (value) => {`
+
+Plik `Second/app.js`  
+Linia 1416  
+Było: `const formatPercentDisplay = (value) => {`  
+Jest: `const formatCellNumber = (value) => {`
+
+Plik `Second/docs/Documentation.md`  
+Linia 305  
+Było: `- Dzięki temu sekcja user \`pool\` korzysta z tej samej logiki wyświetlania co admin i nie ma ryzyka \`ReferenceError\` z powodu zakresu funkcji.`  
+Jest: `- \`formatPercentDisplay(value)\` działa teraz również globalnie (poza \`initSecondModule()\`), więc helper \`getPoolSplitDisplay(...)\` ma do niego dostęp zarówno w renderze admina, jak i user-view.`
+
+Plik `Second/docs/README.md`  
+Linia 208  
+Było: `- kolumna \`KWOTA\`: wiersze 1–3 = procent × \`Tabela15.PODZIAŁ\`, od wiersza 4 = przepisana wartość z \`PODZIAŁ PULI\`,`  
+Jest: `- format procentowy dla wierszy 1–3 (\`xx%\`) jest renderowany tak samo w panelu admina i w widoku user (po PIN), więc sekcja nie powinna już zgłaszać błędu \`formatPercentDisplay is not defined\`,`

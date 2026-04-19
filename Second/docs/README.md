@@ -205,6 +205,7 @@
 2. `Tabela15` pokazuje `BUY-IN` (skopiowany z `Tabela14.BUY-IN`) oraz `PODZIAŁ = Tabela14.BUY-IN - suma KWOTA z Tabela16 od wiersza 4`.
 3. `Tabela16`:
    - kolumna `PODZIAŁ PULI`: wiersze 1–3 działają procentowo (`50` => `50%`, do obliczeń `0.5`), od wiersza 4 wpisy są liczbami bez `%` i bez dzielenia przez 100; jeśli wiersz 1–3 jest pusty, aplikacja używa domyślnie odpowiednio `50/30/20`,
+   - format procentowy dla wierszy 1–3 (`xx%`) jest renderowany tak samo w panelu admina i w widoku user (po PIN), więc sekcja nie powinna już zgłaszać błędu `formatPercentDisplay is not defined`,
    - kolumna `KWOTA`: wiersze 1–3 = procent × `Tabela15.PODZIAŁ`, od wiersza 4 = przepisana wartość z `PODZIAŁ PULI`,
    - liczba kolumn `REBUY` jest dynamiczna i zależy od liczby uzupełnionych pól `Rebuy` w modalach `Rebuy gracza` (jeśli brak rebuy, kolumn `REBUY` nie ma),
    - `Rebuy1..Rebuy30` mają stałe przypisanie do wierszy i działają jak kolumna `KWOTA` (readonly), ale każda z tych wartości jest najpierw pomniejszana o procent z `Tabela14`,

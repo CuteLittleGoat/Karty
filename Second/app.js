@@ -798,6 +798,11 @@ const buildPlacementRowsFromQueues = ({ players, groupRows, semiRows, finalRows,
 };
 
 const digitsOnly = (value) => String(value ?? "").replace(/\D/g, "");
+const formatPercentDisplay = (value) => {
+  const rawDigits = digitsOnly(value);
+  if (!rawDigits) return "";
+  return `${rawDigits.replace(/^0+(?=\d)/, "") || "0"}%`;
+};
 const getPoolDefaultSplitValue = (index) => (index === 0 ? "50" : index === 1 ? "30" : index === 2 ? "20" : "");
 const getPoolSplitValueForCalculation = (splitValue, index) => {
   const normalizedValue = String(splitValue ?? "").trim();
@@ -1398,10 +1403,6 @@ const setupAdminTournament = (rootCard) => {
     const parsed = Number(normalized);
     return Number.isFinite(parsed) ? parsed : 0;
   };
-  const toPercentDigits = (value) => {
-    const normalized = digitsOnly(value).replace(/^0+(?=\d)/, "");
-    return normalized || "0";
-  };
   const percentInputToDecimal = (value) => {
     const normalized = String(value ?? "").replace(",", ".").trim();
     if (!normalized) return 0;
@@ -1412,11 +1413,6 @@ const setupAdminTournament = (rootCard) => {
       }
     }
     return toDigitsNumber(normalized) / 100;
-  };
-  const formatPercentDisplay = (value) => {
-    const rawDigits = digitsOnly(value);
-    if (!rawDigits) return "";
-    return `${toPercentDigits(rawDigits)}%`;
   };
   const formatCellNumber = (value) => {
     if (!Number.isFinite(value)) return "";

@@ -302,6 +302,7 @@
 
 ### 2. Wspólny helper podziału puli
 - `getPoolSplitDisplay(row, index)` został wyniesiony do helpera globalnego modułu.
+- `formatPercentDisplay(value)` działa teraz również globalnie (poza `initSecondModule()`), więc helper `getPoolSplitDisplay(...)` ma do niego dostęp zarówno w renderze admina, jak i user-view.
 - Dzięki temu sekcja user `pool` korzysta z tej samej logiki wyświetlania co admin i nie ma ryzyka `ReferenceError` z powodu zakresu funkcji.
 
 ### 3. Sanityzacja danych turniejowych user-view
