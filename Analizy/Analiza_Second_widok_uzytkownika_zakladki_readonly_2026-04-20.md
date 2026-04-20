@@ -129,3 +129,31 @@ Linia 158
 Linia 160
 - Było:    brak informacji, że user `draw` ma także readonly karty stołów.
 - Jest:    dopisano techniczny opis pełnego renderu user `draw` (tabela przypisań + karty stołów).
+
+## Poprawka po regresji „Brak dostępnych paneli...” (2026-04-20)
+
+### Prompt użytkownika
+Po wdrożeniu zmian użytkownik z PIN `11111` widzi przyciski sekcji, ale w sekcjach (poza `Czat`) pojawia się komunikat `Brak dostępnych paneli Tournament of Poker dla tego PIN-u.`
+
+### Plik `Second/app.js`
+Linia 2646
+- Było: brak dedykowanego helpera do liczenia dozwolonych sekcji na podstawie sesji PIN.
+- Jest: dodano `getUserTournamentAllowedTargets()` liczący cele z `userTournamentSession.allowedSections` + `chatTab`.
+
+Linia 2771
+- Było: `navigateToUserTournamentSection()` budował `allowedTargets` inline.
+- Jest: `navigateToUserTournamentSection()` korzysta z `getUserTournamentAllowedTargets()`.
+
+Linia 2799
+- Było: `renderUserTournament()` opierał decyzję o braku paneli na wyniku `renderTournamentButtonsForPlayer()`.
+- Jest: `renderUserTournament()` wywołuje `renderTournamentButtonsForPlayer()` tylko do renderu sidebaru, a decyzję o dostępie do sekcji opiera na `getUserTournamentAllowedTargets()`, co usuwa fałszywy komunikat „Brak dostępnych paneli...”.
+
+### Plik `Second/docs/Documentation.md`
+Linia 170
+- Było: brak opisu źródła prawdy dla listy dozwolonych sekcji podczas renderu.
+- Jest: dopisano, że render sekcji korzysta z `getUserTournamentAllowedTargets()` (kontrakt sesji), a nie z samego renderu przycisków sidebaru.
+
+### Plik `Second/docs/README.md`
+Linia 162
+- Było: brak informacji o eliminacji regresji z komunikatem „Brak dostępnych paneli...”.
+- Jest: dopisano, że jeśli użytkownik widzi przyciski sekcji z uprawnień PIN, sekcje renderują dane bez tego komunikatu.

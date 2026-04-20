@@ -2647,6 +2647,15 @@ const setupUserView = (root) => {
     });
     return allowedTargets;
   };
+  const getUserTournamentAllowedTargets = () => {
+    if (!userTournamentSession.isVerified) {
+      return [];
+    }
+    return [
+      ...userTournamentSession.allowedSections,
+      ...(userTournamentSession.chatAllowed ? ["chatTab"] : [])
+    ];
+  };
 
   const updateProtectedTabsVisibility = () => {
     const isVerified = userTournamentSession.isVerified;
@@ -2753,10 +2762,7 @@ const setupUserView = (root) => {
       return false;
     }
     const requestedSection = String(targetSection || "");
-    const allowedTargets = [
-      ...userTournamentSession.allowedSections,
-      ...(userTournamentSession.chatAllowed ? ["chatTab"] : [])
-    ];
+    const allowedTargets = getUserTournamentAllowedTargets();
     if (!allowedTargets.includes(requestedSection)) {
       logUserTournamentTransition("section_navigation_blocked", {
         source,
@@ -2795,7 +2801,8 @@ const setupUserView = (root) => {
       return;
     }
 
-    const allowedTargets = renderTournamentButtonsForPlayer();
+    renderTournamentButtonsForPlayer();
+    const allowedTargets = getUserTournamentAllowedTargets();
     logUserTournamentTransition("render_start", {
       renderToken,
       requestedSection: userTournamentSection,
