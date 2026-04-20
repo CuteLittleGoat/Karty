@@ -751,10 +751,26 @@ const buildTournamentReadonlyCopies = (sourceState) => {
     rTABELA10: rawCopy.payments?.table10 || {},
     rTABELA11: rawCopy.payments?.table11 || {},
     rTABELA12: rawCopy.payments?.table12Rebuys || {},
+    rTABELA13: rawCopy.payments?.table10 || {},
+    rTABELA14: rawCopy.payments?.table11 || {},
+    rTABELA15: {
+      buyIn: rawCopy.payments?.table11?.buyIn || "0",
+      split: ""
+    },
     rTABELA16: rawCopy.pool?.mods || [],
+    rTABELA17: {
+      stack: rawCopy.stack || "0",
+      rebuyAddOnStack: rawCopy.rebuyStack || "0"
+    },
+    rTABELA18: rawCopy.tables || [],
+    rTABELA19: rawCopy.group?.playerStacks || {},
     rTABELA19A: rawCopy.group?.eliminatedOrder || [],
+    rTABELA19B: rawCopy.group?.survivorStacks || {},
+    rTABELA21: rawCopy.semi?.assignments || {},
     rTABELA22: rawCopy.semi?.customTables || [],
-    rTABELA23: rawCopy.finalPlayers || []
+    rTABELA22A: rawCopy.semi?.eliminatedOrder || [],
+    rTABELA23: rawCopy.finalPlayers || [],
+    rTABELA23A: rawCopy.final?.eliminatedOrder || []
   };
 };
 
@@ -2631,6 +2647,15 @@ const setupUserView = (root) => {
     });
     return allowedTargets;
   };
+  const getUserTournamentAllowedTargets = () => {
+    if (!userTournamentSession.isVerified) {
+      return [];
+    }
+    return [
+      ...userTournamentSession.allowedSections,
+      ...(userTournamentSession.chatAllowed ? ["chatTab"] : [])
+    ];
+  };
 
   const updateProtectedTabsVisibility = () => {
     const isVerified = userTournamentSession.isVerified;
@@ -2737,10 +2762,7 @@ const setupUserView = (root) => {
       return false;
     }
     const requestedSection = String(targetSection || "");
-    const allowedTargets = [
-      ...userTournamentSession.allowedSections,
-      ...(userTournamentSession.chatAllowed ? ["chatTab"] : [])
-    ];
+    const allowedTargets = getUserTournamentAllowedTargets();
     if (!allowedTargets.includes(requestedSection)) {
       logUserTournamentTransition("section_navigation_blocked", {
         source,
@@ -2779,7 +2801,8 @@ const setupUserView = (root) => {
       return;
     }
 
-    const allowedTargets = renderTournamentButtonsForPlayer();
+    renderTournamentButtonsForPlayer();
+    const allowedTargets = getUserTournamentAllowedTargets();
     logUserTournamentTransition("render_start", {
       renderToken,
       requestedSection: userTournamentSection,
@@ -2829,11 +2852,31 @@ const setupUserView = (root) => {
       }
 
       if (userTournamentSection === "draw") {
-        dataMount.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Status wpłaty</th><th>Stół</th></tr></thead><tbody>${readonlyTournamentState.players.map((player) => {
-          const assignment = readonlyTournamentState.assignments[player.id] || { status: "Do zapłaty", tableId: "" };
-          const tableName = readonlyTournamentState.tables.find((table) => table.id === assignment.tableId)?.name || "-";
+        const safeDrawPlayers = Array.isArray(readonlyTournamentState.players)
+          ? readonlyTournamentState.players.filter((player) => player && typeof player === "object")
+          : [];
+        const safeDrawTables = Array.isArray(readonlyTournamentState.tables)
+          ? readonlyTournamentState.tables.filter((table) => table && typeof table === "object")
+          : [];
+        const safeDrawAssignments = readonlyTournamentState.assignments && typeof readonlyTournamentState.assignments === "object"
+          ? readonlyTournamentState.assignments
+          : {};
+        const drawBuyInValue = toDigitsNumber(readonlyTournamentState.buyIn);
+        const drawTotalsByTable = Object.fromEntries(safeDrawTables.map((table) => [table.id, 0]));
+        const drawRowsMarkup = safeDrawPlayers.map((player) => {
+          const assignment = safeDrawAssignments[player.id] || { status: "Do zapłaty", tableId: "" };
+          if (assignment.tableId && Object.prototype.hasOwnProperty.call(drawTotalsByTable, assignment.tableId)) {
+            drawTotalsByTable[assignment.tableId] += drawBuyInValue;
+          }
+          const tableName = safeDrawTables.find((table) => table.id === assignment.tableId)?.name || "-";
           return `<tr><td>${player.name || "-"}</td><td>${assignment.status || "Do zapłaty"}</td><td>${tableName}</td></tr>`;
-        }).join("") || '<tr><td colspan="3">Brak przypisań.</td></tr>'}</tbody></table></div>`;
+        }).join("");
+        const drawPerTableMarkup = safeDrawTables.map((table) => {
+          const assignedPlayers = safeDrawPlayers.filter((player) => (safeDrawAssignments[player.id]?.tableId || "") === table.id);
+          const total = drawTotalsByTable[table.id] || 0;
+          return `<article class="admin-table-card"><div class="t-section-grid"><label>NAZWA <input class="admin-input" readonly value="${esc(table.name || "")}"></label><label>ŁĄCZNA SUMA <input class="admin-input" readonly value="${formatCellNumber(total)}"></label></div><div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>GRACZ</th><th>BUY-IN</th></tr></thead><tbody>${assignedPlayers.map((player) => `<tr><td>${esc(player.name || "-")}</td><td>${formatCellNumber(drawBuyInValue)}</td></tr>`).join("") || '<tr><td colspan="2">Brak przypisanych graczy.</td></tr>'}</tbody></table></div></article>`;
+        }).join("");
+        dataMount.innerHTML = `<div class="admin-table-scroll"><table class="admin-data-table"><thead><tr><th>Gracz</th><th>Status wpłaty</th><th>Stół</th></tr></thead><tbody>${drawRowsMarkup || '<tr><td colspan="3">Brak przypisań.</td></tr>'}</tbody></table></div><div class="semi-tables">${drawPerTableMarkup || "<p>Brak stołów.</p>"}</div>`;
         return;
       }
 

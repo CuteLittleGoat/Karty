@@ -95,3 +95,65 @@ Czyli brak tych tabel u użytkownika nie wynika z awarii danych `read-only`, tyl
 **Nie, wszystkie tabele nie mają własnych kopii `rTABELA*`.**
 
 Zrobiona jest jedna główna kopia stanu (`rTournamentState`) i tylko wybrane kopie tabel pomocniczych. To oznacza, że wdrożenie „kopii każdej tabeli” zostało wykonane częściowo, nie w pełnym zakresie 1:1 dla całego Tournament of Poker.
+
+---
+
+## Zrealizowane zmiany w kodzie (2026-04-20)
+
+### Prompt użytkownika
+Przeczytaj analizę `Analizy/Analiza_Second_widok_uzytkownika_zakladki_readonly_2026-04-20.md` i wprowadź rekomendowane poprawki, aby po PIN użytkownik widział tylko dozwolone zakładki, a po wejściu w zakładkę miał kopie tabel z widoku admina (z zachowaniem dotychczasowego działania `Czat`).
+
+### Plik `Second/app.js`
+Linia 751
+- Było:    `buildTournamentReadonlyCopies()` zapisywał tylko część aliasów `r*` (`rTABELA10`, `rTABELA11`, `rTABELA12`, `rTABELA16`, `rTABELA19A`, `rTABELA22`, `rTABELA23`).
+- Jest:    `buildTournamentReadonlyCopies()` zapisuje pełny zestaw aliasów `r*` dla wszystkich tabel user-view (`rTABELA10..rTABELA23A`) obok `rTournamentState`.
+
+Linia 2845
+- Było:    sekcja user `draw` renderowała tylko jedną tabelę (`Gracz`, `Status wpłaty`, `Stół`).
+- Jest:    sekcja user `draw` renderuje także kopie kart stołów (readonly `NAZWA`, readonly `ŁĄCZNA SUMA`, tabela `GRACZ/BUY-IN`) tak jak w panelu admina.
+
+### Plik `Second/docs/README.md`
+Linia 165
+- Było:    opis user-view sugerował pełne readonly głównie dla sekcji innych niż `Losowanie stołów`.
+- Jest:    doprecyzowano, że także `Losowanie stołów` i `Wpłaty` pokazują pełny readonly podgląd kopii danych admina.
+
+Linia 166
+- Było:    brak informacji o kartach stołów w user `Losowanie stołów`.
+- Jest:    dodano informację, że user widzi kopię tabeli przypisań oraz kart stołów (`NAZWA`, `ŁĄCZNA SUMA`, `BUY-IN`).
+
+### Plik `Second/docs/Documentation.md`
+Linia 158
+- Było:    dokumentacja mówiła o `rTournamentState` i niepełnym opisie aliasów `r*`.
+- Jest:    dodano pełną listę aliasów `r*` generowanych przez `buildTournamentReadonlyCopies()`.
+
+Linia 160
+- Było:    brak informacji, że user `draw` ma także readonly karty stołów.
+- Jest:    dopisano techniczny opis pełnego renderu user `draw` (tabela przypisań + karty stołów).
+
+## Poprawka po regresji „Brak dostępnych paneli...” (2026-04-20)
+
+### Prompt użytkownika
+Po wdrożeniu zmian użytkownik z PIN `11111` widzi przyciski sekcji, ale w sekcjach (poza `Czat`) pojawia się komunikat `Brak dostępnych paneli Tournament of Poker dla tego PIN-u.`
+
+### Plik `Second/app.js`
+Linia 2646
+- Było: brak dedykowanego helpera do liczenia dozwolonych sekcji na podstawie sesji PIN.
+- Jest: dodano `getUserTournamentAllowedTargets()` liczący cele z `userTournamentSession.allowedSections` + `chatTab`.
+
+Linia 2771
+- Było: `navigateToUserTournamentSection()` budował `allowedTargets` inline.
+- Jest: `navigateToUserTournamentSection()` korzysta z `getUserTournamentAllowedTargets()`.
+
+Linia 2799
+- Było: `renderUserTournament()` opierał decyzję o braku paneli na wyniku `renderTournamentButtonsForPlayer()`.
+- Jest: `renderUserTournament()` wywołuje `renderTournamentButtonsForPlayer()` tylko do renderu sidebaru, a decyzję o dostępie do sekcji opiera na `getUserTournamentAllowedTargets()`, co usuwa fałszywy komunikat „Brak dostępnych paneli...”.
+
+### Plik `Second/docs/Documentation.md`
+Linia 170
+- Było: brak opisu źródła prawdy dla listy dozwolonych sekcji podczas renderu.
+- Jest: dopisano, że render sekcji korzysta z `getUserTournamentAllowedTargets()` (kontrakt sesji), a nie z samego renderu przycisków sidebaru.
+
+### Plik `Second/docs/README.md`
+Linia 162
+- Było: brak informacji o eliminacji regresji z komunikatem „Brak dostępnych paneli...”.
+- Jest: dopisano, że jeśli użytkownik widzi przyciski sekcji z uprawnień PIN, sekcje renderują dane bez tego komunikatu.
