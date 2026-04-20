@@ -2801,8 +2801,7 @@ const setupUserView = (root) => {
       return;
     }
 
-    renderTournamentButtonsForPlayer();
-    const allowedTargets = getUserTournamentAllowedTargets();
+    const allowedTargets = renderTournamentButtonsForPlayer();
     logUserTournamentTransition("render_start", {
       renderToken,
       requestedSection: userTournamentSection,
