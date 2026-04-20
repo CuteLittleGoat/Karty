@@ -161,8 +161,9 @@
 10f. W konsoli przeglądarki dostępny jest log `"[Second][UserTournament]"` (kliknięcie, render, snapshot), który pokazuje docelową sekcję i ułatwia diagnostykę „sticky chat”.
 11. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
 12. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.
-13. Sekcje `Podział puli`, `Faza grupowa`, `Półfinał` i `Finał` pokazują pełny podgląd danych turniejowych w trybie tylko do odczytu.
-13a. W tym trybie użytkownik nie widzi tabel edycyjnych admina — wyświetlane są tylko kopie readonly `r*` (Typ A).
+13. Sekcje `Losowanie stołów`, `Wpłaty`, `Podział puli`, `Faza grupowa`, `Półfinał`, `Finał` i `Wypłaty` pokazują pełny podgląd danych turniejowych w trybie tylko do odczytu.
+13a. W sekcji `Losowanie stołów` użytkownik widzi teraz zarówno tabelę przypisań graczy, jak i karty wszystkich stołów (`NAZWA`, `ŁĄCZNA SUMA`, lista graczy z `BUY-IN`) jako kopię danych z panelu admina.
+13b. Zakładka `Czat` działa jak wcześniej i pozostaje jedyną sekcją z wysyłką wiadomości po PIN.
 14. W panelu bocznym `TOURNAMENT OF POKER` przycisk `Czat` jest na samym dole listy sekcji.
 
 ### Stabilność wpisywania danych (autozapis)
