@@ -157,3 +157,27 @@ Linia 170
 Linia 162
 - Było: brak informacji o eliminacji regresji z komunikatem „Brak dostępnych paneli...”.
 - Jest: dopisano, że jeśli użytkownik widzi przyciski sekcji z uprawnień PIN, sekcje renderują dane bez tego komunikatu.
+
+## Poprawka po kolejnym zgłoszeniu regresji paneli (2026-04-20)
+
+### Prompt użytkownika
+W user-view po przełączaniu sekcji (poza `Czat`) dalej pojawia się komunikat `Brak dostępnych paneli Tournament of Poker dla tego PIN-u.`
+
+### Plik `Second/app.js`
+Linia 2765
+- Było: `navigateToUserTournamentSection()` walidował cele tylko na podstawie `getUserTournamentAllowedTargets()`.
+- Jest: dodano fallback `visibleSidebarTargets` (widoczne przyciski sidebaru), gdy sesyjna lista jest chwilowo pusta.
+
+Linia 2809
+- Było: `renderUserTournament()` opierał się na `getUserTournamentAllowedTargets()` oraz mógł pokazać fałszywy brak paneli przy chwilowym rozjeździe stanu sesji.
+- Jest: `renderUserTournament()` używa `sidebarAllowedTargets` jako fallbacku do sesji, dzięki czemu jeśli przyciski są widoczne, sekcje renderują dane zamiast komunikatu o braku paneli.
+
+### Plik `Second/docs/Documentation.md`
+Linia 170
+- Było: opis renderu sekcji wskazywał tylko źródło sesyjne.
+- Jest: dopisano fallback do widocznych przycisków sidebaru.
+
+### Plik `Second/docs/README.md`
+Linia 162
+- Było: brak wzmianki o fallbacku na widoczne przyciski.
+- Jest: dopisano, że dostęp sekcji działa z sesji PIN i awaryjnie z widocznych przycisków panelu bocznego.

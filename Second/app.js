@@ -2762,7 +2762,12 @@ const setupUserView = (root) => {
       return false;
     }
     const requestedSection = String(targetSection || "");
-    const allowedTargets = getUserTournamentAllowedTargets();
+    const sessionAllowedTargets = getUserTournamentAllowedTargets();
+    const visibleSidebarTargets = tournamentButtons
+      .filter((button) => button.style.display !== "none")
+      .map((button) => button.dataset.tournamentTarget || "")
+      .filter(Boolean);
+    const allowedTargets = sessionAllowedTargets.length ? sessionAllowedTargets : visibleSidebarTargets;
     if (!allowedTargets.includes(requestedSection)) {
       logUserTournamentTransition("section_navigation_blocked", {
         source,
@@ -2801,7 +2806,9 @@ const setupUserView = (root) => {
       return;
     }
 
-    const allowedTargets = renderTournamentButtonsForPlayer();
+    const sidebarAllowedTargets = renderTournamentButtonsForPlayer();
+    const sessionAllowedTargets = getUserTournamentAllowedTargets();
+    const allowedTargets = sessionAllowedTargets.length ? sessionAllowedTargets : sidebarAllowedTargets;
     logUserTournamentTransition("render_start", {
       renderToken,
       requestedSection: userTournamentSection,
