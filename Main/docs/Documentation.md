@@ -65,7 +65,7 @@
   - `.admin-only` / `.user-only` sterowane przez `body.is-admin`.
 - Header:
   - przycisk instrukcji widoczny zawsze.
-  - w widoku administratora, w nagłówku panelu (`.admin-panel-header-actions`), dostępny jest czerwony przycisk `#customsEmergencyButton` otwierający modal `#customsEmergencyModal` z GIF-em `../Koza.gif`.
+  - czerwony przycisk `#customsEmergencyButton` został przeniesiony do prawego górnego paska (`.admin-toolbar`), dzięki czemu jest dostępny zarówno w widoku użytkownika, jak i administratora; otwiera modal `#customsEmergencyModal` z GIF-em `../Koza.gif`.
 
 ## 4.1. Modal „Kontrola celno-skarbowa”
 - Elementy DOM:
@@ -73,7 +73,8 @@
   - `#customsEmergencyModal`
   - `#customsEmergencyClose`
 - Zachowanie:
-  - przycisk widoczny tylko w panelu admina (`.admin-only`),
+  - przycisk jest widoczny w obu trybach (user/admin),
+  - modal nie zawiera już nagłówka tekstowego „Kontrola celno-skarbowa”,
   - modal otwiera się lokalnie po kliknięciu (bez zapisu do Firebase),
   - zamykanie: `×`, kliknięcie w overlay, `Escape`.
 - Style:

@@ -17,8 +17,8 @@ Instrukcja jest podzielona na dwie części:
 4. Po poprawnym wpisaniu hasła zobaczysz dwa główne obszary:
    - **Panel Administratora** (duża karta z wieloma zakładkami),
    - **Panel użytkownika** (zakładki: Aktualności, Regulamin, Strefa Gracza).
-4a. W nagłówku **Panelu Administratora** znajduje się czerwony przycisk **Przycisnąć w razie kontroli celno-skarbowej**.
-4b. Po kliknięciu tego przycisku otworzy się modal z GIF-em `Koza.gif`.
+4a. W prawym górnym rogu (obok przycisku **Instrukcja**) znajduje się czerwony przycisk **Przycisnąć w razie kontroli celno-skarbowej** — widoczny zarówno w trybie użytkownika, jak i administratora.
+4b. Po kliknięciu tego przycisku otworzy się modal z GIF-em `Koza.gif` (bez tytułu tekstowego).
 4c. Modal zamkniesz na trzy sposoby: przyciskiem `×`, klawiszem `Esc` albo kliknięciem w tło poza oknem.
 5. Kliknięcie **Instrukcja** otwiera okno modalne z instrukcją; zamkniesz je przyciskiem `×`.
 6. W trybie użytkownika główna zielona ramka panelu jest rozciągnięta niemal na pełną szerokość ekranu: zaczyna się 1 px od lewej i kończy 1 px przed prawą krawędzią.
