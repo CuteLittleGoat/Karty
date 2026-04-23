@@ -201,6 +201,14 @@ h1 {
   margin-bottom: 0;
 }
 
+.admin-panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .admin-tables-header {
   display: flex;
   align-items: center;
@@ -1802,6 +1810,20 @@ body:not(.is-admin) .player-zone-layout {
   display: grid;
   gap: var(--gap-2);
   overflow: hidden;
+}
+
+.customs-emergency-modal-body {
+  justify-items: center;
+}
+
+.customs-emergency-image {
+  display: block;
+  width: min(100%, 460px);
+  max-height: min(70vh, 520px);
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border2);
 }
 
 .game-details-modal-card .modal-body {

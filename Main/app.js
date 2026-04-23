@@ -8951,6 +8951,46 @@ const initInstructionModal = () => {
   });
 };
 
+const initCustomsEmergencyModal = () => {
+  const openButton = document.querySelector("#customsEmergencyButton");
+  const modal = document.querySelector("#customsEmergencyModal");
+  const closeButton = document.querySelector("#customsEmergencyClose");
+
+  if (!openButton || !modal) {
+    return;
+  }
+
+  const closeModal = () => {
+    modal.classList.remove("is-visible");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+
+  const openModal = () => {
+    modal.classList.add("is-visible");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  };
+
+  openButton.addEventListener("click", openModal);
+
+  if (closeButton) {
+    closeButton.addEventListener("click", closeModal);
+  }
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modal.classList.contains("is-visible")) {
+      closeModal();
+    }
+  });
+};
+
 const bootstrap = async () => {
   const isAdmin = await resolveAdminMode();
   document.body.classList.toggle("is-admin", isAdmin);
@@ -8978,6 +9018,7 @@ const bootstrap = async () => {
   initLatestMessage();
   initRulesDisplay();
   initInstructionModal();
+  initCustomsEmergencyModal();
 };
 
 void bootstrap();

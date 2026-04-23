@@ -65,6 +65,20 @@
   - `.admin-only` / `.user-only` sterowane przez `body.is-admin`.
 - Header:
   - przycisk instrukcji widoczny zawsze.
+  - w widoku administratora, w nagłówku panelu (`.admin-panel-header-actions`), dostępny jest czerwony przycisk `#customsEmergencyButton` otwierający modal `#customsEmergencyModal` z GIF-em `../Koza.gif`.
+
+## 4.1. Modal „Kontrola celno-skarbowa”
+- Elementy DOM:
+  - `#customsEmergencyButton`
+  - `#customsEmergencyModal`
+  - `#customsEmergencyClose`
+- Zachowanie:
+  - przycisk widoczny tylko w panelu admina (`.admin-only`),
+  - modal otwiera się lokalnie po kliknięciu (bez zapisu do Firebase),
+  - zamykanie: `×`, kliknięcie w overlay, `Escape`.
+- Style:
+  - kontener przycisków nagłówka: `.admin-panel-header-actions`,
+  - modal GIF: `.customs-emergency-modal-body`, `.customs-emergency-image`.
 
 ## 5. Integracja danych
 - Firebase inicjalizowany przez `window.firebaseConfig` (z `config/firebase-config.js`).
