@@ -4,6 +4,9 @@
 1. Otwórz `Second/index.html?admin=1`.
 2. W prawym górnym rogu znajdziesz ikonę `Pliki/Ikona.png` oraz przycisk **Instrukcja** — ikona jest po lewej stronie przycisku (tak samo jak w module Main).
 3. W górnym pasku kliknij **TOURNAMENT OF POKER**.
+3a. W nagłówku panelu admina dostępny jest czerwony przycisk **Przycisnąć w razie kontroli celno-skarbowej**.
+3b. Po kliknięciu przycisku otwiera się modal z GIF-em `Koza.gif`.
+3c. Modal zamkniesz przyciskiem `×`, klawiszem `Esc` albo kliknięciem w tło.
 4. W lewym panelu wybierz sekcję **Lista graczy**.
 5. Jeżeli chcesz wymusić pobranie z serwera dla tej zakładki, kliknij **Odśwież** w prawym górnym rogu panelu admina.
 

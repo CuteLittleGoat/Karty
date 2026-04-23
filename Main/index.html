@@ -33,9 +33,12 @@
         <section class="card admin-only admin-panel-card">
           <div class="card-header admin-panel-header">
             <h2>Panel Administratora</h2>
-            <div class="admin-panel-refresh-controls">
-              <button id="adminPanelRefresh" class="secondary" type="button">Odśwież</button>
-              <span id="adminPanelRefreshStatus" class="status-text" aria-live="polite"></span>
+            <div class="admin-panel-header-actions">
+              <button id="customsEmergencyButton" class="danger" type="button">Przycisnąć w razie kontroli celno-skarbowej</button>
+              <div class="admin-panel-refresh-controls">
+                <button id="adminPanelRefresh" class="secondary" type="button">Odśwież</button>
+                <span id="adminPanelRefreshStatus" class="status-text" aria-live="polite"></span>
+              </div>
             </div>
           </div>
           <div class="admin-panel-tabs" role="tablist" aria-label="Zakładki panelu administratora">
@@ -803,6 +806,20 @@
         <div class="modal-body">
           <p id="instructionStatus" class="status-text">Instrukcja ładuje się automatycznie po otwarciu okna.</p>
           <div id="instructionContent" class="modal-content" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="customsEmergencyModal" class="modal-overlay" aria-hidden="true">
+      <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="customsEmergencyTitle">
+        <div class="modal-header">
+          <h3 id="customsEmergencyTitle">Kontrola celno-skarbowa</h3>
+          <button id="customsEmergencyClose" class="icon-button" type="button" aria-label="Zamknij okno">
+            ×
+          </button>
+        </div>
+        <div class="modal-body customs-emergency-modal-body">
+          <img class="customs-emergency-image" src="../Koza.gif" alt="Koza GIF" loading="lazy" />
         </div>
       </div>
     </div>

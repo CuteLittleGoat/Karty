@@ -98,3 +98,75 @@ To podejście:
 
 Funkcjonalność jest prosta do dodania i dobrze wpisuje się w aktualną architekturę obu modułów.
 Najmniej ryzykowna implementacja to lokalny modal z istniejącym stylem `danger` i obrazem `Koza.gif`, aktywny wyłącznie w admin view.
+
+## 8. Zrealizowane zmiany w kodzie (wdrożenie)
+
+Plik `Main/index.html`
+Linia 36
+Było: `<div class="admin-panel-refresh-controls">`
+Jest: `<div class="admin-panel-header-actions">`
+
+Plik `Main/index.html`
+Linia 37
+Było: *(brak przycisku awaryjnego)*
+Jest: `<button id="customsEmergencyButton" class="danger" type="button">Przycisnąć w razie kontroli celno-skarbowej</button>`
+
+Plik `Main/index.html`
+Linia 813
+Było: *(brak modala awaryjnego)*
+Jest: `<div id="customsEmergencyModal" class="modal-overlay" aria-hidden="true"> ... <img class="customs-emergency-image" src="../Koza.gif" ... /> ... </div>`
+
+Plik `Main/app.js`
+Linia 8954
+Było: *(brak funkcji)*
+Jest: `const initCustomsEmergencyModal = () => { ... }`
+
+Plik `Main/app.js`
+Linia 9021
+Było: `initInstructionModal();`
+Jest: `initInstructionModal();` + `initCustomsEmergencyModal();`
+
+Plik `Main/styles.css`
+Linia 204
+Było: *(brak klasy)*
+Jest: `.admin-panel-header-actions { ... }`
+
+Plik `Main/styles.css`
+Linia 1815
+Było: *(brak styli GIF/modala awaryjnego)*
+Jest: `.customs-emergency-modal-body { ... }` oraz `.customs-emergency-image { ... }`
+
+Plik `Second/index.html`
+Linia 38
+Było: `<div class="admin-panel-refresh-controls">`
+Jest: `<div class="admin-panel-header-actions">`
+
+Plik `Second/index.html`
+Linia 39
+Było: *(brak przycisku awaryjnego)*
+Jest: `<button id="secondCustomsEmergencyButton" class="danger" type="button">Przycisnąć w razie kontroli celno-skarbowej</button>`
+
+Plik `Second/index.html`
+Linia 157
+Było: *(brak modala awaryjnego)*
+Jest: `<div id="secondCustomsEmergencyModal" class="modal-overlay" aria-hidden="true"> ... <img class="customs-emergency-image" src="../Koza.gif" ... /> ... </div>`
+
+Plik `Second/app.js`
+Linia 3771
+Było: *(brak funkcji)*
+Jest: `const initCustomsEmergencyModal = () => { ... }`
+
+Plik `Second/app.js`
+Linia 4049
+Było: `initAdminNotes();`
+Jest: `initAdminNotes();` + `initCustomsEmergencyModal();`
+
+Plik `Second/styles.css`
+Linia 212
+Było: *(brak klasy)*
+Jest: `.admin-panel-header-actions { ... }`
+
+Plik `Second/styles.css`
+Linia 1597
+Było: *(brak styli GIF/modala awaryjnego)*
+Jest: `.customs-emergency-modal-body { ... }` oraz `.customs-emergency-image { ... }`
