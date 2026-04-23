@@ -5,11 +5,12 @@
 - Dla `.user-card` pozostawiono lewy i prawy border o grubości `1px`, a pseudo-element `.user-card::before` jest wyłączony, aby pierwsza zielona ramka miała dokładnie 1 px po bokach.
 
 ## Nagłówek i przycisk instrukcji
+- Tekst nagłówka modułu ustawiono na: eyebrow `To też nie jest nielegalny poker` oraz tytuł `Aplikacja do szkalowania Izraela`.
 - W `Second/index.html` sekcja `.header-controls` zawiera ikonę `<img class="header-icon" src="../Pliki/Ikona.png">` oraz przycisk `#secondInstructionButton` w tej samej linii.
 - Ikona i układ są celowo spójne z modułem Main (ta sama grafika i ten sam wzorzec pozycjonowania: ikona po lewej, przycisk po prawej).
 - Styl `.header-icon` w `Second/styles.css` używa `width: min(110px, 100%)` oraz `height: auto`, a `.header-controls` pracuje w układzie poziomym (`display: flex; align-items: center; justify-content: flex-end`).
-- W nagłówku panelu administratora dodano kontener `.admin-panel-header-actions` z czerwonym przyciskiem `#secondCustomsEmergencyButton`, który otwiera modal `#secondCustomsEmergencyModal` z GIF-em `../Koza.gif`.
-- Modal zamyka się przez `#secondCustomsEmergencyClose`, kliknięcie overlay i klawisz `Escape`; otwarcie/zamknięcie steruje klasą `modal-open` na `body`.
+- W nagłówku modułu (pasek `.admin-toolbar`) znajduje się czerwony przycisk `#secondCustomsEmergencyButton`, który jest widoczny zarówno w widoku admina, jak i użytkownika, i otwiera modal `#secondCustomsEmergencyModal` z GIF-em `../Koza.gif`.
+- Modal nie ma tytułu tekstowego, zamyka się przez `#secondCustomsEmergencyClose`, kliknięcie overlay i klawisz `Escape`; otwarcie/zamknięcie steruje klasą `modal-open` na `body`.
 
 
 ## Tournament of Poker (admin)

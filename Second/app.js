@@ -3769,9 +3769,9 @@ const setupAdminView = () => {
   };
 
   const initCustomsEmergencyModal = () => {
-    const openButton = rootCard.querySelector("#secondCustomsEmergencyButton");
-    const modal = rootCard.querySelector("#secondCustomsEmergencyModal");
-    const closeButton = rootCard.querySelector("#secondCustomsEmergencyClose");
+    const openButton = document.querySelector("#secondCustomsEmergencyButton");
+    const modal = document.querySelector("#secondCustomsEmergencyModal");
+    const closeButton = document.querySelector("#secondCustomsEmergencyClose");
 
     if (!openButton || !modal) {
       return;
@@ -4102,7 +4102,6 @@ const setupAdminView = () => {
   initAdminChat();
   initAdminRules();
   initAdminNotes();
-  initCustomsEmergencyModal();
   setupAdminTournament(rootCard);
   initAdminPanelRefresh();
 };
@@ -4112,6 +4111,46 @@ const setupUserOnlyView = () => {
   appRoot.appendChild(userView);
 };
 
+const initCustomsEmergencyModal = () => {
+  const openButton = document.querySelector("#secondCustomsEmergencyButton");
+  const modal = document.querySelector("#secondCustomsEmergencyModal");
+  const closeButton = document.querySelector("#secondCustomsEmergencyClose");
+
+  if (!openButton || !modal) {
+    return;
+  }
+
+  const closeModal = () => {
+    modal.classList.remove("is-visible");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("modal-open");
+  };
+
+  const openModal = () => {
+    modal.classList.add("is-visible");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("modal-open");
+  };
+
+  openButton.addEventListener("click", openModal);
+
+  if (closeButton) {
+    closeButton.addEventListener("click", closeModal);
+  }
+
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && modal.classList.contains("is-visible")) {
+      closeModal();
+    }
+  });
+};
+
 const bootstrap = async () => {
   const isAdminView = await resolveAdminMode();
   if (adminPasswordBypassNote) {
@@ -4119,6 +4158,7 @@ const bootstrap = async () => {
   }
 
   initInstructionModal();
+  initCustomsEmergencyModal();
 
   if (isAdminView) {
     setupAdminView();

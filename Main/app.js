@@ -8932,7 +8932,7 @@ const initInstructionModal = () => {
     document.body.classList.remove("modal-open");
   };
 
-  openButton.addEventListener("click", openModal);
+  openButtons.forEach((openButton) => openButton.addEventListener("click", openModal));
 
   if (closeButton) {
     closeButton.addEventListener("click", closeModal);
@@ -8952,11 +8952,11 @@ const initInstructionModal = () => {
 };
 
 const initCustomsEmergencyModal = () => {
-  const openButton = document.querySelector("#customsEmergencyButton");
+  const openButtons = Array.from(document.querySelectorAll("#customsEmergencyButton"));
   const modal = document.querySelector("#customsEmergencyModal");
   const closeButton = document.querySelector("#customsEmergencyClose");
 
-  if (!openButton || !modal) {
+  if (!openButtons.length || !modal) {
     return;
   }
 
@@ -8972,7 +8972,7 @@ const initCustomsEmergencyModal = () => {
     document.body.classList.add("modal-open");
   };
 
-  openButton.addEventListener("click", openModal);
+  openButtons.forEach((openButton) => openButton.addEventListener("click", openModal));
 
   if (closeButton) {
     closeButton.addEventListener("click", closeModal);
