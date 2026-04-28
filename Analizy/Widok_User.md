@@ -561,3 +561,110 @@ Dla zadanego celu 1–9 aktualny kod modułu `Second` jest zgodny funkcjonalnie 
 - czat pozostaje sekcją odseparowaną.
 
 Wdrożenie można uznać za działające, z typowym zastrzeżeniem operacyjnym: aktualność readonly po stronie usera zależy od regularnego zapisu danych przez admina.
+
+---
+
+## Część C — analiza nowego zgłoszenia regresji „Brak dostępnych paneli…” (2026-04-28)
+
+## Prompt użytkownika (kontekst bieżącego zadania)
+Przeczytaj analizę Analizy/Widok_User.md i dopisz wnioski do pliku Analizy/Widok_User.md.
+
+Kroki jakie wykonuję:
+1. Otwieram stronę https://cutelittlegoat.github.io/Karty/Second/index.html?admin=1
+2. Wchodzę na zakładkę "Tournament of Poker"
+3. Wchodzę na zakładkę "Lista Graczy"
+4. Mam dwóch graczy. Jeden gracz ma PIN 11111 a drugi PIN 22222. Obaj mają uprawnienia na różne zakładki
+5. Otwieram stronę https://cutelittlegoat.github.io/Karty/Second/index.html
+6. Wpisuję PIN 11111
+7. Wchodzę na zakładkę "Tournament of Poker"
+8. W panelu bocznym mam zakładki do jakich gracz o PIN 11111 ma uprawnienia.
+9. Każda z zakładek (poza Czat), wyświetla komunikat "Brak dostępnych paneli Tournament of Poker dla tego PIN-u."
+10. W innej przeglądarce wchodzę na stronę https://cutelittlegoat.github.io/Karty/Second/index.html
+11. Wpisuję PIN 22222
+12. Wchodzę na zakładkę "Tournament of Poker"
+13. W panelu bocznym mam zakładki do jakich gracz ma uprawnienia.
+14. Każda z zakładek (bez Czat, bo brak uprawnienia) wyświetla ten sam komunikat.
+
+Dodatkowe wymagania:
+- przeczytać też pliki:
+  - Analizy/Analiza_Second_kopie_tabel_readonly_rPrefiks_2026-04-19.md
+  - Analizy/Analiza_Second_widok_uzytkownika_zakladki_readonly_2026-04-20.md
+- dopisać przyczynę błędu i proponowane rozwiązania,
+- sprawdzić, czy jako admin trzeba kasować dane i dodawać od nowa.
+
+---
+
+## 1) Co wynika z obecnego kodu (stan repo) vs. objaw na środowisku
+
+W aktualnym `Second/app.js` komunikat `Brak dostępnych paneli Tournament of Poker dla tego PIN-u.` pojawia się tylko wtedy, gdy lista dozwolonych sekcji jest pusta (`allowedTargets.length === 0`).
+
+Jednocześnie sidebar może pokazywać przyciski tylko wtedy, gdy użytkownik jest zweryfikowany PIN-em i ma dozwolone sekcje.
+
+To oznacza, że przy objawie „przyciski są widoczne, ale treść mówi brak paneli” występuje najpewniej **rozjazd stanu runtime** (sesja/uprawnienia vs. render danych), a nie pojedynczy błąd danych tabel turniejowych.
+
+Najbardziej prawdopodobne źródła:
+1. Na GitHub Pages działa starsza wersja JS (regresja już naprawiona w repo, ale nieobecna w deployu).
+2. Przeglądarka trzyma stary skrypt w cache i miesza go z nowszym HTML.
+3. Dane uprawnień graczy były modyfikowane w kilku iteracjach i występuje tymczasowa niespójność sesji PIN po stronie klienta.
+
+---
+
+## 2) Czy problem wynika z braku danych turniejowych `r*`?
+
+Nie jest to główna przyczyna tego konkretnego komunikatu.
+
+Gdyby brakowało kopii readonly, kod pokazuje inny komunikat:
+`Brak kopii readonly (r*). Poproś administratora o zapis danych turnieju.`
+
+Skoro użytkownik widzi komunikat o „braku paneli”, to błąd jest na warstwie wyliczania dozwolonych sekcji / sesji, a nie na warstwie samych tabel `rTournamentState`.
+
+---
+
+## 3) Czy trzeba kasować wszystkich graczy i wpisywać od nowa?
+
+**Nie, pełne kasowanie danych nie powinno być wymagane.**
+
+Najpierw wykonaj kroki bezpieczne (od najmniej inwazyjnych):
+
+1. **Twarde odświeżenie i czyszczenie cache** w przeglądarce usera (`Ctrl+F5` / `Cmd+Shift+R`).
+2. **Wyczyszczenie `sessionStorage`** dla domeny `cutelittlegoat.github.io` (PIN i ID gracza są trzymane sesyjnie).
+3. W panelu admina wejść w `Tournament of Poker` i wykonać **zapis danych turnieju** (dowolna drobna zmiana + zapis), żeby odświeżyć snapshot `readonlyTables.generatedAt`.
+4. Dla obu graczy otworzyć edycję i zapisać uprawnienia ponownie (nawet bez zmian merytorycznych), aby ujednolicić format uprawnień.
+
+Dopiero jeśli to nie pomoże:
+5. Usunąć i dodać ponownie **tylko problematycznych graczy** (nie cały turniej).
+
+Pełny reset całej bazy turnieju traktować jako ostateczność.
+
+---
+
+## 4) Proponowane trwałe rozwiązania techniczne
+
+1. **Wymusić zgodność sesji z sidebar-em jako jedno źródło prawdy**
+   - przy każdym renderze sekcji przeliczać `allowedTargets` na bazie aktualnego playera z PIN + widocznych przycisków,
+   - jeśli wykryty konflikt: automatycznie naprawić sesję i ponowić render.
+
+2. **Dodać diagnostykę do UI (tryb debug admina)**
+   - pokazywać: `verifiedPlayerId`, `allowedSections`, `visibleSidebarTargets`, `currentSection`.
+   - to pozwoli od razu odróżnić „problem uprawnień” od „problemu danych r*”.
+
+3. **Dodać wersjonowanie snapshotu readonly**
+   - oprócz `generatedAt` trzymać np. `readonlyVersion` oraz `sourcePlayersHash`,
+   - user-view może wtedy wykryć, że sesja PIN jest starsza niż aktualny stan graczy i wymusić ponowną weryfikację PIN.
+
+4. **Uodpornić mapowanie uprawnień**
+   - normalizacja stringów uprawnień powinna uwzględniać warianty historyczne (np. różne formaty wielkości liter),
+   - zmniejsza to ryzyko, że stary rekord gracza „traci” sekcję po zmianie etykiet.
+
+---
+
+## 5) Wniosek końcowy dla obecnego zgłoszenia
+
+Błąd wygląda na **regresję runtime/deploy/cache lub niespójność sesji PIN**, a nie na konieczność budowania całej bazy od zera.
+
+Najbardziej racjonalna ścieżka to:
+1. cache/session reset,
+2. ponowny zapis turnieju i uprawnień graczy,
+3. dopiero później selektywne odtworzenie pojedynczych graczy.
+
+Kasowanie wszystkich danych na starcie nie jest rekomendowane.
