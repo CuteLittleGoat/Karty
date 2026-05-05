@@ -978,3 +978,44 @@ Tak — jest możliwy i realny do wdrożenia. Nie wymaga tworzenia drugiej fizyc
 - testów regresji, żeby wykluczyć powrót inputów i niespójność sekcji.
 
 Bez naprawy bramki uprawnień wariant 2 nie usunie obecnego objawu `TOP-NO-PANELS`.
+
+## Zrealizowane zmiany w kodzie po wdrożeniu planu przebudowy (2026-05-05, wariant 1)
+
+### Prompt użytkownika
+Przeczytaj analizę Analizy/Widok_User.md
+
+Dokonaj przebudowy zgodnie z "4) Dokładny plan przebudowy Second do modelu jak Main"
+Na obecną chwilę zostajemy przy "Wariant 1 — kopie rTABELA* (osobny model readonly)"
+
+Wszystkie dane w module Second obecnie traktujemy jako testowe i nie ma potrzeby migracji, czy fallbacków. Nic nie zmieniaj w module Main.
+
+### Plik `Second/app.js`
+Linia 2652
+- Było: `getUserTournamentAllowedTargets()` był używany w kilku miejscach, a nawigacja/render sekcji miały dodatkowy fallback do listy widocznych przycisków sidebaru.
+- Jest: dodany centralny resolver `resolveUserTournamentAccessState()` zwracający `isVerified`, `allowedTargets`, `sessionReady`, `reasonCode`, `playerId` i używany jako jedno źródło prawdy dla nawigacji oraz renderu sekcji.
+
+Linia 2782
+- Było: `navigateToUserTournamentSection()` dopuszczał fallback `visibleSidebarTargets` przy pustej liście sesyjnej.
+- Jest: `navigateToUserTournamentSection()` korzysta wyłącznie z `resolveUserTournamentAccessState()` i blokuje przejście na sekcję spoza `allowedTargets` bez fallbacków.
+
+Linia 2828
+- Było: `renderUserTournament()` wyliczał `allowedTargets` jako `sessionAllowedTargets.length ? sessionAllowedTargets : sidebarAllowedTargets`.
+- Jest: `renderUserTournament()` używa jedynie stanu z `resolveUserTournamentAccessState()`.
+
+Linia 2839
+- Było: brak komunikatu przejściowego dla niedokończonej inicjalizacji sesji uprawnień.
+- Jest: dodany komunikat `TOP-SESSION-NOT-READY` wyświetlany tylko gdy `sessionReady === false`.
+
+### Plik `Second/docs/Documentation.md`
+Linia 173
+- Było: dokumentacja opisywała hybrydę (sesja + fallback do widocznych przycisków sidebaru).
+- Jest: dokumentacja opisuje pojedynczy resolver `resolveUserTournamentAccessState()` i regułę wyświetlania `TOP-NO-PANELS` dopiero po `sessionReady === true`.
+
+Linia 176
+- Było: lista kodów diagnostycznych nie zawierała `TOP-SESSION-NOT-READY`.
+- Jest: dodano kod `TOP-SESSION-NOT-READY` z opisem.
+
+### Plik `Second/docs/README.md`
+Linia 10g
+- Było: instrukcja użytkownika mówiła o awaryjnym fallbacku sekcji z widocznych przycisków sidebaru.
+- Jest: instrukcja opisuje jeden mechanizm sesji PIN bez fallbacku i nowy komunikat przejściowy `TOP-SESSION-NOT-READY`.
