@@ -161,7 +161,7 @@
 - Przed zapisem turnieju administrator generuje pełną kopię readonly modelu tabel (`buildTournamentReadonlyCopies`) i zapisuje ją do `readonlyTables` (`rTournamentState` + komplet kluczy `r*`: `rTABELA10`, `rTABELA11`, `rTABELA12`, `rTABELA13`, `rTABELA14`, `rTABELA15`, `rTABELA16`, `rTABELA17`, `rTABELA18`, `rTABELA19`, `rTABELA19A`, `rTABELA19B`, `rTABELA21`, `rTABELA22`, `rTABELA22A`, `rTABELA23`, `rTABELA23A`).
 - Widok użytkownika sekcji turniejowych (`players`, `draw`, `payments`, `pool`, `group`, `semi`, `final`, `payouts`) czyta wyłącznie `readonlyTables.rTournamentState` i nie renderuje modeli edycyjnych admina.
 - Sekcja `draw` w user-view renderuje pełną kopię widoku danych: tabelę przypisań (`Gracz`, `Status wpłaty`, `Stół`) oraz karty każdego stołu (`NAZWA`, `ŁĄCZNA SUMA`, tabela graczy z `BUY-IN`) w trybie readonly.
-- Jeżeli `readonlyTables.rTournamentState` nie istnieje, widok usera pokazuje komunikat o braku kopii readonly i nie przechodzi na źródłowe tabele admina.
+- Jeżeli `readonlyTables.rTournamentState` nie istnieje, widok usera pokazuje komunikat diagnostyczny `TOP-READONLY-MISSING` (z nazwą brakującego klucza i instrukcją naprawy w panelu admina) i nie przechodzi na źródłowe tabele admina.
 - Do czasu pierwszego snapshotu obowiązuje flaga gotowości danych (`isUserTournamentLoaded`): przycisk otwierania PIN użytkownika jest zablokowany, a UI pokazuje komunikat ładowania zamiast walidacji PIN na pustym stanie.
 
 ### Render sekcji użytkownika
@@ -171,6 +171,10 @@
 - Użytkownik może przełączać dostępne sekcje przez przyciski `data-tournament-target`.
 - Po poprawnym PIN tworzony jest jawny kontrakt sesji użytkownika (`userTournamentSession`): `playerId`, `allowedSections`, `chatAllowed`, `readonly`, `isVerified`; to jedyne źródło prawdy o dostępie do sekcji.
 - W `renderUserTournament()` dostępność sekcji do renderu jest liczona z kontraktu sesji (`getUserTournamentAllowedTargets()`), a gdy sesja chwilowo zwróci pustą listę używany jest fallback do aktualnie widocznych przycisków sidebaru; eliminuje to fałszywy komunikat „Brak dostępnych paneli...” przy poprawnie nadanych uprawnieniach.
+- Komunikaty dostępu mają kody diagnostyczne:
+  - `TOP-NO-PERMISSION` — PIN poprawny, ale gracz nie ma przypisanych uprawnień turniejowych.
+  - `TOP-NO-PANELS` — PIN poprawny, ale finalna lista dozwolonych sekcji jest pusta.
+  - `TOP-READONLY-MISSING` — brak `readonlyTables.rTournamentState`, więc user-view nie ma źródła danych readonly.
 - Przełączanie sekcji działa przez router `navigateToUserTournamentSection(targetSection, source)`, który blokuje niedozwolone cele i nie pozwala snapshotowi Firestore samodzielnie zmieniać aktywnej zakładki.
 - Kliknięcie przycisku sekcji jest blokowane do czasu `isUserTournamentLoaded === true`; podczas ładowania użytkownik dostaje komunikat `Trwa ładowanie danych turnieju...`, co eliminuje stan pośredni po odświeżeniu strony.
 - Przy każdym kliknięciu sekcji i każdym starcie renderu zapisywany jest log diagnostyczny `console.info("[Second][UserTournament]")` z polami `requestedSection`, `previousSection`, `finalSection`, `allowedTargets`, `isUserTournamentLoaded`, `isUserPinGateOpen`, `verifiedUserId` i timestampem.
