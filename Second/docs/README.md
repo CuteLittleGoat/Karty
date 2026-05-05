@@ -162,7 +162,8 @@
 10d. Gdy klikniesz sekcję zanim zakończy się pierwszy odczyt turnieju z Firebase, aplikacja nie przełączy jeszcze widoku i pokaże status `Trwa ładowanie danych turnieju...`; po snapshotcie kliknięcia działają normalnie.
 10e. `Czat` i sekcje turniejowe mają osobne obszary renderu; po przejściu z `Czat` do innej sekcji formularz wiadomości jest odmontowywany, a przejścia nie „zawieszają” widoku na czacie.
 10f. W konsoli przeglądarki dostępny jest log `"[Second][UserTournament]"` (kliknięcie, render, snapshot), który pokazuje docelową sekcję i ułatwia diagnostykę „sticky chat”.
-10g. Jeśli gracz ma poprawnie nadane uprawnienia i widzi przyciski sekcji w sidebarze, aplikacja renderuje dane tych sekcji bez komunikatu „Brak dostępnych paneli...”; dostęp do sekcji jest liczony z sesji PIN użytkownika, a awaryjnie z aktualnie widocznych przycisków panelu bocznego.
+10g. Dostęp do sekcji jest liczony z jednego wspólnego mechanizmu sesji PIN; aplikacja nie używa osobnego fallbacku „z widocznych przycisków”.
+10h. Jeżeli sesja PIN dopiero się inicjalizuje, zobaczysz komunikat `TOP-SESSION-NOT-READY` (krótki stan przejściowy). Komunikat `TOP-NO-PANELS` pojawia się dopiero po pełnym zbudowaniu sesji.
 11. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
 12. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.
 13. Sekcje `Losowanie stołów`, `Wpłaty`, `Podział puli`, `Faza grupowa`, `Półfinał`, `Finał` i `Wypłaty` pokazują pełny podgląd danych turniejowych w trybie tylko do odczytu.

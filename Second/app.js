@@ -2658,6 +2658,26 @@ const setupUserView = (root) => {
       ...(userTournamentSession.chatAllowed ? ["chatTab"] : [])
     ];
   };
+  const resolveUserTournamentAccessState = () => {
+    const isVerified = Boolean(userTournamentSession.isVerified);
+    const allowedTargets = getUserTournamentAllowedTargets();
+    const sessionReady = isUserTournamentLoaded && (!isVerified || Boolean(userTournamentSession.playerId));
+    let reasonCode = "TOP-OK";
+    if (!sessionReady) {
+      reasonCode = "TOP-SESSION-NOT-READY";
+    } else if (!isVerified) {
+      reasonCode = "TOP-NO-PERMISSION";
+    } else if (!allowedTargets.length) {
+      reasonCode = "TOP-NO-PANELS";
+    }
+    return {
+      isVerified,
+      allowedTargets,
+      sessionReady,
+      reasonCode,
+      playerId: userTournamentSession.playerId || ""
+    };
+  };
 
   const updateProtectedTabsVisibility = () => {
     const isVerified = userTournamentSession.isVerified;
@@ -2764,17 +2784,15 @@ const setupUserView = (root) => {
       return false;
     }
     const requestedSection = String(targetSection || "");
-    const sessionAllowedTargets = getUserTournamentAllowedTargets();
-    const visibleSidebarTargets = tournamentButtons
-      .filter((button) => button.style.display !== "none")
-      .map((button) => button.dataset.tournamentTarget || "")
-      .filter(Boolean);
-    const allowedTargets = sessionAllowedTargets.length ? sessionAllowedTargets : visibleSidebarTargets;
+    const accessState = resolveUserTournamentAccessState();
+    const allowedTargets = accessState.allowedTargets;
     if (!allowedTargets.includes(requestedSection)) {
       logUserTournamentTransition("section_navigation_blocked", {
         source,
         requestedSection,
-        allowedTargets
+        allowedTargets,
+        reasonCode: accessState.reasonCode,
+        sessionReady: accessState.sessionReady
       });
       return false;
     }
@@ -2808,14 +2826,24 @@ const setupUserView = (root) => {
       return;
     }
 
-    const sidebarAllowedTargets = renderTournamentButtonsForPlayer();
-    const sessionAllowedTargets = getUserTournamentAllowedTargets();
-    const allowedTargets = sessionAllowedTargets.length ? sessionAllowedTargets : sidebarAllowedTargets;
+    renderTournamentButtonsForPlayer();
+    const accessState = resolveUserTournamentAccessState();
+    const allowedTargets = accessState.allowedTargets;
     logUserTournamentTransition("render_start", {
       renderToken,
       requestedSection: userTournamentSection,
-      allowedTargets
+      allowedTargets,
+      reasonCode: accessState.reasonCode,
+      sessionReady: accessState.sessionReady
     });
+    if (!accessState.sessionReady) {
+      syncTournamentMountVisibility("players");
+      dataMount.innerHTML = '<p class="builder-info">Trwa przygotowanie uprawnień PIN do Tournament of Poker (kod: TOP-SESSION-NOT-READY). Odczekaj chwilę i spróbuj ponownie.</p>';
+      if (chatMount !== dataMount) {
+        chatMount.innerHTML = "";
+      }
+      return;
+    }
     if (!allowedTargets.length) {
       syncTournamentMountVisibility("players");
       dataMount.innerHTML = '<p class="builder-info">Brak dostępnych paneli Tournament of Poker dla tego PIN-u (kod: TOP-NO-PANELS). PIN został przyjęty, ale lista dozwolonych sekcji jest pusta. Rozwiązanie: w panelu admina otwórz „Lista graczy”, przypisz uprawnienia turniejowe temu PIN-owi i zapisz turniej.</p>';

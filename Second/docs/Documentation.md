@@ -170,9 +170,11 @@
 - Po wejściu do `TOURNAMENT OF POKER` przyciski `data-tournament-target` są filtrowane per gracz; bez odpowiednich uprawnień nie renderują się przyciski nawigacji do paneli.
 - Użytkownik może przełączać dostępne sekcje przez przyciski `data-tournament-target`.
 - Po poprawnym PIN tworzony jest jawny kontrakt sesji użytkownika (`userTournamentSession`): `playerId`, `allowedSections`, `chatAllowed`, `readonly`, `isVerified`; to jedyne źródło prawdy o dostępie do sekcji.
-- W `renderUserTournament()` dostępność sekcji do renderu jest liczona z kontraktu sesji (`getUserTournamentAllowedTargets()`), a gdy sesja chwilowo zwróci pustą listę używany jest fallback do aktualnie widocznych przycisków sidebaru; eliminuje to fałszywy komunikat „Brak dostępnych paneli...” przy poprawnie nadanych uprawnieniach.
+- W `renderUserTournament()`, `navigateToUserTournamentSection()` i renderze sidebaru działa jeden wspólny resolver `resolveUserTournamentAccessState()` (jedno źródło prawdy dostępu): zwraca `isVerified`, `allowedTargets`, `sessionReady`, `reasonCode` i `playerId`.
+- `TOP-NO-PANELS` jest pokazywany dopiero po `sessionReady === true`; gdy sesja jeszcze się inicjalizuje widoczny jest komunikat `TOP-SESSION-NOT-READY`.
 - Komunikaty dostępu mają kody diagnostyczne:
   - `TOP-NO-PERMISSION` — PIN poprawny, ale gracz nie ma przypisanych uprawnień turniejowych.
+  - `TOP-SESSION-NOT-READY` — trwa inicjalizacja sesji uprawnień PIN, sekcje jeszcze nie są gotowe do renderu.
   - `TOP-NO-PANELS` — PIN poprawny, ale finalna lista dozwolonych sekcji jest pusta.
   - `TOP-READONLY-MISSING` — brak `readonlyTables.rTournamentState`, więc user-view nie ma źródła danych readonly.
 - Przełączanie sekcji działa przez router `navigateToUserTournamentSection(targetSection, source)`, który blokuje niedozwolone cele i nie pozwala snapshotowi Firestore samodzielnie zmieniać aktywnej zakładki.
