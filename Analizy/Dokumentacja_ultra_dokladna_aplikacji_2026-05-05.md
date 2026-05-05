@@ -353,3 +353,151 @@ Aby odtworzyć aplikację funkcjonalnie:
 ## 10. Podsumowanie biznesowe
 
 Aplikacja jest wyspecjalizowanym systemem do prowadzenia rozgrywek pokerowych i turnieju z rozdziałem ról admin/użytkownik. Obejmuje pełny cykl: konfigurację graczy, obsługę stołów i płatności, zaawansowane etapy turniejowe, potwierdzenia obecności, statystyki, rankingi i narzędzia kalkulacyjne. Kluczową cechą systemu jest utrzymanie zgodności danych między panelem administracyjnym i widokiem użytkownika przy jednoczesnym ograniczeniu uprawnień edycyjnych.
+
+---
+
+## 5. Rozszerzenie ultra-dokładne: funkcje, przyciski, checkboxy, pola i ekrany (Main + Second)
+
+## 5.1. MAIN — mapa ekranów i nawigacji
+
+### 5.1.1. Ekrany/zakładki
+- `Gry admina` — operacyjna lista gier zarządzanych przez administratora (tworzenie rekordów, wejście do szczegółów gry, podgląd statusów potwierdzeń).
+- `Gry użytkowników` — lista gier tworzonych po stronie użytkowników (zabezpieczona PIN i filtrami tożsamości).
+- `Potwierdzenia` — panel potwierdzania obecności oraz podgląd statusu potwierdzeń dla graczy przypisanych do gier.
+- `Najbliższa gra` — widok wyłącznie przyszłych (lub dzisiejszych) rekordów otwartych gier, posortowanych rosnąco po dacie.
+- `Statystyki` — roczne zestawienia wyników i rankingów, z obsługą ręcznych wag.
+- `Strefa gracza` — panel użytkownika odblokowywany PIN-em, z sekcjami zależnymi od uprawnień i mapy dostępu.
+- `Kalkulatory` — złożony panel obliczeń `Tournament`, `Cash`, `Organizacja`, `Żetony`.
+
+### 5.1.2. Każdy globalny przycisk Main
+- `Instrukcja` — otwarcie modala instrukcji; pierwszy klik pobiera treść z backendu/pliku, kolejne kliknięcia korzystają z cache pamięciowego.
+- `Kontrola celno-skarbowa` (czerwony) — otwarcie awaryjnego modala z GIF-em (`Koza.gif`), zamknięcie przez `X`, overlay, `Escape`.
+- `Odśwież` (w user-panelu) — wymusza przeładowanie danych aktywnej zakładki bez pełnego `window.location.reload()`, więc sesja PIN pozostaje aktywna.
+
+### 5.1.3. Przyciskowe akcje na listach gier
+- `Dodaj grę` — tworzy dokument gry (z metadanymi daty, rodzaju, nazwą, flagami i autorem), po czym tabela jest przebudowywana i podpinane są snapshoty detali.
+- `Szczegóły` — otwiera modal wierszy gry; w środku użytkownik admin może zmieniać wpisy graczy, pola finansowe i punktowe.
+- `Statusy` — otwiera modal read-only z listą uczestników i statusem potwierdzenia; to UI do szybkiego audytu frekwencji.
+- `Notatki do gry` — wejście do notatek skojarzonych z konkretną grą.
+- `Usuń grę` — kasuje rekord gry i subkolekcje zależne (wiersze/potwierdzenia), po czym odświeża listę.
+
+## 5.2. MAIN — każde krytyczne pole i sposób obliczania
+
+### 5.2.1. Pole `IlośćPotwierdzonych`
+- Wyliczane jako `potwierdzeni / zapisani`.
+- `zapisani` = liczba uczestników z `rows`.
+- `potwierdzeni` = liczba rekordów `confirmations` ze statusem pozytywnym.
+- Identyfikacja oparta o klucz logiczny `id:<playerId>` (fallback `name:<playerName>`), aby nie mieszać graczy o tej samej nazwie.
+
+### 5.2.2. Pola finansowe w szczegółach gry
+- `entryFee` — opłata wejściowa gracza; wartość liczbowa (digits-only).
+- `rebuy` — suma wszystkich pól `RebuyN` gracza (utrzymywana równolegle do listy składowych).
+- `payout` — wypłata końcowa gracza.
+- `points` — punkty rankingowe.
+- „Ten fragment kodu robi XXX”: logika modala rebuy rozdziela `values[]` i `indexes[]`, dzięki czemu `Rebuy1/Rebuy2/...` zachowują numerację nawet gdy usuwasz kolumny pośrodku.
+
+### 5.2.3. Daty i sortowanie (`Najbliższa gra`)
+- Obsługiwane formaty: `YYYY-MM-DD`, `DD.MM.YYYY`, `DD-MM-YYYY`.
+- Wiersze z datą < dzisiejsza są odfiltrowane.
+- Sortowanie rosnące: najbliższy termin wyżej.
+
+## 5.3. MAIN — działanie checkboxów i przełączników
+- Checkboxy potwierdzeń (w sekcji potwierdzeń/statusów) zapisują status per gracz/per gra.
+- Przełączniki dostępów w `Strefie gracza` (wynikające z `player_access`) decydują, czy sekcja ma się renderować po PIN.
+- Przełączniki/statyczne flagi widokowe są ponownie synchronizowane po snapshotach `player-access-updated`, żeby po odświeżeniu nie „znikały” uprawnienia.
+
+## 5.4. MAIN — widok user vs admin
+- Admin: pełna edycja danych gier, graczy, statystyk, potwierdzeń i kalkulatorów.
+- User: tylko sekcje dozwolone PIN-em i mapą uprawnień; brak akcji niszczących rekordy.
+- PWA wymusza scenariusz user-only przy starcie `?pwa=1&view=user`.
+
+## 5.5. SECOND — mapa ekranów i nawigacji
+
+### 5.5.1. Ekran główny Tournament of Poker (admin)
+Sekcje sidebaru:
+1. `Lista graczy`
+2. `Losowanie stołów`
+3. `Wpłaty`
+4. `Podział puli`
+5. `Faza grupowa`
+6. `Półfinał`
+7. `Finał`
+8. `Wypłaty`
+9. `Czat` (wspólny kanał komunikacji)
+
+### 5.5.2. Każdy przycisk w `Lista graczy`
+- `Dodaj gracza` — tworzy rekord gracza z unikalnym `id` i pustymi polami roboczymi.
+- `Usuń` — usuwa gracza oraz czyści jego referencje w: przypisaniach stołów, eliminacjach, mapach rebuy, payoutach.
+- `Losuj PIN` — generuje 5-cyfrowy PIN i sprawdza unikalność względem istniejących graczy.
+- `Edytuj uprawnienia` — otwiera modal checkboxów sekcyjnych użytkownika.
+- `Wyzeruj Rebuy` — zeruje wszystkie `payments.table12Rebuys` i powiązane pola puli.
+
+### 5.5.3. Każdy przycisk w `Losowanie stołów`
+- `Dodaj stół` — dopisuje nowy stół (`StółN`).
+- `Usuń stół` — usuwa stół i wykonuje renumerację globalnych indeksów `RebuyN`, aby nie zostały luki.
+- `Select STÓŁ` per gracz — zapis przypisania do stołu na `change` (stabilny UX dropdown).
+
+### 5.5.4. Każdy przycisk i pole we `Wpłaty`
+- `REBUY` (w Tabela12) — otwiera modal rebuy konkretnego gracza.
+- W modalu rebuy:
+  - `Dodaj Rebuy` — dopisuje nową kolumnę `RebuyX` (globalny indeks).
+  - `Usuń Rebuy` — usuwa wskazany `RebuyX` i kompaktuje indeksy globalnie.
+  - `X` — zamyka modal.
+- `BUY-IN` per gracz jest polem wejściowym liczbowym (sanityzacja do cyfr).
+
+## 5.6. SECOND — każdy checkbox i jego efekt
+- `Status płatności` (Lista graczy): przełącza `Do zapłaty`/`Opłacone`; wpływa na wizualny status oraz sumaryczne panele finansowe.
+- `ELIMINATED` w Tabela19 (faza grupowa):
+  - `true` => gracz przechodzi do Tabela19A (eliminowani),
+  - `false` => wraca do Tabela19B (pozostali).
+- `ELIMINATED` w Tabela22 (półfinał): oznacza eliminację półfinałową i dopisuje do `semi.eliminatedOrder`.
+- `showInitial` / `showFinal` (wypłaty): kontrola widoczności kolumn „POCZĄTKOWA WYGRANA” i „KOŃCOWA WYGRANA” w admin-view i user-view.
+
+## 5.7. SECOND — obliczanie każdego kluczowego pola
+
+### 5.7.1. Tabela10
+- `SUMA = Σ(BUY-IN z Tabela12) + Σ(REBUY z Tabela12)`.
+- `LICZ. REBUY/ADD-ON` = liczba niepustych pól rebuy (nie suma wartości).
+
+### 5.7.2. Tabela11
+- `RAKE = (ΣBUY-IN + ΣREBUY) × (procent/100)`.
+- `BUY-IN netto = BUY-IN brutto - rake od BUY-IN`.
+- `REBUY netto = REBUY brutto - rake od REBUY`.
+- `POT = BUY-IN netto + REBUY netto`.
+
+### 5.7.3. Tabela16
+- Wiersze 1–3: wejście procentowe (domyślne fallbacki 50/30/20).
+- Wiersze 4+: wejście kwotowe bez `%`.
+- `KWOTA`:
+  - wiersze 1–3: `% × baza podziału`,
+  - wiersze 4+: wartość bezpośrednia.
+- `SUMA = KWOTA + Σ(REBUY w wierszu) + Σ(MOD)`.
+
+### 5.7.4. Tabela18 / Tabela19 / Tabela21 / Tabela23
+- `Tabela18.ŁĄCZNY STACK` = suma stacków aktywnych graczy po stołach.
+- `%` w tabelach grupowej/półfinałowej/finałowej = `stack gracza / Tabela18.ŁĄCZNY STACK`.
+- `Tabela23` sortuje finalistów malejąco po `finalStack`.
+
+## 5.8. SECOND — user-view (PIN) krok po kroku
+- Użytkownik wpisuje PIN i po walidacji tworzony jest kontrakt sesji (`userTournamentSession`).
+- Kontrakt określa dokładnie: `playerId`, `allowedSections`, `chatAllowed`, `readonly`.
+- Dane turnieju użytkownika są renderowane wyłącznie z `readonlyTables.rTournamentState`.
+- Jeżeli readonly snapshot nie istnieje, UI pokazuje komunikat o braku danych readonly zamiast renderować edycyjny model admina.
+- `chatTab` jest jedyną sekcją interaktywną po stronie usera.
+
+## 5.9. Przykłady „ten fragment kodu robi XXX”
+1. **Snapshot guard przy edycji**: mechanizm `hasActiveEdit + pendingLocalWrites + deferredSnapshotState` blokuje nadpisanie wpisywanego pola przez opóźniony snapshot.
+2. **Render token user-view**: `userTournamentRenderToken` przerywa stary render, gdy nowszy stan już wystartował.
+3. **Renumeracja Rebuy po usunięciu stołu**: mapowanie `oldIndex -> newIndex` utrzymuje spójne `RebuyN` i zgodność z kolumnami puli.
+4. **Fallback identyfikacji gracza**: `playerId` jest preferowany, ale dla starych rekordów działa kompatybilność po nazwie gracza.
+
+## 5.10. Lista kompletności (wymagania z promptu)
+- Opisano działanie:
+  - wszystkich głównych ekranów i zakładek,
+  - wszystkich globalnych przycisków,
+  - przycisków sekcyjnych (Main + Second),
+  - checkboxów i przełączników,
+  - obliczeń kluczowych pól finansowych/stackowych/payoutowych,
+  - różnic między widokiem user i admin,
+  - kluczowych funkcji stabilizujących render i synchronizację.
+
