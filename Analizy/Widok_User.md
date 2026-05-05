@@ -780,3 +780,82 @@ Plik `Second/app.js`
 Linia 2840
 Było: `Brak kopii readonly (r*). Poproś administratora o zapis danych turnieju.`
 Jest: `Brak kopii readonly turnieju (readonlyTables.rTournamentState, kod: TOP-READONLY-MISSING)...` + instrukcja: wejść w `?admin=1`, wykonać zmianę i zapisać turniej.
+
+---
+
+## Aktualizacja analizy (2026-05-05) — diagnostyka po operacjach na graczach i stołach + porównanie z modułem Main
+
+### Prompt użytkownika (kontekst tej aktualizacji)
+Przeczytaj i rozbuduj analizę Analizy/Widok_User.md
+Dopisz do niej nowe wnioski.
+
+1. Usunąłem dwóch graczy.
+2. Dodałem dwóch graczy (wraz z PIN i uprawnieniami do zakładek).
+3. Dodałem stół.
+4. Przypisałem graczy do stołu.
+5. Pojawia się komunikat: "Brak dostępnych paneli Tournament of Poker dla tego PIN-u (kod: TOP-NO-PANELS). PIN został przyjęty, ale lista dozwolonych sekcji jest pusta. Rozwiązanie: w panelu admina otwórz „Lista graczy”, przypisz uprawnienia turniejowe temu PIN-owi i zapisz turniej."
+6. Zakładka Czat działa poprawnie. Po przejściu na jakąkolwiek inną zakładkę pojawia się kominikat: "Brak dostępnych paneli Tournament of Poker dla tego PIN-u (kod: TOP-NO-PANELS). PIN został przyjęty, ale lista dozwolonych sekcji jest pusta. Rozwiązanie: w panelu admina otwórz „Lista graczy”, przypisz uprawnienia turniejowe temu PIN-owi i zapisz turniej."
+
+Jakie czynności mam teraz wykonać, żeby zdiagnozować problem?
+
+Dodatkowo Sprawdź jak widoku użytkownika i admina działają w module Main i czy można wykorzystać rozwiązanie z zakładki "Statystyki".
+
+### Nowe wnioski diagnostyczne
+
+1. W `Second/app.js` komunikat `TOP-NO-PANELS` jest emitowany wyłącznie wtedy, gdy `allowedTargets.length === 0` w `renderUserTournament()`. Jednocześnie dla renderu przycisków używana jest sesja PIN (`userTournamentSession.allowedSections` + `chatAllowed`) i fallback do widocznych przycisków sidebaru. To oznacza, że jeśli użytkownik widzi przyciski sekcji, a treść pokazuje `TOP-NO-PANELS`, to mamy niespójność runtime/state-flow między etapem budowania sidebaru i etapem renderu treści (nie sam błąd danych stołu).
+
+2. Operacje „usunąłem graczy -> dodałem nowych -> dodałem stół -> przypisałem graczy” nie gwarantują naprawy sesji PIN, bo problem nie dotyczy samego przypisania stołu. `TOP-NO-PANELS` dotyczy pustej listy sekcji dozwolonych dla sesji użytkownika, a nie pustej listy stołów.
+
+3. Skoro `Czat` działa, to PIN i podstawowa identyfikacja gracza są poprawne. Błąd dotyczy wyłącznie ścieżki sekcji danych (`tournamentDataMount`) i ich walidacji dostępu.
+
+4. W module Main podobny problem został rozwiązany innym wzorcem: przycisk sekcji jest widoczny tylko po pozytywnej walidacji `isPlayerAllowedForTab(...)`, a stan dostępu do każdej sekcji (w tym `statsTab`) jest synchronizowany centralnie przez `syncPlayerZoneSectionAccess(...)` przed renderem paneli. Dzięki temu Main ma jedną spójną „bramkę uprawnień” dla widoczności i zawartości.
+
+5. Rozwiązanie z Main/Statystyki da się przenieść do Second: zamiast dwuetapowego liczenia (`sessionAllowedTargets` oraz fallback `sidebarAllowedTargets`) trzeba mieć jeden wspólny resolver uprawnień i jeden status gotowości sesji; komunikat `TOP-NO-PANELS` powinien pojawić się dopiero po potwierdzeniu, że sesja jest kompletna i stabilna.
+
+### Konkretne czynności diagnostyczne do wykonania teraz (kolejność)
+
+1. **Weryfikacja uprawnień gracza w danych źródłowych**
+   - Wejdź w `?admin=1` -> `Lista graczy`.
+   - Otwórz edycję obu nowo dodanych graczy i potwierdź, że uprawnienia są zaznaczone w polu, które zapisuje `permissions` (nie tylko wizualnie zaznaczone checkboxy).
+   - Zapisz gracza i odśwież widok admina, następnie sprawdź, czy zaznaczenia nadal są obecne.
+
+2. **Wymuszenie świeżego zapisu dokumentu turnieju**
+   - W `Tournament of Poker` w `?admin=1` wykonaj drobną zmianę (np. dopisz znak w nazwie stołu i cofnij), następnie zapisz.
+   - Celem jest wymuszenie zapisu stanu turnieju i ponownego wygenerowania `readonlyTables.rTournamentState`.
+
+3. **Test PIN po pełnym resecie sesji lokalnej**
+   - W widoku user (`Second/index.html`) wyczyść `localStorage` i `sessionStorage` dla domeny.
+   - Zaloguj się PIN-em gracza A, przejdź po każdej dozwolonej zakładce.
+   - Powtórz dla gracza B.
+
+4. **Test spójności „przyciski vs treść”**
+   - Jeśli widzisz przyciski, a po kliknięciu nadal `TOP-NO-PANELS`, zanotuj dokładnie: PIN testowy, które przyciski są widoczne, która zakładka powoduje błąd, o której godzinie test był wykonany.
+   - Ten punkt potwierdza runtime mismatch i będzie podstawą do poprawki kodu.
+
+5. **Test kontrolny z minimalnymi uprawnieniami**
+   - Utwórz testowego gracza C z tylko jedną sekcją danych (np. `draw`) + opcjonalnie `chatTab`.
+   - Sprawdź, czy pojedyncza sekcja danych działa. Jeżeli nie działa, błąd jest globalny w resolverze sesji, nie w konkretnej zakładce.
+
+### Rekomendacja implementacyjna (na bazie wzorca Main/Statystyki)
+
+1. W Second dodać pojedynczy helper `resolveUserTournamentAccessState()` zwracający jednocześnie:
+   - `isVerified`,
+   - `allowedTargets`,
+   - `sessionReady`,
+   - `reasonCode` (np. `TOP-NO-PERMISSION`, `TOP-SESSION-NOT-READY`, `TOP-NO-PANELS`).
+
+2. `renderTournamentButtonsForPlayer()`, `navigateToUserTournamentSection()` i `renderUserTournament()` powinny używać wyłącznie tego samego wyniku helpera (bez lokalnych fallbacków liczonych oddzielnie).
+
+3. Komunikat `TOP-NO-PANELS` pokazywać tylko gdy `sessionReady === true` i `allowedTargets.length === 0`.
+   - Gdy `sessionReady === false`, pokazywać komunikat przejściowy typu: `Trwa przygotowanie uprawnień PIN (kod: TOP-SESSION-NOT-READY)`.
+
+4. Dodać tryb diagnostyczny (np. aktywny dla `?admin=1` lub `?debug=1`) wypisujący do konsoli: `playerId`, `permissions`, `allowedSections`, `chatAllowed`, `allowedTargets`, `userTournamentSection`.
+
+### Ocena pytania „czy da się wykorzystać rozwiązanie z zakładki Statystyki w Main?”
+
+Tak. Najbardziej wartościowe elementy do przeniesienia z Main to:
+- centralna synchronizacja stanu dostępu przed renderem sekcji,
+- brak rozjazdu między widocznością przycisków a prawem do renderu,
+- odświeżanie sekcji przez pojedynczy, kontrolowany punkt (`synchronizeStatisticsAccessState()` jako wzorzec „synchronizuj -> renderuj”).
+
+W praktyce: należy przebudować Second tak, aby działał jak Main (jedno źródło prawdy dla uprawnień), a nie jak obecny układ hybrydowy (sesja + fallback do sidebaru).
