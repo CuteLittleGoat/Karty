@@ -2629,7 +2629,9 @@ const setupUserView = (root) => {
 
     if (!allowedButtons.length) {
       if (userTournamentStatus) {
-        userTournamentStatus.textContent = isVerified ? "Administrator nie nadał Ci jeszcze uprawnień do paneli Tournament of Poker." : "Wpisz PIN, aby zobaczyć dostępne panele.";
+        userTournamentStatus.textContent = isVerified
+          ? "PIN jest poprawny, ale konto nie ma przypisanych uprawnień Tournament of Poker (kod: TOP-NO-PERMISSION). Poproś administratora o zaznaczenie uprawnień przy graczu i zapisanie turnieju w panelu admina."
+          : "Wpisz PIN, aby zobaczyć dostępne panele Tournament of Poker.";
       }
       return [];
     }
@@ -2816,7 +2818,7 @@ const setupUserView = (root) => {
     });
     if (!allowedTargets.length) {
       syncTournamentMountVisibility("players");
-      dataMount.innerHTML = '<p class="builder-info">Brak dostępnych paneli Tournament of Poker dla tego PIN-u.</p>';
+      dataMount.innerHTML = '<p class="builder-info">Brak dostępnych paneli Tournament of Poker dla tego PIN-u (kod: TOP-NO-PANELS). PIN został przyjęty, ale lista dozwolonych sekcji jest pusta. Rozwiązanie: w panelu admina otwórz „Lista graczy”, przypisz uprawnienia turniejowe temu PIN-owi i zapisz turniej.</p>';
       if (chatMount !== dataMount) {
         chatMount.innerHTML = "";
       }
@@ -2837,7 +2839,7 @@ const setupUserView = (root) => {
 
       const readonlyTournamentStateRaw = userTournamentState.readonlyTables?.rTournamentState;
       if (!readonlyTournamentStateRaw || typeof readonlyTournamentStateRaw !== "object") {
-        dataMount.innerHTML = '<p class="builder-info">Brak kopii readonly (r*). Poproś administratora o zapis danych turnieju.</p>';
+        dataMount.innerHTML = '<p class="builder-info">Brak kopii readonly turnieju (readonlyTables.rTournamentState, kod: TOP-READONLY-MISSING). Widok użytkownika działa wyłącznie na kopii readonly. Rozwiązanie: administrator musi wejść do „Tournament of Poker” w trybie ?admin=1 i zapisać dane turnieju (dowolna zmiana + zapis), aby odtworzyć klucz readonlyTables.rTournamentState.</p>';
         return;
       }
       const readonlyTournamentState = normalizeTournamentState(readonlyTournamentStateRaw);

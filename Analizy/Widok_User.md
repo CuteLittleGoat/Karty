@@ -747,3 +747,36 @@ Dlatego możliwy jest stan: `Czat` działa poprawnie, a sekcje danych blokuje ko
 Na podstawie obecnego kodu i opisanego przebiegu najbardziej prawdopodobny jest problem warstwy runtime (cache/deploy/stan sesji), a nie błąd samego procesu dodawania graczy.
 
 Nie rekomenduję kasowania wszystkich graczy. Najpierw należy potwierdzić spójność wersji `Second/app.js` na GitHub Pages i wykonać czyszczenie cache + ponowną inicjalizację sesji PIN.
+
+## Uzupełnienie analizy po zgłoszeniu użytkownika (2026-05-05)
+
+### Prompt użytkownika (kontekst)
+Przeczytaj i rozbuduj analizę `Analizy/Widok_User.md`. Dopisz nowe wnioski.
+
+- „więc scenariusz „widzę przyciski, ale jednocześnie kod twierdzi brak paneli” jest logicznie sprzeczny dla jednej i tej samej wersji skryptu.” — dokładnie taka sytuacja występuje.
+- Cache został wykluczony (nowa przeglądarka, incognito, wiele urządzeń).
+- Prośba o doprecyzowanie „zapisz dane turnieju”.
+- Prośba o modyfikację komunikatów błędów tak, by wskazywały przyczynę i rozwiązanie.
+
+### Nowe wnioski
+1. Zgłoszony przypadek (widoczne przyciski + komunikat o braku paneli) jest możliwy przy krótkotrwałej niespójności źródeł dostępu (sesja PIN vs lista przycisków sidebaru) albo przy braku pełnej informacji diagnostycznej w komunikacie — użytkownik widzi objaw, ale nie zna warunku, który zadziałał.
+2. Skoro cache został odrzucony testami na wielu urządzeniach/przeglądarkach, należy traktować problem jako runtime/data-flow, a nie dystrybucję starych assetów.
+3. „Zapisz dane turnieju” w praktyce oznacza: wykonać zmianę w `Tournament of Poker` w trybie `?admin=1` i doprowadzić do zapisu dokumentu `second_tournament/state` tak, aby odtworzył się `readonlyTables.rTournamentState`.
+4. Dodanie kodów błędów i instrukcji naprawy w samym komunikacie UI skraca diagnostykę: sam tekst błędu powinien mówić, co jest niespójne i co administrator ma zrobić.
+
+## Zrealizowane zmiany w kodzie po tej analizie (2026-05-05)
+
+Plik `Second/app.js`
+Linia 2632
+Było: `Administrator nie nadał Ci jeszcze uprawnień do paneli Tournament of Poker.`
+Jest: `PIN jest poprawny, ale konto nie ma przypisanych uprawnień Tournament of Poker (kod: TOP-NO-PERMISSION). Poproś administratora o zaznaczenie uprawnień przy graczu i zapisanie turnieju w panelu admina.`
+
+Plik `Second/app.js`
+Linia 2819
+Było: `Brak dostępnych paneli Tournament of Poker dla tego PIN-u.`
+Jest: `Brak dostępnych paneli Tournament of Poker dla tego PIN-u (kod: TOP-NO-PANELS)...` + precyzyjna instrukcja naprawy (nadanie uprawnień + zapis).
+
+Plik `Second/app.js`
+Linia 2840
+Było: `Brak kopii readonly (r*). Poproś administratora o zapis danych turnieju.`
+Jest: `Brak kopii readonly turnieju (readonlyTables.rTournamentState, kod: TOP-READONLY-MISSING)...` + instrukcja: wejść w `?admin=1`, wykonać zmianę i zapisać turniej.
