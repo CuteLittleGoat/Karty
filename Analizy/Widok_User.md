@@ -668,3 +668,82 @@ Najbardziej racjonalna ścieżka to:
 3. dopiero później selektywne odtworzenie pojedynczych graczy.
 
 Kasowanie wszystkich danych na starcie nie jest rekomendowane.
+
+---
+
+## Aktualizacja analizy (2026-05-05) — nadal występuje komunikat „Brak dostępnych paneli...”
+
+## Prompt użytkownika (kontekst tej aktualizacji)
+Przeczytaj i rozbuduj analizę Analizy/Widok_User.md
+Dopisz do niej nowe wnioski.
+
+Na obecną chwilę funkcjonalność wciąż nie działa.
+
+Kroki jakie wykonuję:
+1. Wchodzę na stronę https://cutelittlegoat.github.io/Karty/Second/index.html?admin=1
+2. Wchodzę (jako admin) w zakładkę "Lista Graczy".
+3. Dodaję gracza, nadaje mu uprawnienia i ustawiam kod PIN - Analizy/01.jpg
+4. Dodaję drugiego gracza, nadaje mu uprawnienia i ustawiam kod PIN - Analizy/02.jpg
+5. Wchodzę na stronę https://cutelittlegoat.github.io/Karty/Second/index.html
+6. Podaję PIN gracza z pkt3.
+7. Widzę zakładki na panelu bocznym. Zakładki są takie same na jakie nadałem graczowi uprawnienia w pkt3 - Analizy/03.jpg
+8. Zamiast zawartości zakładek pojawia się komunikat "Brak dostępnych paneli Tournament of Poker dla tego PIN-u."
+8. Otwieram nowe okno w innej przeglądarce i otwieram stronę https://cutelittlegoat.github.io/Karty/Second/index.html
+9. Podaję PIN gracza z pkt4.
+10. Widzę zakładki na panelu bocznym. Zakładki są takie same na jakie nadałem graczowi uprawnienia w pkt4
+11. Zamiast zawartości zakładek pojawia się komunikat "Brak dostępnych paneli Tournament of Poker dla tego PIN-u."
+12. Zakładka Czat wyświetla się prawidłowo.
+
+Sprawdź przyczynę. Zaproponuj rozwiązania. Dopisz kolejne punkty do Analizy/Widok_User.md
+
+## 1) Co oznacza ten objaw względem aktualnego kodu
+
+W aktualnym kodzie `Second/app.js` komunikat `Brak dostępnych paneli Tournament of Poker dla tego PIN-u.` jest renderowany tylko przy warunku `allowedTargets.length === 0` w `renderUserTournament()`.
+
+Jednocześnie przyciski sidebaru są liczone z tych samych źródeł (sesja PIN + fallback do aktualnie widocznych przycisków), więc scenariusz „widzę przyciski, ale jednocześnie kod twierdzi brak paneli” jest logicznie sprzeczny dla jednej i tej samej wersji skryptu.
+
+Wniosek: najbardziej prawdopodobna jest niespójność wersji wykonywanego JS (deploy/cache), a nie sama konfiguracja dwóch nowo dodanych graczy.
+
+## 2) Najbardziej prawdopodobna przyczyna (priorytet)
+
+1. **Na GitHub Pages działa inny build niż w repo** (albo częściowo odświeżone pliki statyczne), przez co użytkownik wykonuje starszą ścieżkę `renderUserTournament()` bez kompletnego fallbacku.
+2. **Silny cache przeglądarki / service worker / cache CDN** trzyma starą wersję `Second/app.js`.
+3. **Wyścig inicjalizacji sesji PIN**: sekcje i przyciski są pokazywane, ale render treści uruchamia się zanim sesja/fallback zostanie dokończony (to także zwykle widać w starszych wersjach skryptu).
+
+## 3) Dlaczego Czat działa, a pozostałe sekcje nie
+
+To zachowanie pasuje do rozdzielenia mountów:
+- `chatTab` renderuje osobny kontener (`tournamentChatMount`) i własny flow autoryzacji,
+- sekcje danych (`draw`, `payments`, `group`, `semi`, `final`, `payouts`, `pool`) renderują się przez `tournamentDataMount` i wspólną walidację `allowedTargets`.
+
+Dlatego możliwy jest stan: `Czat` działa poprawnie, a sekcje danych blokuje komunikat o braku paneli.
+
+## 4) Dodatkowe testy diagnostyczne (bez kasowania danych)
+
+1. Otwórz `https://cutelittlegoat.github.io/Karty/Second/index.html` i wykonaj hard refresh.
+2. W DevTools -> Application wyczyść `sessionStorage` i `localStorage` dla `https://cutelittlegoat.github.io`.
+3. W DevTools -> Network zaznacz `Disable cache` i odśwież stronę.
+4. Sprawdź, czy ładuje się najnowszy `Second/app.js` (status 200, bez `from disk cache`).
+5. W panelu admina (`?admin=1`) zapisz ponownie dane turnieju, by odświeżyć `readonlyTables.generatedAt`.
+6. Dla testu zaloguj się PIN-em gracza, który ma **jedną** sekcję danych + `Czat`; potem PIN-em gracza z inną sekcją.
+7. Jeśli błąd występuje nadal, porównać zachowanie w trybie Incognito (bez rozszerzeń i bez cache).
+
+## 5) Rekomendowane poprawki w kodzie (kolejność wdrożenia)
+
+1. **Twarda samonaprawa sesji przed komunikatem o braku paneli**
+   - W `renderUserTournament()` przed `allowedTargets.length === 0` dodać jeszcze jedną rekalkulację z aktualnego gracza (`getVerifiedUserPlayer()`) i ponowne `applyUserTournamentSession(...)`.
+
+2. **Jednolity helper źródła prawdy dla dostępnych sekcji**
+   - Wydzielić `resolveUserAllowedTargets()` używany i w `navigateToUserTournamentSection()`, i w `renderUserTournament()`, aby uniknąć rozjazdu implementacji.
+
+3. **Flaga gotowości sesji**
+   - Dodać `userTournamentSessionReady` ustawiane dopiero po `applyUserTournamentSession()` i `renderTournamentButtonsForPlayer()`. Do tego czasu nie pokazywać komunikatu „Brak dostępnych paneli...”, tylko „Trwa przygotowanie uprawnień...”.
+
+4. **Diagnostyka runtime (tylko admin/debug)**
+   - Dodać log (lub panel diagnostyczny) z: `playerId`, `allowedSections`, `sidebarAllowedTargets`, `allowedTargets`, `userTournamentSection`, `generatedAt`.
+
+## 6) Wniosek operacyjny
+
+Na podstawie obecnego kodu i opisanego przebiegu najbardziej prawdopodobny jest problem warstwy runtime (cache/deploy/stan sesji), a nie błąd samego procesu dodawania graczy.
+
+Nie rekomenduję kasowania wszystkich graczy. Najpierw należy potwierdzić spójność wersji `Second/app.js` na GitHub Pages i wykonać czyszczenie cache + ponowną inicjalizację sesji PIN.
