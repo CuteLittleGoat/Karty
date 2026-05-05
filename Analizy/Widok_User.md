@@ -859,3 +859,122 @@ Tak. Najbardziej wartościowe elementy do przeniesienia z Main to:
 - odświeżanie sekcji przez pojedynczy, kontrolowany punkt (`synchronizeStatisticsAccessState()` jako wzorzec „synchronizuj -> renderuj”).
 
 W praktyce: należy przebudować Second tak, aby działał jak Main (jedno źródło prawdy dla uprawnień), a nie jak obecny układ hybrydowy (sesja + fallback do sidebaru).
+
+---
+
+## Aktualizacja analizy (2026-05-05) — ocena wariantu 2 + plan przebudowy Second (jedno źródło prawdy)
+
+### Prompt użytkownika (kontekst tej aktualizacji)
+Przeczytaj i rozbuduj analizę Analizy/Widok_User.md
+Dopisz do niej nowe wnioski.
+
+Kręcimy się w kółko z tym problemem. Działaniem oczekiwanym jest, żeby admin w swoim widoku mógł edytować tabele a użytkownik w swoim widoku mieć do nich tylko podgląd. Bez możliwości edycji jakikolwiek danych. Sposób w jaki to można zrobić:
+
+1. Admin tworzy tabelę. "W tle" tworzy się tabela "read-only". Admin widzi tabelę do edycji. Użytkownik widzi kopię tabeli "read-only".
+2. Admin tworzy tabelę. W widoku użytkownika tworzy się identyczna tabela, ale z polami renderowanymi jako zwykły tekst w <td>, bez inputa. Czyli użytkownik nie będzie miał możliwości kliknięcia w cokolwiek.
+
+Sprawdź czy wariant 2 jest możliwy do wdrożenia.
+
+W analizie napisałeś też "W praktyce: należy przebudować Second tak, aby działał jak Main (jedno źródło prawdy dla uprawnień), a nie jak obecny układ hybrydowy (sesja + fallback do sidebaru)."
+
+Napisz dokładnie plan przebudowy. Napisz czy ten plan zadziała tylko z wariantem 1 czy też ewentualnie wariantem 2.
+Opisz możliwe rozwiązania. Nic nie zmieniaj w kodzie. Przygotuj tylko analizę naprawy i modyfikacji.
+
+### 1) Czy wariant 2 jest możliwy do wdrożenia?
+
+**Tak, wariant 2 jest technicznie możliwy do wdrożenia** w obecnej architekturze, ale pod jednym warunkiem: musi zostać wdrożony razem z ujednoliceniem logiki uprawnień (jedno źródło prawdy), bo bieżący problem `TOP-NO-PANELS` dotyczy przede wszystkim autoryzacji sekcji, a nie samego sposobu renderu komórek tabel.
+
+Innymi słowy:
+- wariant 2 rozwiązuje ryzyko „użytkownik edytuje dane przez input”,
+- ale **samodzielnie nie rozwiąże** błędu „brak paneli”, jeśli dostęp do sekcji dalej będzie liczony niespójnie.
+
+### 2) Porównanie wariantów (1 vs 2)
+
+#### Wariant 1 — kopie `rTABELA*` (osobny model readonly)
+- Plusy:
+  - twarda separacja danych admin/user,
+  - mniejsze ryzyko przeniknięcia właściwości edycyjnych,
+  - łatwa diagnostyka rozjazdów (`TABELA*` vs `rTABELA*`).
+- Minusy:
+  - duplikacja danych,
+  - konieczność pilnowania synchronizacji i migracji historycznych rekordów.
+
+#### Wariant 2 — ten sam model danych, ale renderer usera zawsze zwraca statyczne `<td>`
+- Plusy:
+  - mniej zapisów danych (brak pełnej duplikacji per tabela),
+  - szybsze wdrożenie warstwy UI readonly,
+  - prostsza konserwacja schematu danych.
+- Minusy:
+  - większa dyscyplina po stronie renderera (jeden błąd i input może wrócić),
+  - trudniejszy audyt „czy user czytał dokładnie to samo, co admin zapisał w snapshot”.
+
+### 3) Najważniejszy wniosek
+
+Bieżący problem produkcyjny (`TOP-NO-PANELS`) jest **ortogonalny** do wyboru wariantu 1/2.
+Najpierw trzeba ustabilizować bramkę uprawnień (single source of truth), bo bez tego oba warianty mogą nadal dawać objaw „widoczne przyciski, brak treści sekcji”.
+
+### 4) Dokładny plan przebudowy Second do modelu jak Main
+
+#### Etap A — jedno źródło prawdy dostępu (konieczne dla obu wariantów)
+1. Dodać centralny resolver, np. `resolveUserTournamentAccessState()`.
+2. Resolver ma zwracać pełny kontrakt:
+   - `verifiedPlayerId`,
+   - `allowedSectionsRaw` (z danych gracza),
+   - `allowedTargets` (po mapowaniu na sekcje UI),
+   - `chatAllowed`,
+   - `sessionReady`,
+   - `reasonCode` (`TOP-NO-PERMISSION`, `TOP-SESSION-NOT-READY`, `TOP-NO-PANELS`).
+3. Tylko ten resolver ma być używany przez:
+   - render przycisków sidebaru,
+   - nawigację między sekcjami,
+   - render treści sekcji.
+4. Usunąć hybrydę „sesja + fallback do widocznych przycisków” jako niezależne ścieżki liczenia.
+5. Komunikaty błędów wyświetlać dopiero po `sessionReady === true`.
+
+#### Etap B — stabilizacja lifecycle renderu
+1. Kolejność: `verify PIN -> resolve access -> render sidebar -> render active section`.
+2. Przy każdej zmianie aktywnej sekcji ponownie używać tego samego snapshotu `accessState`.
+3. Dodać ochronę przed wyścigiem inicjalizacji (brak renderu treści, dopóki `sessionReady === false`).
+
+#### Etap C — diagnostyka operacyjna
+1. Tryb `?debug=1` z panelem stanu:
+   - `playerId`, `permissions`, `allowedTargets`, `activeSection`, `reasonCode`.
+2. Logowanie kodów decyzji do konsoli dla szybkiego triage.
+3. Krótka instrukcja „jak naprawić” przypięta do każdego `reasonCode`.
+
+#### Etap D — testy regresji (manual + automatyczne)
+1. PIN z 1 sekcją danych + chat.
+2. PIN z wieloma sekcjami danych.
+3. PIN tylko chat.
+4. PIN bez uprawnień.
+5. Przełączanie sekcji po odświeżeniu strony i po ponownym logowaniu PIN.
+
+### 5) Czy plan przebudowy działa tylko z wariantem 1, czy też z wariantem 2?
+
+**Plan Etap A–D działa dla obu wariantów.**
+
+- Dla wariantu 1:
+  - po naprawie dostępu renderer usera czyta `rTABELA*`/`readonlyTables.rTournamentState`.
+- Dla wariantu 2:
+  - po naprawie dostępu renderer usera czyta `TABELA*`, ale renderuje wyłącznie statyczny tekst (`Typ A`, `<td>` bez inputów).
+
+Czyli: przebudowa uprawnień jest wspólnym fundamentem niezależnie od tego, jak zrealizujemy readonly warstwę tabel.
+
+### 6) Rekomendacja wdrożeniowa
+
+1. Najpierw wdrożyć Etap A–B (single source of truth + lifecycle), bo to usuwa obecny blocker `TOP-NO-PANELS`.
+2. Następnie wybrać model readonly:
+   - **bezpieczniej długofalowo:** wariant 1 (oddzielne `r*`),
+   - **szybciej implementacyjnie:** wariant 2 (statyczny renderer usera).
+3. Jeśli celem jest szybkie odblokowanie użytkowników:
+   - uruchomić wariant 2 jako etap przejściowy,
+   - docelowo przejść do wariantu 1 dla lepszej audytowalności i separacji.
+
+### 7) Odpowiedź na pytanie „czy wariant 2 jest możliwy?”
+
+Tak — jest możliwy i realny do wdrożenia. Nie wymaga tworzenia drugiej fizycznej tabeli na każdy byt, ale wymaga:
+- twardego renderer-only readonly dla usera,
+- centralnej, spójnej bramki uprawnień (jak w Main),
+- testów regresji, żeby wykluczyć powrót inputów i niespójność sekcji.
+
+Bez naprawy bramki uprawnień wariant 2 nie usunie obecnego objawu `TOP-NO-PANELS`.
