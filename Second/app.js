@@ -2459,6 +2459,21 @@ const setupUserView = (root) => {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
+  const percentInputToDecimal = (value) => {
+    const normalized = String(value ?? "").replace(",", ".").trim();
+    if (!normalized) return 0;
+    if (/^\d+(\.\d+)?$/.test(normalized) && normalized.includes(".")) {
+      const parsedLegacy = Number(normalized);
+      if (Number.isFinite(parsedLegacy) && parsedLegacy <= 1) {
+        return parsedLegacy;
+      }
+    }
+    return toDigitsNumber(normalized) / 100;
+  };
+  const formatCellNumber = (value) => {
+    if (!Number.isFinite(value)) return "";
+    return String(Math.round(value));
+  };
 
   const firebaseApp = getFirebaseApp();
   const newsOutput = root.querySelector("#latestMessageOutput");

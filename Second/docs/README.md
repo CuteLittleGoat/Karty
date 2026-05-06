@@ -261,3 +261,8 @@
 4. W panelu admina, w `TOURNAMENT OF POKER -> Czat`, dostępna jest moderacja:
    - usuwanie pojedynczych wiadomości,
    - czyszczenie wiadomości starszych niż 30 dni.
+
+
+### Aktualizacja 2026-05-06 — naprawa sekcji `Losowanie stołów` i `Wpłaty` po PIN
+1. Po wpisaniu poprawnego PIN-u i wejściu w `TOURNAMENT OF POKER` sekcje **Losowanie stołów** i **Wpłaty** powinny wyświetlać dane bez komunikatu o błędzie renderowania helperów.
+2. Dla poprawnie uprawnionego PIN-u przełączanie między **Losowanie stołów**, **Wpłaty** i **Czat** nie powinno już wracać do starego objawu `TOP-NO-PANELS`.

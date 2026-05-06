@@ -339,3 +339,9 @@
 - Dodane role akcji kliknięć:
   - `tournament-chat-cleanup`,
   - `tournament-chat-delete-message`.
+
+
+## Aktualizacja techniczna 2026-05-06 (user-view Tournament helper scope)
+- W `setupUserView(root)` dodano lokalne helpery `percentInputToDecimal(value)` oraz `formatCellNumber(value)`, aby sekcje user `draw` i `payments` korzystały z tych samych obliczeń/formatu bez błędów zakresu (`ReferenceError`).
+- Dzięki temu render sekcji użytkownika nie zależy od lokalnych helperów z funkcji admina i nie przerywa się na brakujących definicjach.
+- Po zmianie podniesiono cache-buster skryptu w `Second/index.html` do `app.js?v=2026-05-06-2`.
