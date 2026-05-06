@@ -1846,3 +1846,366 @@ na:
 ```text
 app.js?v=2026-05-06-2
 ```
+## Aktualizacja testu po kolejnej poprawce helperów — `Losowanie stołów` działa, `Wpłaty` zatrzymują się na `toPercentText`
+
+### Data testu
+
+```text
+2026-05-06
+```
+
+### Kontekst
+
+Po wcześniejszym wykryciu błędów:
+
+```text
+ReferenceError: formatCellNumber is not defined
+ReferenceError: percentInputToDecimal is not defined
+```
+
+wdrożono kolejną poprawkę zakresu helperów w `Second/app.js`.
+
+Następnie wykonano ponowny test w Microsoft Edge.
+
+---
+
+## 1. Wynik testu sekcji `Losowanie stołów`
+
+### Wykonane kroki
+
+W widoku użytkownika otwarto:
+
+```text
+TOURNAMENT OF POKER
+```
+
+Następnie użyto PIN-u z uprawnieniami:
+
+```text
+55555
+```
+
+Po lewej stronie widoczne były sekcje:
+
+```text
+Losowanie stołów
+Wpłaty
+Czat
+```
+
+Kliknięto:
+
+```text
+Losowanie stołów
+```
+
+### Wynik
+
+Sekcja `Losowanie stołów` wyrenderowała się poprawnie.
+
+Widoczna była tabela z kolumnami:
+
+```text
+Gracz
+Status wpłaty
+Stół
+```
+
+Widoczne były rekordy graczy oraz przypisane stoły, np.:
+
+```text
+ss    — Do zapłaty — -
+aaa   — Do zapłaty — Stół3
+jhg   — Do zapłaty — Stół2
+gfd   — Do zapłaty — Stół3
+Test3 — Do zapłaty — Stół4
+Test4 — Do zapłaty — Stół4
+```
+
+### Wniosek
+
+Błąd:
+
+```text
+ReferenceError: formatCellNumber is not defined
+```
+
+nie występuje już w sekcji `Losowanie stołów`.
+
+Oznacza to, że poprawka dla `formatCellNumber` została wdrożona skutecznie albo przynajmniej sekcja `draw` ma już dostęp do tego helpera.
+
+Sekcja `draw` przechodzi renderowanie i pokazuje dane użytkownikowi.
+
+---
+
+## 2. Wynik testu sekcji `Wpłaty`
+
+### Wykonane kroki
+
+Kliknięto sekcję:
+
+```text
+Wpłaty
+```
+
+### Wynik
+
+Sekcja `Wpłaty` nadal nie renderuje się poprawnie.
+
+Na ekranie pojawił się komunikat:
+
+```text
+Nie udało się wyrenderować sekcji „payments” (etap: payments).
+Sprawdź dane turniejowe i spróbuj odświeżyć.
+
+Szczegóły: ReferenceError: toPercentText is not defined
+```
+
+### Wniosek
+
+Poprzedni błąd sekcji `Wpłaty`:
+
+```text
+ReferenceError: percentInputToDecimal is not defined
+```
+
+został najpewniej naprawiony, ponieważ aplikacja doszła dalej w renderowaniu sekcji `payments`.
+
+Teraz render zatrzymuje się na kolejnym brakującym helperze:
+
+```js
+toPercentText
+```
+
+To oznacza, że `toPercentText` również jest używany w widoku użytkownika, ale nie jest dostępny w zakresie funkcji renderującej `payments`.
+
+---
+
+## 3. Główna diagnoza po tym teście
+
+Aktualny stan:
+
+```text
+PIN działa.
+Uprawnienia działają.
+Sidebar działa.
+Czat działa.
+Losowanie stołów działa.
+Wpłaty nadal mają błąd renderowania.
+```
+
+Nie występuje już pierwotny problem:
+
+```text
+TOP-NO-PANELS
+```
+
+Nie występuje już w testowanej sekcji `draw` błąd:
+
+```text
+formatCellNumber is not defined
+```
+
+Pozostały problem:
+
+```text
+ReferenceError: toPercentText is not defined
+```
+
+w sekcji:
+
+```text
+payments
+```
+
+---
+
+## 4. Co należy poprawić
+
+### Plik do poprawy
+
+```text
+Second/app.js
+```
+
+### Helper do sprawdzenia
+
+Należy wyszukać w pliku:
+
+```text
+toPercentText
+```
+
+i sprawdzić:
+
+```text
+1. Gdzie `toPercentText` jest zdefiniowany.
+2. Czy definicja znajduje się tylko wewnątrz funkcji admina.
+3. Czy `setupUserView(root)` / render sekcji `payments` używa `toPercentText`, ale nie ma go w swoim zakresie.
+```
+
+---
+
+## 5. Zalecana naprawa
+
+Najlepsze rozwiązanie jest takie samo jak przy poprzednich helperach:
+
+```text
+Przenieść `toPercentText` do wspólnego zakresu modułu w `Second/app.js`.
+```
+
+Czyli helper powinien być dostępny zarówno dla panelu admina, jak i dla widoku użytkownika.
+
+Docelowy schemat:
+
+```js
+const toPercentText = (...) => {
+  // istniejąca implementacja przeniesiona bez zmiany logiki
+};
+
+const setupAdminTournament = (...) => {
+  // admin może używać toPercentText
+};
+
+const setupUserView = (...) => {
+  // user też może używać toPercentText
+};
+```
+
+Nie należy pisać nowej implementacji „na oko”, jeżeli istnieje już działająca wersja w kodzie admina.
+
+Najbezpieczniej:
+
+```text
+- znaleźć istniejącą definicję `toPercentText`,
+- przenieść ją do wspólnego zakresu pliku,
+- usunąć lokalną duplikację, jeżeli taka istnieje,
+- upewnić się, że admin i user korzystają z tej samej funkcji.
+```
+
+---
+
+## 6. Ważna uwaga architektoniczna
+
+To jest kolejny przypadek tego samego typu błędu.
+
+Wcześniej problem dotyczył helperów:
+
+```text
+esc
+formatCellNumber
+percentInputToDecimal
+```
+
+Teraz dotyczy:
+
+```text
+toPercentText
+```
+
+Wniosek:
+
+```text
+Wszystkie helpery używane przez widok użytkownika powinny być albo zdefiniowane lokalnie w setupUserView(root), albo — lepiej — przeniesione do wspólnego zakresu modułu.
+```
+
+Rekomendowane jest sprawdzenie całego renderowania sekcji `payments`, czy nie używa kolejnych helperów dostępnych tylko w adminie.
+
+---
+
+## 7. Co sprawdzić przed kolejnym wdrożeniem
+
+W pliku:
+
+```text
+Second/app.js
+```
+
+należy w obrębie renderowania `payments` wyszukać funkcje pomocnicze podobne do:
+
+```text
+toPercentText
+percentInputToDecimal
+formatCellNumber
+formatCurrency
+formatMoney
+toMoneyText
+toCurrencyText
+parseAmount
+parsePercent
+toNumber
+```
+
+Nie chodzi o to, że wszystkie te funkcje na pewno są błędne.
+
+Chodzi o sprawdzenie, czy żadna z nich nie jest używana w `setupUserView(root)` bez dostępnej definicji.
+
+---
+
+## 8. Cache-buster po poprawce
+
+Po zmianie `Second/app.js` należy ponownie zmienić wersję skryptu w:
+
+```text
+Second/index.html
+```
+
+Jeżeli aktualnie jest np.:
+
+```html
+<script src="app.js?v=2026-05-06-2" type="module"></script>
+```
+
+to po poprawce zmienić na kolejną wersję, np.:
+
+```html
+<script src="app.js?v=2026-05-06-3" type="module"></script>
+```
+
+Najważniejsze, żeby wartość po `?v=` była inna niż w poprzednim teście.
+
+---
+
+## 9. Test po kolejnej poprawce
+
+Po wdrożeniu poprawki należy ponownie sprawdzić:
+
+```text
+1. Czy Edge ładuje nową wersję app.js w Network.
+2. Czy PIN 55555 pokazuje sekcje Losowanie stołów / Wpłaty / Czat.
+3. Czy Losowanie stołów nadal działa.
+4. Czy Wpłaty renderują się bez błędu toPercentText is not defined.
+5. Czy Czat nadal działa.
+6. Czy w Console nie ma błędów ReferenceError związanych z helperami.
+```
+
+Oczekiwany wynik dla `Wpłaty`:
+
+```text
+Sekcja Wpłaty renderuje się poprawnie albo pokazuje kontrolowany komunikat o braku danych.
+Nie pojawia się ReferenceError: toPercentText is not defined.
+```
+
+---
+
+## 10. Podsumowanie tej aktualizacji
+
+Aktualny stan po teście:
+
+```text
+Losowanie stołów: działa.
+Czat: działa.
+Wpłaty: nadal błąd.
+```
+
+Pozostały błąd:
+
+```text
+ReferenceError: toPercentText is not defined
+```
+
+Wniosek techniczny:
+
+```text
+`toPercentText` trzeba udostępnić widokowi użytkownika, najlepiej przez przeniesienie helpera do wspólnego zakresu modułu w Second/app.js.
+```
