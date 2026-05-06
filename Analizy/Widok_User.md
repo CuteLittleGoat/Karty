@@ -1150,3 +1150,20 @@ Plik `Second/index.html`
 Linia 287
 - Było: `<script src="app.js?v=2026-05-06-1" type="module"></script>`
 - Jest: `<script src="app.js?v=2026-05-06-2" type="module"></script>`
+
+## Aktualizacja 2026-05-06 — nowy problem po poprzednich poprawkach i sposób naprawy
+
+### Nowy problem
+Po wcześniejszych poprawkach sekcja **Losowanie stołów** działała poprawnie, ale sekcja **Wpłaty** w widoku użytkownika zatrzymywała się błędem:
+
+```text
+ReferenceError: toPercentText is not defined
+```
+
+### Przyczyna
+W `setupUserView(root)` używany był helper `toPercentText(...)` podczas renderowania tabel `Wpłaty`, ale helper nie był dostępny w zakresie tej funkcji.
+
+### Naprawa
+W `Second/app.js` dodano lokalną definicję helpera `toPercentText` w `setupUserView(root)`, obok już dodanych helperów użytkownika (`esc`, `percentInputToDecimal`, `formatCellNumber`). Dzięki temu sekcja `Wpłaty` korzysta z poprawnego formatowania procentów bez błędu ReferenceError.
+
+Dodatkowo podbito cache-buster skryptu w `Second/index.html` do `app.js?v=2026-05-06-3`, aby przeglądarka pobrała nową wersję kodu.
