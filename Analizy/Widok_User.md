@@ -1019,3 +1019,65 @@ Linia 176
 Linia 10g
 - Było: instrukcja użytkownika mówiła o awaryjnym fallbacku sekcji z widocznych przycisków sidebaru.
 - Jest: instrukcja opisuje jeden mechanizm sesji PIN bez fallbacku i nowy komunikat przejściowy `TOP-SESSION-NOT-READY`.
+
+## Aktualizacja analizy (2026-05-06) — weryfikacja `Analiza_TOP-NO-PANELS.md` i dopisanie planu zmian
+
+### Prompt użytkownika (kontekst tej aktualizacji)
+Przeczytaj analizy:
+- `Analizy/Widok_User.md`
+- `Analizy/Analiza_TOP-NO-PANELS.md`
+
+Zweryfikuj dane z `Analizy/Analiza_TOP-NO-PANELS.md` i dopisz te informacje do `Analizy/Widok_User.md`.
+Zapisz również w `Analizy/Widok_User.md` proponowane zmiany w kodzie uwzględniając sugestie z `Analizy/Analiza_TOP-NO-PANELS.md`.
+
+### Wynik weryfikacji danych z `Analizy/Analiza_TOP-NO-PANELS.md`
+Po porównaniu treści obu analiz potwierdzam, że ustalenia z `Analiza_TOP-NO-PANELS.md` są spójne z dotychczasową diagnozą w `Widok_User.md`, a jednocześnie ją doprecyzowują:
+
+1. Potwierdzono, że `TOP-NO-PANELS` nie musi oznaczać realnego braku uprawnień PIN-u — w testach były widoczne dozwolone przyciski (`draw`, `payments`, `chatTab`) oraz log `reasonCode: "TOP-OK"`.
+2. Potwierdzono występowanie błędu runtime `ReferenceError: readonlyTournamentState is not defined` podczas renderowania sekcji usera.
+3. Potwierdzono ryzyko błędu zakresu dla `esc(...)` używanego w `setupUserView`, jeśli helper jest lokalny tylko dla ścieżki admina.
+4. Potwierdzono, że końcowy objaw użytkownika (pozostający komunikat `TOP-NO-PANELS`) może być wtórny — tj. panel nie zostaje nadpisany po błędzie renderu sekcji.
+
+Wniosek syntetyczny: problem ma charakter **runtime/render-flow** w `Second/app.js` (a nie danych uprawnień samych w sobie), a komunikat `TOP-NO-PANELS` bywa skutkiem ubocznym wcześniejszego wyjątku JS.
+
+### Proponowane zmiany w kodzie (uzupełnienie planu naprawy)
+Poniższy zestaw zmian należy traktować jako zalecany pakiet wdrożeniowy dla `Second`:
+
+1. **Ujednolicić dostęp do helpera `esc` w widoku usera**
+   - Zapewnić, że `setupUserView` ma własny dostęp do `esc(...)` (albo przez lokalną definicję, albo przez przeniesienie helpera do wspólnego zakresu modułu).
+   - Cel: wyeliminowanie błędów `ReferenceError` podczas renderowania readonly HTML.
+
+2. **Naprawić zakres `readonlyTournamentState` używanego w diagnostyce błędów**
+   - Zmienną stanu readonly inicjalizować przed blokiem `try` (np. `let readonlyTournamentState = null;`).
+   - Wewnątrz `try` przypisywać do tej zmiennej wynik normalizacji.
+   - Cel: brak błędu `readonlyTournamentState is not defined` w `catch`.
+
+3. **Dodać bezpieczny dostęp optional chaining w logice diagnostycznej**
+   - W miejscach raportowania metryk (`pool`, `semi`, itp.) używać formy `readonlyTournamentState?.pool?.mods` itd.
+   - Cel: uniknięcie wtórnych wyjątków, gdy błąd wystąpi zanim readonly state zostanie ustawiony.
+
+4. **Utrzymać zasadę jednego źródła prawdy dla dostępu (wdrożoną wcześniej)**
+   - `renderTournamentButtonsForPlayer()`, `navigateToUserTournamentSection()` i `renderUserTournament()` muszą bazować na jednym resolverze dostępu.
+   - Nie przywracać fallbacku „widoczne przyciski sidebaru jako źródło autoryzacji”.
+   - Cel: brak rozjazdu „przyciski widoczne, treść zablokowana”.
+
+5. **Komunikaty błędów warunkować stanem gotowości sesji**
+   - `TOP-SESSION-NOT-READY` dla stanu przejściowego.
+   - `TOP-NO-PANELS` dopiero po `sessionReady === true` i pustym `allowedTargets`.
+   - Cel: komunikat zgodny z faktyczną przyczyną.
+
+6. **(Operacyjnie) aktualizować wersję assetu JS po wdrożeniu poprawki**
+   - Po zmianach w `Second/app.js` podnieść `v=` w `Second/index.html`, aby ograniczyć ryzyko cache stalej wersji skryptu.
+
+### Priorytet wdrożenia (kolejność)
+1. Zakres `readonlyTournamentState` + optional chaining w diagnostyce.
+2. Dostępność `esc(...)` w `setupUserView`.
+3. Retest scenariusza PIN (draw/payments/chat) w incognito + konsola.
+4. Dopiero na końcu ewentualne korekty komunikatów tekstowych.
+
+### Kryteria akceptacji po wdrożeniu
+- Brak błędów w konsoli:
+  - `readonlyTournamentState is not defined`
+  - `esc is not defined`
+- Dla PIN-u z uprawnieniami: poprawny render sekcji danych (`draw`, `payments`, itd.) bez trwałego `TOP-NO-PANELS`.
+- Logi diagnostyczne pokazują spójny stan: `sessionReady: true`, `reasonCode: "TOP-OK"`, `allowedTargets.length > 0`.
