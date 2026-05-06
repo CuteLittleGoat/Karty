@@ -2474,6 +2474,7 @@ const setupUserView = (root) => {
     if (!Number.isFinite(value)) return "";
     return String(Math.round(value));
   };
+  const toPercentText = (value) => `${Math.round((toNumber(value) * 100) * 100) / 100}%`;
 
   const firebaseApp = getFirebaseApp();
   const newsOutput = root.querySelector("#latestMessageOutput");

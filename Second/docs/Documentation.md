@@ -345,3 +345,7 @@
 - W `setupUserView(root)` dodano lokalne helpery `percentInputToDecimal(value)` oraz `formatCellNumber(value)`, aby sekcje user `draw` i `payments` korzystały z tych samych obliczeń/formatu bez błędów zakresu (`ReferenceError`).
 - Dzięki temu render sekcji użytkownika nie zależy od lokalnych helperów z funkcji admina i nie przerywa się na brakujących definicjach.
 - Po zmianie podniesiono cache-buster skryptu w `Second/index.html` do `app.js?v=2026-05-06-2`.
+
+## 2026-05-06 — Naprawa widoku użytkownika (Wpłaty)
+- W `setupUserView(root)` dodano lokalny helper `toPercentText`, aby render sekcji `Wpłaty` miał dostęp do tego samego formatowania procentów i nie zgłaszał błędu `ReferenceError: toPercentText is not defined`.
+- W `Second/index.html` podbito cache-buster skryptu do `app.js?v=2026-05-06-3`.

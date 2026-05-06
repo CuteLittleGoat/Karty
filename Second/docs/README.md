@@ -266,3 +266,7 @@
 ### Aktualizacja 2026-05-06 — naprawa sekcji `Losowanie stołów` i `Wpłaty` po PIN
 1. Po wpisaniu poprawnego PIN-u i wejściu w `TOURNAMENT OF POKER` sekcje **Losowanie stołów** i **Wpłaty** powinny wyświetlać dane bez komunikatu o błędzie renderowania helperów.
 2. Dla poprawnie uprawnionego PIN-u przełączanie między **Losowanie stołów**, **Wpłaty** i **Czat** nie powinno już wracać do starego objawu `TOP-NO-PANELS`.
+
+## Aktualizacja 2026-05-06 — błąd w sekcji Wpłaty
+- Jeśli po wpisaniu PIN wejdziesz w **TOURNAMENT OF POKER → Wpłaty**, sekcja powinna renderować się bez błędu `toPercentText is not defined`.
+- Jeżeli widzisz starą wersję, odśwież stronę twardo (`Ctrl+F5`), bo aplikacja używa nowej wersji skryptu `app.js?v=2026-05-06-3`.

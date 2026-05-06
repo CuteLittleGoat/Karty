@@ -2209,3 +2209,17 @@ Wniosek techniczny:
 ```text
 `toPercentText` trzeba udostępnić widokowi użytkownika, najlepiej przez przeniesienie helpera do wspólnego zakresu modułu w Second/app.js.
 ```
+
+## Aktualizacja wdrożenia 2026-05-06 — finalizacja błędu `toPercentText is not defined`
+
+### Zmiany w kodzie wykonane na podstawie tej analizy
+
+Plik `Second/app.js`  
+Linia (obszar `setupUserView`)  
+Było: *(brak helpera `toPercentText` w zakresie widoku użytkownika)*  
+Jest: `const toPercentText = (value) => \`${Math.round((toNumber(value) * 100) * 100) / 100}%\`;`
+
+Plik `Second/index.html`  
+Linia skryptu modułu  
+Było: `<script src="app.js?v=2026-05-06-2" type="module"></script>`  
+Jest: `<script src="app.js?v=2026-05-06-3" type="module"></script>`
