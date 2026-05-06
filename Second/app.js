@@ -2454,6 +2454,12 @@ const setupUserView = (root) => {
 
   setupTournamentButtons(root);
 
+  const esc = (v) => String(v ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+
   const firebaseApp = getFirebaseApp();
   const newsOutput = root.querySelector("#latestMessageOutput");
   const newsStatus = root.querySelector("#newsOutputStatus");
@@ -2853,6 +2859,8 @@ const setupUserView = (root) => {
       return;
     }
 
+    let readonlyTournamentState = null;
+
     try {
       if (userTournamentSection === "chatTab") {
         syncTournamentMountVisibility("chatTab");
@@ -2870,7 +2878,7 @@ const setupUserView = (root) => {
         dataMount.innerHTML = '<p class="builder-info">Brak kopii readonly turnieju (readonlyTables.rTournamentState, kod: TOP-READONLY-MISSING). Widok użytkownika działa wyłącznie na kopii readonly. Rozwiązanie: administrator musi wejść do „Tournament of Poker” w trybie ?admin=1 i zapisać dane turnieju (dowolna zmiana + zapis), aby odtworzyć klucz readonlyTables.rTournamentState.</p>';
         return;
       }
-      const readonlyTournamentState = normalizeTournamentState(readonlyTournamentStateRaw);
+      readonlyTournamentState = normalizeTournamentState(readonlyTournamentStateRaw);
       if (renderToken !== userTournamentRenderToken) {
         logUserTournamentTransition("render_abort_stale_token", {
           renderToken,
@@ -3002,8 +3010,8 @@ const setupUserView = (root) => {
           errorMessage: error?.message || "Brak szczegółów błędu",
           playersCount: Array.isArray(userTournamentState.players) ? userTournamentState.players.length : 0,
           tablesCount: Array.isArray(userTournamentState.tables) ? userTournamentState.tables.length : 0,
-          poolModsCount: Array.isArray(readonlyTournamentState.pool?.mods) ? readonlyTournamentState.pool.mods.length : 0,
-          semiCustomTablesCount: Array.isArray(readonlyTournamentState.semi?.customTables) ? readonlyTournamentState.semi.customTables.length : 0
+          poolModsCount: Array.isArray(readonlyTournamentState?.pool?.mods) ? readonlyTournamentState.pool.mods.length : 0,
+          semiCustomTablesCount: Array.isArray(readonlyTournamentState?.semi?.customTables) ? readonlyTournamentState.semi.customTables.length : 0
         };
         console.error("Błąd renderowania sekcji turnieju użytkownika:", {
           ...diagnostics,
@@ -3317,8 +3325,8 @@ const setupUserView = (root) => {
         errorMessage: error?.message || "Brak szczegółów błędu",
         playersCount: Array.isArray(userTournamentState.players) ? userTournamentState.players.length : 0,
         tablesCount: Array.isArray(userTournamentState.tables) ? userTournamentState.tables.length : 0,
-        poolModsCount: Array.isArray(readonlyTournamentState.pool?.mods) ? readonlyTournamentState.pool.mods.length : 0,
-        semiCustomTablesCount: Array.isArray(readonlyTournamentState.semi?.customTables) ? readonlyTournamentState.semi.customTables.length : 0
+        poolModsCount: Array.isArray(readonlyTournamentState?.pool?.mods) ? readonlyTournamentState.pool.mods.length : 0,
+        semiCustomTablesCount: Array.isArray(readonlyTournamentState?.semi?.customTables) ? readonlyTournamentState.semi.customTables.length : 0
       };
       console.error("Błąd renderowania sekcji turnieju użytkownika:", {
         ...diagnostics,

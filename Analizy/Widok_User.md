@@ -1081,3 +1081,38 @@ Poniższy zestaw zmian należy traktować jako zalecany pakiet wdrożeniowy dla 
   - `esc is not defined`
 - Dla PIN-u z uprawnieniami: poprawny render sekcji danych (`draw`, `payments`, itd.) bez trwałego `TOP-NO-PANELS`.
 - Logi diagnostyczne pokazują spójny stan: `sessionReady: true`, `reasonCode: "TOP-OK"`, `allowedTargets.length > 0`.
+
+
+## Aktualizacja po wdrożeniu poprawki z `Analizy/Analiza_TOP-NO-PANELS.md` (2026-05-06)
+
+### Prompt użytkownika
+Przeczytaj analizy:
+Analizy/Widok_User.md
+Analizy/Analiza_TOP-NO-PANELS.md
+
+A następnie wprowadź opisaną w Analizy/Analiza_TOP-NO-PANELS.md poprawkę oraz zaktualizuj Analizy/Widok_User.md
+
+### Plik `Second/app.js`
+Linia 2457
+- Było: brak lokalnego helpera `esc` w `setupUserView`, a widok użytkownika używał `esc(...)` z niedostępnego zakresu.
+- Jest: dodano lokalny helper `esc` w `setupUserView` (escape `&`, `<`, `>`, `"`).
+
+Linia 2866
+- Było: `const readonlyTournamentState = normalizeTournamentState(...)` deklarowane wewnątrz `try`, a `catch` korzystał z tej nazwy poza zakresem.
+- Jest: `let readonlyTournamentState = null;` przed `try` i późniejsze przypisanie `readonlyTournamentState = normalizeTournamentState(...)`.
+
+Linia 3012 i 3329
+- Było: diagnostyka błędu odczytywała `readonlyTournamentState.pool?.mods` oraz `readonlyTournamentState.semi?.customTables` bez ochrony na `null`.
+- Jest: diagnostyka używa optional chaining: `readonlyTournamentState?.pool?.mods` oraz `readonlyTournamentState?.semi?.customTables`.
+
+### Plik `Second/index.html`
+Linia 287
+- Było: `<script src="app.js?v=2026-04-19-2" type="module"></script>`
+- Jest: `<script src="app.js?v=2026-05-06-1" type="module"></script>`
+
+### Plik `Second/docs/README.md`
+- Zaktualizowano opis zachowania user-view po PIN: przełączanie sekcji `Losowanie stołów` / `Wpłaty` nie powinno pozostawiać komunikatu `TOP-NO-PANELS` dla poprawnych uprawnień.
+
+### Plik `Second/docs/Documentation.md`
+- Dodano techniczną informację o lokalnym helperze `esc` w `setupUserView`.
+- Dodano techniczną informację o zasięgu `readonlyTournamentState` i optional chaining w diagnostyce renderu user Tournament.
