@@ -1031,3 +1031,818 @@ Do poprawienia są przede wszystkim:
 3. Zabezpieczyć diagnostykę błędów optional chainingiem — okolice linii 2997–3013 oraz 3312–3327.
 4. Zmienić parametr wersji app.js w Second/index.html, żeby ominąć cache.
 ```
+
+## Aktualizacja analizy po wdrożeniu `app.js?v=2026-05-06-1` — wykrycie kolejnych brakujących helperów w widoku użytkownika
+
+### Data testu
+
+```text
+2026-05-06
+```
+
+### Zakres tej aktualizacji
+
+Ta aktualizacja dotyczy testu wykonanego już po wdrożeniu wcześniejszej poprawki błędu `TOP-NO-PANELS`, czyli po załadowaniu nowej wersji skryptu:
+
+```text
+app.js?v=2026-05-06-1
+```
+
+Wcześniejsza poprawka obejmowała m.in.:
+
+```text
+- dodanie lokalnego helpera esc(v) w setupUserView(root),
+- wyniesienie readonlyTournamentState poza blok try,
+- dodanie optional chaining w diagnostyce błędów,
+- zmianę cache-bustera w Second/index.html.
+```
+
+Celem obecnego testu było sprawdzenie, czy po tych zmianach widok użytkownika faktycznie przestał pokazywać fałszywy błąd `TOP-NO-PANELS` i czy sekcje użytkownika zaczęły się renderować.
+
+---
+
+## 1. Test w przeglądarce Edge — sprawdzenie, czy ładuje się nowa wersja skryptu
+
+### Wykonane kroki
+
+W Microsoft Edge otwarto stronę w świeżej sesji / InPrivate.
+
+Następnie w DevTools otwarto zakładkę:
+
+```text
+Network
+```
+
+Włączono:
+
+```text
+Disable cache
+```
+
+Odświeżono stronę.
+
+W liście zasobów sprawdzono ładowany plik:
+
+```text
+app.js
+```
+
+### Wynik
+
+W zakładce `Network` widoczny był plik:
+
+```text
+app.js?v=2026-05-06-1
+```
+
+### Wniosek
+
+Nowa wersja skryptu została poprawnie załadowana przez przeglądarkę.
+
+To oznacza, że dalsze wyniki testu dotyczą już kodu po wdrożeniu poprawki, a nie starego pliku:
+
+```text
+app.js?v=2026-04-19-2
+```
+
+---
+
+## 2. Test PIN-u użytkownika
+
+### Wykonane kroki
+
+W widoku użytkownika otwarto zakładkę:
+
+```text
+TOURNAMENT OF POKER
+```
+
+Następnie użyto testowego PIN-u:
+
+```text
+55555
+```
+
+Po poprawnym wpisaniu PIN-u widok użytkownika pokazał po lewej stronie sekcje:
+
+```text
+Losowanie stołów
+Wpłaty
+Czat
+```
+
+### Wniosek
+
+PIN nadal działa poprawnie.
+
+Uprawnienia nadal są poprawnie odczytywane.
+
+Widok użytkownika nadal wie, że użytkownik ma dostęp do sekcji:
+
+```text
+draw
+payments
+chatTab
+```
+
+Problem nie dotyczy PIN-u ani przypisania uprawnień.
+
+---
+
+## 3. Wynik testu sekcji `Czat`
+
+### Wykonane kroki
+
+Kliknięto sekcję:
+
+```text
+Czat
+```
+
+### Wynik
+
+Sekcja czatu wyrenderowała się poprawnie.
+
+Widoczne były wiadomości czatu.
+
+Nie pojawił się błąd `TOP-NO-PANELS`.
+
+### Wniosek
+
+Czat działa po wdrożeniu poprawki.
+
+To potwierdza, że ogólny mechanizm sesji PIN, przełączania paneli i dostępu do Tournament of Poker działa.
+
+---
+
+## 4. Wynik testu sekcji `Losowanie stołów`
+
+### Wykonane kroki
+
+Kliknięto sekcję:
+
+```text
+Losowanie stołów
+```
+
+### Wynik
+
+Zamiast starego błędu `TOP-NO-PANELS` pojawił się nowy, bardziej konkretny komunikat błędu renderowania:
+
+```text
+Nie udało się wyrenderować sekcji „draw” (etap: global).
+Sprawdź dane turniejowe i spróbuj odświeżyć.
+
+Szczegóły: ReferenceError: formatCellNumber is not defined
+```
+
+### Wniosek
+
+To jest ważny postęp diagnostyczny.
+
+Sekcja nie wpada już w mylący komunikat `TOP-NO-PANELS`.
+
+Aplikacja dochodzi dalej — próbuje renderować właściwą sekcję `draw`, ale zatrzymuje się na kolejnym błędzie JavaScript:
+
+```text
+ReferenceError: formatCellNumber is not defined
+```
+
+Oznacza to, że funkcja:
+
+```js
+formatCellNumber
+```
+
+jest używana w renderowaniu widoku użytkownika, ale nie jest dostępna w zakresie, w którym działa kod `setupUserView(root)` / `renderUserTournament()`.
+
+---
+
+## 5. Wynik testu sekcji `Wpłaty`
+
+### Wykonane kroki
+
+Kliknięto sekcję:
+
+```text
+Wpłaty
+```
+
+### Wynik
+
+Zamiast starego błędu `TOP-NO-PANELS` pojawił się nowy, konkretny komunikat błędu renderowania:
+
+```text
+Nie udało się wyrenderować sekcji „payments” (etap: payments).
+Sprawdź dane turniejowe i spróbuj odświeżyć.
+
+Szczegóły: ReferenceError: percentInputToDecimal is not defined
+```
+
+### Wniosek
+
+Sekcja `Wpłaty` również nie wpada już w `TOP-NO-PANELS`.
+
+Kod próbuje renderować sekcję `payments`, ale zatrzymuje się na braku funkcji:
+
+```js
+percentInputToDecimal
+```
+
+Oznacza to, że funkcja:
+
+```js
+percentInputToDecimal
+```
+
+jest używana w renderowaniu widoku użytkownika, ale nie jest dostępna w zakresie `setupUserView(root)` / `renderUserTournament()`.
+
+---
+
+## 6. Najważniejszy wniosek z obecnego testu
+
+Poprzednia poprawka została wdrożona i działa częściowo poprawnie.
+
+Potwierdzone pozytywne efekty:
+
+```text
+- Edge ładuje nowy plik app.js?v=2026-05-06-1.
+- PIN 55555 działa.
+- Uprawnienia użytkownika są odczytywane.
+- Sidebar pokazuje właściwe sekcje.
+- Czat działa.
+- TOP-NO-PANELS nie jest już głównym błędem dla poprawnego PIN-u.
+- Błąd readonlyTournamentState is not defined nie pojawia się jako główny problem.
+- Błąd esc is not defined nie pojawia się jako główny problem.
+```
+
+Nowe wykryte problemy:
+
+```text
+- Sekcja draw zatrzymuje się na: ReferenceError: formatCellNumber is not defined.
+- Sekcja payments zatrzymuje się na: ReferenceError: percentInputToDecimal is not defined.
+```
+
+Diagnoza:
+
+```text
+Widok użytkownika nadal używa helperów, które nie są dostępne w jego zakresie.
+```
+
+To jest ten sam typ problemu, który wcześniej dotyczył helpera:
+
+```js
+esc
+```
+
+Poprzednio `esc` był dostępny tylko w części administracyjnej. Teraz analogiczny problem występuje dla:
+
+```js
+formatCellNumber
+percentInputToDecimal
+```
+
+---
+
+## 7. Prawdopodobna przyczyna techniczna
+
+W pliku:
+
+```text
+Second/app.js
+```
+
+część funkcji pomocniczych najpewniej została zdefiniowana lokalnie wewnątrz funkcji administracyjnych, np. w okolicy kodu obsługującego panel admina / Tournament of Poker admina.
+
+Widok użytkownika, czyli funkcja:
+
+```js
+setupUserView(root)
+```
+
+oraz znajdujące się w niej funkcje renderujące Tournament of Poker, używają tych helperów, ale nie mają do nich dostępu.
+
+W JavaScript funkcja zdefiniowana wewnątrz jednej funkcji nie jest widoczna w innej funkcji siostrzanej.
+
+Przykład problemu logicznego:
+
+```js
+const setupAdminTournament = (...) => {
+  const formatCellNumber = (...) => {
+    ...
+  };
+
+  const percentInputToDecimal = (...) => {
+    ...
+  };
+};
+
+const setupUserView = (...) => {
+  // Tutaj formatCellNumber i percentInputToDecimal NIE są dostępne,
+  // jeśli zostały zdefiniowane tylko wewnątrz setupAdminTournament.
+};
+```
+
+Dlatego przy renderowaniu widoku użytkownika pojawiają się błędy:
+
+```text
+ReferenceError: formatCellNumber is not defined
+ReferenceError: percentInputToDecimal is not defined
+```
+
+---
+
+## 8. Co należy poprawić
+
+### Plik do poprawy
+
+```text
+Second/app.js
+```
+
+### Funkcje do sprawdzenia i poprawienia
+
+Należy wyszukać w pliku `Second/app.js` wystąpienia:
+
+```text
+formatCellNumber
+percentInputToDecimal
+```
+
+Należy sprawdzić:
+
+```text
+1. Gdzie te funkcje są zdefiniowane.
+2. Czy są zdefiniowane lokalnie wewnątrz funkcji admina.
+3. Gdzie są używane w kodzie widoku użytkownika.
+```
+
+Błędy z testu wskazują, że są używane w widoku użytkownika, ale nie są tam widoczne.
+
+---
+
+## 9. Zalecany sposób naprawy
+
+Najbezpieczniejsze rozwiązanie:
+
+```text
+Przenieść istniejące implementacje helperów formatCellNumber i percentInputToDecimal do wspólnego zakresu modułu, czyli poza setupAdminTournament(...) i poza setupUserView(...).
+```
+
+Nie należy pisać nowych wersji tych funkcji „na oko”, jeśli istnieją już działające implementacje używane w panelu admina.
+
+Należy przenieść istniejący kod bez zmiany logiki, żeby admin i user używali dokładnie tego samego formatowania.
+
+---
+
+## 10. Rekomendowana struktura poprawki
+
+### Krok A — znaleźć obecne definicje
+
+W pliku:
+
+```text
+Second/app.js
+```
+
+wyszukać:
+
+```js
+const formatCellNumber
+```
+
+oraz:
+
+```js
+const percentInputToDecimal
+```
+
+albo warianty:
+
+```js
+function formatCellNumber
+function percentInputToDecimal
+```
+
+### Krok B — przenieść helpery do wspólnego zakresu
+
+Przenieść definicje tych funkcji wyżej, do zakresu pliku.
+
+Najlepiej umieścić je w okolicy innych globalnych/helperowych funkcji pomocniczych, np. przed dużymi funkcjami:
+
+```js
+setupAdminTournament(...)
+setupUserView(...)
+```
+
+Schemat docelowy:
+
+```js
+const formatCellNumber = (...) => {
+  // istniejąca implementacja przeniesiona bez zmiany logiki
+};
+
+const percentInputToDecimal = (...) => {
+  // istniejąca implementacja przeniesiona bez zmiany logiki
+};
+
+const setupAdminTournament = (...) => {
+  // admin może nadal używać formatCellNumber i percentInputToDecimal
+};
+
+const setupUserView = (...) => {
+  // user też może używać formatCellNumber i percentInputToDecimal
+};
+```
+
+### Krok C — usunąć albo zostawić? Uwaga na duplikaty
+
+Po przeniesieniu helperów trzeba upewnić się, że nie ma dwóch lokalnych definicji o tej samej nazwie w różnych zakresach, jeśli mogłoby to wprowadzać niespójność.
+
+Najlepiej:
+
+```text
+- zostawić jedną wspólną definicję w zakresie modułu,
+- usunąć lokalną definicję z funkcji admina, jeżeli była tylko tam,
+- upewnić się, że wszystkie wywołania używają tej wspólnej definicji.
+```
+
+Celem jest jedno źródło prawdy dla formatowania liczb i procentów.
+
+---
+
+## 11. Minimalna poprawka awaryjna
+
+Jeżeli z jakiegoś powodu nie chcemy jeszcze refaktoryzować całego kodu, minimalna poprawka może polegać na dodaniu lokalnych helperów w `setupUserView(root)`, analogicznie jak wcześniej dodano `esc`.
+
+To rozwiązanie jest mniej eleganckie, ale szybkie.
+
+Wtedy w pliku:
+
+```text
+Second/app.js
+```
+
+wewnątrz:
+
+```js
+const setupUserView = (root) => {
+```
+
+w okolicy, gdzie dodano już:
+
+```js
+const esc = (v) => ...
+```
+
+można dodać także helpery potrzebne user-view.
+
+UWAGA: implementacje powinny być skopiowane z istniejących, działających helperów admina, a nie pisane od nowa bez sprawdzenia.
+
+Schemat:
+
+```js
+const setupUserView = (root) => {
+  ...
+
+  const esc = (v) => String(v ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+
+  const formatCellNumber = (...) => {
+    // skopiować istniejącą implementację z części admina
+  };
+
+  const percentInputToDecimal = (...) => {
+    // skopiować istniejącą implementację z części admina
+  };
+
+  ...
+};
+```
+
+To jednak może spowodować duplikację logiki.
+
+Lepsze rozwiązanie długoterminowe to wspólne helpery w zakresie modułu.
+
+---
+
+## 12. Dlaczego lepiej przenieść helpery do zakresu modułu
+
+Powód 1:
+
+```text
+Admin i user powinni formatować te same dane w ten sam sposób.
+```
+
+Powód 2:
+
+```text
+Mniejsza szansa, że po kolejnej zmianie admin będzie działał inaczej niż user.
+```
+
+Powód 3:
+
+```text
+Unikamy kolejnych ReferenceError typu „helper is not defined”.
+```
+
+Powód 4:
+
+```text
+To jest ten sam typ błędu, który już wystąpił dla esc, readonlyTournamentState, formatCellNumber i percentInputToDecimal.
+```
+
+Wniosek architektoniczny:
+
+```text
+Helpery używane przez oba widoki nie powinny być definiowane lokalnie tylko w jednym widoku.
+```
+
+---
+
+## 13. Możliwe kolejne helpery do sprawdzenia
+
+Po naprawieniu:
+
+```js
+formatCellNumber
+percentInputToDecimal
+```
+
+mogą ujawnić się kolejne brakujące helpery, jeżeli user-view używa funkcji zdefiniowanych tylko w admin-view.
+
+Dlatego przed wdrożeniem warto sprawdzić w `Second/app.js`, czy w kodzie `setupUserView(root)` / `renderUserTournament()` występują inne helpery, które nie są zdefiniowane w tym samym zakresie ani globalnie.
+
+Do sprawdzenia przez wyszukiwanie w pliku:
+
+```text
+formatCellNumber
+percentInputToDecimal
+toNumber
+toPercentText
+formatCurrency
+formatMoney
+formatPercent
+normalizeAmount
+parseAmount
+parsePercent
+```
+
+Nie oznacza to, że wszystkie te funkcje na pewno istnieją lub są błędne.
+
+Chodzi o sprawdzenie, czy user-view nie używa kolejnych helperów, które są dostępne tylko w adminie.
+
+---
+
+## 14. Plik `Second/index.html` — podbicie wersji po naprawie
+
+Po zmianie `Second/app.js` należy ponownie podbić cache-buster w:
+
+```text
+Second/index.html
+```
+
+Obecnie test potwierdził ładowanie:
+
+```html
+<script src="app.js?v=2026-05-06-1" type="module"></script>
+```
+
+Po kolejnej poprawce należy zmienić np. na:
+
+```html
+<script src="app.js?v=2026-05-06-2" type="module"></script>
+```
+
+albo inną nową wartość, np.:
+
+```html
+<script src="app.js?v=2026-05-06-helper-scope-1" type="module"></script>
+```
+
+Najważniejsze, żeby wartość po `?v=` była inna niż dotychczas.
+
+Dzięki temu Edge / GitHub Pages / cache przeglądarki nie użyją starego pliku.
+
+---
+
+## 15. Test po kolejnej poprawce
+
+Po wdrożeniu kolejnej poprawki należy wykonać test w Edge.
+
+### Test 1 — sprawdzenie wersji pliku
+
+Otworzyć DevTools:
+
+```text
+F12
+```
+
+Zakładka:
+
+```text
+Network
+```
+
+Włączyć:
+
+```text
+Disable cache
+```
+
+Odświeżyć stronę.
+
+Sprawdzić, czy ładuje się nowy plik:
+
+```text
+app.js?v=2026-05-06-2
+```
+
+albo inna nowa wersja ustawiona w `Second/index.html`.
+
+---
+
+### Test 2 — PIN
+
+Wejść do:
+
+```text
+TOURNAMENT OF POKER
+```
+
+Wpisać:
+
+```text
+55555
+```
+
+Oczekiwany wynik:
+
+```text
+Widoczne sekcje:
+- Losowanie stołów
+- Wpłaty
+- Czat
+```
+
+Nie powinien pojawić się:
+
+```text
+TOP-NO-PANELS
+```
+
+---
+
+### Test 3 — Losowanie stołów
+
+Kliknąć:
+
+```text
+Losowanie stołów
+```
+
+Oczekiwany wynik:
+
+```text
+Sekcja renderuje się bez błędu:
+ReferenceError: formatCellNumber is not defined
+```
+
+Nie powinno być komunikatu:
+
+```text
+Nie udało się wyrenderować sekcji „draw”...
+```
+
+Jeżeli sekcja nie ma danych, może pokazać komunikat o braku danych, ale nie powinna wywalać błędu JavaScript.
+
+---
+
+### Test 4 — Wpłaty
+
+Kliknąć:
+
+```text
+Wpłaty
+```
+
+Oczekiwany wynik:
+
+```text
+Sekcja renderuje się bez błędu:
+ReferenceError: percentInputToDecimal is not defined
+```
+
+Nie powinno być komunikatu:
+
+```text
+Nie udało się wyrenderować sekcji „payments”...
+```
+
+---
+
+### Test 5 — Czat
+
+Kliknąć:
+
+```text
+Czat
+```
+
+Oczekiwany wynik:
+
+```text
+Czat nadal działa.
+```
+
+---
+
+### Test 6 — Console
+
+W DevTools przejść do:
+
+```text
+Console
+```
+
+Sprawdzić, czy nie ma czerwonych błędów:
+
+```text
+formatCellNumber is not defined
+percentInputToDecimal is not defined
+readonlyTournamentState is not defined
+esc is not defined
+TOP-NO-PANELS
+```
+
+Dopuszczalne mogą być zewnętrzne ostrzeżenia przeglądarki, np. dotyczące obrazków, favicon albo tracking prevention, ale nie błędy związane z renderowaniem Tournament of Poker.
+
+---
+
+## 16. Podsumowanie aktualizacji
+
+Po wdrożeniu poprawki `app.js?v=2026-05-06-1` stary problem został częściowo rozwiązany.
+
+Najważniejsze:
+
+```text
+TOP-NO-PANELS nie jest już głównym błędem.
+Nowa wersja app.js ładuje się poprawnie.
+Czat działa.
+PIN i uprawnienia działają.
+```
+
+Nowy wykryty problem:
+
+```text
+Renderowanie sekcji danych użytkownika nadal zatrzymuje się przez brak helperów w zakresie user-view.
+```
+
+Konkretnie:
+
+```text
+draw     → ReferenceError: formatCellNumber is not defined
+payments → ReferenceError: percentInputToDecimal is not defined
+```
+
+Należy poprawić:
+
+```text
+Second/app.js
+```
+
+przez przeniesienie helperów:
+
+```js
+formatCellNumber
+percentInputToDecimal
+```
+
+do wspólnego zakresu modułu albo dodanie ich lokalnie w `setupUserView(root)`.
+
+Rekomendowane rozwiązanie:
+
+```text
+Jedna wspólna definicja helperów w zakresie modułu, używana przez admin-view i user-view.
+```
+
+Po poprawce należy zmienić wersję skryptu w:
+
+```text
+Second/index.html
+```
+
+np. z:
+
+```text
+app.js?v=2026-05-06-1
+```
+
+na:
+
+```text
+app.js?v=2026-05-06-2
+```
