@@ -1116,3 +1116,37 @@ Linia 287
 ### Plik `Second/docs/Documentation.md`
 - Dodano techniczną informację o lokalnym helperze `esc` w `setupUserView`.
 - Dodano techniczną informację o zasięgu `readonlyTournamentState` i optional chaining w diagnostyce renderu user Tournament.
+
+
+## Aktualizacja 2026-05-06 — nowy problem po usunięciu `TOP-NO-PANELS` i sposób naprawy
+
+### Prompt użytkownika
+Zaktualizowałem plik Analizy/Analiza_TOP-NO-PANELS.md
+Obecnie stary błąd (TOP-NO-PANELS) nie występuje. Pojawił się inny.
+
+Wykonaj następujące czynności:
+1. Przeczytaj aktualizację w analizie Analizy/Analiza_TOP-NO-PANELS.md
+2. Wprowadź rekomendowane poprawki
+3. Zaktualizuj plik Analizy/Widok_User.md o opis nowe problemu i sposób naprawy
+
+### Opis nowego problemu
+- Po wdrożeniu `app.js?v=2026-05-06-1` stary objaw `TOP-NO-PANELS` przestał być głównym błędem.
+- W sekcji **Losowanie stołów** pojawia się `ReferenceError: formatCellNumber is not defined`.
+- W sekcji **Wpłaty** pojawia się `ReferenceError: percentInputToDecimal is not defined`.
+- Przyczyna: helpery używane w user-view nie były dostępne w zakresie `setupUserView(root)`.
+
+### Sposób naprawy
+- W `Second/app.js` dodano lokalne helpery `percentInputToDecimal(value)` i `formatCellNumber(value)` bezpośrednio w `setupUserView(root)` (obok lokalnego `esc`).
+- Dzięki temu render sekcji `draw` i `payments` ma komplet wymaganych funkcji i nie odwołuje się do niedostępnego zakresu.
+- W `Second/index.html` podniesiono wersję assetu do `app.js?v=2026-05-06-2`, aby wymusić pobranie nowego skryptu bez cache.
+
+### Sekcja zmian w kodzie (przed/po)
+Plik `Second/app.js`
+Linia ~2465
+- Było: w `setupUserView` brakowało helperów `percentInputToDecimal` i `formatCellNumber`.
+- Jest: dodano lokalne definicje `percentInputToDecimal(value)` i `formatCellNumber(value)` używane przez sekcje user `draw` / `payments` / kolejne renderery tabel.
+
+Plik `Second/index.html`
+Linia 287
+- Było: `<script src="app.js?v=2026-05-06-1" type="module"></script>`
+- Jest: `<script src="app.js?v=2026-05-06-2" type="module"></script>`
