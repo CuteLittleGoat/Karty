@@ -164,6 +164,7 @@
 10f. W konsoli przeglądarki dostępny jest log `"[Second][UserTournament]"` (kliknięcie, render, snapshot), który pokazuje docelową sekcję i ułatwia diagnostykę „sticky chat”.
 10g. Dostęp do sekcji jest liczony z jednego wspólnego mechanizmu sesji PIN; aplikacja nie używa osobnego fallbacku „z widocznych przycisków”.
 10h. Jeżeli sesja PIN dopiero się inicjalizuje, zobaczysz komunikat `TOP-SESSION-NOT-READY` (krótki stan przejściowy). Komunikat `TOP-NO-PANELS` pojawia się dopiero po pełnym zbudowaniu sesji.
+10i. Po tej poprawce przełączanie sekcji `Losowanie stołów` / `Wpłaty` nie powinno już zostawiać komunikatu `TOP-NO-PANELS` dla poprawnego PIN-u z uprawnieniami; sekcja jest nadpisywana bieżącym renderem danych readonly.
 11. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
 12. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.
 13. Sekcje `Losowanie stołów`, `Wpłaty`, `Podział puli`, `Faza grupowa`, `Półfinał`, `Finał` i `Wypłaty` pokazują pełny podgląd danych turniejowych w trybie tylko do odczytu.

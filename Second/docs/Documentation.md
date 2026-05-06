@@ -182,6 +182,8 @@
 - Przy każdym kliknięciu sekcji i każdym starcie renderu zapisywany jest log diagnostyczny `console.info("[Second][UserTournament]")` z polami `requestedSection`, `previousSection`, `finalSection`, `allowedTargets`, `isUserTournamentLoaded`, `isUserPinGateOpen`, `verifiedUserId` i timestampem.
 - Każda sekcja użytkownika (`payments`, `pool`, `group`, `semi`, `final`, `payouts`) renderuje się w osobnym bloku `try/catch`, więc wyjątek w jednej sekcji nie blokuje pozostałych sekcji.
 - Log błędu użytkownika zawiera teraz komplet diagnostyczny: `section`, `stage`, `errorName`, `errorMessage`, `playersCount`, `tablesCount`, `poolModsCount`, `semiCustomTablesCount`, co pozwala szybciej ustalić czy problem dotyczy danych wejściowych czy konkretnego etapu obliczeń.
+- `setupUserView(root)` ma lokalny helper `esc(v)` (escape HTML) używany przez komunikaty błędów sekcji użytkownika, dzięki czemu render nie odwołuje się do helpera z zasięgu admina.
+- W `renderUserTournament()` zmienna `readonlyTournamentState` jest inicjalizowana przed blokiem `try`, a diagnostyka używa optional chaining (`readonlyTournamentState?.pool?.mods`, `readonlyTournamentState?.semi?.customTables`), co zapobiega wtórnym błędom `ReferenceError` podczas obsługi wyjątków.
 - Przed obliczeniami sekcji read-only stosowana jest defensywna normalizacja rekordów (`players`, `tables`, `assignments`, `table12Rebuys`, `semi.customTables`, `pool.mods`) na poziomie view-modeli (`buildUserBaseViewModel`, `buildAdvancedViewModel`), a agregacja wartości `table12Rebuys` działa przez `reduce` (bez `flatMap`) dla zgodności ze starszymi środowiskami WebView/przeglądarek.
 - Sekcje z aktywną prezentacją danych:
   - `pool`: read-only `Tabela13`, `Tabela14`, `Tabela15`, `Tabela16`,
