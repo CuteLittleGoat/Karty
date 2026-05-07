@@ -1167,3 +1167,19 @@ W `setupUserView(root)` używany był helper `toPercentText(...)` podczas render
 W `Second/app.js` dodano lokalną definicję helpera `toPercentText` w `setupUserView(root)`, obok już dodanych helperów użytkownika (`esc`, `percentInputToDecimal`, `formatCellNumber`). Dzięki temu sekcja `Wpłaty` korzysta z poprawnego formatowania procentów bez błędu ReferenceError.
 
 Dodatkowo podbito cache-buster skryptu w `Second/index.html` do `app.js?v=2026-05-06-3`, aby przeglądarka pobrała nową wersję kodu.
+
+
+## Aktualizacja 2026-05-07 — nowy problem po wcześniejszych poprawkach
+
+### Objaw
+Po wejściu w sekcję `Wpłaty` pojawiał się błąd:
+
+```text
+ReferenceError: toNumber is not defined
+```
+
+### Przyczyna
+W `setupUserView(root)` helper `toPercentText(...)` korzysta z `toNumber(...)`, ale lokalna definicja `toNumber` nie była dostępna w zakresie user-view.
+
+### Naprawa
+Dodano lokalny helper `toNumber(value)` bezpośrednio w `setupUserView(root)` (obok `esc`, `percentInputToDecimal`, `formatCellNumber`, `toPercentText`) oraz podbito cache-buster w `Second/index.html` do `app.js?v=2026-05-07-1`.

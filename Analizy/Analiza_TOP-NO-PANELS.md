@@ -2777,3 +2777,19 @@ Należy przenieść toNumber oraz pozostałe helpery współdzielone przez admin
 Dopiero po tej poprawce można uznać, że render Tournament of Poker w widoku użytkownika jest naprawiany właściwie, a nie punktowo.
 
 ::contentReference[oaicite:3]{index=3}
+
+
+## Aktualizacja wdrożeniowa 2026-05-07 — zmiany w kodzie po nowym błędzie
+
+Plik `Second/app.js`
+- Linia 2473
+  - Było: brak lokalnej definicji `toNumber(...)` w `setupUserView`.
+  - Jest: `const toNumber = (value) => { const normalized = String(value ?? "").replace(",", ".").trim(); ... };`
+- Linia 2485
+  - Było: `const toPercentText = (value) => `${Math.round((toNumber(value) * 100) * 100) / 100}%`;` z odwołaniem do niedostępnego helpera.
+  - Jest: ten sam zapis, ale z działającym lokalnym helperem `toNumber` w tym samym zakresie.
+
+Plik `Second/index.html`
+- Linia 287
+  - Było: `<script src="app.js?v=2026-05-06-3" type="module"></script>`
+  - Jest: `<script src="app.js?v=2026-05-07-1" type="module"></script>`

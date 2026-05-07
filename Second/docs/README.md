@@ -270,3 +270,5 @@
 ## Aktualizacja 2026-05-06 — błąd w sekcji Wpłaty
 - Jeśli po wpisaniu PIN wejdziesz w **TOURNAMENT OF POKER → Wpłaty**, sekcja powinna renderować się bez błędu `toPercentText is not defined`.
 - Jeżeli widzisz starą wersję, odśwież stronę twardo (`Ctrl+F5`), bo aplikacja używa nowej wersji skryptu `app.js?v=2026-05-06-3`.
+
+- Jeżeli po wejściu w sekcję `Wpłaty` widzisz błąd renderowania, odśwież stronę twardo (`Ctrl+F5`), aby pobrać `app.js?v=2026-05-07-1` z poprawką brakującego helpera `toNumber(...)`.

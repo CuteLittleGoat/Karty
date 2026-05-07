@@ -2470,6 +2470,12 @@ const setupUserView = (root) => {
     }
     return toDigitsNumber(normalized) / 100;
   };
+  const toNumber = (value) => {
+    const normalized = String(value ?? "").replace(",", ".").trim();
+    if (!normalized) return 0;
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
   const formatCellNumber = (value) => {
     if (!Number.isFinite(value)) return "";
     return String(Math.round(value));
