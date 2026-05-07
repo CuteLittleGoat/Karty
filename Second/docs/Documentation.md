@@ -352,3 +352,9 @@
 
 - W `setupUserView(root)` dodano lokalny helper `toNumber(value)`, ponieważ sekcje user (`payments`, `pool`, `group`, `payouts`) korzystają z niego pośrednio przez `toPercentText(...)` i bez tej definicji pojawiał się `ReferenceError: toNumber is not defined`.
 - W `Second/index.html` podbito cache-buster do `app.js?v=2026-05-07-1`, aby wymusić pobranie nowej wersji skryptu bez cache.
+
+## Aktualizacja techniczna 2026-05-07 — fix mobile sidebar labels (user Tournament)
+- Dodano dedykowane reguły `@media (max-width: 760px)` ograniczone do selektora `body:not(.is-admin) #tournamentTab`.
+- `admin-games-layout` w user-view wymusza `grid-template-columns: minmax(0, 1fr)` + `min-width: 0`, aby szerokie tabele nie rozpychały szerokości całego layoutu.
+- Sidebar (`.admin-games-sidebar`, `.admin-games-years-list`, `.player-zone-sections-list`, `.admin-games-year-button`) ma wymuszone `width/max-width: 100%` i zawijanie etykiet, dzięki czemu nazwy sekcji pozostają widoczne.
+- Szerokie tabele turniejowe przewijają się lokalnie (`overflow-x: auto`) w kontenerze danych zamiast rozszerzać panel boczny poza viewport.

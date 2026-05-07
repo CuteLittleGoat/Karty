@@ -272,3 +272,9 @@
 - Jeżeli widzisz starą wersję, odśwież stronę twardo (`Ctrl+F5`), bo aplikacja używa nowej wersji skryptu `app.js?v=2026-05-06-3`.
 
 - Jeżeli po wejściu w sekcję `Wpłaty` widzisz błąd renderowania, odśwież stronę twardo (`Ctrl+F5`), aby pobrać `app.js?v=2026-05-07-1` z poprawką brakującego helpera `toNumber(...)`.
+
+## Aktualizacja 2026-05-07 — mobile / Tournament of Poker (widok użytkownika)
+1. W telefonie otwórz `TOURNAMENT OF POKER` po poprawnym PIN.
+2. Lewy panel sekcji (Losowanie stołów, Wpłaty, Podział puli, Faza grupowa, Półfinał, Finał, Wypłaty, Czat) powinien zawsze pokazywać nazwy przycisków.
+3. Jeżeli sekcja zawiera szeroką tabelę, przewijanie poziome działa wewnątrz panelu danych, a nie na całej stronie.
+4. Panel boczny nie powinien już „tracić” etykiet przycisków przed kliknięciem `Czat`.

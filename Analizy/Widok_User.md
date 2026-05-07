@@ -1183,3 +1183,32 @@ W `setupUserView(root)` helper `toPercentText(...)` korzysta z `toNumber(...)`, 
 
 ### Naprawa
 Dodano lokalny helper `toNumber(value)` bezpośrednio w `setupUserView(root)` (obok `esc`, `percentInputToDecimal`, `formatCellNumber`, `toPercentText`) oraz podbito cache-buster w `Second/index.html` do `app.js?v=2026-05-07-1`.
+
+## Aktualizacja 2026-05-07 — mobilny panel boczny Tournament of Poker po naprawie danych
+
+### Prompt użytkownika
+Zaktualizowałem plik Analizy/Analiza_TOP-NO-PANELS.md
+Obecnie stary błąd nie występuje. Pojawił się inny.
+
+Wykonaj następujące czynności:
+1. Przeczytaj aktualizację w analizie Analizy/Analiza_TOP-NO-PANELS.md
+1.1 Aktualizacja zaczyna się od tekstu "## Aktualizacja analizy — błąd mobilnego panelu bocznego Tournament of Poker po naprawie danych", przeczytaj jednak całość dla kontekstu.
+2. Wprowadź rekomendowane poprawki
+3. Zaktualizuj plik Analizy/Widok_User.md o opis nowego problemu i sposób naprawy
+
+### Nowy problem
+- W widoku mobilnym `Tournament of Poker` lewy panel pokazuje puste przyciski bez etykiet dla sekcji tabelarycznych.
+- Po wejściu w `Czat` etykiety wracają.
+- Przyczyna: szerokie tabele rozpychały kontener, przez co tekst przycisków był poza widocznym obszarem viewportu.
+
+### Wdrożona naprawa
+Plik `Second/styles.css`
+- Dodano reguły `@media (max-width: 760px)` ograniczone do `body:not(.is-admin) #tournamentTab`.
+- Wymuszono jedną kolumnę i ograniczenie szerokości kontenerów (`min-width: 0`, `max-width: 100%`) dla layoutu i sidebara.
+- Dodano lokalny poziomy scroll tabel w sekcji danych (`overflow-x: auto`), aby tabele nie rozszerzały panelu bocznego.
+- Ustawiono style przycisków sekcji (`.admin-games-year-button`) tak, aby etykiety były zawsze widoczne na mobile.
+
+### Sekcja zmian w kodzie (przed/po)
+Plik `Second/styles.css`
+- Było: brak dedykowanego mobile-fixa dla user `#tournamentTab`; szerokie tabele mogły rozszerzać cały layout.
+- Jest: dodany blok `@media (max-width: 760px)` z ograniczeniem szerokości sidebara i lokalnym scrollowaniem tabel, co utrzymuje widoczność nazw przycisków sekcji.

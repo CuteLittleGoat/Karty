@@ -2087,3 +2087,56 @@ body.modal-open {
   top: 0;
   right: 0;
 }
+
+/* Mobile fix: user Tournament sidebar labels hidden when wide tables stretch layout */
+@media (max-width: 760px) {
+  body:not(.is-admin) #tournamentTab .admin-games-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  body:not(.is-admin) #tournamentTab .admin-games-sidebar,
+  body:not(.is-admin) #tournamentTab .admin-games-content,
+  body:not(.is-admin) #tournamentTab .admin-games-section,
+  body:not(.is-admin) #tournamentTab #userTournamentDataMount,
+  body:not(.is-admin) #tournamentTab #userTournamentChatMount {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  body:not(.is-admin) #tournamentTab .admin-games-years-list,
+  body:not(.is-admin) #tournamentTab .player-zone-sections-list {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  body:not(.is-admin) #tournamentTab .admin-games-year-button {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  body:not(.is-admin) #tournamentTab .admin-table-scroll,
+  body:not(.is-admin) #tournamentTab .admin-games-section {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body:not(.is-admin) #tournamentTab .admin-data-table {
+    width: max-content;
+    min-width: 720px;
+  }
+}
