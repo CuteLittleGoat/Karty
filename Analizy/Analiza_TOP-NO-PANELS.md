@@ -2793,3 +2793,267 @@ Plik `Second/index.html`
 - Linia 287
   - Było: `<script src="app.js?v=2026-05-06-3" type="module"></script>`
   - Jest: `<script src="app.js?v=2026-05-07-1" type="module"></script>`
+ 
+  - ## Aktualizacja analizy — błąd mobilnego panelu bocznego Tournament of Poker po naprawie danych
+
+### Status po ostatnich testach
+
+Po ostatnich poprawkach główny problem z brakiem danych w zakładkach użytkownika został rozwiązany.
+
+Potwierdzone działanie:
+
+1. Po wpisaniu PIN-u użytkownik dostaje dostęp do zakładki `Tournament of Poker`.
+2. Lista zakładek bocznych jest generowana zgodnie z uprawnieniami gracza.
+3. Dane w zakładkach zaczęły się wyświetlać.
+4. Zakładka `Czat` działa.
+5. Na komputerze widok jest poprawny.
+6. W wersji mobilnej pojawia się nowy problem wizualny.
+
+Nowy problem nie dotyczy już pobierania danych, uprawnień ani renderowania sekcji po stronie JavaScript. Jest to problem układu CSS w wersji mobilnej.
+
+---
+
+## Opis nowego błędu
+
+### Objaw
+
+W widoku mobilnym, po wejściu do `Tournament of Poker`, panel boczny z zakładkami pokazuje przyciski, ale nie pokazuje nazw zakładek.
+
+Zamiast nazw takich jak:
+
+- `LOSOWANIE STOŁÓW`
+- `WPŁATY`
+- `PODZIAŁ PULI`
+- `FAZA GRUPOWA`
+- `PÓŁFINAŁ`
+- `FINAŁ`
+- `WYPŁATY`
+- `CZAT`
+
+widoczne są tylko puste, szerokie prostokątne przyciski.
+
+Dopiero po kliknięciu zakładki `Czat` etykiety przycisków zaczynają być widoczne i mieszczą się na ekranie.
+
+---
+
+## Ważna obserwacja z testu
+
+Problem występuje w zakładkach, które renderują szerokie tabele, na przykład:
+
+- `Losowanie stołów`
+- `Wpłaty`
+- `Podział puli`
+- `Faza grupowa`
+- `Półfinał`
+- `Finał`
+- `Wypłaty`
+
+Natomiast po kliknięciu `Czat` panel boczny zaczyna wyglądać prawidłowo.
+
+To jest bardzo ważna wskazówka diagnostyczna.
+
+Zakładka `Czat` nie renderuje szerokich tabel turniejowych, dlatego nie rozpycha układu strony. Wtedy panel boczny ma normalną szerokość ekranu telefonu i napisy na przyciskach są widoczne.
+
+Zakładki turniejowe renderują tabele z dużą minimalną szerokością, przez co cały kontener mobilny zostaje rozszerzony poza prawą krawędź ekranu. Przyciski panelu bocznego również dostają zbyt dużą szerokość, a ich tekst jest centrowany względem tej zbyt szerokiej powierzchni. Efekt: na ekranie telefonu widać tylko lewą część przycisku, a napis znajduje się dalej poza widocznym obszarem.
+
+---
+
+## Wniosek główny
+
+To nie jest błąd `allowedTargets`, `allowedSections`, PIN-u ani `renderUserTournament`.
+
+To jest błąd CSS:
+
+szerokie tabele w `Tournament of Poker` rozpychają układ mobilny, a panel boczny dziedziczy lub odczuwa tę rozszerzoną szerokość kontenera.
+
+W efekcie tekst przycisków panelu bocznego istnieje w DOM, ale jest poza widocznym fragmentem ekranu.
+
+---
+
+## Najbardziej prawdopodobna przyczyna techniczna
+
+Widok użytkownika w `Second/index.html` używa dla panelu Tournament of Poker tych samych klas, które są używane także w widoku administratora:
+
+- `admin-games-layout`
+- `admin-games-sidebar`
+- `admin-games-years-list`
+- `player-zone-sections-list`
+- `admin-games-year-button`
+- `admin-games-content`
+- `admin-games-section`
+
+W widoku desktopowym to jest poprawne.
+
+Problem pojawia się na mobile, bo tabele turniejowe mają szeroką strukturę, np. wiele kolumn albo minimalną szerokość tabeli. Jeżeli nadrzędny kontener nie ma wymuszonego:
+
+- `min-width: 0`
+- `max-width: 100%`
+- `overflow-x: hidden` albo lokalnego `overflow-x: auto`
+
+to tabela może rozszerzyć cały layout poza viewport.
+
+Wtedy przyciski bocznego panelu również stają się zbyt szerokie.
+
+---
+
+## Dlaczego po kliknięciu „Czat” problem znika
+
+Zakładka `Czat` nie zawiera szerokiej tabeli.
+
+Po przejściu na `Czat` zawartość główna nie wymusza już dużej szerokości kontenera. Układ zostaje przeliczony przez przeglądarkę, panel boczny mieści się w ekranie, a napisy na przyciskach wracają do widocznego obszaru.
+
+To potwierdza, że problem wynika z CSS/layoutu, a nie z braku tekstu w przyciskach.
+
+---
+
+## Plik do poprawy
+
+Należy poprawić:
+
+```text
+Second/styles.css
+```
+
+Najbezpieczniej dodać poprawkę na końcu pliku Second/styles.css, jako nadpisanie istniejących reguł responsywnych.
+
+Nie trzeba zmieniać HTML.
+
+Nie trzeba zmieniać Second/app.js, o ile problem dotyczy wyłącznie niewidocznych nazw przycisków na mobile.
+
+## Zalecana poprawka CSS
+
+Dodać na końcu pliku Second/styles.css:
+
+```css
+/* --------------------------------------------------------------------------
+   FIX MOBILE USER TOURNAMENT LAYOUT
+   Problem:
+   W widoku mobilnym szerokie tabele Tournament of Poker rozpychały layout.
+   Przez to panel boczny użytkownika miał zbyt dużą szerokość, a tekst
+   przycisków był wyśrodkowany poza widocznym obszarem ekranu.
+-------------------------------------------------------------------------- */
+
+@media (max-width: 760px) {
+  body:not(.is-admin) #tournamentTab .admin-games-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  body:not(.is-admin) #tournamentTab .admin-games-sidebar,
+  body:not(.is-admin) #tournamentTab .admin-games-content,
+  body:not(.is-admin) #tournamentTab .admin-games-section,
+  body:not(.is-admin) #tournamentTab #userTournamentDataMount,
+  body:not(.is-admin) #tournamentTab #userTournamentChatMount {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  body:not(.is-admin) #tournamentTab .admin-games-years-list,
+  body:not(.is-admin) #tournamentTab .player-zone-sections-list {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  body:not(.is-admin) #tournamentTab .admin-games-year-button {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  body:not(.is-admin) #tournamentTab .admin-table-scroll,
+  body:not(.is-admin) #tournamentTab .admin-games-section {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body:not(.is-admin) #tournamentTab .admin-data-table {
+    width: max-content;
+    min-width: 720px;
+  }
+}
+```
+
+## Dlaczego ta poprawka powinna działać
+
+### 1. Wymusza jedną kolumnę na mobile
+
+```css
+grid-template-columns: minmax(0, 1fr);
+```
+
+To zapobiega sytuacji, w której layout próbuje zachować desktopowy układ boczny + treść.
+
+### 2. Blokuje rozpychanie rodziców przez szerokie tabele
+
+```css
+min-width: 0;
+max-width: 100%;
+```
+
+To jest kluczowe przy grid/flex layoutach. Bez min-width: 0 element potomny z szeroką tabelą może wymusić szerokość większą niż ekran telefonu.
+
+### 3. Panel boczny zostaje ograniczony do szerokości ekranu
+
+```css
+body:not(.is-admin) #tournamentTab .admin-games-sidebar,
+body:not(.is-admin) #tournamentTab .admin-games-years-list {
+  width: 100%;
+  max-width: 100%;
+}
+```
+
+Dzięki temu przyciski nie dziedziczą szerokości rozepchniętej przez tabelę.
+
+### 4. Tekst przycisków ma być widoczny
+
+```css
+white-space: normal;
+overflow: visible;
+text-overflow: clip;
+```
+
+To usuwa ryzyko, że tekst będzie ucinany albo wypychany poza przycisk.
+
+### 5. Szerokie tabele mają przewijać się lokalnie
+
+```css
+overflow-x: auto;
+-webkit-overflow-scrolling: touch;
+```
+
+Zamiast rozpychać całą stronę, tabele będą przewijane poziomo w swoim obszarze.
+
+## Ważne: czego ta poprawka nie powinna zepsuć
+
+Poprawka jest ograniczona selektorem:
+
+```css
+body:not(.is-admin) #tournamentTab
+```
+
+Oznacza to, że dotyczy tylko:
+
+- widoku użytkownika,
+- zakładki Tournament of Poker,
+- ekranów mobilnych do 760 px szerokości.
+
+Nie powinna wpływać na:
+
+- widok administratora,
+- desktopowy widok użytkownika,
+- zakładkę Aktualności,
+- zakładkę Regulamin,
+- globalny wygląd strony.
