@@ -349,3 +349,6 @@
 ## 2026-05-06 — Naprawa widoku użytkownika (Wpłaty)
 - W `setupUserView(root)` dodano lokalny helper `toPercentText`, aby render sekcji `Wpłaty` miał dostęp do tego samego formatowania procentów i nie zgłaszał błędu `ReferenceError: toPercentText is not defined`.
 - W `Second/index.html` podbito cache-buster skryptu do `app.js?v=2026-05-06-3`.
+
+- W `setupUserView(root)` dodano lokalny helper `toNumber(value)`, ponieważ sekcje user (`payments`, `pool`, `group`, `payouts`) korzystają z niego pośrednio przez `toPercentText(...)` i bez tej definicji pojawiał się `ReferenceError: toNumber is not defined`.
+- W `Second/index.html` podbito cache-buster do `app.js?v=2026-05-07-1`, aby wymusić pobranie nowej wersji skryptu bez cache.
