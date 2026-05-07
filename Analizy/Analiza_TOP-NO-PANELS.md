@@ -2223,3 +2223,557 @@ Plik `Second/index.html`
 Linia skryptu modułu  
 Było: `<script src="app.js?v=2026-05-06-2" type="module"></script>`  
 Jest: `<script src="app.js?v=2026-05-06-3" type="module"></script>`
+
+======
+## Aktualizacja 2026-05-07 - nowe wnioski
+
+# Aktualizacja analizy — regresja renderowania zakładek Tournament of Poker po poprawce TOP-NO-PANELS
+
+## Data testu
+
+2026-05-06
+
+## Kontekst
+
+Po wcześniejszych poprawkach błąd:
+
+```text
+Brak dostępnych paneli Tournament of Poker dla tego PIN-u (kod: TOP-NO-PANELS)
+```
+
+został częściowo rozwiązany.
+
+W nowym teście utworzony został nowy gracz testowy z PIN-em:
+
+```text
+99999
+```
+
+Graczowi nadano wszystkie uprawnienia turniejowe.
+
+Po wpisaniu PIN-u w widoku użytkownika aplikacja poprawnie odblokowała zakładkę:
+
+```text
+Tournament of Poker
+```
+
+oraz pokazała w bocznym panelu wszystkie dozwolone sekcje:
+
+- Losowanie stołów
+- Wpłaty
+- Podział puli
+- Faza grupowa
+- Półfinał
+- Finał
+- Wypłaty
+- Czat
+
+To oznacza, że poprzedni problem z fałszywym komunikatem TOP-NO-PANELS nie jest już głównym problemem.
+
+## 1. Co zostało sprawdzone
+
+### Test 1 — wejście PIN-em nowego gracza
+
+Utworzono nowego gracza:
+
+```text
+TesterFull
+PIN: 99999
+```
+
+Gracz otrzymał wszystkie uprawnienia turniejowe.
+
+Po wpisaniu PIN-u w widoku użytkownika aplikacja:
+
+- przyjęła PIN,
+- odblokowała zakładkę Tournament of Poker,
+- pokazała w panelu bocznym wszystkie sekcje turniejowe.
+
+### Wniosek z testu 1
+
+Mechanizm PIN-u i mechanizm uprawnień działają poprawnie.
+
+Problem nie leży obecnie w:
+
+- Firebase
+- PIN-ie
+- uprawnieniach gracza
+- liście allowedSections
+- liście allowedTargets
+
+## 2. Wynik testu każdej zakładki
+
+Po wejściu jako gracz z pełnymi uprawnieniami przetestowano wszystkie sekcje widoku użytkownika Tournament of Poker.
+
+| Sekcja | Wynik |
+|---|---|
+| Losowanie stołów | Działa |
+| Wpłaty | Błąd renderowania |
+| Podział puli | Błąd renderowania |
+| Faza grupowa | Błąd renderowania |
+| Półfinał | Błąd renderowania |
+| Finał | Błąd renderowania |
+| Wypłaty | Błąd renderowania |
+| Czat | Działa |
+
+## 3. Komunikaty błędów widoczne w UI
+
+Dla sekcji Wpłaty pojawia się komunikat:
+
+```text
+Nie udało się wyrenderować sekcji „payments” (etap: payments). Sprawdź dane turniejowe i spróbuj odświeżyć.
+
+Szczegóły: ReferenceError: toNumber is not defined
+```
+
+Dla sekcji Podział puli pojawia się komunikat:
+
+```text
+Nie udało się wyrenderować sekcji „pool” (etap: pool). Sprawdź dane turniejowe i spróbuj odświeżyć.
+
+Szczegóły: ReferenceError: toNumber is not defined
+```
+
+Dla sekcji Faza grupowa pojawia się komunikat:
+
+```text
+Nie udało się wyrenderować sekcji „group” (etap: group). Sprawdź dane turniejowe i spróbuj odświeżyć.
+
+Szczegóły: ReferenceError: toNumber is not defined
+```
+
+Dla sekcji Półfinał pojawia się komunikat:
+
+```text
+Nie udało się wyrenderować sekcji „semi” (etap: semi). Sprawdź dane turniejowe i spróbuj odświeżyć.
+
+Szczegóły: ReferenceError: toNumber is not defined
+```
+
+Dla sekcji Finał pojawia się komunikat:
+
+```text
+Nie udało się wyrenderować sekcji „final” (etap: final). Sprawdź dane turniejowe i spróbuj odświeżyć.
+
+Szczegóły: ReferenceError: toNumber is not defined
+```
+
+Dla sekcji Wypłaty pojawia się komunikat:
+
+```text
+Nie udało się wyrenderować sekcji „payouts” (etap: payouts). Sprawdź dane turniejowe i spróbuj odświeżyć.
+
+Szczegóły: ReferenceError: toNumber is not defined
+```
+
+## 4. Co pokazuje konsola
+
+W konsoli, po filtrowaniu:
+
+```text
+[Second][UserTournament]
+```
+
+widać, że aplikacja loguje poprawne przejścia między sekcjami.
+
+Dla każdej klikniętej sekcji pojawia się m.in.:
+
+```text
+event: "section_navigation"
+event: "render_start"
+isUserTournamentLoaded: true
+isUserPinGateOpen: true
+```
+
+To oznacza, że:
+
+- Aplikacja próbuje renderować właściwą sekcję.
+- Sesja PIN jest aktywna.
+- Tournament of Poker jest odblokowany.
+- Problem pojawia się dopiero wewnątrz funkcji renderującej daną sekcję.
+
+## 5. Główna diagnoza
+
+Aktualny problem nie jest już błędem uprawnień.
+
+Aktualny problem to błąd JavaScript w renderowaniu sekcji użytkownika.
+
+Najważniejszy komunikat:
+
+```text
+ReferenceError: toNumber is not defined
+```
+
+oznacza, że kod widoku użytkownika próbuje użyć funkcji:
+
+```js
+toNumber(...)
+```
+
+ale ta funkcja nie istnieje w zakresie widocznym dla kodu renderującego user-view.
+
+## 6. Powiązanie z wcześniejszą analizą
+
+Wcześniejsza analiza wykazała już podobny problem z funkcją:
+
+```js
+esc(...)
+```
+
+Wtedy ustalono, że esc była zdefiniowana lokalnie w kodzie administratora, ale używana także w widoku użytkownika.
+
+Ten obecny błąd ma tę samą naturę.
+
+Obecnie problem dotyczy helpera:
+
+```js
+toNumber(...)
+```
+
+Najprawdopodobniej toNumber istnieje albo istniał tylko lokalnie w części administratorskiej, np. wewnątrz:
+
+```js
+setupAdminTournament(...)
+```
+
+natomiast widok użytkownika, czyli:
+
+```js
+setupUserView(...)
+```
+
+nie ma do niego dostępu.
+
+## 7. Dlaczego wcześniejsza poprawka nie wystarczyła
+
+W poprzednich testach pojawiały się kolejno błędy:
+
+```text
+ReferenceError: formatCellNumber is not defined
+ReferenceError: percentInputToDecimal is not defined
+ReferenceError: toPercentText is not defined
+ReferenceError: toNumber is not defined
+```
+
+To wskazuje, że poprawki były wykonywane punktowo: naprawiano jeden brakujący helper, po czym aplikacja dochodziła do kolejnego brakującego helpera.
+
+To nie rozwiązuje źródła problemu.
+
+Źródłem problemu jest to, że widok użytkownika korzysta z helperów, które nie są wspólne/globalne.
+
+## 8. Co należy poprawić
+
+### Plik do poprawy
+
+```text
+Second/app.js
+```
+
+### Miejsce do poprawy
+
+Należy poprawić helpery używane przez render Tournament of Poker.
+
+Szukaj w pliku:
+
+```js
+const setupAdminTournament = (rootCard) => {
+```
+
+oraz:
+
+```js
+const setupUserView = (root) => {
+```
+
+Następnie sprawdź definicje helperów:
+
+- esc
+- toNumber
+- formatCellNumber
+- percentInputToDecimal
+- toPercentText
+
+Jeżeli którykolwiek z tych helperów jest zdefiniowany tylko wewnątrz setupAdminTournament, to widok użytkownika nie będzie miał do niego dostępu.
+
+Helpery używane zarówno przez admina, jak i user-view powinny być w zakresie globalnym pliku Second/app.js, czyli poza funkcjami:
+
+```js
+setupAdminTournament(...)
+setupUserView(...)
+```
+
+## 9. Minimalna poprawka dla aktualnego błędu
+
+Aktualnie widoczny błąd dotyczy funkcji:
+
+```js
+toNumber
+```
+
+Należy dodać ją w Second/app.js w globalnym zakresie, najlepiej obok pozostałych helperów liczbowych, czyli w pobliżu:
+
+- formatCellNumber
+- percentInputToDecimal
+- toPercentText
+
+Jeżeli formatCellNumber, percentInputToDecimal i toPercentText są już przeniesione do globalnego zakresu, to toNumber musi być globalnie dostępny razem z nimi.
+
+Do dodania:
+
+```js
+const toNumber = (value) => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value
+      .trim()
+      .replace(/\s/g, "")
+      .replace(",", ".");
+
+    if (!normalized) {
+      return 0;
+    }
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+};
+```
+
+### Ważne
+
+Nie wolno dodać drugiego globalnego const toNumber, jeżeli taki już istnieje.
+
+Przed dodaniem należy wyszukać w pliku:
+
+```text
+toNumber
+```
+
+Jeżeli toNumber istnieje tylko wewnątrz setupAdminTournament, należy ją przenieść albo skopiować do globalnego zakresu.
+
+Jeżeli toNumber istnieje już globalnie, ale błąd dalej występuje, to znaczy, że przeglądarka nie ładuje jeszcze nowej wersji pliku albo helper znajduje się niżej/w złym zakresie.
+
+## 10. Zalecana pełniejsza poprawka
+
+Zamiast poprawiać helpery pojedynczo, należy zrobić jeden wspólny blok helperów dla admina i user-view.
+
+W Second/app.js, poza funkcjami setupAdminTournament i setupUserView, powinien istnieć wspólny blok:
+
+```js
+const esc = (value) => String(value ?? "")
+  .replaceAll("&", "&amp;")
+  .replaceAll("<", "&lt;")
+  .replaceAll(">", "&gt;")
+  .replaceAll('"', "&quot;");
+
+const toNumber = (value) => {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value
+      .trim()
+      .replace(/\s/g, "")
+      .replace(",", ".");
+
+    if (!normalized) {
+      return 0;
+    }
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+};
+
+const formatCellNumber = (value) => {
+  const number = toNumber(value);
+
+  if (!Number.isFinite(number)) {
+    return "";
+  }
+
+  return Number.isInteger(number)
+    ? String(number)
+    : String(Math.round(number * 100) / 100).replace(".", ",");
+};
+
+const percentInputToDecimal = (value) => {
+  if (typeof value === "number") {
+    return value > 1 ? value / 100 : value;
+  }
+
+  const normalized = String(value ?? "")
+    .trim()
+    .replace("%", "")
+    .replace(",", ".");
+
+  if (!normalized) {
+    return 0;
+  }
+
+  const parsed = Number(normalized);
+
+  if (!Number.isFinite(parsed)) {
+    return 0;
+  }
+
+  return parsed > 1 ? parsed / 100 : parsed;
+};
+
+const toPercentText = (value) => {
+  const percent = percentInputToDecimal(value) * 100;
+  return `${formatCellNumber(percent)}%`;
+};
+```
+
+### Ważne przy pełniejszej poprawce
+
+Jeżeli część tych funkcji już istnieje globalnie po wcześniejszych poprawkach, nie należy dodawać ich drugi raz.
+
+Należy wtedy tylko uzupełnić brakującą funkcję albo ujednolicić istniejący blok.
+
+## 11. Dlaczego trzeba poprawić helpery globalnie
+
+Widok użytkownika renderuje dane z kopii readonly.
+
+Render nie powinien zależeć od funkcji zadeklarowanych lokalnie wewnątrz panelu administratora.
+
+Jeżeli helper istnieje tylko w adminie, to:
+
+- admin-view działa,
+- user-view może się wyłożyć błędem ReferenceError
+
+To dokładnie dzieje się teraz.
+
+## 12. Aktualny status zakładek po testach
+
+### Działa
+
+- Losowanie stołów
+- Czat
+
+### Nie działa z powodu toNumber is not defined
+
+- Wpłaty
+- Podział puli
+- Faza grupowa
+- Półfinał
+- Finał
+- Wypłaty
+
+## 13. Czy poprawka dotycząca „Wpłat” zadziałała?
+
+Nie w pełni.
+
+Błąd w zakładce Wpłaty zmienił się, ale zakładka nadal nie renderuje się poprawnie.
+
+Aktualny błąd:
+
+```text
+ReferenceError: toNumber is not defined
+```
+
+oznacza, że poprzednia poprawka prawdopodobnie usunęła wcześniejszy problem z:
+
+```js
+toPercentText
+```
+
+ale aplikacja doszła do kolejnego brakującego helpera:
+
+```js
+toNumber
+```
+
+## 14. Po poprawce trzeba zaktualizować wersję cache
+
+Po zmianie Second/app.js należy zaktualizować wersję skryptu w:
+
+```text
+Second/index.html
+```
+
+Przykład:
+
+```html
+<script src="./app.js?v=2026-05-06-4"></script>
+```
+
+Aktualnie przeglądarka ładuje wersję:
+
+```text
+app.js?v=2026-05-06-3
+```
+
+Po poprawce wersja powinna zostać podbita, aby Edge/Chrome/GitHub Pages nie używały starego pliku z cache.
+
+## 15. Test po wdrożeniu poprawki
+
+Po wdrożeniu poprawki należy wykonać test w Edge:
+
+1. Otworzyć DevTools.
+2. Wejść w Network.
+3. Zaznaczyć Disable cache.
+4. Odświeżyć stronę przez Ctrl + F5.
+5. Sprawdzić, czy ładuje się nowa wersja:
+
+```text
+app.js?v=2026-05-06-4
+```
+
+6. Wpisać PIN testowego gracza:
+
+```text
+99999
+```
+
+7. Wejść w:
+
+```text
+Tournament of Poker
+```
+
+8. Kliknąć po kolei:
+
+- Losowanie stołów
+- Wpłaty
+- Podział puli
+- Faza grupowa
+- Półfinał
+- Finał
+- Wypłaty
+- Czat
+
+Oczekiwany wynik:
+
+- Żadna zakładka nie pokazuje ReferenceError.
+- Żadna zakładka nie pokazuje TOP-NO-PANELS.
+- Każda zakładka albo renderuje dane readonly, albo pokazuje kontrolowany komunikat o braku danych.
+
+## 16. Ostateczny wniosek
+
+Aktualny problem nie dotyczy już uprawnień PIN.
+
+Aktualny problem dotyczy zakresu funkcji pomocniczych w Second/app.js.
+
+Kod user-view używa helpera:
+
+```js
+toNumber(...)
+```
+
+ale helper nie jest dostępny globalnie.
+
+Należy przenieść toNumber oraz pozostałe helpery współdzielone przez admin-view i user-view do wspólnego, globalnego zakresu pliku Second/app.js.
+
+Dopiero po tej poprawce można uznać, że render Tournament of Poker w widoku użytkownika jest naprawiany właściwie, a nie punktowo.
+
+::contentReference[oaicite:3]{index=3}
