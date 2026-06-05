@@ -173,8 +173,7 @@ const SECOND_USER_PLAYER_STORAGE_KEY = "secondUserPlayerId";
 
 const shouldRequestAdminAccess = () => new URLSearchParams(window.location.search).get("admin") === "1";
 
-// Funkcja tymczasowo wyłączona: na czas testów pomijamy wymaganie hasła administratora.
-const TEMPORARILY_DISABLE_ADMIN_PASSWORD = true;
+const TEMPORARILY_DISABLE_ADMIN_PASSWORD = false;
 
 const getAdminPasswordHash = async () => {
   const firebaseApp = getFirebaseApp();
@@ -4214,7 +4213,7 @@ const initCustomsEmergencyModal = () => {
 const bootstrap = async () => {
   const isAdminView = await resolveAdminMode();
   if (adminPasswordBypassNote) {
-    adminPasswordBypassNote.hidden = !isAdminView;
+    adminPasswordBypassNote.hidden = true;
   }
 
   initInstructionModal();

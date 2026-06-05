@@ -5,7 +5,7 @@
 - W obu modułach (`Main` i `Second`) czerwony przycisk akcji awaryjnej (`button.danger`) „Przycisnąć w razie kontroli celno-skarbowej” znajduje się w prawym górnym pasku (`.admin-toolbar`), więc jest widoczny zarówno dla użytkownika, jak i administratora.
 - W obu modułach modal z GIF-em `Koza.gif` został zachowany, ale bez nagłówka tekstowego; obraz korzysta z klas `.customs-emergency-modal-body` i `.customs-emergency-image` (wycentrowanie, ograniczenie szerokości i wysokości, `object-fit: contain`, zaokrąglenie i obramowanie).
 ## Moduł Second — Tournament of Poker
-- W nagłówku modułu `Second` po prawej stronie widoczna jest ta sama ikona `Pliki/Ikona.png` co w module `Main`, ustawiona po lewej stronie przycisku **Instrukcja** (układ poziomy w `.header-controls`).
+- W nagłówku modułu `Second` tytuł główny brzmi **Turniej Pokera**, a po prawej stronie widoczna jest ta sama ikona `Pliki/Ikona.png` co w module `Main`, ustawiona po lewej stronie przycisku **Instrukcja** (układ poziomy w `.header-controls`).
 - Sekcja `Lista graczy` ma układ metadanych w siatce `.t-section-grid` oraz tabelę `players-table`.
 - W sekcji `Lista graczy` nad siatką metadanych dodano czerwony przycisk destrukcyjny **Wyzeruj Rebuy** (wariant `button.danger`) do globalnego resetu wszystkich wpisów `RebuyX`.
 - W polu `RAKE` zastosowano format procentowy jak w module Main: użytkownik wpisuje liczbę, a kontrolka wyświetla wartość z dopisanym `%` (np. `12%`) bez dodatkowego pomocniczego `<small>`.
