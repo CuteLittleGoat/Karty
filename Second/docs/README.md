@@ -2,14 +2,15 @@
 
 ### Jak wejść do panelu turniejowego
 1. Otwórz `Second/index.html?admin=1`.
-2. Po pojawieniu się okna **Tryb administratora** wpisz hasło administratora i kliknij **Zaloguj**; bez poprawnego hasła panel admina nie zostanie otwarty.
-3. W prawym górnym rogu znajdziesz ikonę `Pliki/Ikona.png` oraz przycisk **Instrukcja** — ikona jest po lewej stronie przycisku (tak samo jak w module Main).
-4. W górnym pasku kliknij **TOURNAMENT OF POKER**.
-4a. W prawym górnym rogu (obok przycisku **Instrukcja**) dostępny jest czerwony przycisk **Przycisnąć w razie kontroli celno-skarbowej** — widoczny zarówno w widoku admina, jak i użytkownika.
-4b. Po kliknięciu przycisku otwiera się modal z GIF-em `Koza.gif` (bez tytułu tekstowego).
-4c. Modal zamkniesz przyciskiem `×`, klawiszem `Esc` albo kliknięciem w tło.
-5. W lewym panelu wybierz sekcję **Lista graczy**.
-6. Jeżeli chcesz wymusić pobranie z serwera dla tej zakładki, kliknij **Odśwież** w prawym górnym rogu panelu admina.
+2. Na górze strony zobaczysz nagłówek **Tournament of Poker** oraz tekst pomocniczy **To też nie jest nielegalny poker**.
+3. Po pojawieniu się okna **Tryb administratora** wpisz hasło administratora i kliknij **Zaloguj**; bez poprawnego hasła panel admina nie zostanie otwarty.
+4. W prawym górnym rogu znajdziesz ikonę `Pliki/Ikona.png` oraz przycisk **Instrukcja** — ikona jest po lewej stronie przycisku (tak samo jak w module Main).
+5. W górnym pasku kliknij **TOURNAMENT OF POKER**.
+5a. W prawym górnym rogu (obok przycisku **Instrukcja**) dostępny jest czerwony przycisk **Przycisnąć w razie kontroli celno-skarbowej** — widoczny zarówno w widoku admina, jak i użytkownika.
+5b. Po kliknięciu przycisku otwiera się modal z GIF-em `Koza.gif` (bez tytułu tekstowego).
+5c. Modal zamkniesz przyciskiem `×`, klawiszem `Esc` albo kliknięciem w tło.
+6. W lewym panelu wybierz sekcję **Lista graczy**.
+7. Jeżeli chcesz wymusić pobranie z serwera dla tej zakładki, kliknij **Odśwież** w prawym górnym rogu panelu admina.
 
 ### Lista graczy — pełna obsługa
 1. Nad tabelą uzupełnij pola: **ORGANIZATOR**, **BUY-IN**, **REBUY/ADD-ON**, **RAKE**, **STACK**, **REBUY/ADD-ON STACK**.
