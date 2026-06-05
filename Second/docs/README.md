@@ -2,13 +2,14 @@
 
 ### Jak wejść do panelu turniejowego
 1. Otwórz `Second/index.html?admin=1`.
-2. W prawym górnym rogu znajdziesz ikonę `Pliki/Ikona.png` oraz przycisk **Instrukcja** — ikona jest po lewej stronie przycisku (tak samo jak w module Main).
-3. W górnym pasku kliknij **TOURNAMENT OF POKER**.
-3a. W prawym górnym rogu (obok przycisku **Instrukcja**) dostępny jest czerwony przycisk **Przycisnąć w razie kontroli celno-skarbowej** — widoczny zarówno w widoku admina, jak i użytkownika.
-3b. Po kliknięciu przycisku otwiera się modal z GIF-em `Koza.gif` (bez tytułu tekstowego).
-3c. Modal zamkniesz przyciskiem `×`, klawiszem `Esc` albo kliknięciem w tło.
-4. W lewym panelu wybierz sekcję **Lista graczy**.
-5. Jeżeli chcesz wymusić pobranie z serwera dla tej zakładki, kliknij **Odśwież** w prawym górnym rogu panelu admina.
+2. Po pojawieniu się okna **Tryb administratora** wpisz hasło administratora i kliknij **Zaloguj**; bez poprawnego hasła panel admina nie zostanie otwarty.
+3. W prawym górnym rogu znajdziesz ikonę `Pliki/Ikona.png` oraz przycisk **Instrukcja** — ikona jest po lewej stronie przycisku (tak samo jak w module Main).
+4. W górnym pasku kliknij **TOURNAMENT OF POKER**.
+4a. W prawym górnym rogu (obok przycisku **Instrukcja**) dostępny jest czerwony przycisk **Przycisnąć w razie kontroli celno-skarbowej** — widoczny zarówno w widoku admina, jak i użytkownika.
+4b. Po kliknięciu przycisku otwiera się modal z GIF-em `Koza.gif` (bez tytułu tekstowego).
+4c. Modal zamkniesz przyciskiem `×`, klawiszem `Esc` albo kliknięciem w tło.
+5. W lewym panelu wybierz sekcję **Lista graczy**.
+6. Jeżeli chcesz wymusić pobranie z serwera dla tej zakładki, kliknij **Odśwież** w prawym górnym rogu panelu admina.
 
 ### Lista graczy — pełna obsługa
 1. Nad tabelą uzupełnij pola: **ORGANIZATOR**, **BUY-IN**, **REBUY/ADD-ON**, **RAKE**, **STACK**, **REBUY/ADD-ON STACK**.
