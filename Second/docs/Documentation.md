@@ -5,7 +5,7 @@
 - Dla `.user-card` pozostawiono lewy i prawy border o grubości `1px`, a pseudo-element `.user-card::before` jest wyłączony, aby pierwsza zielona ramka miała dokładnie 1 px po bokach.
 
 ## Nagłówek i przycisk instrukcji
-- Tekst nagłówka modułu ustawiono na: eyebrow `To też nie jest nielegalny poker` oraz tytuł `Turniej Pokera`; tytuł karty przeglądarki brzmi `Turniej Pokera - Panel i Widok Użytkownika`.
+- Tekst nagłówka modułu ustawiono na: eyebrow `To też nie jest nielegalny poker` oraz tytuł `Tournament of Poker`; tytuł karty przeglądarki brzmi `Tournament of Poker - Panel i Widok Użytkownika`.
 - W `Second/index.html` sekcja `.header-controls` zawiera ikonę `<img class="header-icon" src="../Pliki/Ikona.png">` oraz przycisk `#secondInstructionButton` w tej samej linii.
 - Ikona i układ są celowo spójne z modułem Main (ta sama grafika i ten sam wzorzec pozycjonowania: ikona po lewej, przycisk po prawej).
 - Styl `.header-icon` w `Second/styles.css` używa `width: min(110px, 100%)` oraz `height: auto`, a `.header-controls` pracuje w układzie poziomym (`display: flex; align-items: center; justify-content: flex-end`).
