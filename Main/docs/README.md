@@ -175,7 +175,9 @@ W wierszu każdej gry masz przyciski:
 
 Kolumna **CzyZamknięta** (checkbox):
 - zaznacz, aby oznaczyć grę jako zamkniętą,
-- odznacz, aby przywrócić status otwartej.
+- odznacz, aby przywrócić status otwartej,
+- zaznaczona gra **znika** z zakładki „Gry do potwierdzenia” (u gracza i u administratora) oraz z widoku „Najbliższa gra”,
+- flaga **nie wpływa** na podsumowania pod tabelą ani na zakładkę „Statystyki” — do statystyk i rankingu liczone są wszystkie gry z wybranego roku, niezależnie od stanu tego checkboxa.
 
 Kolumna **IlośćPotwierdzonych**:
 - pokazuje format `potwierdzeni/zapisani` (np. `2/3`, `3/3`, `4/10`),
@@ -348,6 +350,8 @@ Efekt:
 - Zmień PIN ręcznie albo użyj **Losuj**.
 - Kliknij **Edytuj**, aby zmienić uprawnienia i lata statystyk.
 
+> **Gdzie widać zmienioną nazwę gracza.** Nowa nazwa pojawia się od razu na listach wyboru gracza — czyli w modalach **Szczegóły** gry oraz w kalkulatorze. Natomiast **podsumowania pod tabelą gier, tabela statystyk, ranking, okno „Status potwierdzeń” i zakładka „Gry do potwierdzenia” nadal pokazują nazwę zapisaną w momencie dodania gracza do danej gry** — dla już istniejących gier stara nazwa pozostaje. Liczby i historia gracza nie są tym uszkodzone: gracz rozpoznawany jest po swoim ID, a nie po nazwie.
+
 Walidacje, o których musisz pamiętać:
 - PIN musi mieć dokładnie 5 cyfr,
 - PIN musi być unikalny (nie może powtórzyć PIN-u innego gracza).
@@ -376,7 +380,10 @@ Sekcja zarządzania główną listą gier administracyjnych.
 W każdym wierszu gry:
 - **Szczegóły** — modal szczegółów gry (uczestnicy i wartości),
 - **Usuń** — usuwa grę wraz z powiązanymi szczegółami i potwierdzeniami,
-- checkbox **CzyZamknięta** — zamknięcie/otwarcie gry.
+- checkbox **CzyZamknięta** — zamknięcie/otwarcie gry; zaznaczona gra znika z „Gry do potwierdzenia” i z „Najbliższa gra”, ale **nie wpływa** na podsumowania, statystyki ani ranking (te liczą wszystkie gry z wybranego roku),
+- kolumna **IlośćPotwierdzonych** — licznik `potwierdzeni/zapisani` oraz przycisk **Statusy** otwierający okno tylko do odczytu z listą graczy i ich statusem.
+
+> Uwaga: potwierdzenia obecności zbierane są wyłącznie dla gier z zakładki „Gry użytkowników”. Dla gier z tej zakładki licznik `IlośćPotwierdzonych` i okno **Statusy** pozostają puste (`0/N`, wszyscy „Niepotwierdzony”), o ile w bazie nie ma starszych rekordów potwierdzeń.
 
 ### 10.4. Modal „Szczegóły” gry admina
 1. W pierwszej linii modalu odczytasz szczegóły gry (`Nazwa | Rodzaj gry | Data | Pula | Ilość graczy`) — ta linia zajmuje miejsce wcześniejszego tytułu „Szczegóły gry”.
@@ -413,8 +420,9 @@ Działanie:
 1. Wybierz rok z panelu **Lata**.
 2. Analizuj tabelę statystyk i ranking.
 3. Kliknij **Eksportuj**, aby pobrać statystyki.
-4. W tabeli graczy możesz używać przycisków **Waga1–Waga6** do zbiorczego ustawiania wag kolumn (analogicznie jak wyżej); przyciski mają stałą szerokość `8ch`.
-5. W panelu **Ranking** kolumny **Miejsce**, **Gracz** i **Wynik** mieszczą się na ekranie bez poziomego przewijania; kolumna **Gracz** jest zwężona, nagłówek **Gracz** jest wyrównany do lewej, a długie nazwy są obcinane wielokropkiem.
+4. W tabeli graczy przyciski **Waga1–Waga6** mają stałą szerokość `8ch`. **Uwaga: w tej zakładce zbiorcze ustawianie wag nie działa** — okno z pytaniem o wartość się pojawia, ale wpisana liczba nie jest zapisywana. Aby ustawić wagi zbiorczo, użyj tych samych przycisków w zakładce **„Gry admina”** (pkt 10.6) — wagi są wspólne dla obu zakładek, więc wartość ustawiona tam pojawi się od razu tutaj.
+5. Wartości w kolumnach wag możesz też wpisać ręcznie w polach tabeli. W tej zakładce po wpisaniu jednego znaku pole traci kursor — trzeba kliknąć w nie ponownie, aby dopisać kolejną cyfrę (w zakładce „Gry admina” ten problem nie występuje).
+6. W panelu **Ranking** kolumny **Miejsce**, **Gracz** i **Wynik** mieszczą się na ekranie bez poziomego przewijania; kolumna **Gracz** jest zwężona, nagłówek **Gracz** jest wyrównany do lewej, a długie nazwy są obcinane wielokropkiem.
 
 ---
 
@@ -440,13 +448,18 @@ Najważniejsze przyciski:
 
 Widok tabeli z najbliższą aktywną grą oraz statusem potwierdzeń wszystkich graczy.
 
-Zakładka automatycznie ukrywa gry starsze niż dzisiejsza data — na liście zobaczysz wyłącznie gry zaplanowane na dziś lub przyszłe terminy.
+Na liście pojawiają się wyłącznie gry z zakładki **„Gry użytkowników”** — gry z zakładki „Gry admina” nie są tu pokazywane.
+
+Zakładka automatycznie ukrywa gry starsze niż dzisiejsza data oraz gry oznaczone jako **CzyZamknięta** — na liście zobaczysz wyłącznie gry otwarte, zaplanowane na dziś lub przyszłe terminy.
 
 Obsługiwane są daty zapisane jako `RRRR-MM-DD` oraz `DD.MM.RRRR` (i `DD-MM-RRRR`), a lista jest sortowana rosnąco po dacie, więc na górze pojawia się najbliższa nadchodząca gra.
 
+Kolumny tabeli: **Rodzaj gry**, **Data**, **Nazwa**, **CzyWszyscyPotwierdzili** (`Tak` / `Nie`) oraz **Akcje**.
+
 Użycie:
 - przejdź do zakładki, by monitorować czy komplet graczy potwierdził udział,
-- dane są aktualizowane na podstawie aktywnych gier i potwierdzeń.
+- dane są aktualizowane na podstawie aktywnych gier i potwierdzeń,
+- przycisk **Usuń Całkowicie** (kolumna `Akcje`, tylko w widoku administratora) kasuje grę razem ze wszystkimi jej szczegółami i potwierdzeniami — operacja jest natychmiastowa i nieodwracalna, bez dodatkowego potwierdzenia.
 
 ---
 
@@ -454,11 +467,19 @@ Użycie:
 
 Widok kontrolny potwierdzeń dla gier wymagających deklaracji uczestników.
 
+Lista obejmuje wyłącznie **otwarte gry z zakładki „Gry użytkowników”** (gry oznaczone jako `CzyZamknięta` są pomijane). Gry z zakładki „Gry admina” nie są tu pokazywane.
+
+Układ sekcji:
+- każda gra ma własny nagłówek z nazwą oraz linię `Rodzaj gry | Data`,
+- pod nagłówkiem znajduje się tabela z kolumnami **Gracz**, **Status** (`Potwierdzono` / `Niepotwierdzono`) i **Akcje**; wiersze potwierdzone są podświetlone na złoto.
+
 Typowe akcje:
 - podgląd, którzy gracze potwierdzili,
-- wejście do **Szczegółów** gry,
-- otwarcie **Notatek do gry**,
-- odświeżanie listy (jeśli widoczne przyciski odświeżenia w sekcji).
+- **Potwierdź** — ustawia potwierdzenie obecności w imieniu wybranego gracza,
+- **Anuluj** — wycofuje potwierdzenie obecności wybranego gracza,
+- odświeżenie listy wykonujesz górnym przyciskiem **Odśwież** w nagłówku panelu administratora (sekcja nie ma własnego przycisku odświeżania).
+
+> W tej zakładce nie ma przycisków **Szczegóły** ani **Notatki do gry** — te akcje dostępne są w sekcji gracza „Gry do Potwierdzenia” (pkt 3.3).
 
 ---
 

@@ -129,6 +129,8 @@
 - Odczyt istniejących potwierdzeń także używa tego samego klucza identyfikacyjnego, co eliminuje rozjazdy między dokumentami potwierdzeń i listą graczy.
 - Zapis potwierdzenia przez administratora ustawia `playerId` na rzeczywiste ID gracza z rekordu gry (jeżeli istnieje), zamiast przepisywać nazwę do pola `playerId`.
 - Ranking statystyk, masowe ustawianie wag i eksport XLSX odczytują wpisy ręczne z mapy rocznej po `statsKey` (`id:<playerId>` z fallbackiem nazwy), a nie po samym `playerName`.
+- **Masowe ustawianie wag działa wyłącznie w zakładce „Gry admina”** (`initAdminGames` → `applyBulkWeightValue`, zapis do `admin_games_stats/{rok}`). Handler tych samych przycisków w zakładce „Statystyki” (`initStatisticsView`) wywołuje `ensureYearMapEntry`, która jest zadeklarowana jako `const` lokalnie w `initAdminGames` i nie jest widoczna z tego zasięgu — kliknięcie przerywa się na `ReferenceError` po zamknięciu `window.prompt`, bez zapisu i bez komunikatu w UI. Obie zakładki zapisują do tej samej kolekcji `admin_games_stats`, więc wagi ustawione w „Gry admina” są natychmiast widoczne w „Statystyki”.
+- **Nazwa gracza jest zdenormalizowana.** Wiersze gier (`rows`) i rekordy w `admin_games_stats` przechowują kopię `playerName` z chwili zapisu. Aktualizacja nazwy w zakładce „Gracze” (`updatePlayerField` → `savePlayers`) zapisuje wyłącznie dokument `PLAYER_ACCESS_COLLECTION` i nie propaguje się do `rows` ani do statystyk. Listy `<select>` w modalach szczegółów budują etykiety z żywej listy `state.playerOptions` po `playerId`, dlatego pokazują nazwę aktualną; podsumowania (`renderSummaries`), statystyki (`getPlayersStatistics`), ranking, modal „Status potwierdzeń” i `initAdminConfirmations` czytają zapisane `playerName` i pokazują nazwę historyczną. Agregacja odbywa się po `statsKey`, więc rozjazd dotyczy wyłącznie warstwy prezentacji.
 
 ## Rework layoutu tabel (Main)
 
@@ -205,9 +207,14 @@ Efekt techniczny:
 
 ## Aktualizacja techniczna: separacja Gry admina od potwierdzeń i Najbliższej gry
 - `Main/app.js`:
-  - widok `Najbliższa gra` agreguje tylko `UserGames`;
+  - widok `Najbliższa gra` agreguje tylko `UserGames` (`nextGamesState.adminGames` pozostaje pustą tablicą);
   - widok `Gry do potwierdzenia` (admin i gracz) pobiera aktywne gry tylko z `UserGames`;
   - status admina w `Gry do potwierdzenia` raportuje już tylko źródło `UserGames`.
+- Konsekwencja: **żadna ścieżka UI nie zapisuje dokumentów do `Tables/{gameId}/confirmations`**. Zakładka `Gry admina` nadal renderuje kolumnę `IlośćPotwierdzonych` i przycisk `Statusy` oraz subskrybuje tę podkolekcję, więc dla gier admina licznik pokazuje `0/N` (poza rekordami historycznymi sprzed separacji).
+
+## Zasięg flagi `isClosed`
+- Pole `isClosed` gry jest odczytywane tylko w dwóch filtrach: `getActiveGamesForConfirmations` (zakładki `Gry do potwierdzenia`) oraz `getCombinedOpenGames` (widok `Najbliższa gra`).
+- Selektory `getGamesForSelectedYear` w `initAdminGames`, `initStatisticsView` i `initUserGamesManager` filtrują wyłącznie po roku (oraz po dostępie w widoku gracza), dlatego `renderSummaries`, `getPlayersStatistics` i ranking obejmują **wszystkie** gry wybranego roku niezależnie od `isClosed`.
 
 ## Aktualizacja techniczna: RebuyX i mobilna klawiatura
 - `Main/app.js`: w modalu rebuy kalkulatora każde pole `RebuyX` korzysta z `applyIntegerInputHints` (`type=text`, `inputmode=numeric`, `pattern=[0-9]*`) i sanitizacji cyfr.
