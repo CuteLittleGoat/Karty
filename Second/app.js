@@ -136,6 +136,26 @@ const installFirestoreDeleteProtection = (firebaseApp) => {
   firebaseApp.__kartyDeleteProtectionInstalled = true;
 };
 
+const activateAppCheckIfConfigured = (firebase) => {
+  const siteKey = typeof window.firebaseConfig?.appCheckSiteKey === "string"
+    ? window.firebaseConfig.appCheckSiteKey.trim()
+    : "";
+
+  if (!siteKey || firebase.__kartyAppCheckActivated || typeof firebase.appCheck !== "function") {
+    return;
+  }
+
+  try {
+    if (typeof window.firebaseConfig?.appCheckDebugToken === "string" && window.firebaseConfig.appCheckDebugToken.trim()) {
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN = window.firebaseConfig.appCheckDebugToken.trim();
+    }
+    firebase.appCheck().activate(new firebase.appCheck.ReCaptchaV3Provider(siteKey), true);
+    firebase.__kartyAppCheckActivated = true;
+  } catch (error) {
+    console.error("Nie udało się włączyć App Check.", error);
+  }
+};
+
 const getFirebaseApp = () => {
   if (!window.firebase || !window.firebase.initializeApp) {
     return null;
@@ -149,6 +169,7 @@ const getFirebaseApp = () => {
     window.firebase.initializeApp(window.firebaseConfig);
   }
 
+  activateAppCheckIfConfigured(window.firebase);
   installFirestoreDeleteProtection(window.firebase);
 
   return window.firebase;

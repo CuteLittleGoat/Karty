@@ -1175,6 +1175,26 @@ const installFirestoreDeleteProtection = (firebaseApp) => {
 };
 
 
+const activateAppCheckIfConfigured = (firebase) => {
+  const siteKey = typeof window.firebaseConfig?.appCheckSiteKey === "string"
+    ? window.firebaseConfig.appCheckSiteKey.trim()
+    : "";
+
+  if (!siteKey || firebase.__kartyAppCheckActivated || typeof firebase.appCheck !== "function") {
+    return;
+  }
+
+  try {
+    if (typeof window.firebaseConfig?.appCheckDebugToken === "string" && window.firebaseConfig.appCheckDebugToken.trim()) {
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN = window.firebaseConfig.appCheckDebugToken.trim();
+    }
+    firebase.appCheck().activate(new firebase.appCheck.ReCaptchaV3Provider(siteKey), true);
+    firebase.__kartyAppCheckActivated = true;
+  } catch (error) {
+    console.error("Nie udało się włączyć App Check.", error);
+  }
+};
+
 const getFirebaseApp = () => {
   if (!window.firebase || !window.firebase.initializeApp) {
     return null;
@@ -1188,6 +1208,7 @@ const getFirebaseApp = () => {
     window.firebase.initializeApp(window.firebaseConfig);
   }
 
+  activateAppCheckIfConfigured(window.firebase);
   installFirestoreDeleteProtection(window.firebase);
 
   return window.firebase;
@@ -9149,6 +9170,387 @@ const initAdminGames = () => {
   });
 };
 
+const BACKUP_FORMAT_ID = "karty-backup";
+const BACKUP_FORMAT_VERSION = 1;
+const BACKUP_STATE_COLLECTION = "app_settings";
+const BACKUP_STATE_DOCUMENT = "backup_state";
+const RESTORE_SKIPPED_COLLECTIONS = ["admin_security"];
+
+const CALCULATOR_SUBCOLLECTIONS = [
+  { name: "definitions" },
+  { name: "placeholders" },
+  {
+    name: "sessions",
+    children: [
+      { name: "variables" },
+      { name: "calculationFlags" },
+      { name: "tables", children: [{ name: "rows" }] },
+      { name: "snapshots" }
+    ]
+  }
+];
+const GAME_SUBCOLLECTIONS = [{ name: "rows" }, { name: "confirmations" }];
+
+const BACKUP_COLLECTION_SCHEMA = [
+  { name: "admin_security" },
+  { name: "admin_messages" },
+  { name: "app_settings" },
+  { name: "admin_notes" },
+  { name: "chat_messages" },
+  { name: "admin_games_stats" },
+  { name: "players" },
+  { name: "Collection1" },
+  { name: "Tables", children: GAME_SUBCOLLECTIONS },
+  { name: "UserGames", children: GAME_SUBCOLLECTIONS },
+  { name: "calculators", children: CALCULATOR_SUBCOLLECTIONS },
+  { name: "Nekrolog_config" },
+  { name: "Nekrolog_snapshots" },
+  { name: "Nekrolog_refresh_jobs" },
+  { name: "second_admin_messages" },
+  { name: "second_app_settings" },
+  { name: "second_chat_messages" },
+  { name: "second_players" },
+  { name: "second_admin_games_stats" },
+  { name: "second_tournament" },
+  { name: "second_tables", children: GAME_SUBCOLLECTIONS },
+  { name: "second_user_games", children: GAME_SUBCOLLECTIONS },
+  { name: "second_calculators", children: CALCULATOR_SUBCOLLECTIONS }
+];
+
+const encodeBackupValue = (value, warnings, fieldPath) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item, index) => encodeBackupValue(item, warnings, `${fieldPath}[${index}]`));
+  }
+  if (typeof value === "object") {
+    if (typeof value.seconds === "number" && typeof value.toDate === "function") {
+      return { __type: "timestamp", seconds: value.seconds, nanoseconds: value.nanoseconds ?? 0 };
+    }
+    if (typeof value.latitude === "number" && typeof value.longitude === "number") {
+      warnings.push(`Pole ${fieldPath}: punkt geograficzny zapisany jako tekst.`);
+      return { __type: "geopoint", latitude: value.latitude, longitude: value.longitude };
+    }
+    if (typeof value.path === "string" && value.firestore) {
+      warnings.push(`Pole ${fieldPath}: odwołanie do innego dokumentu zapisane jako ścieżka.`);
+      return { __type: "reference", path: value.path };
+    }
+    const encoded = {};
+    Object.keys(value).forEach((key) => {
+      encoded[key] = encodeBackupValue(value[key], warnings, `${fieldPath}.${key}`);
+    });
+    return encoded;
+  }
+  warnings.push(`Pole ${fieldPath}: pominięto wartość nieobsługiwanego typu.`);
+  return null;
+};
+
+const decodeBackupValue = (value, firebaseApp) => {
+  if (value === null || typeof value !== "object") {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => decodeBackupValue(item, firebaseApp));
+  }
+  if (value.__type === "timestamp") {
+    const TimestampClass = firebaseApp?.firestore?.Timestamp ?? window.firebase?.firestore?.Timestamp ?? null;
+    if (TimestampClass) {
+      return new TimestampClass(Number(value.seconds) || 0, Number(value.nanoseconds) || 0);
+    }
+    return new Date((Number(value.seconds) || 0) * 1000);
+  }
+  if (value.__type === "geopoint" || value.__type === "reference") {
+    return value.__type === "reference" ? value.path : { latitude: value.latitude, longitude: value.longitude };
+  }
+  const decoded = {};
+  Object.keys(value).forEach((key) => {
+    decoded[key] = decodeBackupValue(value[key], firebaseApp);
+  });
+  return decoded;
+};
+
+const collectBackupDocuments = async ({ db, collectionRef, schemaNode, documents, warnings, onProgress }) => {
+  let snapshot;
+  try {
+    snapshot = await collectionRef.get();
+  } catch (error) {
+    warnings.push(`Nie udało się odczytać kolekcji ${collectionRef.path}.`);
+    return;
+  }
+
+  for (const doc of snapshot.docs) {
+    documents.push({
+      path: doc.ref.path,
+      data: encodeBackupValue(doc.data() ?? {}, warnings, doc.ref.path)
+    });
+    if (typeof onProgress === "function") {
+      onProgress(documents.length);
+    }
+
+    for (const child of schemaNode.children ?? []) {
+      await collectBackupDocuments({
+        db,
+        collectionRef: doc.ref.collection(child.name),
+        schemaNode: child,
+        documents,
+        warnings,
+        onProgress
+      });
+    }
+  }
+};
+
+const buildBackupFileName = (date = new Date()) => {
+  const pad = (part) => String(part).padStart(2, "0");
+  const datePart = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  const timePart = `${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}`;
+  return `Karty_Backup_${datePart}_${timePart}.json`;
+};
+
+const downloadJsonFile = (fileName, payload) => {
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+const BACKUP_INSTRUCTIONS_TEXT = `JAK ZROBIĆ KOPIĘ ZAPASOWĄ DANYCH
+
+1. Wejdź w Panel Administratora i wybierz zakładkę "Kopia zapasowa".
+2. Kliknij przycisk "Utwórz kopię zapasową".
+3. Poczekaj — przy większej liczbie gier pobieranie danych może potrwać kilkanaście sekund.
+   Pasek statusu pod przyciskami pokazuje, ile dokumentów już odczytano.
+4. Przeglądarka zapisze na dysku plik o nazwie:
+   Karty_Backup_[data]_[godzina].json
+   na przykład: Karty_Backup_2026-09-07_14-32-05.json
+5. Obok przycisku pojawi się data ostatniej wykonanej kopii.
+
+GDZIE TRZYMAĆ PLIK
+
+Plik zawiera WSZYSTKIE dane aplikacji, w tym PIN-y graczy oraz zapis hasła administratora.
+Trzymaj go w miejscu prywatnym (dysk komputera, prywatny dysk w chmurze).
+Nie wysyłaj go nikomu i nie wrzucaj do repozytorium ani na żaden publicznie dostępny dysk.
+
+Kopie rób z komputera, w zwykłej przeglądarce. Na telefonie, zwłaszcza w aplikacji
+zainstalowanej na ekranie głównym, pobieranie plików bywa zawodne.
+
+
+JAK PRZYWRÓCIĆ DANE Z PLIKU
+
+1. Wejdź w Panel Administratora i wybierz zakładkę "Kopia zapasowa".
+2. Zamknij aplikację w innych oknach i na innych urządzeniach — przywracanie
+   zapisuje dużo danych naraz i wszystkim otwartym oknom będzie się odświeżać ekran.
+3. Kliknij przycisk "Przywróć z pliku".
+4. Wskaż wcześniej pobrany plik Karty_Backup_...json.
+5. Aplikacja NAJPIERW pobierze automatycznie kopię bezpieczeństwa obecnego stanu bazy
+   (drugi plik na dysku). Dzięki temu, jeśli przywrócisz zły plik, da się cofnąć zmianę.
+6. Zobaczysz podsumowanie: z kiedy jest plik i ile dokumentów zawiera.
+7. Aby potwierdzić, wpisz słowo PRZYWROC (bez polskich znaków) i zatwierdź.
+8. Poczekaj do komunikatu o zakończeniu. Nie zamykaj karty w trakcie.
+
+CO ROBI PRZYWRACANIE
+
+Przywracanie DOPISUJE i NADPISUJE dokumenty z pliku.
+Nie kasuje rzeczy, które powstały już po zrobieniu kopii.
+Dzięki temu nadaje się przede wszystkim do odzyskania przypadkowo skasowanych danych.
+
+Jeżeli chcesz cofnąć bazę dokładnie do stanu z pliku (czyli usunąć również to,
+co powstało później), trzeba to zrobić ręcznie w Firebase Console — aplikacja
+celowo nie kasuje danych podczas przywracania.
+
+HASŁO ADMINISTRATORA
+
+Kopia zawiera zapis hasła administratora, ale przywracanie go pomija.
+Dostęp do zapisu hasła jest zablokowany po stronie bazy, żeby nikt z zewnątrz
+nie mógł go podmienić. Jeżeli kiedykolwiek trzeba będzie odtworzyć hasło,
+znajdziesz je w pliku kopii w sekcji "admin_security" i wpisujesz je ręcznie
+w Firebase Console.
+
+CZEGO KOPIA NIE OBEJMUJE
+
+Kopia obejmuje dane obu modułów aplikacji. Nie obejmuje samego kodu aplikacji
+(ten jest w repozytorium) ani ustawień projektu w Firebase.`;
+
+const initAdminBackup = () => {
+  const exportButton = document.querySelector("#adminBackupExport");
+  const importButton = document.querySelector("#adminBackupImport");
+  const fileInput = document.querySelector("#adminBackupFileInput");
+  const status = document.querySelector("#adminBackupStatus");
+  const exportInfo = document.querySelector("#adminBackupExportInfo");
+  const importInfo = document.querySelector("#adminBackupImportInfo");
+  const instructions = document.querySelector("#adminBackupInstructions");
+
+  if (!exportButton || !importButton || !fileInput || !status) {
+    return;
+  }
+
+  if (instructions) {
+    instructions.value = BACKUP_INSTRUCTIONS_TEXT;
+  }
+
+  const firebaseApp = getFirebaseApp();
+  if (!firebaseApp) {
+    status.textContent = "Uzupełnij konfigurację Firebase, aby korzystać z kopii zapasowej.";
+    exportButton.disabled = true;
+    importButton.disabled = true;
+    return;
+  }
+
+  const db = firebaseApp.firestore();
+  const stateRef = db.collection(BACKUP_STATE_COLLECTION).doc(BACKUP_STATE_DOCUMENT);
+
+  const renderLastUsed = (data) => {
+    if (exportInfo) {
+      const label = formatImportRefreshedAt(data?.lastBackupAt);
+      exportInfo.textContent = label ? `Ostatnia kopia: ${label}` : "Nie wykonano jeszcze żadnej kopii.";
+    }
+    if (importInfo) {
+      const label = formatImportRefreshedAt(data?.lastRestoreAt);
+      importInfo.textContent = label ? `Ostatnie przywracanie: ${label}` : "Nie przywracano jeszcze danych.";
+    }
+  };
+
+  renderLastUsed(null);
+  stateRef.onSnapshot(
+    (snapshot) => renderLastUsed(snapshot.exists ? snapshot.data() : null),
+    () => renderLastUsed(null)
+  );
+
+  const createBackupPayload = async (onProgress) => {
+    const documents = [];
+    const warnings = [];
+    for (const schemaNode of BACKUP_COLLECTION_SCHEMA) {
+      await collectBackupDocuments({
+        db,
+        collectionRef: db.collection(schemaNode.name),
+        schemaNode,
+        documents,
+        warnings,
+        onProgress
+      });
+    }
+    return {
+      payload: {
+        format: BACKUP_FORMAT_ID,
+        version: BACKUP_FORMAT_VERSION,
+        createdAt: new Date().toISOString(),
+        documentCount: documents.length,
+        documents
+      },
+      warnings
+    };
+  };
+
+  const runExport = async ({ silent = false } = {}) => {
+    const { payload, warnings } = await createBackupPayload((count) => {
+      if (!silent) {
+        status.textContent = `Pobieranie danych... odczytano ${count} dokumentów.`;
+      }
+    });
+    downloadJsonFile(buildBackupFileName(new Date()), payload);
+    return { payload, warnings };
+  };
+
+  exportButton.addEventListener("click", async () => {
+    exportButton.disabled = true;
+    importButton.disabled = true;
+    try {
+      const { payload, warnings } = await runExport();
+      await stateRef.set({ lastBackupAt: firebaseApp.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      status.textContent = warnings.length
+        ? `Zapisano kopię: ${payload.documentCount} dokumentów. Uwagi: ${warnings.slice(0, 3).join(" ")}`
+        : `Zapisano kopię zapasową: ${payload.documentCount} dokumentów.`;
+    } catch (error) {
+      status.textContent = "Nie udało się utworzyć kopii zapasowej. Sprawdź połączenie i spróbuj ponownie.";
+    } finally {
+      exportButton.disabled = false;
+      importButton.disabled = false;
+    }
+  });
+
+  importButton.addEventListener("click", () => {
+    fileInput.value = "";
+    fileInput.click();
+  });
+
+  fileInput.addEventListener("change", async () => {
+    const file = fileInput.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    exportButton.disabled = true;
+    importButton.disabled = true;
+
+    try {
+      status.textContent = "Sprawdzanie pliku...";
+      let parsed = null;
+      try {
+        parsed = JSON.parse(await file.text());
+      } catch (error) {
+        status.textContent = "To nie jest poprawny plik kopii zapasowej (nie da się go odczytać).";
+        return;
+      }
+
+      if (parsed?.format !== BACKUP_FORMAT_ID || !Array.isArray(parsed.documents)) {
+        status.textContent = "To nie jest plik kopii zapasowej tej aplikacji.";
+        return;
+      }
+
+      const restorable = parsed.documents.filter((entry) => {
+        const path = typeof entry?.path === "string" ? entry.path : "";
+        const topCollection = path.split("/")[0];
+        return path.split("/").length % 2 === 0 && !RESTORE_SKIPPED_COLLECTIONS.includes(topCollection);
+      });
+      const skippedCount = parsed.documents.length - restorable.length;
+      const createdLabel = parsed.createdAt ? new Date(parsed.createdAt).toLocaleString("pl-PL") : "nieznana";
+
+      const confirmationText = window.prompt(
+        `Plik z dnia: ${createdLabel}\nDokumentów w pliku: ${parsed.documents.length}\nZostanie zapisanych: ${restorable.length}${skippedCount ? ` (pominięte: ${skippedCount}, w tym hasło administratora)` : ""}\n\nPrzywracanie nadpisze dokumenty o tych samych identyfikatorach.\nNajpierw pobrana zostanie kopia bezpieczeństwa obecnego stanu.\n\nAby potwierdzić, wpisz: PRZYWROC`,
+        ""
+      );
+
+      if (confirmationText === null) {
+        status.textContent = "Przywracanie anulowane.";
+        return;
+      }
+      if (confirmationText.trim().toUpperCase() !== "PRZYWROC") {
+        status.textContent = "Przywracanie przerwane — nie wpisano słowa PRZYWROC.";
+        return;
+      }
+
+      status.textContent = "Pobieranie kopii bezpieczeństwa obecnego stanu...";
+      await runExport({ silent: true });
+
+      status.textContent = `Przywracanie danych: 0 z ${restorable.length}...`;
+      const operations = restorable.map((entry) => (batch) => {
+        batch.set(db.doc(entry.path), decodeBackupValue(entry.data ?? {}, firebaseApp));
+      });
+      await commitBatchedOperations(db, operations);
+
+      await stateRef.set({ lastRestoreAt: firebaseApp.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      status.textContent = skippedCount
+        ? `Przywrócono ${restorable.length} dokumentów. Pominięto ${skippedCount} (hasło administratora ustawia się ręcznie w Firebase Console).`
+        : `Przywrócono ${restorable.length} dokumentów.`;
+    } catch (error) {
+      status.textContent = "Przywracanie nie powiodło się. Obecny stan bazy został wcześniej pobrany jako kopia bezpieczeństwa.";
+    } finally {
+      fileInput.value = "";
+      exportButton.disabled = false;
+      importButton.disabled = false;
+    }
+  });
+};
+
 const initLatestMessage = () => {
   const output = document.querySelector("#latestMessageOutput");
   const status = document.querySelector("#latestMessageStatus");
@@ -9535,6 +9937,7 @@ const bootstrap = async () => {
     ["Najnowsza wiadomość", initLatestMessage],
     ["Regulamin (widok)", initRulesDisplay],
     ["Modal instrukcji", initInstructionModal],
+    ["Kopia zapasowa", initAdminBackup],
     ["Modal kontroli celno-skarbowej", initCustomsEmergencyModal]
   ].forEach(([name, initializer]) => runInitStep(name, initializer));
 };

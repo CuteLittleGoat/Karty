@@ -12,8 +12,12 @@ service cloud.firestore {
 
     // ===== MAIN MODULE =====
 
+    // Zapis zablokowany celowo: hasło administratora ustawia się wyłącznie
+    // z Firebase Console. Aplikacja tę kolekcję tylko odczytuje, więc blokada
+    // zapisu niczego w niej nie psuje, a uniemożliwia podmianę hasła z zewnątrz.
     match /admin_security/{docId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if false;
     }
 
     match /admin_messages/{docId} {

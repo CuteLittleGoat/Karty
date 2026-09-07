@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Poker - rozgrywki</title>
     <meta name="theme-color" content="#0f172a" />
-    <script src="pwa-config.js?v=2026-09-07.1"></script>
+    <script src="pwa-config.js?v=2026-09-07.2"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600&display=swap&subset=latin-ext"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=2026-09-07.1" />
+    <link rel="stylesheet" href="styles.css?v=2026-09-07.2" />
   </head>
   <body>
     <div class="page">
@@ -53,6 +53,7 @@
             <button class="admin-panel-tab" type="button" data-target="adminNextGameTab">Najbliższa gra</button>
             <button class="admin-panel-tab" type="button" data-target="adminConfirmationsTab">Gry do potwierdzenia</button>
             <button class="admin-panel-tab" type="button" data-target="adminCalculatorTab">Kalkulator</button>
+            <button class="admin-panel-tab" type="button" data-target="adminBackupTab">Kopia zapasowa</button>
           </div>
           <div id="adminNewsTab" class="admin-panel-content is-active" role="tabpanel">
           <div class="admin-message">
@@ -420,6 +421,30 @@
                   <div id="adminCalculatorTable5" class="admin-calculator-table-wrap"></div>
                 </div>
               </div>
+            </section>
+          </div>
+          <div id="adminBackupTab" class="admin-panel-content" role="tabpanel">
+            <section class="admin-backup">
+              <div class="card-header">
+                <h3>Kopia zapasowa</h3>
+                <p>Pobierz kopię wszystkich danych aplikacji do jednego pliku albo przywróć dane z wcześniej pobranego pliku.</p>
+              </div>
+
+              <div class="admin-backup-actions">
+                <div class="admin-backup-action">
+                  <button id="adminBackupExport" class="primary" type="button">Utwórz kopię zapasową</button>
+                  <span id="adminBackupExportInfo" class="status-text"></span>
+                </div>
+                <div class="admin-backup-action">
+                  <button id="adminBackupImport" class="danger" type="button">Przywróć z pliku</button>
+                  <span id="adminBackupImportInfo" class="status-text"></span>
+                </div>
+                <input id="adminBackupFileInput" type="file" accept="application/json,.json" hidden />
+              </div>
+              <span id="adminBackupStatus" class="status-text" aria-live="polite"></span>
+
+              <label for="adminBackupInstructions">Instrukcja</label>
+              <textarea id="adminBackupInstructions" rows="34" readonly></textarea>
             </section>
           </div>
         </section>
@@ -1002,8 +1027,9 @@
     <script src="../config/firebase-config.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-    <script src="pwa-bootstrap.js?v=2026-09-07.1"></script>
-    <script src="app.js?v=2026-09-07.1"></script>
+    <script src="pwa-bootstrap.js?v=2026-09-07.2"></script>
+    <script src="app.js?v=2026-09-07.2"></script>
   </body>
 </html>

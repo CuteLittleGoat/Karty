@@ -545,3 +545,86 @@ Dwie odpowiedzi z `pop4.docx` mają znaczenie dla zakresu kopii zapasowej:
 - **Odpowiedź N** (import aktualizuje istniejącą kopię gry zamiast tworzyć nową) — bez wpływu na liczbę kolekcji, ale dochodzą nowe pola w dokumentach gier w kolekcji `Tables` (znacznik gry źródłowej i data ostatniego odświeżenia). Eksport obejmuje całe dokumenty, więc nowe pola trafią do kopii automatycznie — **nie wymaga to zmian w projekcie kopii zapasowej**.
 
 Potwierdza to zasadność kolejności z pkt 13.2: kopia zapasowa budowana po etapie 3 obejmie od razu finalny kształt danych.
+
+---
+
+## 14. Odpowiedzi na pytania z pkt 12.7 i realizacja etapu 4 (2026-09-07)
+
+### 14.1. Prompt użytkownika (zachowany dla kontekstu)
+
+> Odpowiedzi na pytania z pkt 12.7. Analizy/Bezpieczenstwo_Firestore_2026-09-07.md
+>
+> 1. Wariant a.
+> 2. Tak. Kopia ma zawierać PINy, hasło admina i wszystko.
+> 3. Zgoda na nową zakładkę. Tam też możesz zapisać instrukcję krok-po-kroku co i gdzie klikać, żeby zrobić backup danych oraz, żeby przywrócić dane z pliku json. Treść może być w polu podobnym jak "Regulamin", ale bez możliwości edycji przez admina.
+> 4. Zgoda. Tylko w Main.
+> 5. Zgoda. W nowej zakładce obok przycisku informacja o dacie ostatniego użycia przycisku.
+> 6. Zgoda. Blokujemy.
+> 7. Tylko plan darmowy.
+
+### 14.2. Odpowiedzi
+
+| # | Pytanie | Odpowiedź |
+|---|---|---|
+| 1 | Jedna kopia dla obu modułów czy dwie osobne? | **(a)** jeden plik ze wszystkim |
+| 2 | Czy kopia ma zawierać PIN-y i hasło admina? | **Tak, wszystko** |
+| 3 | Gdzie ma być przycisk? | **(a)** nowa zakładka + instrukcja krok po kroku w polu tylko do odczytu |
+| 4 | W obu modułach czy tylko w Main? | **Tylko w Main** |
+| 5 | Czy przypominać o robieniu kopii? | **Tak** — data ostatniego użycia obok przycisku |
+| 6 | Zablokować zapis do `admin_security`? | **Tak, blokujemy** |
+| 7 | Plan Spark czy Blaze? | **Tylko darmowy (Spark)** |
+
+**Potwierdzenie do pytania 7.** Plan darmowy przesądza sprawę: wbudowany eksport/import Firestore oraz automatyczne kopie (PITR) wymagają planu Blaze, więc własny przycisk pozostaje jedyną dostępną drogą. Rozwiązanie zbudowane w tym etapie jest w całości klienckie.
+
+### 14.3. Konflikt między odpowiedzią 2 a 6 — i jak został rozwiązany
+
+Odpowiedzi 2 i 6 nie dają się spełnić dosłownie naraz. Skoro **zapis do `admin_security` jest zablokowany regułami**, to przywracanie nie może wpisać hasła administratora z powrotem — Firestore odrzuci taką operację.
+
+Rozwiązanie, które spełnia obie odpowiedzi bez utraty danych:
+
+- **kopia zawiera wszystko**, łącznie z zapisem hasła administratora (odpowiedź 2) — nic nie jest tracone,
+- **przywracanie pomija kolekcję `admin_security`** i raportuje, ile dokumentów pominięto,
+- hasło odtwarza się ręcznie: odczytuje się je z pliku kopii (sekcja `admin_security`) i wpisuje w Firebase Console.
+
+Jest to zapisane w instrukcji widocznej w aplikacji oraz w `Main/docs/README.md`.
+
+### 14.4. Co zostało zrobione
+
+**Zakładka „Kopia zapasowa”** (`initAdminBackup`, `#adminBackupTab`) — tylko w module Main, obejmuje dane **obu** modułów:
+- przycisk **Utwórz kopię zapasową** → plik `Karty_Backup_[RRRR-MM-DD]_[GG-MM-SS].json`,
+- przycisk **Przywróć z pliku**,
+- przy każdym przycisku data ostatniego użycia, wspólna dla wszystkich urządzeń (`app_settings/backup_state`, pola `lastBackupAt` i `lastRestoreAt`),
+- pole **Instrukcja** — tekst krok po kroku, `readonly`, wyglądem zbliżone do pola „Regulamin”.
+
+**Zakres kopii:** deklaratywne drzewo `BACKUP_COLLECTION_SCHEMA` odwzorowujące `Wazne_Rules.txt` — kolekcje Main, `Nekrolog_*`, `second_*` wraz z podkolekcjami (`rows`, `confirmations`, pełne zagnieżdżenie kalkulatorów). Ograniczenie odnotowane w pkt 12.4 pozostaje aktualne: biblioteka kliencka nie potrafi wylistować kolekcji, więc **nowa kolekcja niedopisana do drzewa nie trafi do kopii** — po każdej kopii status podaje liczbę dokumentów, co pozwala to zauważyć.
+
+**Format pliku:** płaska lista `{ path, data }` z pełnymi ścieżkami Firestore, dzięki czemu przywracanie sprowadza się do `set` na dokumencie i obsługuje dowolne zagnieżdżenie.
+
+**Konwersja typów:** `encodeBackupValue` / `decodeBackupValue` zamieniają `Timestamp` na `{ __type: "timestamp", seconds, nanoseconds }` i z powrotem. To była najpoważniejsza pułapka z pkt 12.4 — bez niej `createdAt` wróciłby jako zwykły obiekt i **po cichu** przestałoby działać sortowanie gier i wierszy.
+
+**Zabezpieczenia przywracania:** walidacja formatu pliku, podgląd (data pliku, liczba dokumentów, liczba pominiętych), potwierdzenie przez wpisanie słowa `PRZYWROC`, a przede wszystkim **automatyczne pobranie kopii bezpieczeństwa obecnego stanu przed pierwszym zapisem**. Tryb jest uzupełniający — nic nie jest kasowane.
+
+**Reguły Firestore:** `Analizy/Wazne_Rules.txt` zawiera gotowy do wklejenia zestaw z jedyną zmianą `match /admin_security/{docId} { allow read: if true; allow write: if false; }`. Sprawdzono wcześniej, że obie aplikacje tę kolekcję wyłącznie odczytują, więc blokada nie wymaga żadnych zmian w kodzie.
+
+**App Check** — przygotowany, ale nieaktywny:
+- oba moduły ładują `firebase-app-check-compat.js`,
+- `activateAppCheckIfConfigured` włącza App Check **wyłącznie wtedy**, gdy w `config/firebase-config.js` pojawi się `appCheckSiteKey`; bez klucza nie robi nic,
+- opcjonalny `appCheckDebugToken` obsługuje pracę lokalną,
+- w pliku konfiguracyjnym znajdują się zakomentowane pola z opisem.
+
+Nie mogłem dokończyć App Check samodzielnie, bo wymaga rejestracji aplikacji w Firebase Console i klucza reCAPTCHA v3, do których nie mam dostępu. Kroki po Pana stronie opisano w pkt 12.3 — **proszę pamiętać o kolejności: najpierw tryb samego monitorowania, wymuszanie dopiero gdy w Console widać, że ruch jest zweryfikowany.** Włączenie wymuszania od razu może odciąć aplikację wszystkim naraz.
+
+### 14.5. Weryfikacja
+
+- `node --check` dla `Main/app.js`, `Second/app.js`, `Main/service-worker.js`, `Main/pwa-bootstrap.js`, `config/firebase-config.js` — bez błędów.
+- **11 testów rundy zapis→odczyt** formatu kopii, na funkcjach wyciętych ze źródła: `Timestamp` (także zagnieżdżony) wraca jako `Timestamp` z tą samą wartością i działającym `toMillis`, tablice, liczby, wartości logiczne, `null` i polskie znaki zachowane. Test kontrolny potwierdza, że naiwny zapis do JSON **zgubiłby** znaczniki czasu. Wszystkie zaliczone.
+- **Test w przeglądarce:** zakładka i przyciski obecne, instrukcja wypełniona i tylko do odczytu, kliknięcie „Utwórz kopię zapasową” faktycznie pobiera plik o nazwie zgodnej ze wzorcem i o poprawnej strukturze JSON, brak błędów JS.
+- **Żaden zapis nie trafił do Firestore** — testy działały na atrapie Firebase, a żądania do `firestore.googleapis.com` były twardo blokowane i zliczane; licznik pozostał zerowy.
+
+### 14.6. Co pozostaje po Pana stronie
+
+1. **Wkleić reguły** z `Analizy/Wazne_Rules.txt` w Firebase Console → Firestore → Rules → Publikuj. Firebase trzyma historię, więc zmiana jest odwracalna jednym kliknięciem.
+2. **Zrobić pierwszą kopię zapasową** i sprawdzić, czy plik się pobiera.
+3. **Wymienić PIN-y graczy** — jeśli ktoś kiedykolwiek pobrał listę, zna je wszystkie. Przy każdym graczu jest przycisk **Losuj**.
+4. **App Check** — zarejestrować aplikację w Console, wkleić klucz do `config/firebase-config.js`, uruchomić najpierw w trybie monitorowania.
+5. **Zdecydować o repozytorium** (pytanie 5 z pkt 12.7 pozostaje otwarte) — pamiętając, że GitHub Pages jest tu włączony, więc przełączenie na prywatne może wyłączyć stronę.

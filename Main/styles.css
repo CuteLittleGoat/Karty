@@ -2081,3 +2081,42 @@ body.modal-open {
   margin-top: 4px;
   font-size: 12px;
 }
+
+.admin-backup {
+  margin-top: var(--gap-3);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.32);
+  display: grid;
+  gap: 10px;
+}
+
+.admin-backup label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.admin-backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-2);
+}
+
+.admin-backup-action {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+
+.admin-backup textarea {
+  width: 100%;
+  resize: vertical;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  opacity: 0.9;
+  cursor: default;
+}

@@ -11,7 +11,7 @@
 
 ## 2. Aktualny zakres funkcjonalny tej wersji
 - Service Worker obsługuje komunikat `SKIP_WAITING`, dzięki czemu nowy worker może szybciej przejąć kontrolę po aktualizacji.
-- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`) z parametrem wersji (`?v=2026-09-07.1`) w celu twardego bustowania cache między release’ami.
+- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`) z parametrem wersji (`?v=2026-09-07.2`) w celu twardego bustowania cache między release’ami.
 - `Main/pwa-bootstrap.js` nasłuchuje `updatefound` i `controllerchange`; po instalacji nowego workera wymusza jego aktywację i wykonuje pojedynczy `window.location.reload()`, aby użytkownik pracował na spójnym zestawie assetów.
 - W widoku użytkownika (`body` bez klasy `is-admin`) kontener `.page` ma szerokość `calc(100% - 2px)` oraz `padding-inline: 1px`, dzięki czemu zewnętrzna zielona ramka karty użytkownika jest odsunięta dokładnie o 1 px od lewej i prawej krawędzi ekranu.
 - W tej samej konfiguracji ukryto wewnętrzną obwódkę pseudo-elementu `.user-card::before`, aby lewa i prawa krawędź pierwszej (zewnętrznej) ramki miały dokładnie 1 px.
@@ -187,7 +187,7 @@ Efekt techniczny:
 - Tytuł dokumentu (`<title>`) w `index.html` ustawiono na `Poker - rozgrywki`.
 - Manifest PWA ustawia nazwę instalowanej aplikacji na `Poker - rozgrywki` (`short_name`: `Poker`).
 - `start_url` w manifeście jest relatywny (`./index.html?...`), a `scope` ustawiony na `./`, co zapobiega błędom 404 dla hostingu pod prefiksem repozytorium.
-- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-09-07.1`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
+- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-09-07.2`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
 
 - W `initAdminCalculator` każdy wiersz rebuy (`table2Rows` i `table9Rows`) przechowuje parę `rebuys[]` + `rebuyIndexes[]`; dodawanie rebuy nadaje globalny numer `max+1` dla całego aktywnego trybu, a usunięcie rebuy wykonuje globalną kompaktację indeksów bez luk.
 - Tabela5 buduje kolumny `RebuyX` i mapowanie wartości po posortowanych `rebuyIndexes`, zamiast po samym `flatMap` kolejności graczy, dzięki czemu semantyka numeru `RebuyX` pozostaje spójna po dodawaniu/usuwaniu kolumn u różnych graczy.
@@ -263,3 +263,44 @@ Efekt techniczny:
 - `Main/index.html` ładuje `https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js` (fork SheetJS Community Edition ze wsparciem stylów komórek; globalna nazwa `XLSX` bez zmian).
 - Handler eksportu ustawia `worksheet["!cols"]` na podstawie najdłuższej wartości w kolumnie (min. 8, maks. 40 znaków), nadaje każdej komórce `s.alignment` (`horizontal: center`, `vertical: center`) i `s.font.bold` dla wiersza nagłówka, a komórkom liczbowym `z = "# ##0"` (separator tysięcy).
 - Wagi i wartości procentowe pozostają komórkami tekstowymi — biblioteka zapisuje `ignoredErrors`, więc Excel nie pokazuje ostrzeżenia „liczba zapisana jako tekst”.
+
+## Zakładka „Kopia zapasowa” (`initAdminBackup`)
+- Zakładka `#adminBackupTab` istnieje wyłącznie w module Main, ale obejmuje dane **obu** modułów. Zawiera przyciski `#adminBackupExport` i `#adminBackupImport`, ukryte `#adminBackupFileInput`, status `#adminBackupStatus`, informacje o ostatnim użyciu (`#adminBackupExportInfo`, `#adminBackupImportInfo`) oraz pole `#adminBackupInstructions` (`readonly`) wypełniane stałą `BACKUP_INSTRUCTIONS_TEXT`.
+
+### Zakres kopii
+- `BACKUP_COLLECTION_SCHEMA` to deklaratywne drzewo kolekcji odwzorowujące `Analizy/Wazne_Rules.txt`: kolekcje modułu Main, `Nekrolog_*` oraz `second_*`, wraz z podkolekcjami (`rows`, `confirmations`, a dla kalkulatorów `definitions`, `placeholders`, `sessions` z `variables`, `calculationFlags`, `tables/rows` i `snapshots`).
+- Biblioteka kliencka Firestore nie potrafi wylistować kolekcji ani podkolekcji, dlatego drzewo musi być utrzymywane ręcznie. **Nowa kolekcja niedopisana do `BACKUP_COLLECTION_SCHEMA` nie trafi do kopii.** Po wykonaniu kopii status podaje liczbę dokumentów, co pozwala zauważyć brak.
+- `collectBackupDocuments` przechodzi drzewo rekurencyjnie i zapisuje dokumenty jako płaską listę `{ path, data }`, gdzie `path` jest pełną ścieżką Firestore. Dzięki temu przywracanie sprowadza się do `db.doc(path).set(data)` i obsługuje dowolne zagnieżdżenie.
+
+### Format pliku
+```
+{
+  "format": "karty-backup",
+  "version": 1,
+  "createdAt": "<ISO 8601>",
+  "documentCount": <liczba>,
+  "documents": [ { "path": "Tables/<id>/rows/<id>", "data": { ... } } ]
+}
+```
+- Nazwa pliku: `Karty_Backup_[RRRR-MM-DD]_[GG-MM-SS].json` (`buildBackupFileName`); w godzinie użyto myślników, bo Windows nie dopuszcza dwukropka w nazwie pliku.
+
+### Konwersja typów
+- `encodeBackupValue` rekurencyjnie zamienia `Timestamp` na `{ __type: "timestamp", seconds, nanoseconds }`, a `decodeBackupValue` odtwarza z tego instancję `Timestamp`. Bez tego `createdAt` wróciłby jako zwykły obiekt i przestałoby działać sortowanie `orderBy("createdAt")` oraz `createdAt.toMillis()` w `compareByGameDateAsc` — **po cichu, bez komunikatu błędu**.
+- `GeoPoint` i `DocumentReference` są zapisywane w postaci opisowej i odnotowywane w ostrzeżeniach; aplikacja ich nie używa.
+
+### Przywracanie
+- Tryb **uzupełniający**: `set` na każdym dokumencie z pliku, bez kasowania czegokolwiek. Dokumenty powstałe po zrobieniu kopii zostają nietknięte.
+- Zabezpieczenia: walidacja `format`/`documents`, podgląd (data pliku, liczba dokumentów), potwierdzenie przez wpisanie słowa `PRZYWROC` oraz **automatyczne pobranie kopii bezpieczeństwa obecnego stanu przed pierwszym zapisem**.
+- `RESTORE_SKIPPED_COLLECTIONS` zawiera `admin_security` — zapis do tej kolekcji jest zablokowany regułami, więc przywracanie ją pomija i raportuje liczbę pominiętych dokumentów. Hasło administratora odtwarza się ręcznie z pliku w Firebase Console.
+- Odfiltrowywane są też wpisy o nieparzystej liczbie segmentów ścieżki (czyli nie będące dokumentami).
+- Zapisy idą przez `commitBatchedOperations` (paczki po 400 operacji).
+
+### Daty ostatniego użycia
+- `app_settings/backup_state` przechowuje `lastBackupAt` i `lastRestoreAt` (`serverTimestamp`), odczytywane przez `onSnapshot`, więc informacja jest wspólna dla wszystkich urządzeń. Formatowanie przez `formatImportRefreshedAt`.
+
+### Reguły Firestore
+- `Analizy/Wazne_Rules.txt` zawiera zaktualizowany zestaw reguł do wklejenia w Firebase Console. Zmiana względem poprzedniej wersji: `match /admin_security/{docId}` ma `allow read: if true; allow write: if false;`. Aplikacja tę kolekcję wyłącznie odczytuje (`Main/app.js` i `Second/app.js` wykonują na niej tylko `.get()`), więc blokada zapisu nie wymaga żadnych zmian w kodzie.
+
+### Ograniczenia
+- Rozwiązanie jest świadomie klienckie: wbudowany eksport i import Firestore oraz automatyczne kopie wymagają płatnego planu Blaze, a projekt działa na planie darmowym Spark.
+- Kopię należy wykonywać z komputera — w PWA zainstalowanej na telefonie pobieranie plików bywa zawodne.

@@ -79,3 +79,9 @@
 - Wiersz zalogowanego gracza jest wyróżniony klasą `.confirmations-own-row` (`font-weight: 700`).
 - Podsumowanie nad listą (`#confirmationsOrderSummary`) korzysta ze standardowej klasy `.status-text`.
 - Data ostatniego odświeżenia przy grze zaimportowanej używa klasy `.admin-import-refreshed-at` (`display: block`, `width: 100%`, `margin-top: 4px`, `font-size: 12px`) w obrębie `.admin-games-name-control`.
+
+## Main — zakładka „Kopia zapasowa”
+- Sekcja `.admin-backup` powiela wygląd `.admin-rules`: `margin-top: var(--gap-3)`, `padding: 16px`, `border-radius: var(--radius-md)`, obramowanie `--border2`, tło `rgba(0, 0, 0, 0.32)`, układ `grid` z odstępem `10px`.
+- Etykiety (`.admin-backup label`) mają `font-size: 12px`, wersaliki i `letter-spacing: 0.08em` w kolorze `--muted`.
+- Przyciski leżą w `.admin-backup-actions` (`flex`, zawijanie, odstęp `--gap-2`); każdy przycisk wraz z informacją o dacie ostatniego użycia tworzy `.admin-backup-action` (`grid`, odstęp `4px`).
+- Pole instrukcji to `textarea` tylko do odczytu z krojem monospace (`13px`, interlinia `1.55`, `opacity: 0.9`, `cursor: default`), co odróżnia je wizualnie od pól edytowalnych.

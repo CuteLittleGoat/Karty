@@ -13,4 +13,11 @@ window.firebaseConfig = {
   gamesCollection: "Tables",
   gameDetailsCollection: "rows",
   userGamesCollection: "UserGames"
+
+  // App Check (opcjonalnie, patrz Analizy/Bezpieczenstwo_Firestore_2026-09-07.md):
+  // po zarejestrowaniu aplikacji w Firebase Console > App Check (dostawca reCAPTCHA v3)
+  // dopisz poniżej klucz witryny, a aplikacja włączy App Check sama:
+  // , appCheckSiteKey: "TU_WKLEJ_KLUCZ_WITRYNY_reCAPTCHA_v3"
+  // Do pracy lokalnej (pliki z dysku) można dodatkowo podać token debugowania:
+  // , appCheckDebugToken: "TOKEN_Z_KONSOLI_PRZEGLADARKI"
 };

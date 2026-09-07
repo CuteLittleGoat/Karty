@@ -272,7 +272,8 @@ Na górze panelu są przyciski zakładek:
 - Gry użytkowników,
 - Najbliższa gra,
 - Gry do potwierdzenia,
-- Kalkulator.
+- Kalkulator,
+- Kopia zapasowa.
 
 Kliknięcie przycisku zakładki przełącza aktualny widok roboczy.
 
@@ -666,3 +667,36 @@ Wskazówka użycia:
 ## 20. Potwierdzenia i Najbliższa gra — źródło danych
 1. Zakładki **Najbliższa gra** i **Gry do potwierdzenia** korzystają tylko z gier z **Gry użytkowników** (`UserGames`).
 2. Gry dodane w **Gry admina** nie pojawiają się już w tych dwóch sekcjach.
+
+
+---
+
+## 21. Zakładka admina „Kopia zapasowa”
+
+Służy do pobrania wszystkich danych aplikacji do jednego pliku i do przywrócenia ich z takiego pliku. Zakładka jest tylko w module Main, ale kopia obejmuje dane **obu** modułów.
+
+W zakładce znajdziesz dwa przyciski, informację o dacie ich ostatniego użycia oraz pole **Instrukcja** z opisem krok po kroku (pole jest tylko do odczytu — nie da się go edytować).
+
+### 21.1. Jak zrobić kopię zapasową
+1. Wejdź w zakładkę **Kopia zapasowa**.
+2. Kliknij **Utwórz kopię zapasową**.
+3. Poczekaj — pasek statusu pokazuje, ile dokumentów już odczytano. Przy większej liczbie gier potrwa to kilkanaście sekund.
+4. Przeglądarka zapisze plik `Karty_Backup_[data]_[godzina].json`, na przykład `Karty_Backup_2026-09-07_14-32-05.json`.
+5. Obok przycisku pojawi się data ostatniej kopii — widoczna także na innych urządzeniach.
+
+> **Gdzie trzymać plik.** Zawiera on **wszystkie** dane, w tym PIN-y graczy i zapis hasła administratora. Trzymaj go w miejscu prywatnym i nie wrzucaj do repozytorium ani na publiczny dysk.
+
+> **Rób kopie z komputera.** Na telefonie, zwłaszcza w aplikacji zainstalowanej na ekranie głównym, pobieranie plików bywa zawodne.
+
+### 21.2. Jak przywrócić dane z pliku
+1. Zamknij aplikację w innych oknach i na innych urządzeniach — przywracanie zapisuje dużo danych naraz i wszystkim otwartym oknom będzie odświeżać się ekran.
+2. Kliknij **Przywróć z pliku** i wskaż plik `Karty_Backup_...json`.
+3. Aplikacja **najpierw pobierze kopię bezpieczeństwa obecnego stanu** (drugi plik na dysku). Dzięki temu zły import da się cofnąć.
+4. Zobaczysz podsumowanie: z kiedy jest plik i ile dokumentów zawiera.
+5. Aby potwierdzić, wpisz słowo `PRZYWROC` (bez polskich znaków).
+6. Poczekaj na komunikat o zakończeniu i nie zamykaj karty w trakcie.
+
+### 21.3. Co dokładnie robi przywracanie
+- **Dopisuje i nadpisuje** dokumenty z pliku, ale **nie kasuje** rzeczy, które powstały po zrobieniu kopii. Dlatego nadaje się przede wszystkim do odzyskania przypadkowo skasowanych danych.
+- Jeśli chcesz cofnąć bazę dokładnie do stanu z pliku (usuwając też to, co powstało później), trzeba to zrobić ręcznie w Firebase Console — aplikacja celowo niczego nie kasuje.
+- **Hasło administratora jest pomijane.** Kopia je zawiera, ale zapis do tej części bazy jest zablokowany, żeby nikt z zewnątrz nie mógł go podmienić. Jeśli kiedyś trzeba je odtworzyć, znajdziesz je w pliku w sekcji `admin_security` i wpisujesz ręcznie w Firebase Console. Po przywracaniu aplikacja poinformuje, ile dokumentów pominięto.
