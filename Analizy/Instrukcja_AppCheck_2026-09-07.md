@@ -66,9 +66,14 @@ Kod aplikacji jest już gotowy. Sam się włączy w momencie, w którym dopiszes
    - **Nie wybieraj „reCAPTCHA Enterprise”** — to osobny, płatny produkt Google Cloud, wymagający innego kodu w aplikacji. Z nim App Check nie zadziała.
 7. W polu, które się pojawi, wklej **Klucz tajny** (Secret key) z kroku 1.
    - **To jest jedyne miejsce, gdzie używasz klucza tajnego.**
-8. Pole **TTL** (czas ważności) zostaw bez zmian — domyślna 1 godzina jest w porządku.
-9. Kliknij **Zapisz** (Save).
-10. **Powtórz podpunkty 5–9 dla drugiej aplikacji `Karty-Web`**, wklejając **ten sam** klucz tajny.
+8. Pole **Token time to live** (TTL) zostaw bez zmian — domyślna wartość (1 dzień) jest w porządku.
+9. Jeśli zobaczysz czerwony komunikat *„reCAPTCHA is deprecated, please use reCAPTCHA Enterprise instead”* — **zignoruj go i kontynuuj**.
+   - „Deprecated” znaczy „wycofywane w przyszłości”, a nie „wyłączone”. Ta opcja działa i jest bezpłatna.
+   - Na dole tego samego okna Firebase potwierdza: *„your app will use reCAPTCHA v3”* — czyli dokładnie to, do czego przygotowany jest kod aplikacji.
+   - **reCAPTCHA Enterprise wymaga włączenia płatności w projekcie** (plan Blaze), co jest sprzeczne z decyzją o pozostaniu na planie darmowym, i wymagałoby zmiany kodu na `ReCaptchaEnterpriseProvider`.
+   - Gdyby Google kiedyś faktycznie wyłączyło klasyczne reCAPTCHA przy **włączonym** wymuszaniu, aplikacja przestałaby działać. Ratunek: App Check → APIs → Cloud Firestore → **Unenforce**. Działa natychmiast.
+10. Kliknij **Zapisz** (Save).
+11. **Powtórz podpunkty 5–10 dla drugiej aplikacji `Karty-Web`**, wklejając **ten sam** klucz tajny.
 
 > **Dlaczego obie.** Aplikacja korzysta tylko z jednej z nich — tej o identyfikatorze
 > kończącym się na `...27d29434f013a5cf31888d` (widać go w *Project settings* → *General* → *Your apps*).
