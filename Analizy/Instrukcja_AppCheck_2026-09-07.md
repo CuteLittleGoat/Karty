@@ -55,14 +55,30 @@ Kod aplikacji jest już gotowy. Sam się włączy w momencie, w którym dopiszes
    - Jest w sekcji **Build** (po polsku: *Kompilacja*), obok pozycji „Firestore Database”.
    - Jeśli nie możesz go znaleźć, użyj **lupki / wyszukiwarki** na górze konsoli i wpisz `App Check`.
 3. Wejdź w zakładkę **Apps** (*Aplikacje*).
-4. Na liście zobaczysz swoją aplikację webową. Kliknij w nią, żeby ją rozwinąć.
-5. Kliknij **reCAPTCHA v3**.
-6. W polu, które się pojawi, wklej **Klucz tajny** (Secret key) z kroku 1.
+4. Na liście zobaczysz swoje aplikacje. W tym projekcie są trzy wpisy:
+   - `Karty-Android-PUSH` — pozostałość po próbie powiadomień Push,
+   - `Karty-Web` — aplikacja webowa,
+   - `Karty-Web` — **druga** aplikacja webowa o tej samej nazwie.
+5. Kliknij **Register** przy **pierwszej** aplikacji `Karty-Web`.
+6. Kliknij **reCAPTCHA v3**.
+7. W polu, które się pojawi, wklej **Klucz tajny** (Secret key) z kroku 1.
    - **To jest jedyne miejsce, gdzie używasz klucza tajnego.**
-7. Pole **TTL** (czas ważności) zostaw bez zmian — domyślna 1 godzina jest w porządku.
-8. Kliknij **Zapisz** (Save).
+8. Pole **TTL** (czas ważności) zostaw bez zmian — domyślna 1 godzina jest w porządku.
+9. Kliknij **Zapisz** (Save).
+10. **Powtórz podpunkty 5–9 dla drugiej aplikacji `Karty-Web`**, wklejając **ten sam** klucz tajny.
 
-Po zapisaniu przy aplikacji pojawi się status. **Nie klikaj jeszcze niczego o nazwie „Enforce” / „Wymuś”** — do tego wracamy w kroku 5.
+> **Dlaczego obie.** Aplikacja korzysta tylko z jednej z nich — tej o identyfikatorze
+> kończącym się na `...27d29434f013a5cf31888d` (widać go w *Project settings* → *General* → *Your apps*).
+> Gdybyś zarejestrował tę drugą, wszystko wyglądałoby poprawnie aż do kliknięcia **Enforce**,
+> po którym aplikacja przestałaby działać. Zarejestrowanie obu tym samym kluczem
+> całkowicie usuwa to ryzyko i nic nie kosztuje.
+
+> **Aplikacji `Karty-Android-PUSH` nie ruszaj i niczego nie kasuj.** Nieużywany wpis nikomu
+> nie przeszkadza i nie wpływa na App Check. Usuwanie aplikacji w Firebase jest operacją
+> bez cofnięcia, a przy dwóch bliźniaczych wpisach `Karty-Web` łatwo skasować tę właściwą —
+> co wyłączyłoby całą aplikację, nie tylko App Check. Porządki najwyżej po wdrożeniu.
+
+Po zapisaniu przy obu aplikacjach pojawi się status. **Nie klikaj jeszcze niczego o nazwie „Enforce” / „Wymuś”** — do tego wracamy w kroku 5.
 
 ---
 
