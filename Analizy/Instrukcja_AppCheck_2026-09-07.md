@@ -60,7 +60,10 @@ Kod aplikacji jest już gotowy. Sam się włączy w momencie, w którym dopiszes
    - `Karty-Web` — aplikacja webowa,
    - `Karty-Web` — **druga** aplikacja webowa o tej samej nazwie.
 5. Kliknij **Register** przy **pierwszej** aplikacji `Karty-Web`.
-6. Kliknij **reCAPTCHA v3**.
+6. Zobaczysz dwie opcje: **reCAPTCHA Enterprise** oraz **reCAPTCHA**.
+   Kliknij `+` przy **reCAPTCHA** (dolna pozycja).
+   - Firebase pisze tu samo „reCAPTCHA”, ale to właśnie **reCAPTCHA v3** — ta sama, dla której zakładałeś wpis w kroku 1.
+   - **Nie wybieraj „reCAPTCHA Enterprise”** — to osobny, płatny produkt Google Cloud, wymagający innego kodu w aplikacji. Z nim App Check nie zadziała.
 7. W polu, które się pojawi, wklej **Klucz tajny** (Secret key) z kroku 1.
    - **To jest jedyne miejsce, gdzie używasz klucza tajnego.**
 8. Pole **TTL** (czas ważności) zostaw bez zmian — domyślna 1 godzina jest w porządku.
