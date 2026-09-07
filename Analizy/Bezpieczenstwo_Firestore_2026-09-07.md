@@ -140,6 +140,8 @@ PIN-y chronią **zakładki na ekranie**, a nie dane. Są sprawdzane w przegląda
 
 ## 7. Opcje naprawy
 
+> **STATUS: częściowo nieaktualne.** Użytkownik podjął decyzje (2026-09-07): opcja **B odpada** (bez loginów i haseł dla graczy), opcja **C — App Check — zostaje wybrana**, mechanizm hasła admina **zostaje bez zmian**. Obowiązujące ustalenia i skorygowane rekomendacje są w **sekcji 12**. Poniższy przegląd pozostawiony jako zapis rozważanych możliwości.
+
 Uszeregowane od najprostszej do najmocniejszej. Można je łączyć i wprowadzać etapami.
 
 ### Opcja A — logowanie anonimowe + reguły wymagające zalogowania
@@ -188,6 +190,8 @@ Niezależnie od wyboru docelowego kierunku, poniższe da się zrobić szybko i *
 
 ## 8. Sugerowana kolejność
 
+> **STATUS: NIEAKTUALNE.** Obowiązuje plan z **pkt 12.6**.
+
 **Krok 1 — teraz, sama zmiana reguł, bez dotykania kodu:** zablokować zapis do `admin_security`, włączyć kopie zapasowe bazy.
 **Krok 2 — wkrótce:** wyprowadzić PIN-y z dokumentu czytanego przez wszystkich, zawęzić reguły tam, gdzie to bezkosztowe.
 **Krok 3 — gdy będzie chwila:** logowanie anonimowe + reguły `request.auth != null`, ewentualnie App Check.
@@ -223,6 +227,8 @@ W praktyce oznacza to, że osoba, która by chciała, może pobrać PIN-y wszyst
 
 ## 11. Pytania doprecyzowujące (prostym językiem)
 
+> **STATUS: pytania 1–6 mają odpowiedź lub zostały rozstrzygnięte decyzjami z sekcji 12.** Nowe pytania są w **pkt 12.7**.
+
 **Pytanie 1 — czy mam przygotować gotowe reguły do wklejenia?**
 Mogę napisać komplet nowych reguł dostępu w takiej postaci, że wystarczy je Panu wkleić w Firebase Console (zakładka Firestore → Rules) i kliknąć „Publikuj”. To zmiana wyłącznie po stronie Google, **bez dotykania kodu aplikacji** — i w razie czego cofa się jednym kliknięciem, bo Firebase trzyma historię poprzednich wersji reguł.
 *Domyślnie: tak, przygotowuję wariant minimalny (krok 1 i 2 z pkt 8) i opisuję, co dokładnie się zmieni.*
@@ -251,3 +257,234 @@ Jeżeli ktoś kiedykolwiek pobrał listę graczy, zna wszystkie PIN-y. Nie da si
 **Pytanie 6 — czy włączyć kopie zapasowe bazy?**
 Dziś nie ma żadnej kopii danych. Skasowanie — przypadkowe albo celowe — byłoby nieodwracalne. Firestore ma wbudowane automatyczne kopie, ale wymagają one planu płatnego (Blaze). Alternatywa bezkosztowa to ręczny eksport danych co jakiś czas.
 *Domyślnie: rekomenduję włączyć, ale najpierw musi Pan zdecydować, czy projekt jest na planie darmowym czy płatnym — to zmienia dostępne opcje.*
+
+---
+
+## 12. Uzupełnienie: decyzje użytkownika i analiza kopii zapasowej (2026-09-07)
+
+### 12.1. Prompt użytkownika (zachowany dla kontekstu)
+
+> Mam uzupełnienie do analizy Analizy/Bezpieczenstwo_Firestore_2026-09-07.md
+>
+> 1. Nie chcę loginów i haseł dla użytkowników. Użytkownikami zarządza admin. On nadaje nazwy, role i PIN. Tak zostaje.
+> 2. Opcja C - App Check wydaje się być tutaj rozsądna.
+> 3. Hasło admina celowo jest w taki sposób zrobione. Nie zmieniamy tego.
+> 4. Pytanie: Czy da się zrobić jakoś eksport aktualnego stanu bazy Firebase? Jakiś przycisk po stronie admina, który by robił backup wszystkiego a potem dało się z jednego pliku ponownie zaimportować wszystkie dane? Jeżeli tak to zapisany plik powinien mieć format:
+> Karty_Backup_[data]_[godzina].[rozszerzenie]
+>
+> Ogólnie chcę zabezpieczyć bazę przed przypadkowym skasowaniem danych. Nie mam w planach robić pełnego zabezpieczenia aplikacji. Obecne wystarczą, czyli:
+> 1. Panel admina ma inny link
+> 2. Panel admina wymaga hasła
+> 3. Admin nadaje uprawnienia i PIN graczom
+> 4. Bez podania PIN gracz nic nie może edytować.
+>
+> Rozumiem, że to nie są profesjonalne zabezpieczenia, ale do amatorskiej aplikacji do użytku dla ok 30 osób wystarczy.
+
+### 12.2. Przyjęte założenia
+
+Decyzje są jasne i przyjmuję je jako ramy dalszych prac:
+
+| Ustalenie | Status |
+|---|---|
+| Bez loginów i haseł dla graczy — admin nadaje nazwy, role i PIN | ✅ zostaje, opcja B odpada |
+| Mechanizm hasła administratora | ✅ zostaje bez zmian |
+| App Check (opcja C) | ✅ do wdrożenia |
+| Cel nadrzędny | ochrona przed **przypadkowym skasowaniem danych** |
+| Poziom zabezpieczeń | świadomie amatorski, ~30 znajomych osób |
+
+To jest rozsądny wybór dla tego zastosowania i nie zamierzam go podważać. Model zagrożeń dla aplikacji dla trzydziestu znajomych to przede wszystkim **własna pomyłka**, a nie atak — i dokładnie to adresuje kopia zapasowa.
+
+Poniżej trzy sprostowania, bo część moich wcześniejszych rekomendacji przy tych założeniach traci sens albo wymaga doprecyzowania.
+
+#### Sprostowanie 1 — moja rekomendacja „wyprowadzić PIN-y z dokumentu czytanego przez wszystkich” **nie zadziała**
+
+W pkt 7 (opcja E.1) proponowałem oddzielenie PIN-ów od listy graczy. **Przy przyjętym modelu to nic nie da** i wycofuję tę rekomendację.
+
+Powód: PIN jest sprawdzany **w przeglądarce** — aplikacja pobiera całą listę graczy z PIN-ami i dopasowuje wpisany kod lokalnie (`adminPlayersState.playerByPin`). Żeby to działało bez logowania, dokument z PIN-ami **musi** być czytelny dla każdego. Przeniesienie go w inne miejsce niczego nie ukrywa — po prostu przeniesie problem.
+
+Ukrycie PIN-ów wymagałoby sprawdzania ich po stronie serwera (Cloud Functions, plan płatny) albo prawdziwych kont — a jedno i drugie zostało świadomie odrzucone. Zatem: **PIN-y pozostają odczytywalne i trzeba to przyjąć do wiadomości.** App Check to ogranicza (patrz niżej), ale nie usuwa.
+
+#### Sprostowanie 2 — zablokowanie zapisu do `admin_security` **nie zmienia mechanizmu hasła**
+
+Zaznaczył Pan, że hasło admina zostaje jak jest. To ustalenie **nie koliduje** z moją rekomendacją, bo ona nie dotyczy mechanizmu, tylko uprawnień do zapisu w regułach.
+
+Sprawdziłem to w kodzie: kolekcja `admin_security` jest w obu modułach używana **wyłącznie do odczytu** — `Main/app.js:809-813` i `Second/app.js:186-190` wykonują tylko `.get()`. **Nigdzie w aplikacji nie ma zapisu do tej kolekcji.**
+
+Wniosek: zmiana reguły z `allow read, write` na sam `allow read` **niczego w aplikacji nie zepsuje** — hasło i tak ustawia się z Firebase Console. Kod pozostaje nietknięty, sposób sprawdzania hasła pozostaje nietknięty, znika natomiast możliwość podmiany skrótu przez osobę z zewnątrz. To zmiana wyłącznie w regułach, cofalna jednym kliknięciem.
+
+Decyzja należy do Pana — odnotowuję tylko, że to nie jest to samo co „zmiana hasła admina” i że koszt tej zmiany wynosi zero.
+
+#### Sprostowanie 3 — czego App Check **nie** robi
+
+Żeby nie było rozczarowania po wdrożeniu: App Check sprawdza, że żądanie pochodzi **z Pana aplikacji**, a nie kim jest użytkownik. Dlatego:
+- ✅ odcina obce skrypty, automaty i przypadkowe skanowanie internetu,
+- ✅ realnie utrudnia pobranie listy PIN-ów spoza aplikacji — i to jest tu główna korzyść,
+- ❌ **nie chroni przed osobą, która normalnie korzysta z aplikacji** — jej przeglądarka ma ważny token, więc może przez narzędzia deweloperskie sięgnąć po te same dane co aplikacja,
+- ❌ **nie chroni przed pomyłką administratora** — a to jest Pana główne zmartwienie i odpowiada na nie wyłącznie kopia zapasowa.
+
+Przy modelu „30 znajomych osób” to jest jednak dobry stosunek efektu do nakładu: bariera dla świata zewnętrznego kosztuje niewiele, a wewnątrz grupy i tak opieramy się na zaufaniu.
+
+### 12.3. App Check — jak to wygląda w praktyce
+
+**Co trzeba zrobić:**
+1. W Firebase Console zarejestrować aplikację webową w App Check i wybrać dostawcę **reCAPTCHA v3** (bezpłatny; wariant „Enterprise” jest płatny i tu niepotrzebny).
+2. Dodać do `Main/index.html` i `Second/index.html` bibliotekę App Check oraz kilka linii inicjalizacji obok istniejącej konfiguracji Firebase.
+3. W Console włączyć **wymuszanie** (enforcement) dla Firestore.
+
+**Ważna kolejność.** Firebase pozwala najpierw uruchomić App Check w trybie **samego monitorowania** — zbiera statystyki, ale niczego nie blokuje. Zdecydowanie radzę tak zacząć i włączyć wymuszanie dopiero, gdy w Console widać, że praktycznie cały ruch jest już „zweryfikowany”. Włączenie wymuszania od razu grozi tym, że aplikacja przestanie działać wszystkim naraz — a przy PWA część osób ma zapisaną starą wersję i dostanie nową dopiero po odświeżeniu.
+
+**Rzeczy, o których łatwo zapomnieć:**
+- App Check trzeba dodać do **obu modułów** — dzielą jeden projekt Firebase, więc pominięcie jednego zablokuje go po włączeniu wymuszania.
+- Do pracy lokalnej (otwieranie plików z dysku) potrzebny jest **token debugowania**, inaczej aplikacja nie połączy się z bazą podczas testów.
+- Trzeba dodać domenę, z której działa aplikacja (GitHub Pages), do listy dozwolonych w reCAPTCHA.
+- Po włączeniu wymuszania **każde** narzędzie spoza aplikacji przestanie działać — łącznie z ewentualnymi własnymi skryptami pomocniczymi.
+
+---
+
+### 12.4. Kopia zapasowa i przywracanie — analiza wykonalności
+
+#### Odpowiedź krótka
+
+**Tak, da się to zrobić w całości po stronie aplikacji**, bez planu płatnego i bez serwera. Przycisk w panelu admina pobiera całą bazę i zapisuje ją jako **jeden plik JSON**; drugi przycisk wczytuje ten plik z powrotem. Poniżej szczegóły i pułapki — jest ich kilka i część jest istotna.
+
+#### Dlaczego trzeba to napisać samemu
+
+Firebase ma wbudowany eksport i import bazy, ale wymaga on **planu płatnego Blaze** (eksport idzie do Cloud Storage i jest rozliczany za operacje). To samo dotyczy automatycznych kopii i odtwarzania stanu z przeszłości (PITR). Na planie darmowym **własny przycisk jest jedyną bezpłatną drogą** — Pana pomysł jest więc trafiony.
+
+#### Jak działa eksport
+
+**Kluczowe ograniczenie:** biblioteka Firebase działająca w przeglądarce **nie potrafi zapytać bazy „jakie masz kolekcje?”**. Ta możliwość istnieje tylko w bibliotece serwerowej. W praktyce oznacza to, że **lista kolekcji do wyeksportowania musi być zapisana w kodzie**.
+
+Konsekwencja, o której trzeba pamiętać na przyszłość: **jeżeli kiedyś dojdzie nowa kolekcja i nikt nie dopisze jej do tej listy, nie znajdzie się w kopii — po cichu.** Dlatego proponuję dwa zabezpieczenia: listę budować na podstawie pliku reguł (`Wazne_Rules.txt`, który jest naturalnym spisem wszystkiego, co istnieje), a po wykonaniu kopii pokazywać administratorowi podsumowanie „co zapisano i ile dokumentów” — wtedy brak kolekcji rzuca się w oczy.
+
+**Podkolekcje.** Gry mają zagnieżdżone dane (`Tables/{gra}/rows`, `Tables/{gra}/confirmations` i analogicznie dla pozostałych). Tu również nie da się ich „odkryć” — trzeba dla każdej gry osobno pobrać jej podkolekcje po znanych nazwach. Przy kilkudziesięciu grach to kilkadziesiąt dodatkowych zapytań; przy tej skali bez znaczenia.
+
+Istnieje szybszy sposób (jedno zapytanie po wszystkich podkolekcjach o danej nazwie naraz), ale **wymagałby zmiany reguł** — obecne reguły są przypisane do konkretnych ścieżek i takiego zapytania nie przepuszczą. Rekomenduję wariant wolniejszy, który działa na regułach bez żadnych zmian.
+
+#### Format pliku — jedna pułapka, która musi być obsłużona
+
+**Daty.** W bazie pola takie jak `createdAt` nie są tekstem, tylko specjalnym typem „znacznik czasu”. Zwykły zapis do JSON zamieni je w zwykły obiekt z liczbami, a przy wczytywaniu z powrotem wrócą jako zwykłe liczby — **nie jako daty**.
+
+To nie jest drobiazg. Aplikacja sortuje gry i wiersze właśnie po `createdAt` (`orderBy("createdAt")` oraz `createdAt.toMillis()`). Po nieostrożnym przywróceniu **sortowanie przestałoby działać, a część list mogłaby się nie wyświetlić** — i to bez żadnego komunikatu błędu, co jest najgorszym rodzajem awarii.
+
+Rozwiązanie: przy zapisie oznaczać takie pola specjalnym znacznikiem typu, a przy wczytywaniu odtwarzać je z powrotem jako prawdziwe daty. Eksporter powinien też **zgłosić**, gdyby natrafił na typ, którego nie zna — lepiej dostać ostrzeżenie niż cichą utratę danych.
+
+**Nazwa pliku** zgodnie z Pana specyfikacją: `Karty_Backup_[data]_[godzina].[rozszerzenie]`, czyli na przykład:
+
+`Karty_Backup_2026-09-07_14-32-05.json`
+
+W godzinie używam myślników zamiast dwukropków, bo Windows nie dopuszcza dwukropka w nazwie pliku. Rozszerzenie proponuję `.json` — plik jest wtedy czytelny, można go obejrzeć w notatniku i porównać dwie kopie między sobą.
+
+#### 🔴 Plik kopii zawiera wszystkie sekrety
+
+Rzecz najważniejsza do zapamiętania: **plik z kopią zapasową zawiera komplet PIN-ów graczy otwartym tekstem, a także skrót hasła administratora i całą historię czatu.**
+
+Wynika z tego kilka praktycznych zasad:
+- pliku kopii **nie wolno wrzucić do repozytorium** ani nigdzie, gdzie jest publiczny — to byłoby gorsze niż obecny stan bazy,
+- warto trzymać go w miejscu prywatnym (dysk lokalny, prywatny dysk w chmurze),
+- gdyby to miało być problemem, mogę dodać przełącznik „pomiń dane logowania” — kopia będzie wtedy bezpieczniejsza w przechowywaniu, ale przywrócenie nie odtworzy PIN-ów.
+
+#### Jak działa przywracanie — i dlaczego to jest groźniejsze niż eksport
+
+Eksport tylko czyta i nic nie psuje. Import **nadpisuje bazę**, więc wymaga zabezpieczeń.
+
+**Dwa tryby, obydwa potrzebne:**
+
+| Tryb | Co robi | Kiedy przydatny |
+|---|---|---|
+| **Uzupełniający** (rekomendowany domyślnie) | wpisuje dokumenty z pliku, nie kasując niczego, co powstało później | odzyskanie **przypadkowo skasowanych** danych — czyli Pana główny scenariusz |
+| **Zastępujący** | najpierw czyści, potem wgrywa — baza wraca dokładnie do stanu z pliku | gdy dane zostały **zepsute**, a nie skasowane, i trzeba się cofnąć w czasie |
+
+Tryb uzupełniający jest bezpieczniejszy i w większości sytuacji wystarczy — dlatego proponuję go jako domyślny, a tryb zastępujący schować za dodatkowym potwierdzeniem.
+
+**Zabezpieczenia, które uważam za obowiązkowe:**
+1. **Automatyczna kopia przed przywracaniem.** Zanim import cokolwiek zmieni, aplikacja pobiera bieżący stan na dysk. Dzięki temu nieudane przywrócenie samo w sobie da się cofnąć. To najważniejsze z tych zabezpieczeń.
+2. **Podgląd przed wykonaniem.** Po wybraniu pliku pokazać: z kiedy pochodzi, ile kolekcji i dokumentów zawiera — i dopiero wtedy pytać o zgodę.
+3. **Potwierdzenie przez wpisanie słowa**, nie samo „OK”. Przy trybie zastępującym to konieczne.
+4. **Sprawdzenie pliku przed startem.** Zły albo uszkodzony plik ma zostać odrzucony, zanim cokolwiek zapisze — a nie w połowie pracy.
+
+**Trzy pułapki techniczne przy imporcie:**
+
+1. **Kolizja z istniejącym zabezpieczeniem przed kasowaniem.** Aplikacja ma już mechanizm (`installFirestoreDeleteProtection`), który blokuje usunięcie **ostatniego** dokumentu w kolekcji głównej. Tryb zastępujący, który najpierw czyści kolekcje, **uderzy w ten mechanizm i przerwie się w połowie** — zostawiając bazę w stanie częściowo wyczyszczonym. Import musi ten mechanizm świadomie omijać albo czyścić w innej kolejności (najpierw wgrać nowe, potem skasować nadmiarowe stare). Bez tego tryb zastępujący jest niebezpieczny.
+2. **Limit paczki zapisu.** Jednorazowo można zapisać 500 operacji, więc przywracanie musi iść porcjami z pokazywaniem postępu.
+3. **Aplikacja otwarta w innych oknach.** Wszystko nasłuchuje zmian na żywo, więc import wywoła lawinę odświeżeń u każdego, kto ma otwartą aplikację. Radzę robić to przy zamkniętych pozostałych kartach i najlepiej wtedy, gdy nikt nie gra.
+
+#### Skala, koszt i wydajność
+
+Kopia to jeden odczyt na dokument, przywracanie — jeden zapis. Przy tej aplikacji (kilkadziesiąt gier, kilkanaście osób, czat czyszczony po 30 dniach) mówimy o rzędzie **tysięcy operacji**, a darmowy plan daje 50 000 odczytów i 20 000 zapisów **dziennie**. Codzienna kopia nie zbliży się do limitu. Plik powinien mieć **poniżej kilku megabajtów**.
+
+Jedna uwaga praktyczna: aplikacja jest instalowana jako PWA, a pobieranie plików z aplikacji uruchomionej „jak apka” (zwłaszcza na iPhonie) bywa kapryśne. **Radzę robić kopie z komputera, z normalnej przeglądarki.**
+
+#### Co już działa, a czego nie obejmuje
+
+Warto wiedzieć, że pewna ochrona przed skasowaniem **już istnieje**: opisany wyżej mechanizm blokuje usunięcie ostatniego dokumentu w kolekcji głównej, więc nie da się przez aplikację całkiem opróżnić np. listy gier.
+
+Ale jego zasięg jest wąski:
+- ❌ nie chroni **podkolekcji** — wiersze gry (`rows`) i potwierdzenia można skasować co do jednego,
+- ❌ nie chroni przed skasowaniem **prawie** wszystkiego (blokuje wyłącznie ostatni dokument),
+- ❌ działa **tylko w przeglądarce** — nie obowiązuje przy kasowaniu z Firebase Console ani spoza aplikacji,
+- ❌ nie chroni przed **nadpisaniem** danych błędnymi wartościami.
+
+Czyli: pożyteczny bezpiecznik, ale kopia zapasowa i tak jest potrzebna.
+
+#### Proponowany zakres pierwszej wersji
+
+Żeby nie rozdmuchać tego ponad potrzebę, proponuję zacząć od:
+1. przycisku **Kopia zapasowa** w panelu admina → pobiera plik `Karty_Backup_[data]_[godzina].json`,
+2. podsumowania po wykonaniu (co zapisano, ile dokumentów) — żeby braki było widać,
+3. przycisku **Przywróć z pliku** działającego w **trybie uzupełniającym**, z automatyczną kopią bezpieczeństwa przed startem i podglądem zawartości pliku,
+4. trybu zastępującego dołożonego w drugiej kolejności, gdy pierwsza wersja się sprawdzi.
+
+To pokrywa scenariusz „skasowałem coś przez pomyłkę” — czyli dokładnie to, o co Panu chodzi.
+
+---
+
+### 12.5. Co z tego wynika dla planu prac
+
+Zmiany związane z bezpieczeństwem są **niezależne** od uzgodnionych poprawek funkcjonalnych z `Analizy/Uwagi_2026-09-03.md` i nie kolidują z nimi.
+
+Jeden punkt styku: kopia zapasowa dotyka **wszystkich** kolekcji, także tych z modułu Second. Przycisk musi więc gdzieś „mieszkać” — patrz pytanie **4** niżej.
+
+### 12.6. Zaktualizowana kolejność
+
+| Krok | Co | Nakład | Uwaga |
+|---|---|---|---|
+| 1 | **Przycisk kopii zapasowej** (sam eksport) | średni | rozwiązuje główne zmartwienie; nic nie ryzykuje, bo tylko czyta |
+| 2 | **Przywracanie w trybie uzupełniającym** + kopia bezpieczeństwa przed startem | średni | dopiero to zamyka temat odzyskiwania |
+| 3 | **App Check** — najpierw monitorowanie, potem wymuszanie | mały | zgodnie z decyzją |
+| 4 | *(do decyzji)* zablokowanie zapisu do `admin_security` w regułach | zerowy | sama reguła, kod nietknięty |
+| 5 | **Tryb zastępujący** przy przywracaniu | średni | dopiero gdy krok 2 się sprawdzi |
+
+### 12.7. Pytania (prostym językiem)
+
+**Pytanie 1 — jedna kopia dla obu modułów czy dwie osobne?**
+Moduły „Main” i „Tournament of Poker” korzystają z jednej bazy, ale mają rozdzielone dane.
+- **(a)** Jeden przycisk i jeden plik z **wszystkim** — prościej i nie da się o niczym zapomnieć.
+- **(b)** Osobna kopia dla każdego modułu — mniejsze pliki, można przywrócić jeden moduł bez ruszania drugiego.
+*Domyślnie: **(a)** — jeden plik ze wszystkim. Pan prosił o „backup wszystkiego”, a przy przywracaniu i tak można wybrać, co wgrać.*
+
+**Pytanie 2 — czy kopia ma zawierać PIN-y i hasło admina?**
+Jeśli tak, plik odtworzy stan w stu procentach — ale sam staje się wrażliwy i trzeba go trzymać w bezpiecznym miejscu. Jeśli nie, plik jest bezpieczniejszy, ale po przywróceniu trzeba by nadać PIN-y na nowo.
+*Domyślnie: **zawiera wszystko**, a ja dodaję w aplikacji wyraźne ostrzeżenie, żeby nie wrzucać tego pliku w miejsce publiczne.*
+
+**Pytanie 3 — gdzie ma być przycisk?**
+W panelu admina jest jedenaście zakładek. Kopia zapasowa nie pasuje do żadnej z nich.
+- **(a)** Nowa zakładka, np. **Kopia zapasowa**.
+- **(b)** Przy przycisku **Odśwież** w górnym pasku panelu.
+- **(c)** W istniejącej zakładce (np. Notatki).
+*Domyślnie: **(a)** — osobna zakładka. Przywracanie danych to operacja, która zasługuje na własne miejsce z ostrzeżeniami, a nie na przycisk wciśnięty obok innych.*
+
+**Pytanie 4 — czy przycisk ma być w obu modułach, czy tylko w „Main”?**
+*Domyślnie: **tylko w „Main”**, ale kopia obejmuje dane obu modułów. Dwa przyciski robiące to samo w dwóch miejscach to proszenie się o pomyłkę.*
+
+**Pytanie 5 — czy przypominać o robieniu kopii?**
+Przycisk pomaga tylko wtedy, gdy się go używa. Aplikacja może zapamiętać datę ostatniej kopii i po jakimś czasie wyświetlić przypomnienie.
+*Domyślnie: tak, delikatna informacja w panelu admina w stylu „ostatnia kopia: 12 dni temu”, bez nachalnych okien.*
+
+**Pytanie 6 — czy zablokować zapis do `admin_security`?**
+Sprawdziłem: aplikacja **nigdy** tam nie pisze, więc ta zmiana nie dotyka mechanizmu hasła ani kodu (patrz sprostowanie 2 w pkt 12.2). Zabiera tylko możliwość podmiany skrótu hasła przez osobę z zewnątrz.
+*Domyślnie: rekomenduję zrobić, bo kosztuje zero i nic nie psuje — ale to zmiana w regułach, więc wykonuje ją Pan w Firebase Console. Czekam na decyzję.*
+
+**Pytanie 7 — czy plan projektu jest darmowy (Spark) czy płatny (Blaze)?**
+Od tego zależy, czy w ogóle wchodzą w grę wbudowane, automatyczne kopie Firebase — byłyby wygodniejsze od przycisku, bo działają same, bez pamiętania o klikaniu.
+*Domyślnie: zakładam plan darmowy i dlatego proponuję rozwiązanie własne. Jeśli projekt jest już na Blaze, warto najpierw sprawdzić wbudowane kopie — mogą okazać się tańsze w utrzymaniu niż własny kod.*
