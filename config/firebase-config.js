@@ -18,6 +18,8 @@ window.firebaseConfig = {
   // po zarejestrowaniu aplikacji w Firebase Console > App Check (dostawca reCAPTCHA v3)
   // dopisz poniżej klucz witryny, a aplikacja włączy App Check sama:
   // , appCheckSiteKey: "TU_WKLEJ_KLUCZ_WITRYNY_reCAPTCHA_v3"
-  // Do pracy lokalnej (pliki z dysku) można dodatkowo podać token debugowania:
-  // , appCheckDebugToken: "TOKEN_Z_KONSOLI_PRZEGLADARKI"
+  // Do pracy lokalnej: najpierw ustaw poniżej wartość true, otwórz aplikację
+  // i skopiuj token wypisany w konsoli przeglądarki, potem wklej go tutaj
+  // jako tekst i zarejestruj w Firebase Console > App Check > Manage debug tokens:
+  // , appCheckDebugToken: true
 };

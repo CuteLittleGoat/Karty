@@ -146,8 +146,11 @@ const activateAppCheckIfConfigured = (firebase) => {
   }
 
   try {
-    if (typeof window.firebaseConfig?.appCheckDebugToken === "string" && window.firebaseConfig.appCheckDebugToken.trim()) {
-      self.FIREBASE_APPCHECK_DEBUG_TOKEN = window.firebaseConfig.appCheckDebugToken.trim();
+    const debugToken = window.firebaseConfig?.appCheckDebugToken;
+    if (debugToken === true) {
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    } else if (typeof debugToken === "string" && debugToken.trim()) {
+      self.FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken.trim();
     }
     firebase.appCheck().activate(new firebase.appCheck.ReCaptchaV3Provider(siteKey), true);
     firebase.__kartyAppCheckActivated = true;

@@ -628,3 +628,58 @@ Nie mogłem dokończyć App Check samodzielnie, bo wymaga rejestracji aplikacji 
 3. **Wymienić PIN-y graczy** — jeśli ktoś kiedykolwiek pobrał listę, zna je wszystkie. Przy każdym graczu jest przycisk **Losuj**.
 4. **App Check** — zarejestrować aplikację w Console, wkleić klucz do `config/firebase-config.js`, uruchomić najpierw w trybie monitorowania.
 5. **Zdecydować o repozytorium** (pytanie 5 z pkt 12.7 pozostaje otwarte) — pamiętając, że GitHub Pages jest tu włączony, więc przełączenie na prywatne może wyłączyć stronę.
+
+---
+
+## 15. Stan wdrożenia i doprecyzowanie pytania o repozytorium (2026-09-07)
+
+### 15.1. Prompt użytkownika (zachowany dla kontekstu)
+
+> Wkleiłem nowe Rules i nacisnąłem "Publish".
+> Kliknąłem "Utwórz Kopię Zapasową".
+> Utworzył się i pobrał plik json.
+> PINów nie zmieniam - to świadoma decyzja i jestem świadomy zagrożeń.
+> App Check - musisz mi dokładnie i prosto napisać jak to zrobić. Co i gdzie klikać.
+> Nie rozumiem o jakie pytanie o repozytorium chodzi. Plik z backupem nie będzie wrzucany do repo tylko trzymany lokalnie na dysku C.
+
+### 15.2. Stan wdrożenia
+
+| Zadanie | Stan |
+|---|---|
+| Nowe reguły Firestore wklejone i opublikowane | ✅ wykonane |
+| Zapis do `admin_security` zablokowany | ✅ wynika z powyższego |
+| Pierwsza kopia zapasowa utworzona i pobrana | ✅ wykonane, plik JSON powstał |
+| Wymiana PIN-ów graczy | ⛔ **świadoma decyzja użytkownika: nie zmieniamy** |
+| App Check | 🔵 instrukcja przygotowana — `Analizy/Instrukcja_AppCheck_2026-09-07.md` |
+| Repozytorium publiczne/prywatne | 🔵 do decyzji, patrz pkt 15.4 |
+
+**PIN-y.** Decyzja o pozostawieniu obecnych PIN-ów została podjęta świadomie i z pełną znajomością konsekwencji opisanych w pkt 5.1. Odnotowuję ją i nie wracam do tematu.
+
+### 15.3. App Check
+
+Kod jest gotowy w obu modułach i uruchamia się **wyłącznie** po dodaniu `appCheckSiteKey` do `config/firebase-config.js`. Instrukcja krok po kroku — od założenia wpisu w Google reCAPTCHA, przez wklejenie klucza tajnego w Firebase Console, po włączenie wymuszania — znajduje się w osobnym pliku `Analizy/Instrukcja_AppCheck_2026-09-07.md`.
+
+Obsługa `appCheckDebugToken` została rozszerzona: wartość `true` powoduje wypisanie tokenu w konsoli przeglądarki (do zarejestrowania w Firebase Console), a wartość tekstowa używa gotowego tokenu.
+
+### 15.4. Doprecyzowanie pytania o repozytorium
+
+Pytanie **nie dotyczyło pliku z kopią zapasową.** Trzymanie kopii lokalnie na dysku C jest dokładnie tym, o co chodziło w zaleceniach — ta sprawa jest załatwiona i nie budzi wątpliwości.
+
+Pytanie dotyczyło **samego repozytorium `CuteLittleGoat/Karty`**, które jest publiczne. Oznacza to, że każdy może przeglądać kod aplikacji, w tym plik `config/firebase-config.js` z identyfikatorem projektu Firebase. To **nie jest wyciek** (patrz pkt 6 — `apiKey` jest jawny z założenia i musi być w kodzie strony), ale ma jedną praktyczną konsekwencję: **ułatwia znalezienie projektu i poznanie struktury bazy** komuś, kto akurat przegląda GitHuba.
+
+Znaczenie tego jest teraz mniejsze niż w chwili pisania analizy, ponieważ:
+- zapis do `admin_security` jest już zablokowany,
+- App Check — po wdrożeniu — odetnie zapytania spoza aplikacji.
+
+Do rozstrzygnięcia pozostaje więc drobiazg, a nie problem. Opcje:
+
+- **(a) Zostawić publiczne.** Nic nie trzeba robić. Kod jest widoczny, ale po wdrożeniu App Check nie daje to nikomu praktycznej możliwości sięgnięcia po dane.
+- **(b) Przełączyć na prywatne.** GitHub → repozytorium → *Settings* → sekcja *Danger Zone* → *Change repository visibility*. **Uwaga: w tym repozytorium włączony jest GitHub Pages**, a na darmowym planie strony z prywatnych repozytoriów nie są publikowane — aplikacja pod adresem `cutelittlegoat.github.io/Karty/` mogłaby przestać działać. Przed taką zmianą trzeba to sprawdzić.
+
+**Rekomendacja: (a).** Ryzyko jest niewielkie, a wariant (b) grozi wyłączeniem działającej aplikacji. Nic nie zmieniam bez wyraźnej decyzji.
+
+### 15.5. Co pozostaje
+
+1. **App Check** — wykonać kroki z `Analizy/Instrukcja_AppCheck_2026-09-07.md`, pamiętając o kolejności: najpierw obserwacja zakładki *APIs* przez kilka dni, wymuszanie (*Enforce*) dopiero potem.
+2. **Regularne kopie zapasowe** — przycisk pokazuje datę ostatniego użycia, więc widać, kiedy minęło zbyt wiele czasu.
+3. **Decyzja o widoczności repozytorium** (pkt 15.4) — bez pośpiechu.
