@@ -488,3 +488,60 @@ Sprawdziłem: aplikacja **nigdy** tam nie pisze, więc ta zmiana nie dotyka mech
 **Pytanie 7 — czy plan projektu jest darmowy (Spark) czy płatny (Blaze)?**
 Od tego zależy, czy w ogóle wchodzą w grę wbudowane, automatyczne kopie Firebase — byłyby wygodniejsze od przycisku, bo działają same, bez pamiętania o klikaniu.
 *Domyślnie: zakładam plan darmowy i dlatego proponuję rozwiązanie własne. Jeśli projekt jest już na Blaze, warto najpierw sprawdzić wbudowane kopie — mogą okazać się tańsze w utrzymaniu niż własny kod.*
+
+---
+
+## 13. Umiejscowienie w planie prac: to jest ostatni etap (2026-09-07)
+
+### 13.1. Prompt użytkownika (zachowany dla kontekstu)
+
+> Do kwestii bezpieczeństwa wrócimy potem w innej rozmowie. Tymczasem wgrałem nowy plik Analizy/pop4.docx z odpowiedziami na pytania. Zaktualizuj Analizy/Bezpieczenstwo_Firestore_2026-09-07.md - dopisz do niego też, że ostatnim etapem poprawek ma być kontynuacja problemu z naprawą bezpieczeństwa opisanego w Analizy/Bezpieczenstwo_Firestore_2026-09-07.md - czy mamy już wszystko gotowe i uzgodnione, żeby wykonać pierwszy etap (czyli wszystko do bezpieczeństwa firestore)?
+
+### 13.2. Ustalenie kolejności
+
+**Prace opisane w tym dokumencie są ostatnim etapem poprawek.** Realizowane są dopiero po zakończeniu wszystkich zmian funkcjonalnych uzgodnionych w `Analizy/Uwagi_2026-09-03.md` (etapy 1–3: naprawy błędów, zmiany działania, import gier użytkowników).
+
+Kolejność całości:
+
+| Etap | Zakres | Dokument |
+|---|---|---|
+| 1 | Naprawy błędów (przyciski „Waga”, nazwy graczy, utrata fokusu) | `Uwagi_2026-09-03.md`, pkt 16.8 |
+| 2 | Zmiany działania (`CzyZamknięta`, numeracja potwierdzeń, eksport XLSX, usterki dodatkowe) | `Uwagi_2026-09-03.md`, pkt 16.8 |
+| 3 | Import gier użytkowników do „Gry admina” | `Uwagi_2026-09-03.md`, pkt 16.8 |
+| **4** | **Bezpieczeństwo Firestore: kopia zapasowa, przywracanie, App Check** | **ten dokument, pkt 12.6** |
+
+Uzasadnienie takiej kolejności jest praktyczne: zmiany funkcjonalne dotykają wielu miejsc w kodzie, a kopia zapasowa musi obejmować **finalną** strukturę danych. Zbudowanie jej wcześniej oznaczałoby poprawianie listy kolekcji i kształtu pliku po każdej kolejnej zmianie.
+
+Jest tu jednak jedno napięcie i uczciwie je odnotowuję: **przez cały czas trwania etapów 1–3 nie ma żadnej kopii zapasowej danych.** Etap 2 zmienia sposób liczenia statystyk, a etap 3 zapisuje nowe dokumenty do kolekcji `Tables` — czyli akurat wtedy ryzyko pomyłki jest wyższe niż zwykle. Możliwe podejścia:
+
+- **(a)** Trzymać się ustalonej kolejności i przed etapem 2 wykonać **jednorazowy ręczny eksport** z Firebase Console (Console pozwala pobrać dane bez pisania kodu, choć jest to żmudne przy wielu kolekcjach).
+- **(b)** Przesunąć **sam eksport** (bez przywracania) przed etap 2 — to około jednej trzeciej pracy z etapu 4, a daje siatkę bezpieczeństwa na czas pozostałych zmian.
+
+*Rekomendacja: **(b)**, jeżeli zależy Panu na spokoju w trakcie prac. Sam przycisk „Kopia zapasowa” tylko czyta dane, więc niczego nie może zepsuć, a od tego momentu każda kolejna zmiana jest odwracalna. Jeśli woli Pan trzymać się prostego podziału — wariant (a) też jest w porządku, tylko wymaga pamiętania o ręcznym eksporcie przed etapem 2.*
+
+### 13.3. Status pytań z pkt 12.7
+
+Plik `pop4.docx` (2026-09-07) zawiera odpowiedzi wyłącznie na pytania **M, N, O, P** z `Analizy/Uwagi_2026-09-03.md`. **Pytania 1–7 z pkt 12.7 tego dokumentu pozostają bez odpowiedzi** — i na tym etapie nie muszą jej mieć, skoro prace nad bezpieczeństwem są ostatnie.
+
+Do rozstrzygnięcia przed rozpoczęciem etapu 4:
+
+| # | Pytanie | Odpowiedź domyślna |
+|---|---|---|
+| 1 | Czy przygotować gotowe reguły do wklejenia? | tak, wariant minimalny |
+| 2 | Jak daleko iść z zabezpieczeniami? | (a) tylko najpilniejsze łaty |
+| 3 | Kontrolowany test zapisu? | nie, bez wyraźnej zgody |
+| 4 | Wymienić PIN-y graczy? | tak, przy okazji zabezpieczania |
+| 5 | Repozytorium publiczne czy prywatne? | bez zmian do decyzji |
+| 6 | Zablokować zapis do `admin_security`? | rekomendowane — zero kosztu, kod nietknięty |
+| 7 | Plan Spark czy Blaze? | zakładam Spark |
+
+Z tej listy **pytanie 7 warto rozstrzygnąć najwcześniej**, bo jako jedyne może zmienić sam kierunek prac: jeżeli projekt jest już na planie płatnym Blaze, wbudowane automatyczne kopie Firebase mogą się okazać wygodniejsze i tańsze w utrzymaniu niż pisany od zera przycisk — a wtedy większość etapu 4 sprowadza się do konfiguracji zamiast do kodu.
+
+### 13.4. Wpływ ustaleń z `pop4.docx` na ten dokument
+
+Dwie odpowiedzi z `pop4.docx` mają znaczenie dla zakresu kopii zapasowej:
+
+- **Odpowiedź P** (gry admina pozostają odseparowane od potwierdzeń) — bez wpływu na kopię zapasową. Struktura kolekcji się nie zmienia.
+- **Odpowiedź N** (import aktualizuje istniejącą kopię gry zamiast tworzyć nową) — bez wpływu na liczbę kolekcji, ale dochodzą nowe pola w dokumentach gier w kolekcji `Tables` (znacznik gry źródłowej i data ostatniego odświeżenia). Eksport obejmuje całe dokumenty, więc nowe pola trafią do kopii automatycznie — **nie wymaga to zmian w projekcie kopii zapasowej**.
+
+Potwierdza to zasadność kolejności z pkt 13.2: kopia zapasowa budowana po etapie 3 obejmie od razu finalny kształt danych.
