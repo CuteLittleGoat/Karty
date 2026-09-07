@@ -362,3 +362,9 @@
 - `admin-games-layout` w user-view wymusza `grid-template-columns: minmax(0, 1fr)` + `min-width: 0`, aby szerokie tabele nie rozpychały szerokości całego layoutu.
 - Sidebar (`.admin-games-sidebar`, `.admin-games-years-list`, `.player-zone-sections-list`, `.admin-games-year-button`) ma wymuszone `width/max-width: 100%` i zawijanie etykiet, dzięki czemu nazwy sekcji pozostają widoczne.
 - Szerokie tabele turniejowe przewijają się lokalnie (`overflow-x: auto`) w kontenerze danych zamiast rozszerzać panel boczny poza viewport.
+
+## Uodpornienie startu aplikacji (`runInitStep`)
+- `Second/app.js` ma globalną funkcję `runInitStep(name, initializer)`, która opakowuje pojedynczy krok inicjalizacji w `try/catch` i loguje błąd przez `console.error` wraz z nazwą sekcji.
+- `bootstrap()` uruchamia przez nią `initInstructionModal`, `initCustomsEmergencyModal` oraz `setupAdminView` / `setupUserOnlyView`; `resolveAdminMode()` jest objęte `try/catch` z domyślnym `false`.
+- Dzięki temu wyjątek w jednym kroku nie przerywa pozostałych, a informacja o awarii trafia do konsoli przeglądarki zamiast znikać jako nieobsłużone odrzucenie obietnicy.
+- Usunięto martwą, nigdy niewywoływaną kopię `initCustomsEmergencyModal` zagnieżdżoną w `setupAdminView`; obowiązuje wyłącznie definicja na poziomie modułu.

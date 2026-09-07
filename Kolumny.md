@@ -109,6 +109,47 @@ Dodatkowo dla każdego stołu:
 - Kolumny dynamiczne: `Rebuy1..n` (numeracja globalna dla wszystkich wpisów `Tabela12`, niezależnie od aktualnie przypisanych graczy).
 - Szerokość każdej kolumny: `8ch` (jak w module Main).
 
+## Moduł Main — Gry użytkowników (widok admina i gracza)
+1. Rodzaj Gry
+2. Data
+3. Nazwa
+4. CzyZamknięta
+5. Liczba miejsc
+6. IlośćPotwierdzonych
+7. Akcje (`Usuń`)
+
+- Kolumna `Liczba miejsc` stoi bezpośrednio przed `IlośćPotwierdzonych`, aby limit miejsc i licznik potwierdzeń były widoczne obok siebie.
+- Pole `Liczba miejsc` jest tekstowe z sanityzacją do cyfr (bez wartości ujemnych), z podpowiedzią `brak limitu` przy pustej wartości.
+- Tabela `Gry admina` **nie ma** kolumny `Liczba miejsc` — limit dotyczy wyłącznie gier użytkowników.
+
+## Moduł Main — Gry admina
+1. Rodzaj Gry
+2. Data
+3. Nazwa (pole + `Szczegóły`, a dla gier zaimportowanych dodatkowo `Aktualizuj z gry gracza` i data ostatniego odświeżenia)
+4. CzyZamknięta
+5. IlośćPotwierdzonych — wypełniana **tylko dla gier zaimportowanych**; dla gier założonych ręcznie komórka pozostaje pusta
+6. Akcje (`Usuń`)
+
+## Moduł Main — listy potwierdzeń
+### Modal „Status potwierdzeń” (Gry admina, Gry użytkowników, widok gracza)
+1. Nr
+2. Gracz
+3. Status
+
+### Zakładka admina „Gry do potwierdzenia”
+1. Nr
+2. Gracz
+3. Status
+4. Akcje (`Potwierdź`, `Anuluj`)
+
+### Modal „Szczegóły” w zakładce gracza „Gry do Potwierdzenia” — sekcja „Kolejność potwierdzeń”
+1. Nr
+2. Gracz
+3. Status (`W grze` / `Lista rezerwowa` / `Potwierdzony` / `Niepotwierdzony`)
+
+- Kolumna `Nr` ma szerokość `5ch` i wyrównanie do środka.
+- Potwierdzeni są na górze w kolejności potwierdzania, niepotwierdzeni pod spodem w kolejności dopisania do gry i z pustą komórką `Nr`.
+
 ## Main — kolumny nowych tabel kalkulatora
 - Zakładka `Organizacja`:
   - `TABELA1`: `KALKULATOR | ORGANIZACJA | POT`.

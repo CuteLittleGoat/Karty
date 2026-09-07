@@ -3827,46 +3827,6 @@ const setupAdminView = () => {
     });
   };
 
-  const initCustomsEmergencyModal = () => {
-    const openButton = document.querySelector("#secondCustomsEmergencyButton");
-    const modal = document.querySelector("#secondCustomsEmergencyModal");
-    const closeButton = document.querySelector("#secondCustomsEmergencyClose");
-
-    if (!openButton || !modal) {
-      return;
-    }
-
-    const closeModal = () => {
-      modal.classList.remove("is-visible");
-      modal.setAttribute("aria-hidden", "true");
-      document.body.classList.remove("modal-open");
-    };
-
-    const openModal = () => {
-      modal.classList.add("is-visible");
-      modal.setAttribute("aria-hidden", "false");
-      document.body.classList.add("modal-open");
-    };
-
-    openButton.addEventListener("click", openModal);
-
-    if (closeButton) {
-      closeButton.addEventListener("click", closeModal);
-    }
-
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal) {
-        closeModal();
-      }
-    });
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && modal.classList.contains("is-visible")) {
-        closeModal();
-      }
-    });
-  };
-
   const initAdminNotes = () => {
     const notesInput = rootCard.querySelector("#adminNotesInput");
     const notesSaveButton = rootCard.querySelector("#adminNotesSave");
@@ -4210,19 +4170,33 @@ const initCustomsEmergencyModal = () => {
   });
 };
 
+const runInitStep = (name, initializer) => {
+  try {
+    initializer();
+  } catch (error) {
+    console.error(`Nie udało się zainicjalizować sekcji "${name}".`, error);
+  }
+};
+
 const bootstrap = async () => {
-  const isAdminView = await resolveAdminMode();
+  let isAdminView = false;
+  try {
+    isAdminView = await resolveAdminMode();
+  } catch (error) {
+    console.error("Nie udało się ustalić trybu administratora.", error);
+  }
+
   if (adminPasswordBypassNote) {
     adminPasswordBypassNote.hidden = true;
   }
 
-  initInstructionModal();
-  initCustomsEmergencyModal();
+  runInitStep("Modal instrukcji", initInstructionModal);
+  runInitStep("Modal kontroli celno-skarbowej", initCustomsEmergencyModal);
 
   if (isAdminView) {
-    setupAdminView();
+    runInitStep("Widok administratora", setupAdminView);
   } else {
-    setupUserOnlyView();
+    runInitStep("Widok użytkownika", setupUserOnlyView);
   }
 };
 

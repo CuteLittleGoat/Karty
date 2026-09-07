@@ -11,7 +11,7 @@
 
 ## 2. Aktualny zakres funkcjonalny tej wersji
 - Service Worker obsługuje komunikat `SKIP_WAITING`, dzięki czemu nowy worker może szybciej przejąć kontrolę po aktualizacji.
-- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`) z parametrem wersji (`?v=2026-04-02.1`) w celu twardego bustowania cache między release’ami.
+- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`) z parametrem wersji (`?v=2026-09-07.1`) w celu twardego bustowania cache między release’ami.
 - `Main/pwa-bootstrap.js` nasłuchuje `updatefound` i `controllerchange`; po instalacji nowego workera wymusza jego aktywację i wykonuje pojedynczy `window.location.reload()`, aby użytkownik pracował na spójnym zestawie assetów.
 - W widoku użytkownika (`body` bez klasy `is-admin`) kontener `.page` ma szerokość `calc(100% - 2px)` oraz `padding-inline: 1px`, dzięki czemu zewnętrzna zielona ramka karty użytkownika jest odsunięta dokładnie o 1 px od lewej i prawej krawędzi ekranu.
 - W tej samej konfiguracji ukryto wewnętrzną obwódkę pseudo-elementu `.user-card::before`, aby lewa i prawa krawędź pierwszej (zewnętrznej) ramki miały dokładnie 1 px.
@@ -129,8 +129,12 @@
 - Odczyt istniejących potwierdzeń także używa tego samego klucza identyfikacyjnego, co eliminuje rozjazdy między dokumentami potwierdzeń i listą graczy.
 - Zapis potwierdzenia przez administratora ustawia `playerId` na rzeczywiste ID gracza z rekordu gry (jeżeli istnieje), zamiast przepisywać nazwę do pola `playerId`.
 - Ranking statystyk, masowe ustawianie wag i eksport XLSX odczytują wpisy ręczne z mapy rocznej po `statsKey` (`id:<playerId>` z fallbackiem nazwy), a nie po samym `playerName`.
-- **Masowe ustawianie wag działa wyłącznie w zakładce „Gry admina”** (`initAdminGames` → `applyBulkWeightValue`, zapis do `admin_games_stats/{rok}`). Handler tych samych przycisków w zakładce „Statystyki” (`initStatisticsView`) wywołuje `ensureYearMapEntry`, która jest zadeklarowana jako `const` lokalnie w `initAdminGames` i nie jest widoczna z tego zasięgu — kliknięcie przerywa się na `ReferenceError` po zamknięciu `window.prompt`, bez zapisu i bez komunikatu w UI. Obie zakładki zapisują do tej samej kolekcji `admin_games_stats`, więc wagi ustawione w „Gry admina” są natychmiast widoczne w „Statystyki”.
-- **Nazwa gracza jest zdenormalizowana.** Wiersze gier (`rows`) i rekordy w `admin_games_stats` przechowują kopię `playerName` z chwili zapisu. Aktualizacja nazwy w zakładce „Gracze” (`updatePlayerField` → `savePlayers`) zapisuje wyłącznie dokument `PLAYER_ACCESS_COLLECTION` i nie propaguje się do `rows` ani do statystyk. Listy `<select>` w modalach szczegółów budują etykiety z żywej listy `state.playerOptions` po `playerId`, dlatego pokazują nazwę aktualną; podsumowania (`renderSummaries`), statystyki (`getPlayersStatistics`), ranking, modal „Status potwierdzeń” i `initAdminConfirmations` czytają zapisane `playerName` i pokazują nazwę historyczną. Agregacja odbywa się po `statsKey`, więc rozjazd dotyczy wyłącznie warstwy prezentacji.
+- **Masowe ustawianie wag** działa w obu zakładkach. `ensureYearMapEntry` jest funkcją globalną (obok `getDefaultStatsManualFieldValue`) i korzysta z `WEIGHT_STATS_FIELDS`; używają jej `initAdminGames.applyBulkWeightValue` oraz handler przycisków w `initStatisticsView`. Handler w „Statystyki” waliduje wybrany rok i obecność graczy **przed** otwarciem `window.prompt`, a po zapisie ustawia komunikat o liczbie zaktualizowanych wierszy. Obie zakładki zapisują do `admin_games_stats/{rok}`, więc wagi są wspólne.
+- **Nazwa gracza rozwiązywana jest na żywo.** Globalne `getLivePlayerNameById` i `resolveDisplayPlayerName` odczytują aktualną nazwę z `adminPlayersState.players` (uzupełnianego przez `initSharedPlayerAccess`) po `playerId`, z zapisanym `playerName` jako fallbackiem dla rekordów bez identyfikatora. Używają ich `renderSummaries` (obie tabele), `getPlayersStatistics` (obie kopie), `getUniquePlayersFromRows`, `initAdminConfirmations` i modal `Szczegóły` gracza. `statsKey` nadal wyliczany jest z **zapisanej** nazwy, więc historyczne grupowanie po `name:` pozostaje nienaruszone.
+- Widoki przerysowują się po zmianie listy graczy: snapshoty `PLAYER_ACCESS_COLLECTION` w `initUserGamesManager` i `initAdminGames` wywołują dodatkowo `renderGamesTable`, `renderSummaries` (i `renderStatsTable` w `Gry admina`), a `initStatisticsView` nasłuchuje zdarzenia `player-access-updated`.
+- **Edycja wag w zakładce „Statystyki” nie gubi fokusu.** Pola mają komplet metadanych (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`), a handler `input` zamiast pełnego `renderStats()` wywołuje punktowe `updateResultsAndRanking()`, które podmienia komórki `[data-result-player]` i przerysowuje ranking.
+- **Podsumowania gier budowane są przez `textContent`.** Wiersze w `renderSummaries` (obie kopie) tworzone są przez `document.createElement`/`textContent` zamiast interpolacji do `innerHTML`, więc nazwy graczy ze znakami `<`, `>` czy `&` nie rozbijają układu tabeli.
+- **Identyfikator dokumentu potwierdzenia.** `initAdminConfirmations` używa `player.playerId`, następnie identyfikatora istniejącego dokumentu, a w ostateczności `buildSafeConfirmationDocId`, które zamienia znaki niedozwolone w identyfikatorach Firestore (`/ \\ . # $ [ ]`) na `_` i odrzuca nazwy puste oraz `.`/`..`.
 
 ## Rework layoutu tabel (Main)
 
@@ -183,7 +187,7 @@ Efekt techniczny:
 - Tytuł dokumentu (`<title>`) w `index.html` ustawiono na `Poker - rozgrywki`.
 - Manifest PWA ustawia nazwę instalowanej aplikacji na `Poker - rozgrywki` (`short_name`: `Poker`).
 - `start_url` w manifeście jest relatywny (`./index.html?...`), a `scope` ustawiony na `./`, co zapobiega błędom 404 dla hostingu pod prefiksem repozytorium.
-- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-04-02.1`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
+- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-09-07.1`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
 
 - W `initAdminCalculator` każdy wiersz rebuy (`table2Rows` i `table9Rows`) przechowuje parę `rebuys[]` + `rebuyIndexes[]`; dodawanie rebuy nadaje globalny numer `max+1` dla całego aktywnego trybu, a usunięcie rebuy wykonuje globalną kompaktację indeksów bez luk.
 - Tabela5 buduje kolumny `RebuyX` i mapowanie wartości po posortowanych `rebuyIndexes`, zamiast po samym `flatMap` kolejności graczy, dzięki czemu semantyka numeru `RebuyX` pozostaje spójna po dodawaniu/usuwaniu kolumn u różnych graczy.
@@ -210,11 +214,52 @@ Efekt techniczny:
   - widok `Najbliższa gra` agreguje tylko `UserGames` (`nextGamesState.adminGames` pozostaje pustą tablicą);
   - widok `Gry do potwierdzenia` (admin i gracz) pobiera aktywne gry tylko z `UserGames`;
   - status admina w `Gry do potwierdzenia` raportuje już tylko źródło `UserGames`.
-- Konsekwencja: **żadna ścieżka UI nie zapisuje dokumentów do `Tables/{gameId}/confirmations`**. Zakładka `Gry admina` nadal renderuje kolumnę `IlośćPotwierdzonych` i przycisk `Statusy` oraz subskrybuje tę podkolekcję, więc dla gier admina licznik pokazuje `0/N` (poza rekordami historycznymi sprzed separacji).
+- Konsekwencja: **żadna ścieżka UI nie zapisuje dokumentów do `Tables/{gameId}/confirmations`** poza importem gier użytkowników, który przenosi tam potwierdzenia zebrane w `UserGames`. Dlatego kolumna `IlośćPotwierdzonych` i przycisk `Statusy` w zakładce `Gry admina` renderują się **tylko dla gier z polem `importedFromUserGameId`**; dla gier zakładanych ręcznie komórka pozostaje pusta.
 
 ## Zasięg flagi `isClosed`
-- Pole `isClosed` gry jest odczytywane tylko w dwóch filtrach: `getActiveGamesForConfirmations` (zakładki `Gry do potwierdzenia`) oraz `getCombinedOpenGames` (widok `Najbliższa gra`).
-- Selektory `getGamesForSelectedYear` w `initAdminGames`, `initStatisticsView` i `initUserGamesManager` filtrują wyłącznie po roku (oraz po dostępie w widoku gracza), dlatego `renderSummaries`, `getPlayersStatistics` i ranking obejmują **wszystkie** gry wybranego roku niezależnie od `isClosed`.
+- Pole `isClosed` jest odczytywane w: `getActiveGamesForConfirmations` (zakładki `Gry do potwierdzenia`), `getCombinedOpenGames` (widok `Najbliższa gra`) oraz `getGamesForStatistics` w `initAdminGames` i `initStatisticsView`.
+- `getGamesForStatistics` zwraca `getGamesForSelectedYear().filter((game) => Boolean(game.isClosed))` i jest jedynym źródłem gier dla `getPlayersStatistics`. Dzięki temu filtr obejmuje **wyłącznie agregaty**: tabelę statystyk, ranking oraz pozycje `Gry zaliczone do statystyk` i `Łączna pula`.
+- Filtr **nie obejmuje** tabeli gier, panelu `Lata` ani podsumowań pod tabelą — inaczej gra znikałaby z listy w momencie odznaczenia checkboxa i nie dałoby się jej ponownie zaznaczyć.
+- W zakładce `Gry użytkowników` zaznaczenie `isClosed` dodatkowo wyzwala eksport gry do kolekcji gier admina (patrz sekcja o imporcie).
 
 ## Aktualizacja techniczna: RebuyX i mobilna klawiatura
 - `Main/app.js`: w modalu rebuy kalkulatora każde pole `RebuyX` korzysta z `applyIntegerInputHints` (`type=text`, `inputmode=numeric`, `pattern=[0-9]*`) i sanitizacji cyfr.
+
+
+## Uodpornienie startu aplikacji (`runInitStep`)
+- Oba moduły mają globalną funkcję `runInitStep(name, initializer)`, która opakowuje pojedynczy krok inicjalizacji w `try/catch` i loguje błąd przez `console.error` z nazwą sekcji.
+- `bootstrap()` w `Main/app.js` przechodzi po tablicy par `[nazwa, funkcja]` i uruchamia każdy krok przez `runInitStep`; `resolveAdminMode()` też jest w `try/catch` z domyślnym `false`.
+- `bootstrap()` w `Second/app.js` używa tego samego mechanizmu dla modali oraz dla `setupAdminView` / `setupUserOnlyView`.
+- Skutek: wyjątek w jednej funkcji inicjalizującej nie przerywa pozostałych. Wcześniej `ReferenceError` w `initInstructionModal` blokował wykonanie `initCustomsEmergencyModal()` (kolejne wywołanie w ciągu), przez co przyciski `Instrukcja` i `Przycisnąć w razie kontroli celno-skarbowej` nie dostawały obsługi kliknięcia.
+
+## Pole `seatCount` (Liczba miejsc)
+- Pole tekstowe `seatCount` istnieje wyłącznie w dokumentach kolekcji gier użytkowników; nowe gry dostają `seatCount: ""`.
+- Globalne `getGameSeatCountValue` sanityzuje wartość do cyfr (bez znaku minus), a `getGameSeatCount` zwraca liczbę dodatnią albo `null` (brak limitu) — puste pole i `0` traktowane są jako brak limitu, więc istniejące gry nie wymagają migracji.
+- Kolumna renderowana jest w `initUserGamesManager`, czyli jednocześnie w widoku gracza i administratora; tabela `Gry admina` jej nie ma.
+
+## Kolejność potwierdzeń (`confirmedAt`)
+- Dokument potwierdzenia ma pole `confirmedAt` ustawiane `serverTimestamp()` **tylko przy przejściu z niepotwierdzonego na potwierdzony** i kasowane przez `FieldValue.delete()` przy anulowaniu. `updatedAt` pozostaje czasem ostatniej zmiany.
+- Stan lokalny (`isConfirmedLocally`) pilnuje, by ponowne kliknięcie `Potwierdź` nie nadpisało istniejącego znacznika.
+- `getConfirmationStatusesForRows(rows, confirmations)` zwraca listę wpisów `{ identifier, playerId, playerName, confirmed, confirmationOrder }`: potwierdzeni na początku, posortowani rosnąco po `getConfirmationTimeValue` (`confirmedAt`, fallback `updatedAt`, brak obu → `Infinity`, remis → kolejność w składzie), z numeracją od 1; niepotwierdzeni na końcu z `confirmationOrder === null`.
+- Funkcję wykorzystują: modal `Status potwierdzeń` (kolumna `Nr`), tabela w adminowej zakładce `Gry do potwierdzenia` (kolumna `Nr`) oraz sekcja `Kolejność potwierdzeń` w modalu `#confirmationsDetailsModal` widoku gracza.
+- W modalu gracza `renderConfirmationsOrder` łączy kolejność z `getGameSeatCount`: pierwsze N potwierdzeń dostaje status `W grze`, kolejne `Lista rezerwowa`, a granicę oznacza klasa `.confirmations-reserve-start`. Bez ustawionego limitu pokazywana jest sama numeracja.
+
+## Import gier użytkowników do gier admina
+- Znacznik `importedFromUserGameId` na kopii wskazuje grę źródłową; `exportedToAdminGameId` i `exportedAt` na dokumencie źródłowym oznaczają, że gra została już przekazana.
+- `importUserGameToAdminGames({ firebaseApp, db, userGamesCollectionName, adminGamesCollectionName, gameDetailsCollectionName, gameId })`:
+  - odszukuje istniejącą kopię przez `findImportedAdminGameRef` (zapytanie `where(importedFromUserGameId, "==", gameId).limit(1)`),
+  - przy braku kopii zakłada nowy dokument z `isClosed: false`, `postGameNotes: ""`, `createdAt` i `importedAt`,
+  - przy istniejącej kopii wykonuje `update` **wyłącznie** pól z `MIRRORED_IMPORT_GAME_FIELDS` (`gameType`, `gameDate`, `name`, `seatCount`, `preGameNotes`, `createdByPlayerId`, `createdByPlayerName`, `createdByPlayerPin`) oraz `importRefreshedAt`; `isClosed` i `postGameNotes` kopii nigdy nie są nadpisywane,
+  - zastępuje podkolekcje `rows` i `confirmations` zawartością źródła, zachowując identyfikatory dokumentów,
+  - zapisy idą przez `commitBatchedOperations` w paczkach po 400 operacji,
+  - `pendingUserGameImports` blokuje równoległe wywołania dla tej samej gry.
+- Wyzwalacze:
+  - zaznaczenie `CzyZamknięta` w `initUserGamesManager` (działa tak samo dla gracza i administratora, bo oba widoki korzystają z tego samego renderu),
+  - `runPendingUserGameImports` w `initAdminGames` przy starcie i przy odświeżeniu zakładki — pobiera zamknięte gry użytkowników **bez** `exportedToAdminGameId`, dzięki czemu kopia skasowana ręcznie przez administratora nie wraca sama, a ponowne zaznaczenie `CzyZamknięta` przez gracza tworzy ją od nowa,
+  - przycisk `Aktualizuj z gry gracza` przy grze zaimportowanej.
+- Podkolekcje mają w ścieżce `/`, więc `isCollectionProtectedAgainstFullDeletion` zwraca dla nich `false` i mechanizm blokady usunięcia ostatniego dokumentu nie koliduje z podmianą zawartości.
+
+## Eksport XLSX
+- `Main/index.html` ładuje `https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js` (fork SheetJS Community Edition ze wsparciem stylów komórek; globalna nazwa `XLSX` bez zmian).
+- Handler eksportu ustawia `worksheet["!cols"]` na podstawie najdłuższej wartości w kolumnie (min. 8, maks. 40 znaków), nadaje każdej komórce `s.alignment` (`horizontal: center`, `vertical: center`) i `s.font.bold` dla wiersza nagłówka, a komórkom liczbowym `z = "# ##0"` (separator tysięcy).
+- Wagi i wartości procentowe pozostają komórkami tekstowymi — biblioteka zapisuje `ignoredErrors`, więc Excel nie pokazuje ostrzeżenia „liczba zapisana jako tekst”.

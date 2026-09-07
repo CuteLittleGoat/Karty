@@ -124,8 +124,17 @@ Dodatkowo:
 Przyciski i funkcje w wierszu gry:
 - **Potwierdź** — zapisuje Twoją obecność na grze.
 - **Anuluj** — wycofuje potwierdzenie obecności.
-- **Szczegóły** — otwiera modal ze szczegółową tabelą uczestników i wartości (wpisowe/rebuy/wypłata/punkty/mistrzostwo).
+- **Szczegóły** — otwiera modal ze szczegółową tabelą uczestników i wartości (wpisowe/rebuy/wypłata/punkty/mistrzostwo), a pod nią sekcję **Kolejność potwierdzeń**.
 - **Notatki do gry** — otwiera modal notatek przed grą w trybie tylko do odczytu.
+
+Sekcja **Kolejność potwierdzeń** (w oknie **Szczegóły**):
+- pokazuje kolumny **Nr**, **Gracz**, **Status**,
+- osoby, które potwierdziły, są na górze w kolejności potwierdzania (kto pierwszy, ten ma numer 1); osoby bez potwierdzenia są pod spodem i mają puste pole **Nr**,
+- jeśli gra ma ustawioną **Liczbę miejsc**, status pokazuje **W grze** albo **Lista rezerwowa**, a linia oddzielająca miejsca od rezerwy jest wyróżniona,
+- nad listą znajdziesz podsumowanie, np. `Miejsca: 8 · Potwierdzonych: 9 · Lista rezerwowa: 1 · Jesteś w grze (miejsce 3 z 8)`,
+- Twój własny wiersz jest pogrubiony,
+- jeśli gra nie ma ustawionego limitu miejsc, zobaczysz samą kolejność bez rozstrzygania, kto się załapał,
+- **uwaga:** jeśli anulujesz potwierdzenie i potwierdzisz ponownie, trafiasz na koniec kolejki.
 
 Przyciski globalne sekcji:
 - **Otwórz** — weryfikacja PIN.
@@ -165,7 +174,8 @@ To sekcja, w której gracz (z uprawnieniem) tworzy i prowadzi własne gry.
 3. W nowym wierszu gry ustaw:
    - **Rodzaj Gry** (lista: Cashout / Turniej),
    - **Data**,
-   - **Nazwa**.
+   - **Nazwa**,
+   - **Liczba miejsc** — ile osób zmieści się w grze. Pole możesz zostawić puste (wtedy nie ma limitu), ale wypełnione sprawia, że gracze widzą w oknie **Szczegóły**, czy się załapali, czy są na liście rezerwowej.
 
 ### D) Edycja i prowadzenie gry
 W wierszu każdej gry masz przyciski:
@@ -177,12 +187,13 @@ Kolumna **CzyZamknięta** (checkbox):
 - zaznacz, aby oznaczyć grę jako zamkniętą,
 - odznacz, aby przywrócić status otwartej,
 - zaznaczona gra **znika** z zakładki „Gry do potwierdzenia” (u gracza i u administratora) oraz z widoku „Najbliższa gra”,
-- flaga **nie wpływa** na podsumowania pod tabelą ani na zakładkę „Statystyki” — do statystyk i rankingu liczone są wszystkie gry z wybranego roku, niezależnie od stanu tego checkboxa.
+- **zaznaczenie przekazuje grę do zakładki „Gry admina”** — powstaje tam jej kopia (a jeśli już istnieje, zostaje zaktualizowana danymi z Twojej gry),
+- podsumowanie pod tabelą pokazuje grę zawsze, niezależnie od tego checkboxa.
 
 Kolumna **IlośćPotwierdzonych**:
 - pokazuje format `potwierdzeni/zapisani` (np. `2/3`, `3/3`, `4/10`),
 - licznik aktualizuje się automatycznie po wejściu do zakładki oraz po każdej zmianie składu graczy i potwierdzeń,
-- przycisk **Statusy** otwiera okno tylko do odczytu z listą graczy i statusem (`Potwierdzony` / `Niepotwierdzony`); potwierdzeni są podświetleni na złoto.
+- przycisk **Statusy** otwiera okno tylko do odczytu z kolumnami **Nr**, **Gracz** i **Status** (`Potwierdzony` / `Niepotwierdzony`); potwierdzeni są podświetleni na złoto, stoją na górze w kolejności potwierdzania i mają numery `1, 2, 3…`, a niepotwierdzeni są pod spodem z pustym polem **Nr**.
 
 ### E) Modal „Szczegóły” gry (po kliknięciu „Szczegóły”)
 W modalu:
@@ -380,10 +391,11 @@ Sekcja zarządzania główną listą gier administracyjnych.
 W każdym wierszu gry:
 - **Szczegóły** — modal szczegółów gry (uczestnicy i wartości),
 - **Usuń** — usuwa grę wraz z powiązanymi szczegółami i potwierdzeniami,
-- checkbox **CzyZamknięta** — zamknięcie/otwarcie gry; zaznaczona gra znika z „Gry do potwierdzenia” i z „Najbliższa gra”, ale **nie wpływa** na podsumowania, statystyki ani ranking (te liczą wszystkie gry z wybranego roku),
-- kolumna **IlośćPotwierdzonych** — licznik `potwierdzeni/zapisani` oraz przycisk **Statusy** otwierający okno tylko do odczytu z listą graczy i ich statusem.
+- checkbox **CzyZamknięta** — **decyduje, czy gra liczy się do statystyk i rankingu**. Zaznacz go dopiero, gdy sprawdzisz dane gry; tylko zaznaczone gry są uwzględniane w tabeli statystyk, w rankingu oraz w pozycjach „Gry zaliczone do statystyk” i „Łączna pula”,
+- **Aktualizuj z gry gracza** — przycisk widoczny wyłącznie przy grach, które przyszły z zakładki „Gry użytkowników”; pobiera od gracza aktualną wersję składu i kwot. Obok przycisku widnieje data ostatniego odświeżenia,
+- kolumna **IlośćPotwierdzonych** — licznik `potwierdzeni/zapisani` i przycisk **Statusy** pojawiają się **tylko przy grach zaimportowanych** od graczy. Gry założone ręcznie w tej zakładce mają tę komórkę pustą, bo nie zbiera się w nich potwierdzeń.
 
-> Uwaga: potwierdzenia obecności zbierane są wyłącznie dla gier z zakładki „Gry użytkowników”. Dla gier z tej zakładki licznik `IlośćPotwierdzonych` i okno **Statusy** pozostają puste (`0/N`, wszyscy „Niepotwierdzony”), o ile w bazie nie ma starszych rekordów potwierdzeń.
+> Uwaga: zaznaczenie **CzyZamknięta** przy grze zaimportowanej nie zostanie cofnięte, nawet jeśli gracz później ponownie wyśle swoją grę — Twoja decyzja o zaliczeniu gry do statystyk jest zawsze zachowywana. Nadpisywane są za to skład i kwoty.
 
 ### 10.4. Modal „Szczegóły” gry admina
 1. W pierwszej linii modalu odczytasz szczegóły gry (`Nazwa | Rodzaj gry | Data | Pula | Ilość graczy`) — ta linia zajmuje miejsce wcześniejszego tytułu „Szczegóły gry”.
@@ -410,6 +422,7 @@ W tabeli statystyk graczy są przyciski kolumn:
 Działanie:
 - po kliknięciu danej „Wagi” wpisujesz jedną wartość,
 - wartość jest ustawiana zbiorczo dla całej kolumny,
+- te same wagi obowiązują w zakładce „Statystyki” — to jeden wspólny zestaw wartości dla danego roku,
 - tabela i ranking w „Gry admina” korzystają z tej samej logiki liczenia co zakładka „Statystyki”, więc wyniki są spójne między tymi widokami,
 - panel **Ranking** pokazuje zawsze trzy kolumny (**Miejsce**, **Gracz**, **Wynik**) bez poziomego przewijania; kolumna **Gracz** jest celowo węższa, długie nazwy są ucinane wielokropkiem, a nagłówek **Gracz** jest wyrównany do lewej (tak samo jak wartości w kolumnie), żeby cały panel mieścił się w widoku.
 
@@ -417,11 +430,13 @@ Działanie:
 
 ## 11. Zakładka admina „Statystyki”
 
+> **Które gry są liczone.** Do statystyk i rankingu wchodzą wyłącznie gry z zakładki **Gry admina** oznaczone jako **CzyZamknięta**. Gry jeszcze niezaznaczone nie są uwzględniane — pozycja „Gry zaliczone do statystyk” pokazuje, ile gier faktycznie policzono.
+
 1. Wybierz rok z panelu **Lata**.
 2. Analizuj tabelę statystyk i ranking.
 3. Kliknij **Eksportuj**, aby pobrać statystyki.
-4. W tabeli graczy przyciski **Waga1–Waga6** mają stałą szerokość `8ch`. **Uwaga: w tej zakładce zbiorcze ustawianie wag nie działa** — okno z pytaniem o wartość się pojawia, ale wpisana liczba nie jest zapisywana. Aby ustawić wagi zbiorczo, użyj tych samych przycisków w zakładce **„Gry admina”** (pkt 10.6) — wagi są wspólne dla obu zakładek, więc wartość ustawiona tam pojawi się od razu tutaj.
-5. Wartości w kolumnach wag możesz też wpisać ręcznie w polach tabeli. W tej zakładce po wpisaniu jednego znaku pole traci kursor — trzeba kliknąć w nie ponownie, aby dopisać kolejną cyfrę (w zakładce „Gry admina” ten problem nie występuje).
+4. W tabeli graczy kliknij **Waga1–Waga6**, aby ustawić jedną wartość dla całej kolumny; po zapisie zobaczysz komunikat ile wierszy zaktualizowano. Jeśli nie wybrałeś roku albo w roku nie ma graczy, aplikacja powie o tym zamiast pytać o wartość.
+5. Wartości wag możesz też wpisać ręcznie w polach tabeli — pole nie traci kursora podczas pisania, a kolumna **Wynik** i **Ranking** przeliczają się na bieżąco.
 6. W panelu **Ranking** kolumny **Miejsce**, **Gracz** i **Wynik** mieszczą się na ekranie bez poziomego przewijania; kolumna **Gracz** jest zwężona, nagłówek **Gracz** jest wyrównany do lewej, a długie nazwy są obcinane wielokropkiem.
 
 ---
@@ -431,6 +446,10 @@ Działanie:
 To administracyjny podgląd i zarządzanie grami tworzonymi przez użytkowników.
 
 Działanie jest analogiczne do sekcji gracza „Gry Użytkowników”, ale jako administrator masz pełny dostęp do wszystkich rekordów.
+
+**Przekazywanie gry do „Gry admina”.** Zaznaczenie checkboxa **CzyZamknięta** przy dowolnej grze użytkownika (możesz to zrobić także za gracza, jeśli zapomniał) tworzy kopię tej gry w zakładce **Gry admina**. Jeśli kopia już istnieje, zostaje zaktualizowana świeżymi danymi zamiast tworzyć drugi wpis. Gra pozostaje na koncie gracza — kopia jest niezależna i nie zniknie, nawet gdy gracz skasuje swoją wersję.
+
+**Liczba miejsc.** Kolumna **Liczba miejsc** określa, ile osób zmieści się w grze. Na jej podstawie gracze widzą w oknie **Szczegóły** (zakładka „Gry do Potwierdzenia”), czy się załapali, czy są na liście rezerwowej. Puste pole oznacza brak limitu.
 
 Najważniejsze przyciski:
 - **Dodaj** — dodanie nowej gry użytkowników,
@@ -471,7 +490,9 @@ Lista obejmuje wyłącznie **otwarte gry z zakładki „Gry użytkowników”** 
 
 Układ sekcji:
 - każda gra ma własny nagłówek z nazwą oraz linię `Rodzaj gry | Data`,
-- pod nagłówkiem znajduje się tabela z kolumnami **Gracz**, **Status** (`Potwierdzono` / `Niepotwierdzono`) i **Akcje**; wiersze potwierdzone są podświetlone na złoto.
+- pod nagłówkiem znajduje się tabela z kolumnami **Nr**, **Gracz**, **Status** (`Potwierdzono` / `Niepotwierdzono`) i **Akcje**; wiersze potwierdzone są podświetlone na złoto,
+- potwierdzeni są na górze w kolejności potwierdzania i mają numery `1, 2, 3…`; niepotwierdzeni stoją pod spodem z pustym polem **Nr**,
+- kliknięcie **Anuluj** kasuje numer w kolejce — po ponownym potwierdzeniu gracz trafia na jej koniec.
 
 Typowe akcje:
 - podgląd, którzy gracze potwierdzili,

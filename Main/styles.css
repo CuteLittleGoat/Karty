@@ -2054,3 +2054,30 @@ body.modal-open {
   top: 0;
   right: 0;
 }
+
+.confirmations-order-title {
+  margin: 16px 0 0;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.confirmations-order-table td:first-child,
+.confirmations-order-table th:first-child {
+  width: 5ch;
+  text-align: center;
+}
+
+.confirmations-reserve-start td {
+  border-top: 2px solid var(--gold-line);
+}
+
+.confirmations-own-row td {
+  font-weight: 700;
+}
+
+.admin-import-refreshed-at {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  font-size: 12px;
+}

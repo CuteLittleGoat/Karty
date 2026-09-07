@@ -100,11 +100,9 @@ const PLAYER_ZONE_SECTION_PERMISSION_MAP = {
 const CHAT_COLLECTION = "chat_messages";
 const CHAT_RETENTION_DAYS = 30;
 
-const TABLES_COLLECTION = "Tables";
 const GAMES_COLLECTION = "Tables";
 const USER_GAMES_COLLECTION = "UserGames";
 const GAME_DETAILS_COLLECTION = "rows";
-const TABLES_COLLECTION_CONFIG_KEY = "tablesCollection";
 const GAMES_COLLECTION_CONFIG_KEY = "gamesCollection";
 const GAME_DETAILS_COLLECTION_CONFIG_KEY = "gameDetailsCollection";
 const USER_GAMES_COLLECTION_CONFIG_KEY = "userGamesCollection";
@@ -171,6 +169,24 @@ const getDefaultStatsManualFieldValue = (field, value) => {
     return normalized ? normalized : "1";
   }
   return typeof value === "string" || typeof value === "number" ? String(value) : "";
+};
+
+const ensureYearMapEntry = (yearMap, playerKey, playerName, playerId = "") => {
+  if (!yearMap.has(playerKey)) {
+    const emptyRow = { playerId, playerName };
+    WEIGHT_STATS_FIELDS.forEach((field) => {
+      emptyRow[field] = getDefaultStatsManualFieldValue(field, "");
+    });
+    yearMap.set(playerKey, emptyRow);
+  }
+
+  const entry = yearMap.get(playerKey);
+  WEIGHT_STATS_FIELDS.forEach((field) => {
+    if (entry[field] == null) {
+      entry[field] = getDefaultStatsManualFieldValue(field, "");
+    }
+  });
+  return entry;
 };
 
 const getComputedStatsResultValue = (row, manualEntry = {}, getDefaultManualFieldValue = getDefaultStatsManualFieldValue) => {
@@ -325,6 +341,20 @@ const parseDateFromInput = (value) => {
 
   const parsed = new Date(trimmed);
   return Number.isFinite(parsed.getTime()) ? parsed : null;
+};
+
+const getLivePlayerNameById = (playerId) => {
+  const normalizedId = typeof playerId === "string" ? playerId.trim() : "";
+  if (!normalizedId) {
+    return "";
+  }
+  const player = adminPlayersState.players.find((entry) => entry.id === normalizedId);
+  return player ? normalizePlayerName(player.name) : "";
+};
+
+const resolveDisplayPlayerName = (source = {}) => {
+  const liveName = getLivePlayerNameById(source?.playerId);
+  return liveName || normalizePlayerName(source?.playerName);
 };
 
 const getStatsKey = (entry = {}) => {
@@ -1297,14 +1327,6 @@ const formatNumber = (value) => {
   return value.toLocaleString("pl-PL", { maximumFractionDigits: 2 });
 };
 
-const getTablesCollectionName = () => {
-  const configured =
-    window.firebaseConfig && typeof window.firebaseConfig[TABLES_COLLECTION_CONFIG_KEY] === "string"
-      ? window.firebaseConfig[TABLES_COLLECTION_CONFIG_KEY].trim()
-      : "";
-  return configured || TABLES_COLLECTION;
-};
-
 const getGamesCollectionName = () => {
   const configured =
     window.firebaseConfig && typeof window.firebaseConfig[GAMES_COLLECTION_CONFIG_KEY] === "string"
@@ -1723,6 +1745,117 @@ const getAllPlayersConfirmedForGame = async ({ db, collectionName, gameId, gameD
   return playerIdentifiers.every((identifier) => confirmedPlayers.has(identifier));
 };
 
+const formatImportRefreshedAt = (value) => {
+  const date = typeof value?.toDate === "function"
+    ? value.toDate()
+    : (typeof value?.seconds === "number" ? new Date(value.seconds * 1000) : null);
+  if (!date || !Number.isFinite(date.getTime())) {
+    return "";
+  }
+  const pad = (part) => String(part).padStart(2, "0");
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+const IMPORTED_GAME_SOURCE_FIELD = "importedFromUserGameId";
+const MIRRORED_IMPORT_GAME_FIELDS = ["gameType", "gameDate", "name", "seatCount", "preGameNotes", "createdByPlayerId", "createdByPlayerName", "createdByPlayerPin"];
+const pendingUserGameImports = new Set();
+
+const commitBatchedOperations = async (db, operations) => {
+  const CHUNK_SIZE = 400;
+  for (let index = 0; index < operations.length; index += CHUNK_SIZE) {
+    const batch = db.batch();
+    operations.slice(index, index + CHUNK_SIZE).forEach((applyOperation) => applyOperation(batch));
+    await batch.commit();
+  }
+};
+
+const findImportedAdminGameRef = async (db, adminGamesCollectionName, userGameId) => {
+  const snapshot = await db.collection(adminGamesCollectionName)
+    .where(IMPORTED_GAME_SOURCE_FIELD, "==", userGameId)
+    .limit(1)
+    .get();
+  return snapshot.docs.length ? snapshot.docs[0].ref : null;
+};
+
+const importUserGameToAdminGames = async ({
+  firebaseApp,
+  db,
+  userGamesCollectionName,
+  adminGamesCollectionName,
+  gameDetailsCollectionName,
+  gameId
+}) => {
+  if (!firebaseApp || !db || !gameId || pendingUserGameImports.has(gameId)) {
+    return null;
+  }
+
+  pendingUserGameImports.add(gameId);
+  try {
+    const sourceRef = db.collection(userGamesCollectionName).doc(gameId);
+    const [sourceSnapshot, sourceRowsSnapshot, sourceConfirmationsSnapshot] = await Promise.all([
+      sourceRef.get(),
+      sourceRef.collection(gameDetailsCollectionName).get(),
+      sourceRef.collection(GAME_CONFIRMATIONS_COLLECTION).get()
+    ]);
+
+    if (!sourceSnapshot.exists) {
+      return null;
+    }
+
+    const sourceData = sourceSnapshot.data() ?? {};
+    const mirroredData = {};
+    MIRRORED_IMPORT_GAME_FIELDS.forEach((field) => {
+      if (sourceData[field] !== undefined) {
+        mirroredData[field] = sourceData[field];
+      }
+    });
+    mirroredData[IMPORTED_GAME_SOURCE_FIELD] = gameId;
+    mirroredData.importRefreshedAt = firebaseApp.firestore.FieldValue.serverTimestamp();
+
+    let targetRef = await findImportedAdminGameRef(db, adminGamesCollectionName, gameId);
+    const isNewCopy = !targetRef;
+
+    if (isNewCopy) {
+      targetRef = db.collection(adminGamesCollectionName).doc();
+      await targetRef.set({
+        ...mirroredData,
+        isClosed: false,
+        postGameNotes: "",
+        createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+        importedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+      });
+    } else {
+      await targetRef.update(mirroredData);
+    }
+
+    const [targetRowsSnapshot, targetConfirmationsSnapshot] = await Promise.all([
+      targetRef.collection(gameDetailsCollectionName).get(),
+      targetRef.collection(GAME_CONFIRMATIONS_COLLECTION).get()
+    ]);
+
+    const operations = [];
+    targetRowsSnapshot.docs.forEach((doc) => operations.push((batch) => batch.delete(doc.ref)));
+    targetConfirmationsSnapshot.docs.forEach((doc) => operations.push((batch) => batch.delete(doc.ref)));
+    sourceRowsSnapshot.docs.forEach((doc) => {
+      operations.push((batch) => batch.set(targetRef.collection(gameDetailsCollectionName).doc(doc.id), doc.data()));
+    });
+    sourceConfirmationsSnapshot.docs.forEach((doc) => {
+      operations.push((batch) => batch.set(targetRef.collection(GAME_CONFIRMATIONS_COLLECTION).doc(doc.id), doc.data()));
+    });
+
+    await commitBatchedOperations(db, operations);
+
+    await sourceRef.update({
+      exportedToAdminGameId: targetRef.id,
+      exportedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+    });
+
+    return { targetId: targetRef.id, isNewCopy };
+  } finally {
+    pendingUserGameImports.delete(gameId);
+  }
+};
+
 const getUniquePlayersFromRows = (rows = []) => {
   const playersMap = new Map();
   rows.forEach((row) => {
@@ -1732,7 +1865,8 @@ const getUniquePlayersFromRows = (rows = []) => {
     }
     playersMap.set(identifier, {
       identifier,
-      playerName: normalizePlayerName(row?.playerName)
+      playerId: typeof row?.playerId === "string" ? row.playerId.trim() : "",
+      playerName: resolveDisplayPlayerName(row)
     });
   });
   return Array.from(playersMap.values());
@@ -1758,12 +1892,80 @@ const getConfirmedCountLabel = (rows = [], confirmations = []) => {
   return `${confirmedCount}/${players.length}`;
 };
 
+const getGameSeatCountValue = (game) => {
+  const raw = game?.seatCount;
+  const normalized = typeof raw === "number" ? String(raw) : (typeof raw === "string" ? raw : "");
+  return sanitizeIntegerInput(normalized).replace("-", "");
+};
+
+const getGameSeatCount = (game) => {
+  const value = parseIntegerOrZero(getGameSeatCountValue(game));
+  return value > 0 ? value : null;
+};
+
+const buildSafeConfirmationDocId = (playerName) => {
+  const rawName = normalizePlayerName(playerName);
+  if (!rawName || rawName === "." || rawName === "..") {
+    return "";
+  }
+  const safeName = rawName.replace(/[/\\.#$[\]]/g, "_");
+  return `name_${safeName}`.slice(0, 150);
+};
+
+const getConfirmationTimeValue = (confirmation) => {
+  const source = confirmation?.confirmedAt ?? confirmation?.updatedAt ?? null;
+  if (source && typeof source.toMillis === "function") {
+    return source.toMillis();
+  }
+  if (source && typeof source.seconds === "number") {
+    return source.seconds * 1000;
+  }
+  return Number.POSITIVE_INFINITY;
+};
+
+const getConfirmationsByIdentifier = (confirmations = []) => {
+  const confirmationsMap = new Map();
+  confirmations.forEach((confirmation) => {
+    const identifier = getRowPlayerIdentifier(confirmation);
+    if (identifier) {
+      confirmationsMap.set(identifier, confirmation);
+    }
+  });
+  return confirmationsMap;
+};
+
 const getConfirmationStatusesForRows = (rows = [], confirmations = []) => {
-  const confirmedPlayers = getConfirmedPlayerIdentifiersFromConfirmations(confirmations);
-  return getUniquePlayersFromRows(rows).map((player) => ({
-    playerName: player.playerName,
-    confirmed: confirmedPlayers.has(player.identifier)
-  }));
+  const confirmationsByIdentifier = getConfirmationsByIdentifier(confirmations);
+  const confirmedEntries = [];
+  const pendingEntries = [];
+
+  getUniquePlayersFromRows(rows).forEach((player, index) => {
+    const confirmation = confirmationsByIdentifier.get(player.identifier) ?? null;
+    if (confirmation?.confirmed === true) {
+      confirmedEntries.push({ player, index, time: getConfirmationTimeValue(confirmation) });
+    } else {
+      pendingEntries.push({ player, index });
+    }
+  });
+
+  confirmedEntries.sort((a, b) => (a.time !== b.time ? a.time - b.time : a.index - b.index));
+
+  return [
+    ...confirmedEntries.map((entry, position) => ({
+      identifier: entry.player.identifier,
+      playerId: entry.player.playerId,
+      playerName: entry.player.playerName,
+      confirmed: true,
+      confirmationOrder: position + 1
+    })),
+    ...pendingEntries.map((entry) => ({
+      identifier: entry.player.identifier,
+      playerId: entry.player.playerId,
+      playerName: entry.player.playerName,
+      confirmed: false,
+      confirmationOrder: null
+    }))
+  ];
 };
 
 let confirmationsStatusModalController = null;
@@ -1787,6 +1989,7 @@ const getConfirmationsStatusModalController = () => {
           <table class="admin-data-table">
             <thead>
               <tr>
+                <th>Nr</th>
                 <th>Gracz</th>
                 <th>Status</th>
               </tr>
@@ -1824,7 +2027,7 @@ const getConfirmationsStatusModalController = () => {
       if (!statuses.length) {
         const emptyRow = document.createElement("tr");
         const emptyCell = document.createElement("td");
-        emptyCell.colSpan = 2;
+        emptyCell.colSpan = 3;
         emptyCell.textContent = "Brak zapisanych graczy.";
         emptyRow.appendChild(emptyCell);
         body.appendChild(emptyRow);
@@ -1835,13 +2038,16 @@ const getConfirmationsStatusModalController = () => {
             tr.classList.add("confirmed-row");
           }
 
+          const orderCell = document.createElement("td");
+          orderCell.textContent = entry.confirmationOrder === null ? "" : String(entry.confirmationOrder);
+
           const nameCell = document.createElement("td");
           nameCell.textContent = entry.playerName;
 
           const statusCell = document.createElement("td");
           statusCell.textContent = entry.confirmed ? "Potwierdzony" : "Niepotwierdzony";
 
-          tr.append(nameCell, statusCell);
+          tr.append(orderCell, nameCell, statusCell);
           body.appendChild(tr);
         });
       }
@@ -1904,16 +2110,13 @@ const synchronizeNextGamesConfirmations = async () => {
     };
   };
 
-  const [adminGames, userGames] = await Promise.all([
-    Promise.all([]),
-    Promise.all(nextGamesState.userGames.map(enrichWithConfirmations))
-  ]);
+  const userGames = await Promise.all(nextGamesState.userGames.map(enrichWithConfirmations));
 
   if (nextGamesState.syncToken !== token) {
     return;
   }
 
-  nextGamesState.adminGames = adminGames;
+  nextGamesState.adminGames = [];
   nextGamesState.userGames = userGames;
   syncNextGamesViews();
 };
@@ -2275,6 +2478,8 @@ const initUserConfirmations = () => {
   const detailsModal = document.querySelector("#confirmationsDetailsModal");
   const detailsMeta = document.querySelector("#confirmationsDetailsMeta");
   const detailsBody = document.querySelector("#confirmationsDetailsBody");
+  const detailsOrderBody = document.querySelector("#confirmationsOrderBody");
+  const detailsOrderSummary = document.querySelector("#confirmationsOrderSummary");
   const detailsClose = document.querySelector("#confirmationsDetailsClose");
   const firebaseApp = getFirebaseApp();
 
@@ -2316,14 +2521,98 @@ const initUserConfirmations = () => {
     document.body.classList.remove("modal-open");
   };
 
+  const renderConfirmationsOrder = ({ rows, confirmations, game, verifiedPlayerId }) => {
+    if (!detailsOrderBody) {
+      return;
+    }
+
+    detailsOrderBody.innerHTML = "";
+    const statuses = getConfirmationStatusesForRows(rows, confirmations);
+    const seatCount = getGameSeatCount(game);
+    const confirmedCount = statuses.filter((entry) => entry.confirmed).length;
+
+    if (detailsOrderSummary) {
+      const summaryParts = [];
+      summaryParts.push(seatCount ? `Miejsca: ${seatCount}` : "Miejsca: bez limitu");
+      summaryParts.push(`Potwierdzonych: ${confirmedCount}`);
+      if (seatCount && confirmedCount > seatCount) {
+        summaryParts.push(`Lista rezerwowa: ${confirmedCount - seatCount}`);
+      }
+
+      const ownEntry = statuses.find((entry) => entry.playerId && entry.playerId === verifiedPlayerId) ?? null;
+      if (ownEntry) {
+        if (!ownEntry.confirmed) {
+          summaryParts.push("Twój status: brak potwierdzenia");
+        } else if (!seatCount) {
+          summaryParts.push(`Twój numer w kolejce: ${ownEntry.confirmationOrder}`);
+        } else if (ownEntry.confirmationOrder <= seatCount) {
+          summaryParts.push(`Jesteś w grze (miejsce ${ownEntry.confirmationOrder} z ${seatCount})`);
+        } else {
+          summaryParts.push(`Lista rezerwowa (${ownEntry.confirmationOrder}. w kolejce)`);
+        }
+      }
+
+      detailsOrderSummary.textContent = summaryParts.join(" · ");
+    }
+
+    if (!statuses.length) {
+      const emptyRow = document.createElement("tr");
+      const emptyCell = document.createElement("td");
+      emptyCell.colSpan = 3;
+      emptyCell.textContent = "Brak zapisanych graczy.";
+      emptyRow.appendChild(emptyCell);
+      detailsOrderBody.appendChild(emptyRow);
+      return;
+    }
+
+    statuses.forEach((entry) => {
+      const tr = document.createElement("tr");
+      const isInGame = entry.confirmed && (!seatCount || entry.confirmationOrder <= seatCount);
+      if (entry.confirmed) {
+        tr.classList.add("confirmed-row");
+      }
+      if (entry.confirmed && seatCount && entry.confirmationOrder === seatCount + 1) {
+        tr.classList.add("confirmations-reserve-start");
+      }
+      if (entry.playerId && entry.playerId === verifiedPlayerId) {
+        tr.classList.add("confirmations-own-row");
+      }
+
+      const orderCell = document.createElement("td");
+      orderCell.textContent = entry.confirmationOrder === null ? "" : String(entry.confirmationOrder);
+
+      const nameCell = document.createElement("td");
+      nameCell.textContent = entry.playerName || "-";
+
+      const statusCell = document.createElement("td");
+      if (!entry.confirmed) {
+        statusCell.textContent = "Niepotwierdzony";
+      } else if (!seatCount) {
+        statusCell.textContent = "Potwierdzony";
+      } else {
+        statusCell.textContent = isInGame ? "W grze" : "Lista rezerwowa";
+      }
+
+      tr.append(orderCell, nameCell, statusCell);
+      detailsOrderBody.appendChild(tr);
+    });
+  };
+
   const openDetailsModal = async ({ collectionName, game }) => {
     if (!detailsModal || !detailsMeta || !detailsBody) {
       return;
     }
 
     detailsBody.innerHTML = "";
-    const rowsSnapshot = await db.collection(collectionName).doc(game.id).collection(gameDetailsCollectionName).orderBy("createdAt", "asc").get();
+    if (detailsOrderBody) {
+      detailsOrderBody.innerHTML = "";
+    }
+    const [rowsSnapshot, confirmationsSnapshot] = await Promise.all([
+      db.collection(collectionName).doc(game.id).collection(gameDetailsCollectionName).orderBy("createdAt", "asc").get(),
+      db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).get()
+    ]);
     const rows = rowsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const confirmations = confirmationsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     const gamePool = rows.reduce((sum, row) => sum + parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy), 0);
     detailsMeta.textContent = `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"} | Pula: ${gamePool}`;
 
@@ -2341,7 +2630,7 @@ const initUserConfirmations = () => {
       const lpCell = document.createElement("td");
       lpCell.textContent = String(index + 1);
       const playerCell = document.createElement("td");
-      playerCell.textContent = row.playerName || "-";
+      playerCell.textContent = resolveDisplayPlayerName(row) || "-";
       const entryFeeCell = document.createElement("td");
       entryFeeCell.textContent = String(parseIntegerOrZero(row.entryFee));
       const rebuyCell = document.createElement("td");
@@ -2357,6 +2646,8 @@ const initUserConfirmations = () => {
       tr.append(lpCell, playerCell, entryFeeCell, rebuyCell, payoutCell, profitCell, pointsCell, championshipCell);
       detailsBody.appendChild(tr);
     });
+
+    renderConfirmationsOrder({ rows, confirmations, game, verifiedPlayerId: getConfirmationsVerifiedPlayer()?.id ?? "" });
 
     detailsModal.classList.add("is-visible");
     detailsModal.setAttribute("aria-hidden", "false");
@@ -2429,7 +2720,8 @@ const initUserConfirmations = () => {
 
       visibleGames.forEach(({ collectionName, game, confirmation }) => {
         const tr = document.createElement("tr");
-        if (confirmation?.confirmed) {
+        let isConfirmedLocally = confirmation?.confirmed === true;
+        if (isConfirmedLocally) {
           tr.classList.add("confirmed-row");
         }
 
@@ -2451,13 +2743,18 @@ const initUserConfirmations = () => {
         confirmButton.className = "primary";
         confirmButton.textContent = "Potwierdź";
         confirmButton.addEventListener("click", async () => {
-          await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(verifiedPlayer.id).set({
+          const confirmationPayload = {
             playerId: verifiedPlayer.id,
             playerName: verifiedPlayer.name || "",
             confirmed: true,
             updatedBy: "player",
             updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
-          }, { merge: true });
+          };
+          if (!isConfirmedLocally) {
+            confirmationPayload.confirmedAt = firebaseApp.firestore.FieldValue.serverTimestamp();
+          }
+          await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(verifiedPlayer.id).set(confirmationPayload, { merge: true });
+          isConfirmedLocally = true;
           tr.classList.add("confirmed-row");
           void synchronizeNextGamesConfirmations();
         });
@@ -2472,8 +2769,10 @@ const initUserConfirmations = () => {
             playerName: verifiedPlayer.name || "",
             confirmed: false,
             updatedBy: "player",
-            updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+            updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+            confirmedAt: firebaseApp.firestore.FieldValue.delete()
           }, { merge: true });
+          isConfirmedLocally = false;
           tr.classList.remove("confirmed-row");
           void synchronizeNextGamesConfirmations();
         });
@@ -3131,16 +3430,20 @@ const initUserGamesManager = ({
       } else {
         metrics.rows.forEach((row) => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${row.playerName || ""}</td>
-            <td>${row.entryFee}</td>
-            <td>${row.rebuy}</td>
-            <td>${row.payout}</td>
-            <td>${row.profit}</td>
-            <td>${row.poolSharePercent}</td>
-            <td>${row.points}</td>
-            <td>${row.championship ? "✓" : ""}</td>
-          `;
+          [
+            resolveDisplayPlayerName(row),
+            row.entryFee,
+            row.rebuy,
+            row.payout,
+            row.profit,
+            row.poolSharePercent,
+            row.points,
+            row.championship ? "✓" : ""
+          ].forEach((value) => {
+            const td = document.createElement("td");
+            td.textContent = value === null || value === undefined ? "" : String(value);
+            tr.appendChild(td);
+          });
           tbody.appendChild(tr);
         });
       }
@@ -3173,7 +3476,7 @@ const initUserGamesManager = ({
     if (!games.length) {
       const emptyRow = document.createElement("tr");
       const emptyCell = document.createElement("td");
-      emptyCell.colSpan = 6;
+      emptyCell.colSpan = 7;
       emptyCell.textContent = "Brak gier z datą w wybranym roku.";
       emptyRow.appendChild(emptyCell);
       gamesTableBody.appendChild(emptyRow);
@@ -3295,11 +3598,61 @@ const initUserGamesManager = ({
       closedInput.type = "checkbox";
       closedInput.checked = Boolean(game.isClosed);
       closedInput.disabled = !writeEnabled;
-      closedInput.addEventListener("change", () => {
-        if (!hasWriteAccessToGame(game)) return;
-        void db.collection(gamesCollectionName).doc(game.id).update({ isClosed: closedInput.checked });
+      closedInput.addEventListener("change", async () => {
+        if (!hasWriteAccessToGame(game)) {
+          return;
+        }
+
+        const isClosed = closedInput.checked;
+        await db.collection(gamesCollectionName).doc(game.id).update({ isClosed });
+
+        if (!isClosed) {
+          return;
+        }
+
+        try {
+          status.textContent = "Przekazywanie gry do zakładki „Gry admina”...";
+          const result = await importUserGameToAdminGames({
+            firebaseApp,
+            db,
+            userGamesCollectionName: gamesCollectionName,
+            adminGamesCollectionName: getGamesCollectionName(),
+            gameDetailsCollectionName,
+            gameId: game.id
+          });
+          if (result) {
+            status.textContent = result.isNewCopy
+              ? "Gra została przekazana do zakładki „Gry admina”."
+              : "Zaktualizowano kopię gry w zakładce „Gry admina”.";
+          }
+        } catch (error) {
+          status.textContent = "Nie udało się przekazać gry do zakładki „Gry admina”. Spróbuj ponownie.";
+        }
       });
       closedCell.appendChild(closedInput);
+
+      const seatCountCell = document.createElement("td");
+      const seatCountInput = document.createElement("input");
+      applyIntegerInputHints(seatCountInput);
+      seatCountInput.className = "admin-input";
+      seatCountInput.dataset.focusTarget = "game-list";
+      seatCountInput.dataset.section = "games-table";
+      seatCountInput.dataset.tableId = game.id;
+      seatCountInput.dataset.columnKey = "seatCount";
+      seatCountInput.value = getGameSeatCountValue(game);
+      seatCountInput.placeholder = "brak limitu";
+      seatCountInput.disabled = !writeEnabled;
+      seatCountInput.addEventListener("input", () => {
+        seatCountInput.value = sanitizeIntegerInput(seatCountInput.value).replace("-", "");
+        if (!hasWriteAccessToGame(game)) {
+          return;
+        }
+        const value = seatCountInput.value;
+        scheduleDebouncedUpdate(`game-seat-count-${game.id}`, () => {
+          void db.collection(gamesCollectionName).doc(game.id).update({ seatCount: value });
+        });
+      });
+      seatCountCell.appendChild(seatCountInput);
 
       const confirmationsCell = document.createElement("td");
       const detailRows = state.detailsByGame.get(game.id) ?? [];
@@ -3335,7 +3688,7 @@ const initUserGamesManager = ({
       });
       deleteCell.appendChild(deleteButton);
 
-      row.append(gameTypeCell, dateCell, nameCell, closedCell, confirmationsCell, deleteCell);
+      row.append(gameTypeCell, dateCell, nameCell, closedCell, seatCountCell, confirmationsCell, deleteCell);
       gamesTableBody.appendChild(row);
     });
 
@@ -3510,6 +3863,8 @@ const initUserGamesManager = ({
     if (state.activeGameIdInModal) {
       renderModal(state.activeGameIdInModal);
     }
+    renderGamesTable();
+    renderSummaries();
   });
 
   db.collection(gamesCollectionName).orderBy("createdAt", "asc").onSnapshot((snapshot) => {
@@ -3576,6 +3931,7 @@ const initUserGamesManager = ({
         games: state.games,
         additionalPayload: {
           isClosed: false,
+          seatCount: "",
           preGameNotes: DEFAULT_GAME_NOTES_TEMPLATE,
           postGameNotes: "",
           createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
@@ -3782,6 +4138,7 @@ const initAdminConfirmations = () => {
         table.innerHTML = `
           <thead>
             <tr>
+              <th>Nr</th>
               <th>Gracz</th>
               <th>Status</th>
               <th>Akcje</th>
@@ -3804,7 +4161,7 @@ const initAdminConfirmations = () => {
             map.set(playerIdentifier, {
               identifier: playerIdentifier,
               playerId: typeof rowData.playerId === "string" ? rowData.playerId.trim() : "",
-              playerName: normalizePlayerName(rowData.playerName)
+              playerName: resolveDisplayPlayerName(rowData)
             });
             return map;
           }, new Map())
@@ -3813,7 +4170,7 @@ const initAdminConfirmations = () => {
         if (!players.length) {
           const tr = document.createElement("tr");
           const td = document.createElement("td");
-          td.colSpan = 3;
+          td.colSpan = 4;
           td.textContent = "Brak zapisanych graczy.";
           tr.appendChild(td);
           tbody.appendChild(tr);
@@ -3822,27 +4179,37 @@ const initAdminConfirmations = () => {
             source === "default" ? undefined : { source }
           );
           const confirmationsByIdentifier = new Map();
+          const confirmationsData = [];
           confirmationSnapshot.docs.forEach((doc) => {
-            const data = doc.data();
+            const data = { ...doc.data(), id: doc.id };
             const identifier = getRowPlayerIdentifier(data);
             if (identifier) {
-              confirmationsByIdentifier.set(identifier, { ...data, id: doc.id });
+              confirmationsByIdentifier.set(identifier, data);
+              confirmationsData.push(data);
             }
           });
 
-          players.forEach((player) => {
+          const rowsData = rowsSnapshot.docs.map((doc) => doc.data() ?? {});
+          const orderedStatuses = getConfirmationStatusesForRows(rowsData, confirmationsData);
+
+          orderedStatuses.forEach((entry) => {
+            const player = { identifier: entry.identifier, playerId: entry.playerId, playerName: entry.playerName };
             const tr = document.createElement("tr");
             const confirmation = confirmationsByIdentifier.get(player.identifier) ?? null;
-            const confirmationDocId = player.playerId || confirmation?.id || player.playerName;
-            if (confirmation?.confirmed) {
+            const confirmationDocId = player.playerId || confirmation?.id || buildSafeConfirmationDocId(player.playerName);
+            let isConfirmedLocally = confirmation?.confirmed === true;
+            if (isConfirmedLocally) {
               tr.classList.add("confirmed-row");
             }
+
+            const orderCell = document.createElement("td");
+            orderCell.textContent = entry.confirmationOrder === null ? "" : String(entry.confirmationOrder);
 
             const nameCell = document.createElement("td");
             nameCell.textContent = player.playerName || "-";
 
             const statusCell = document.createElement("td");
-            statusCell.textContent = confirmation?.confirmed ? "Potwierdzono" : "Niepotwierdzono";
+            statusCell.textContent = isConfirmedLocally ? "Potwierdzono" : "Niepotwierdzono";
 
             const actionsCell = document.createElement("td");
             const actionsWrap = document.createElement("div");
@@ -3856,13 +4223,18 @@ const initAdminConfirmations = () => {
               if (!confirmationDocId) {
                 return;
               }
-              await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(confirmationDocId).set({
+              const confirmationPayload = {
                 playerId: player.playerId || "",
                 playerName: player.playerName,
                 confirmed: true,
                 updatedBy: "admin",
                 updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
-              }, { merge: true });
+              };
+              if (!isConfirmedLocally) {
+                confirmationPayload.confirmedAt = firebaseApp.firestore.FieldValue.serverTimestamp();
+              }
+              await db.collection(collectionName).doc(game.id).collection(GAME_CONFIRMATIONS_COLLECTION).doc(confirmationDocId).set(confirmationPayload, { merge: true });
+              isConfirmedLocally = true;
               tr.classList.add("confirmed-row");
               statusCell.textContent = "Potwierdzono";
               void synchronizeNextGamesConfirmations();
@@ -3881,8 +4253,10 @@ const initAdminConfirmations = () => {
                 playerName: player.playerName,
                 confirmed: false,
                 updatedBy: "admin",
-                updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
+                updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
+                confirmedAt: firebaseApp.firestore.FieldValue.delete()
               }, { merge: true });
+              isConfirmedLocally = false;
               tr.classList.remove("confirmed-row");
               statusCell.textContent = "Niepotwierdzono";
               void synchronizeNextGamesConfirmations();
@@ -3890,7 +4264,7 @@ const initAdminConfirmations = () => {
 
             actionsWrap.append(confirmButton, cancelButton);
             actionsCell.appendChild(actionsWrap);
-            tr.append(nameCell, statusCell, actionsCell);
+            tr.append(orderCell, nameCell, statusCell, actionsCell);
             tbody.appendChild(tr);
           });
         }
@@ -6946,8 +7320,10 @@ const initStatisticsView = ({
     return hasEntryFee || hasPoints;
   };
 
+  const getGamesForStatistics = () => getGamesForSelectedYear().filter((game) => Boolean(game.isClosed));
+
   const getPlayersStatistics = () => {
-    const games = getGamesForSelectedYear();
+    const games = getGamesForStatistics();
     const gameCount = games.length;
     const totalPool = games.reduce((sum, game) => sum + getDetailRows(game.id)
       .filter((row) => hasIncludedSummaryOrStatsData(row))
@@ -6962,9 +7338,10 @@ const initStatisticsView = ({
       const counted = new Set();
 
       rows.forEach((row) => {
-        const playerName = normalizePlayerName(row.playerName);
+        const storedPlayerName = normalizePlayerName(row.playerName);
         const playerId = typeof row.playerId === "string" ? row.playerId.trim() : "";
-        const statsKey = getStatsKey({ playerId, playerName });
+        const statsKey = getStatsKey({ playerId, playerName: storedPlayerName });
+        const playerName = resolveDisplayPlayerName({ playerId, playerName: storedPlayerName });
         if (!statsKey || !hasIncludedSummaryOrStatsData(row)) {
           return;
         }
@@ -7113,7 +7490,7 @@ const initStatisticsView = ({
       });
     }
 
-    status.textContent = `Wybrany rok: ${state.selectedYear}. Liczba gier: ${statistics.gameCount}.`;
+    status.textContent = `Wybrany rok: ${state.selectedYear}. Gry zaliczone do statystyk: ${statistics.gameCount}.`;
     [["Liczba gier", statistics.gameCount], ["Łączna pula", statistics.totalPool]].forEach(([label, value]) => {
       const tr = document.createElement("tr");
       const labelCell = document.createElement("td");
@@ -7128,7 +7505,7 @@ const initStatisticsView = ({
       const tr = document.createElement("tr");
       const td = document.createElement("td");
       td.colSpan = visibleColumns.length || STATS_COLUMN_CONFIG.length;
-      td.textContent = "Brak graczy z uzupełnionym wpisowym w wybranym roku.";
+      td.textContent = "Brak danych. Do statystyk liczone są wyłącznie gry oznaczone jako CzyZamknięta.";
       tr.appendChild(td);
       playersStatsBody.appendChild(tr);
       renderRankingTable(rankingBody, []);
@@ -7155,6 +7532,17 @@ const initStatisticsView = ({
 
     const rankingRows = buildRankingRowsFromStatistics(statistics.playerRows, yearMap, getDefaultManualFieldValue);
 
+    const updateResultsAndRanking = () => {
+      const nextRankingRows = buildRankingRowsFromStatistics(statistics.playerRows, yearMap, getDefaultManualFieldValue);
+      nextRankingRows.forEach((rankingRow) => {
+        const resultCell = playersStatsBody.querySelector(`[data-result-player="${window.CSS.escape(rankingRow.statsKey)}"]`);
+        if (resultCell) {
+          resultCell.textContent = String(rankingRow.resultValue);
+        }
+      });
+      renderRankingTable(rankingBody, nextRankingRows);
+    };
+
     statistics.playerRows.forEach((row) => {
       const tr = document.createElement("tr");
       const manualEntry = yearMap.get(row.statsKey) ?? {};
@@ -7165,25 +7553,25 @@ const initStatisticsView = ({
         }
 
         const td = document.createElement("td");
+        if (column.key === "result") {
+          td.dataset.resultPlayer = row.statsKey;
+        }
         if (column.editable && isAdminView) {
           const input = document.createElement("input");
           input.type = "text";
           input.className = "admin-input";
+          input.dataset.focusTarget = "statistics-stats";
+          input.dataset.section = "statistics-stats";
+          input.dataset.tableId = String(state.selectedYear ?? "");
+          input.dataset.rowId = row.statsKey;
+          input.dataset.columnKey = column.key;
           input.value = String(column.value(row, manualEntry, getDefaultManualFieldValue, getComputedResultValue));
           input.addEventListener("input", () => {
             input.value = sanitizeIntegerInput(input.value);
-            if (!yearMap.has(row.statsKey)) {
-              yearMap.set(row.statsKey, { playerId: row.playerId ?? "", playerName: row.playerName });
-            }
-            const playerEntry = yearMap.get(row.statsKey);
-            manualStatsFields.forEach((field) => {
-              if (playerEntry[field] == null) {
-                playerEntry[field] = getDefaultManualFieldValue(field, "");
-              }
-            });
+            const playerEntry = ensureYearMapEntry(yearMap, row.statsKey, row.playerName, row.playerId ?? "");
             playerEntry[column.key] = input.value;
             scheduleDebouncedUpdate(`stats-shared-${yearKey}-${row.statsKey}-${column.key}`, () => persistYearConfig(state.selectedYear));
-            renderStats();
+            updateResultsAndRanking();
           });
           td.appendChild(input);
         } else {
@@ -7327,8 +7715,20 @@ const initStatisticsView = ({
     weightButtons.forEach((button) => {
       button.addEventListener("click", () => {
         const weightKey = button.dataset.weightKey;
+        if (!WEIGHT_STATS_FIELDS.includes(weightKey)) {
+          return;
+        }
+        if (!state.selectedYear) {
+          status.textContent = "Wybierz rok, aby ustawić wagę.";
+          return;
+        }
+        const statistics = getPlayersStatistics();
+        if (!statistics.playerRows.length) {
+          status.textContent = "Brak graczy w wybranym roku do aktualizacji wag.";
+          return;
+        }
         const promptValue = window.prompt(`Podaj wartość liczbową dla kolumny ${button.textContent}.`, "1");
-        if (!WEIGHT_STATS_FIELDS.includes(weightKey) || promptValue === null || !state.selectedYear) {
+        if (promptValue === null) {
           return;
         }
         const normalized = sanitizeIntegerInput(promptValue);
@@ -7336,7 +7736,6 @@ const initStatisticsView = ({
           status.textContent = "Podaj poprawną wartość liczbową dla wagi.";
           return;
         }
-        const statistics = getPlayersStatistics();
         const yearKey = String(state.selectedYear);
         if (!state.manualStatsByYear.has(yearKey)) {
           state.manualStatsByYear.set(yearKey, new Map());
@@ -7344,15 +7743,11 @@ const initStatisticsView = ({
         const yearMap = state.manualStatsByYear.get(yearKey);
         statistics.playerRows.forEach((row) => {
           const playerEntry = ensureYearMapEntry(yearMap, row.statsKey, row.playerName, row.playerId);
-          manualStatsFields.forEach((field) => {
-            if (playerEntry[field] == null) {
-              playerEntry[field] = getDefaultManualFieldValue(field, "");
-            }
-          });
           playerEntry[weightKey] = normalized;
         });
         renderStats();
         void persistYearConfig(state.selectedYear);
+        status.textContent = `Zaktualizowano ${weightKey.toUpperCase()} dla ${statistics.playerRows.length} graczy.`;
       });
     });
   }
@@ -7363,6 +7758,10 @@ const initStatisticsView = ({
       synchronizeYears();
     });
   }
+
+  window.addEventListener(PLAYER_ACCESS_UPDATED_EVENT, () => {
+    renderStats();
+  });
 
   exportButton.addEventListener("click", () => {
     if (!window.XLSX || !state.selectedYear) {
@@ -7382,7 +7781,35 @@ const initStatisticsView = ({
         .map((column) => column.value(row, manualEntry, getDefaultManualFieldValue, getComputedResultValue));
     });
 
-    const worksheet = window.XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+    const sheetRows = [headers, ...dataRows];
+    const worksheet = window.XLSX.utils.aoa_to_sheet(sheetRows);
+
+    worksheet["!cols"] = headers.map((header, columnIndex) => {
+      const longestValueLength = sheetRows.reduce((maxLength, sheetRow) => {
+        const cellValue = sheetRow[columnIndex];
+        const length = cellValue === null || cellValue === undefined ? 0 : String(cellValue).length;
+        return Math.max(maxLength, length);
+      }, 0);
+      return { wch: Math.min(Math.max(longestValueLength + 2, 8), 40) };
+    });
+
+    const sheetRange = window.XLSX.utils.decode_range(worksheet["!ref"]);
+    for (let rowIndex = sheetRange.s.r; rowIndex <= sheetRange.e.r; rowIndex += 1) {
+      for (let columnIndex = sheetRange.s.c; columnIndex <= sheetRange.e.c; columnIndex += 1) {
+        const cell = worksheet[window.XLSX.utils.encode_cell({ r: rowIndex, c: columnIndex })];
+        if (!cell) {
+          continue;
+        }
+        cell.s = {
+          alignment: { horizontal: "center", vertical: "center" },
+          font: { bold: rowIndex === sheetRange.s.r }
+        };
+        if (cell.t === "n") {
+          cell.z = "# ##0";
+        }
+      }
+    }
+
     const workbook = window.XLSX.utils.book_new();
     window.XLSX.utils.book_append_sheet(workbook, worksheet, "Statystyki");
 
@@ -7727,17 +8154,6 @@ const initAdminGames = () => {
       .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"));
   };
 
-  const ensureYearMapEntry = (yearMap, playerKey, playerName, playerId = "") => {
-    if (!yearMap.has(playerKey)) {
-      const emptyRow = { playerId, playerName };
-      manualStatsFields.forEach((field) => {
-        emptyRow[field] = getDefaultManualFieldValue(field, "");
-      });
-      yearMap.set(playerKey, emptyRow);
-    }
-    return yearMap.get(playerKey);
-  };
-
   const applyBulkWeightValue = async (weightKey, nextValue) => {
     if (!state.selectedYear) {
       status.textContent = "Wybierz rok, aby ustawić wagę.";
@@ -7772,8 +8188,10 @@ const initAdminGames = () => {
     return db.collection(ADMIN_GAMES_STATS_COLLECTION).doc(String(year)).set({ rows: serializeManualStats(year) }, { merge: true });
   };
 
+  const getGamesForStatistics = () => getGamesForSelectedYear().filter((game) => Boolean(game.isClosed));
+
   const getPlayersStatistics = () => {
-    const games = getGamesForSelectedYear();
+    const games = getGamesForStatistics();
     const gameCount = games.length;
     const totalPool = games.reduce((sum, game) => sum + getGameSummaryMetrics(game.id).pool, 0);
     const playersMap = new Map();
@@ -7784,9 +8202,10 @@ const initAdminGames = () => {
       const playersCountedInGame = new Set();
 
       rows.forEach((row) => {
-        const playerName = normalizePlayerName(row.playerName);
+        const storedPlayerName = normalizePlayerName(row.playerName);
         const playerId = typeof row.playerId === "string" ? row.playerId.trim() : "";
-        const statsKey = getStatsKey({ playerId, playerName });
+        const statsKey = getStatsKey({ playerId, playerName: storedPlayerName });
+        const playerName = resolveDisplayPlayerName({ playerId, playerName: storedPlayerName });
         if (!statsKey || !hasIncludedSummaryOrStatsData(row)) {
           return;
         }
@@ -7962,6 +8381,45 @@ const initAdminGames = () => {
       detailsButton.textContent = "Szczegóły";
       detailsButton.addEventListener("click", () => openModal(game.id));
       nameWrap.append(nameInput, detailsButton);
+
+      const sourceUserGameId = typeof game[IMPORTED_GAME_SOURCE_FIELD] === "string" ? game[IMPORTED_GAME_SOURCE_FIELD].trim() : "";
+      if (sourceUserGameId) {
+        const refreshButton = document.createElement("button");
+        refreshButton.type = "button";
+        refreshButton.className = "secondary";
+        refreshButton.textContent = "Aktualizuj z gry gracza";
+        refreshButton.addEventListener("click", async () => {
+          refreshButton.disabled = true;
+          status.textContent = "Pobieranie aktualnej wersji gry od gracza...";
+          try {
+            const result = await importUserGameToAdminGames({
+              firebaseApp,
+              db,
+              userGamesCollectionName: getUserGamesCollectionName(),
+              adminGamesCollectionName: gamesCollectionName,
+              gameDetailsCollectionName,
+              gameId: sourceUserGameId
+            });
+            status.textContent = result
+              ? "Zaktualizowano dane z gry gracza."
+              : "Gra gracza nie istnieje już na jego koncie — kopia pozostaje bez zmian.";
+          } catch (error) {
+            status.textContent = "Nie udało się pobrać aktualnej wersji gry od gracza.";
+          } finally {
+            refreshButton.disabled = false;
+          }
+        });
+        nameWrap.appendChild(refreshButton);
+
+        const refreshedAtLabel = formatImportRefreshedAt(game.importRefreshedAt);
+        if (refreshedAtLabel) {
+          const refreshedInfo = document.createElement("span");
+          refreshedInfo.className = "status-text admin-import-refreshed-at";
+          refreshedInfo.textContent = `Zaktualizowano: ${refreshedAtLabel}`;
+          nameWrap.appendChild(refreshedInfo);
+        }
+      }
+
       nameCell.appendChild(nameWrap);
 
       const closedCell = document.createElement("td");
@@ -7974,19 +8432,21 @@ const initAdminGames = () => {
       closedCell.appendChild(closedInput);
 
       const confirmationsCell = document.createElement("td");
-      const detailRows = state.detailsByGame.get(game.id) ?? [];
-      const confirmations = state.confirmationsByGame.get(game.id) ?? [];
-      const confirmationsWrap = document.createElement("div");
-      confirmationsWrap.className = "admin-confirmations-count-control";
-      const confirmationsLabel = document.createElement("span");
-      confirmationsLabel.textContent = getConfirmedCountLabel(detailRows, confirmations);
-      const confirmationsButton = document.createElement("button");
-      confirmationsButton.type = "button";
-      confirmationsButton.className = "secondary";
-      confirmationsButton.textContent = "Statusy";
-      confirmationsButton.addEventListener("click", () => openConfirmationsStatusModal(game.id));
-      confirmationsWrap.append(confirmationsLabel, confirmationsButton);
-      confirmationsCell.appendChild(confirmationsWrap);
+      if (sourceUserGameId) {
+        const detailRows = state.detailsByGame.get(game.id) ?? [];
+        const confirmations = state.confirmationsByGame.get(game.id) ?? [];
+        const confirmationsWrap = document.createElement("div");
+        confirmationsWrap.className = "admin-confirmations-count-control";
+        const confirmationsLabel = document.createElement("span");
+        confirmationsLabel.textContent = getConfirmedCountLabel(detailRows, confirmations);
+        const confirmationsButton = document.createElement("button");
+        confirmationsButton.type = "button";
+        confirmationsButton.className = "secondary";
+        confirmationsButton.textContent = "Statusy";
+        confirmationsButton.addEventListener("click", () => openConfirmationsStatusModal(game.id));
+        confirmationsWrap.append(confirmationsLabel, confirmationsButton);
+        confirmationsCell.appendChild(confirmationsWrap);
+      }
 
       const deleteCell = document.createElement("td");
       const deleteButton = document.createElement("button");
@@ -8107,16 +8567,20 @@ const initAdminGames = () => {
       } else {
         metrics.rows.forEach((row) => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${row.playerName || ""}</td>
-            <td>${row.entryFee}</td>
-            <td>${row.rebuy}</td>
-            <td>${row.payout}</td>
-            <td>${row.profit}</td>
-            <td>${row.poolSharePercent}</td>
-            <td>${row.points}</td>
-            <td>${row.championship ? "✓" : ""}</td>
-          `;
+          [
+            resolveDisplayPlayerName(row),
+            row.entryFee,
+            row.rebuy,
+            row.payout,
+            row.profit,
+            row.poolSharePercent,
+            row.points,
+            row.championship ? "✓" : ""
+          ].forEach((value) => {
+            const td = document.createElement("td");
+            td.textContent = value === null || value === undefined ? "" : String(value);
+            tr.appendChild(td);
+          });
           tbody.appendChild(tr);
         });
       }
@@ -8211,7 +8675,7 @@ const initAdminGames = () => {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
       td.colSpan = 18;
-      td.textContent = "Brak graczy z uzupełnionym wpisowym w wybranym roku.";
+      td.textContent = "Brak danych. Do statystyk liczone są wyłącznie gry oznaczone jako CzyZamknięta.";
       tr.appendChild(td);
       playersStatsBody.appendChild(tr);
       renderRankingTable(rankingBody, []);
@@ -8469,6 +8933,9 @@ const initAdminGames = () => {
     if (state.activeGameIdInModal) {
       renderModal(state.activeGameIdInModal);
     }
+    renderGamesTable();
+    renderSummaries();
+    renderStatsTable();
   });
 
   db.collection(gamesCollectionName)
@@ -8636,7 +9103,42 @@ const initAdminGames = () => {
     });
   }
 
+  const runPendingUserGameImports = async () => {
+    if (!document.body.classList.contains("is-admin")) {
+      return;
+    }
+
+    try {
+      const userGamesCollectionName = getUserGamesCollectionName();
+      const closedUserGames = await db.collection(userGamesCollectionName).where("isClosed", "==", true).get();
+      const notExportedYet = closedUserGames.docs.filter((doc) => {
+        const exportedId = doc.data()?.exportedToAdminGameId;
+        return typeof exportedId !== "string" || !exportedId.trim();
+      });
+
+      for (const doc of notExportedYet) {
+        await importUserGameToAdminGames({
+          firebaseApp,
+          db,
+          userGamesCollectionName,
+          adminGamesCollectionName: gamesCollectionName,
+          gameDetailsCollectionName,
+          gameId: doc.id
+        });
+      }
+
+      if (notExportedYet.length) {
+        status.textContent = `Pobrano ${notExportedYet.length} zamkniętych gier użytkowników.`;
+      }
+    } catch (error) {
+      console.error("Nie udało się pobrać zaległych gier użytkowników.", error);
+    }
+  };
+
+  void runPendingUserGameImports();
+
   registerAdminRefreshHandler("adminGamesTab", async () => {
+    await runPendingUserGameImports();
     renderGamesTable();
     renderSummaries();
     renderStatsTable();
@@ -8932,7 +9434,7 @@ const initInstructionModal = () => {
     document.body.classList.remove("modal-open");
   };
 
-  openButtons.forEach((openButton) => openButton.addEventListener("click", openModal));
+  openButton.addEventListener("click", openModal);
 
   if (closeButton) {
     closeButton.addEventListener("click", closeModal);
@@ -8991,34 +9493,50 @@ const initCustomsEmergencyModal = () => {
   });
 };
 
+const runInitStep = (name, initializer) => {
+  try {
+    initializer();
+  } catch (error) {
+    console.error(`Nie udało się zainicjalizować sekcji "${name}".`, error);
+  }
+};
+
 const bootstrap = async () => {
-  const isAdmin = await resolveAdminMode();
+  let isAdmin = false;
+  try {
+    isAdmin = await resolveAdminMode();
+  } catch (error) {
+    console.error("Nie udało się ustalić trybu administratora.", error);
+  }
   document.body.classList.toggle("is-admin", isAdmin);
-  initSharedPlayerAccess();
-  initAdminPanelTabs();
-  initAdminPanelRefresh();
-  initUserTabs();
-  initAdminMessaging();
-  initAdminChat();
-  initAdminRules();
-  initAdminNotes();
-  initAdminGames();
-  initAdminUserGames();
-  initAdminConfirmations();
-  initAdminPlayers();
-  initAdminCalculator();
-  initPinGate();
-  initNextGamesView();
-  initChatTab();
-  initUserConfirmations();
-  initUserGamesTab();
-  initStatisticsTab();
-  initPlayerUserGames();
-  initStatisticsViews();
-  initLatestMessage();
-  initRulesDisplay();
-  initInstructionModal();
-  initCustomsEmergencyModal();
+
+  [
+    ["Dostęp graczy", initSharedPlayerAccess],
+    ["Zakładki panelu admina", initAdminPanelTabs],
+    ["Odświeżanie panelu admina", initAdminPanelRefresh],
+    ["Zakładki użytkownika", initUserTabs],
+    ["Aktualności", initAdminMessaging],
+    ["Czat admina", initAdminChat],
+    ["Regulamin", initAdminRules],
+    ["Notatki admina", initAdminNotes],
+    ["Gry admina", initAdminGames],
+    ["Gry użytkowników (admin)", initAdminUserGames],
+    ["Gry do potwierdzenia (admin)", initAdminConfirmations],
+    ["Gracze", initAdminPlayers],
+    ["Kalkulator", initAdminCalculator],
+    ["Bramka PIN", initPinGate],
+    ["Najbliższa gra", initNextGamesView],
+    ["Czat gracza", initChatTab],
+    ["Gry do potwierdzenia (gracz)", initUserConfirmations],
+    ["Gry użytkowników (bramka)", initUserGamesTab],
+    ["Statystyki (bramka)", initStatisticsTab],
+    ["Gry użytkowników (gracz)", initPlayerUserGames],
+    ["Statystyki", initStatisticsViews],
+    ["Najnowsza wiadomość", initLatestMessage],
+    ["Regulamin (widok)", initRulesDisplay],
+    ["Modal instrukcji", initInstructionModal],
+    ["Modal kontroli celno-skarbowej", initCustomsEmergencyModal]
+  ].forEach(([name, initializer]) => runInitStep(name, initializer));
 };
 
 void bootstrap();

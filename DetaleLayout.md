@@ -71,3 +71,11 @@
 
 - W panelu `Finał` usunięto wizualizację stołu (`.poker-table-svg`); sekcja pokazuje `Tabela23` oraz `Tabela23A` z przyciskami pozycji `▲/▼`.
 - W module `Second`, tylko w trybie użytkownika i tylko dla `#tournamentTab` na mobile (`max-width: 760px`), layout Tournament wymusza jedną kolumnę (`minmax(0,1fr)`), pełną szerokość sidebara i lokalne przewijanie szerokich tabel; etykiety przycisków sekcji pozostają widoczne bez przełączania na `Czat`.
+
+## Main — lista kolejności potwierdzeń i import gier
+- Sekcja `Kolejność potwierdzeń` w modalu `#confirmationsDetailsModal` używa nagłówka `.confirmations-order-title` (`margin: 16px 0 0`, `font-size: 15px`, kolor `--muted`) oraz tabeli `.confirmations-order-table`.
+- Pierwsza kolumna tabeli (`Nr`) ma szerokość `5ch` i wyrównanie do środka.
+- Granica między miejscami w grze a listą rezerwową to klasa `.confirmations-reserve-start` — `border-top: 2px solid var(--gold-line)` na komórkach wiersza.
+- Wiersz zalogowanego gracza jest wyróżniony klasą `.confirmations-own-row` (`font-weight: 700`).
+- Podsumowanie nad listą (`#confirmationsOrderSummary`) korzysta ze standardowej klasy `.status-text`.
+- Data ostatniego odświeżenia przy grze zaimportowanej używa klasy `.admin-import-refreshed-at` (`display: block`, `width: 100%`, `margin-top: 4px`, `font-size: 12px`) w obrębie `.admin-games-name-control`.
