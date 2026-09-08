@@ -14,15 +14,13 @@ window.firebaseConfig = {
   gameDetailsCollection: "rows",
   userGamesCollection: "UserGames"
 
-  // App Check (opcjonalnie, patrz Analizy/Instrukcja_AppCheck_2026-09-07.md):
-  // po zarejestrowaniu aplikacji w Firebase Console > App Check dopisz poniżej
-  // klucz witryny, a aplikacja włączy App Check sama. Odkomentuj DOKŁADNIE JEDNĄ
-  // z dwóch linii — tę, która odpowiada wybranemu dostawcy:
-  //
-  // 1) reCAPTCHA Enterprise (zalecane; klucz tworzysz w Google Cloud > reCAPTCHA):
-  // , appCheckEnterpriseSiteKey: "TU_WKLEJ_KLUCZ_WITRYNY_reCAPTCHA_ENTERPRISE"
-  //
-  // 2) klasyczna reCAPTCHA v3 (wycofywana; klucz z google.com/recaptcha/admin):
+  // App Check — dostawca reCAPTCHA Enterprise (klucz "Karty" z Google Cloud,
+  // domena cutelittlegoat.github.io). Klucz witryny jest jawny z założenia,
+  // tak samo jak apiKey powyżej. Szczegóły: Analizy/Instrukcja_AppCheck_2026-09-07.md
+  , appCheckEnterpriseSiteKey: "6Ld6x68tAAAAAFjbhLm9CqHY2V5xnoKBEFnxzKU2"
+
+  // Wariant zapasowy — klasyczna reCAPTCHA v3 (wycofywana przez Google).
+  // Używać tylko zamiast powyższej linii, nigdy razem z nią:
   // , appCheckSiteKey: "TU_WKLEJ_KLUCZ_WITRYNY_reCAPTCHA_v3"
   //
   // Do pracy lokalnej: najpierw ustaw poniżej wartość true, otwórz aplikację

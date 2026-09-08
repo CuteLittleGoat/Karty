@@ -701,6 +701,11 @@ Do rozstrzygnięcia pozostaje więc drobiazg, a nie problem. Opcje:
 
 > Jedyne co reaguje na kliknięcie to „advanced settings”. [zrzut ekranu: „App risk — Medium (0.5)”]
 
+> Zapoznaj się z załączonym plikiem. Jestem na etapie modyfikacji pliku config/firebase-config.js
+> [dokument ze zrzutami: utworzenie klucza w Google Cloud, rejestracja obu aplikacji `Karty-Web`
+> w App Check] Nie rozumiem co to znaczy „odkomentuj jedną linię”. Czy jeżeli podam Ci w rozmowie
+> identyfikator klucza (pisałeś, że on jest i tak jawny) to możesz sam zrobić resztę zmian?
+
 ### 16.2. Sprostowanie — moja błędna informacja
 
 W pkt 12.3 tej analizy oraz w pierwszej wersji `Analizy/Instrukcja_AppCheck_2026-09-07.md`
@@ -763,3 +768,31 @@ Nowość, o której warto pamiętać: **limit 10 000 sprawdzeń miesięcznie** n
 Przy ~30 graczach i tokenie odnawianym mniej więcej raz na dobę na przeglądarkę to rząd
 kilkuset sprawdzeń miesięcznie — zapas jest bardzo duży, ale po przekroczeniu limitu
 (przy **włączonym** wymuszaniu) aplikacja przestałaby działać do końca miesiąca.
+
+### 16.6. Stan wdrożenia App Check (2026-09-08)
+
+| Etap | Stan |
+|---|---|
+| Klucz reCAPTCHA Enterprise w Google Cloud | ✅ utworzony — nazwa `Karty`, typ *Sieć* (Web), domena `cutelittlegoat.github.io`, weryfikacja domeny włączona, bez `localhost`, bez klucza testowego, bez WAF |
+| Rejestracja w Firebase App Check | ✅ **obie** aplikacje `Karty-Web` mają status *Registered* z dostawcą *reCAPTCHA Enterprise*; `Karty-Android-PUSH` nietknięta |
+| TTL tokenu | 1 godzina (wartość domyślna okienka Enterprise) |
+| Klucz w `config/firebase-config.js` | ✅ `appCheckEnterpriseSiteKey` ustawiony, wypchnięty na `main` |
+| Tryb pracy App Check | 🔵 **monitorowanie** — wymuszanie (*Enforce*) jeszcze **nie** włączone |
+
+**Uwaga o TTL.** Okienko rejestracji Enterprise domyślnie proponuje **1 godzinę**, a nie 1 dzień
+(jak sugerowała pierwsza wersja instrukcji). Krótszy TTL oznacza częstsze odnawianie tokenu,
+czyli szybsze zużywanie darmowego limitu 10 000 sprawdzeń miesięcznie. Przy ~30 graczach
+i realnym czasie korzystania z aplikacji wychodzi rząd 2 000 sprawdzeń miesięcznie — zapas jest,
+ale gdyby aplikacja urosła, TTL należy podnieść w Firebase Console.
+
+**Klucz witryny został wpisany do publicznego repozytorium świadomie.** W wariancie Enterprise
+nie występuje klucz tajny; klucz witryny musi znaleźć się w kodzie strony, tak samo jak `apiKey`.
+Ochronę daje powiązanie klucza z domeną `cutelittlegoat.github.io` po stronie Google.
+
+**Weryfikacja przed wypchnięciem:** oba moduły uruchomione w Chromium z rzeczywistą zawartością
+`config/firebase-config.js` — `activate` wywołane dokładnie raz, z `ReCaptchaEnterpriseProvider`
+i właściwym kluczem, automatyczne odświeżanie włączone, reszta konfiguracji parsuje się poprawnie,
+zero zapytań do Firestore.
+
+**Pozostaje:** kilka dni obserwacji zakładki *App Check → APIs → Cloud Firestore* i dopiero potem
+*Enforce*.

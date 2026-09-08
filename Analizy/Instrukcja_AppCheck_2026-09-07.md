@@ -1,5 +1,15 @@
 # App Check — instrukcja krok po kroku
 
+## Gdzie jesteśmy (stan na 2026-09-08)
+
+| Krok | Stan |
+|---|---|
+| KROK 1 — klucz reCAPTCHA Enterprise w Google Cloud | ✅ wykonane (klucz `Karty`, typ *Sieć*, domena `cutelittlegoat.github.io`) |
+| KROK 2 — rejestracja obu aplikacji `Karty-Web` w App Check | ✅ wykonane (obie: *Registered*, dostawca *reCAPTCHA Enterprise*) |
+| KROK 3 — klucz w `config/firebase-config.js` | ✅ wykonane, wypchnięte na `main` |
+| KROK 4 — obserwacja zakładki *APIs* przez kilka dni | 🔵 **teraz to robisz** |
+| KROK 5 — *Enforce* (wymuszanie) | ⛔ **jeszcze nie klikaj** |
+
 ## Prompt użytkownika (zachowany dla kontekstu)
 
 > App Check - musisz mi dokładnie i prosto napisać jak to zrobić. Co i gdzie klikać.
@@ -82,7 +92,7 @@ Dopóki go nie dopiszesz, nic się nie dzieje.
 
 ---
 
-## KROK 1 — Utwórz klucz reCAPTCHA w Google Cloud
+## KROK 1 — Utwórz klucz reCAPTCHA w Google Cloud  ✅ WYKONANE 2026-09-08
 
 1. Wejdź na **https://console.cloud.google.com/security/recaptcha**
    - Zaloguj się tym samym kontem Google, na którym masz Firebase.
@@ -117,7 +127,7 @@ Dopóki go nie dopiszesz, nic się nie dzieje.
 
 ---
 
-## KROK 2 — Zarejestruj aplikacje w Firebase App Check
+## KROK 2 — Zarejestruj aplikacje w Firebase App Check  ✅ WYKONANE 2026-09-08
 
 1. Wejdź na **https://console.firebase.google.com** i wybierz projekt **karty-turniej**.
 2. W lewym menu znajdź **App Check**.
@@ -143,7 +153,14 @@ Dopóki go nie dopiszesz, nic się nie dzieje.
      Domyślne `Medium` mieści się w darmowym zakresie i nie musisz nic zmieniać.
    - Im wyższy próg, tym ostrzej App Check odrzuca ruch. Nie podnoś go — grozi to blokowaniem
      własnych graczy.
-9. Pole **Token time to live** (TTL) zostaw bez zmian — domyślna wartość (1 dzień) jest w porządku.
+9. Pole **Token time to live** (TTL) zostaw bez zmian — okienko Enterprise domyślnie proponuje
+   **1 godzinę** i to jest w porządku.
+   - TTL mówi, jak długo ważna jest jedna „przepustka” wydana przeglądarce. Po tym czasie
+     aplikacja po cichu pobiera nową. Gracz niczego nie zauważa.
+   - Krótszy TTL = częstsze odnawianie = więcej sprawdzeń zużytych z darmowego limitu
+     10 000 miesięcznie. Przy ~30 graczach 1 godzina i tak daje spory zapas, ale gdyby kiedyś
+     limit zaczął się zbliżać, wystarczy tu wpisać większą wartość (np. `12 hours`).
+
 10. Kliknij **Zapisz** (Save).
 11. **Powtórz podpunkty 5–10 dla drugiej aplikacji `Karty-Web`**, wklejając **ten sam** klucz.
 
@@ -163,12 +180,35 @@ Po zapisaniu przy obu aplikacjach pojawi się status. **Nie klikaj jeszcze nicze
 
 ---
 
-## KROK 3 — Wklej klucz do aplikacji
+## KROK 3 — Wklej klucz do aplikacji  ✅ WYKONANE 2026-09-08
 
-1. Otwórz plik **`config/firebase-config.js`**.
-2. Znajdź na jego końcu zakomentowane linie z `appCheckEnterpriseSiteKey` i `appCheckSiteKey`.
-3. **Odkomentuj DOKŁADNIE JEDNĄ linię — tę z `appCheckEnterpriseSiteKey`** (czyli usuń z niej
-   dwa ukośniki) i wklej swój klucz witryny:
+Ten krok został już wykonany — klucz `6Ld6x68t...KU2` jest wpisany w `config/firebase-config.js`
+i wypchnięty na `main`. Poniżej zostaje opis, gdyby kiedyś trzeba było klucz wymienić.
+
+### Co znaczy „odkomentować linię”
+
+W plikach z kodem **dwa ukośniki `//` na początku linii wyłączają tę linię.** Program jej wtedy
+w ogóle nie widzi — jest tam tylko dla człowieka, jak notatka na marginesie. To się nazywa
+„zakomentowana”.
+
+**„Odkomentować” = usunąć te dwa ukośniki**, żeby linia zaczęła działać. Nic więcej.
+
+Przed (linia wyłączona — sam opis, program jej nie czyta):
+
+```js
+  // , appCheckEnterpriseSiteKey: "TU_WKLEJ_KLUCZ_WITRYNY_reCAPTCHA_ENTERPRISE"
+```
+
+Po (linia działa — program czyta klucz):
+
+```js
+  , appCheckEnterpriseSiteKey: "6Ld6x68t...twój_klucz..."
+```
+
+Zmieniły się dwie rzeczy: zniknęły `//` z początku i tekst zastępczy w cudzysłowie
+został podmieniony na prawdziwy klucz.
+
+### Jak wygląda gotowy plik
 
 ```js
 window.firebaseConfig = {
@@ -189,11 +229,12 @@ window.firebaseConfig = {
 **Zwróć uwagę na przecinek** na początku linii `, appCheckEnterpriseSiteKey` — musi tam być,
 inaczej aplikacja się nie uruchomi.
 
-> **Nie odkomentowuj obu linii naraz.** Gdyby jednak tak się stało — aplikacja nie przestanie
-> działać, bo kod w takim wypadku wybiera Enterprise. Ale lepiej trzymać tam jedną, właściwą.
+> **Nie odkomentowuj obu linii naraz** (`appCheckEnterpriseSiteKey` i `appCheckSiteKey`).
+> Gdyby jednak tak się stało — aplikacja nie przestanie działać, bo kod w takim wypadku
+> wybiera Enterprise. Ale lepiej trzymać tam jedną, właściwą.
 
-4. Zapisz plik i wgraj zmianę na GitHub (commit + push), tak jak zwykle.
-5. Poczekaj chwilę, aż GitHub Pages opublikuje nową wersję (zwykle do minuty).
+Na koniec: zapisz plik, wgraj zmianę na GitHub (commit + push) i poczekaj chwilę, aż GitHub Pages
+opublikuje nową wersję (zwykle do minuty).
 
 ---
 
@@ -238,9 +279,11 @@ Od tej chwili baza odrzuca zapytania spoza Twojej aplikacji.
 
 **Limit darmowego planu: 10 000 sprawdzeń miesięcznie.** Po jego przekroczeniu Google zwraca błąd
 i — przy **włączonym** wymuszaniu — aplikacja przestaje działać do końca miesiąca (albo do
-kliknięcia *Unenforce*). Przy 30 graczach to praktycznie nieosiągalne: App Check pobiera nowy token
-mniej więcej raz na dobę na przeglądarkę, czyli rzędu kilkuset sprawdzeń miesięcznie. Ale warto
-o tym wiedzieć, gdyby aplikacja kiedyś urosła.
+kliknięcia *Unenforce*). Przy ustawionym TTL = 1 godzina i 30 graczach to nadal daleko: jedna
+przeglądarka zużywa jedno sprawdzenie na godzinę **faktycznego korzystania** z aplikacji, więc
+nawet przy dwóch godzinach dziennie na osobę wychodzi rzędu 2 000 sprawdzeń miesięcznie.
+Zapas jest, ale nie jest nieograniczony — gdyby aplikacja kiedyś urosła, wystarczy podnieść TTL
+w Firebase Console (KROK 2, punkt 9).
 
 **Aplikacja musi być otwierana z adresu internetowego.** Po włączeniu wymuszania otwarcie pliku
 `Main/index.html` bezpośrednio z dysku przestanie działać — reCAPTCHA nie rozpozna takiego „adresu”.
