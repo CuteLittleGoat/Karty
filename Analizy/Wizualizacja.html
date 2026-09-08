@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Szerokości kolumn i pól — wizualizacja przed/po</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600&display=swap&subset=latin-ext" rel="stylesheet">
+<style>
+/* ============ paleta zgodna z aplikacją ============ */
+:root{
+  color-scheme: dark;
+  --bg:#07070a; --bg2:#0c0d12; --ink:#edebe6; --muted:rgba(237,235,230,.68);
+  --felt:#0f3b2e; --felt2:#0a2a21;
+  --gold:#d4af37; --gold-line:rgba(212,175,55,.35); --gold-soft:rgba(212,175,55,.14);
+  --neon:#2be38b; --neon-soft:rgba(43,227,139,.12); --neon-line:rgba(43,227,139,.4);
+  --ruby:#e23a4b; --ruby-soft:rgba(226,58,75,.12); --ruby-line:rgba(226,58,75,.42);
+  --border:rgba(255,255,255,.1); --border2:rgba(255,255,255,.06);
+  --radius-sm:10px; --radius-md:14px; --radius-lg:18px;
+  --font-title:"Cinzel","Times New Roman",serif;
+  --font-panel:"Rajdhani","Segoe UI","Noto Sans",sans-serif;
+  --font-text:"Inter","Segoe UI","Noto Sans",Arial,sans-serif;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; font-family:var(--font-text); font-size:15px; line-height:1.6; color:var(--ink);
+  background:
+    radial-gradient(circle at 18% -10%, rgba(212,175,55,.14), transparent 45%),
+    radial-gradient(circle at 78% 4%, rgba(43,227,139,.10), transparent 45%),
+    linear-gradient(180deg,var(--bg2),var(--bg));
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{width:min(1180px,100%); margin:0 auto; padding:0 20px 90px}
+
+/* ============ nagłówek ============ */
+header.top{padding:56px 0 8px}
+.eyebrow{font-family:var(--font-panel);text-transform:uppercase;letter-spacing:.2em;font-size:12px;color:var(--muted);margin:0 0 12px}
+h1{font-family:var(--font-title);font-size:clamp(28px,4.4vw,46px);letter-spacing:.08em;text-transform:uppercase;line-height:1.1;margin:0 0 14px}
+.lede{font-size:clamp(16px,1.6vw,19px);color:var(--muted);max-width:70ch;margin:0 0 8px}
+.meta{font-family:var(--font-panel);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(237,235,230,.45);margin-top:18px;overflow-wrap:anywhere}
+
+/* ============ nawigacja ============ */
+nav.toc{position:sticky;top:0;z-index:30;margin:26px 0 0;padding:10px 0;
+  background:rgba(7,7,10,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--border2)}
+nav.toc ul{list-style:none;display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0}
+nav.toc a{display:inline-block;padding:6px 12px;border-radius:999px;border:1px solid var(--border2);
+  background:rgba(0,0,0,.35);color:var(--muted);text-decoration:none;
+  font-family:var(--font-panel);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase}
+nav.toc a:hover{border-color:var(--gold-line);color:var(--gold)}
+
+/* ============ sekcje ============ */
+section{margin-top:64px;scroll-margin-top:70px}
+h2{font-family:var(--font-title);font-size:clamp(20px,2.4vw,27px);letter-spacing:.05em;margin:0 0 6px;text-transform:uppercase}
+h2 .num{color:var(--gold);margin-right:12px;font-size:.8em}
+h3{font-family:var(--font-panel);font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:rgba(237,235,230,.9);margin:26px 0 10px}
+.sub{color:var(--muted);margin:0 0 22px;max-width:78ch}
+p{max-width:80ch}
+code{font-family:var(--mono);font-size:.88em;overflow-wrap:anywhere;background:rgba(0,0,0,.42);border:1px solid var(--border2);
+  border-radius:5px;padding:1px 5px;color:#ffe9a8}
+
+/* ============ kafelki KPI ============ */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:14px;margin-top:30px}
+.kpi{padding:18px 16px;border-radius:var(--radius-md);border:1px solid var(--border2);
+  background:linear-gradient(180deg,rgba(10,42,33,.55),rgba(0,0,0,.34))}
+.kpi .v{font-family:var(--font-title);font-size:clamp(26px,3.4vw,34px);line-height:1;color:var(--gold);letter-spacing:.02em}
+.kpi .v.bad{color:var(--ruby)}
+.kpi .l{font-family:var(--font-panel);font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+.kpi .n{font-size:12.5px;color:rgba(237,235,230,.5);margin-top:6px;line-height:1.45}
+
+/* ============ karta / panel ============ */
+.card{border:1px solid var(--border2);border-radius:var(--radius-md);background:rgba(0,0,0,.3);padding:20px;margin-top:18px}
+.note{border-left:3px solid var(--gold-line);background:var(--gold-soft);padding:12px 16px;border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin:18px 0;font-size:14px}
+.note b{color:var(--gold)}
+
+/* ============ przed / po ============ */
+.ba{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr));gap:16px;margin-top:18px}
+.ba.stacked{grid-template-columns:1fr}
+.pane{border-radius:var(--radius-md);border:1px solid var(--border2);overflow:hidden;background:rgba(0,0,0,.3)}
+.pane.before{border-color:var(--ruby-line)}
+.pane.after{border-color:var(--neon-line)}
+.pane > h4{margin:0;padding:11px 16px;font-family:var(--font-panel);font-size:12px;letter-spacing:.16em;
+  text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pane.before > h4{background:var(--ruby-soft);color:#ffc9d0}
+.pane.after  > h4{background:var(--neon-soft);color:#b6ffdb}
+.pane .body{padding:16px}
+.badge{font-family:var(--mono);font-size:11.5px;letter-spacing:0;padding:2px 8px;border-radius:999px;
+  border:1px solid currentColor;opacity:.9;white-space:nowrap}
+.readout{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.7}
+.readout b{color:var(--ink)}
+
+/* ============ scena demo (container queries) ============ */
+.sim-wrap{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.stage.sim{max-width:none}
+.stage{position:relative;container-type:inline-size;container-name:stage;max-width:100%;
+  border:1px dashed rgba(255,255,255,.16);border-radius:var(--radius-sm);padding:8px;
+  background:repeating-linear-gradient(45deg,rgba(255,255,255,.012) 0 8px,transparent 8px 16px);
+  transition:width .18s ease}
+.stage-label{font-family:var(--mono);font-size:11px;color:rgba(237,235,230,.45);margin-bottom:6px}
+.stage.is-scrollable{padding-bottom:24px}
+.stage.is-scrollable::after{content:"";position:absolute;top:8px;bottom:30px;right:8px;width:52px;
+  background:linear-gradient(90deg,rgba(7,7,10,0),rgba(7,7,10,.88));pointer-events:none;border-radius:0 8px 8px 0}
+.stage.is-scrollable::before{content:"\2190 przewiń w bok \2192";position:absolute;right:10px;bottom:5px;z-index:2;
+  font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:rgba(237,235,230,.5);pointer-events:none}
+
+/* ---- wspólna baza tabel demo (kopia reguł aplikacji) ---- */
+.demo .admin-table-scroll{overflow:auto;border-radius:var(--radius-sm);scrollbar-width:thin}
+.demo .admin-data-table{border-collapse:collapse}
+.demo .admin-data-table th,.demo .admin-data-table td{
+  padding:10px 8px;border-bottom:1px solid var(--border2);text-align:left;vertical-align:middle}
+.demo .admin-data-table th{font-size:12px;text-transform:uppercase;letter-spacing:.12em;
+  font-family:var(--font-panel);color:rgba(237,235,230,.85);background:rgba(0,0,0,.34)}
+.demo .admin-data-table td{font-size:14.5px}
+.demo .admin-input{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);
+  background:rgba(0,0,0,.42);color:var(--ink);font-family:var(--font-text);font-size:14.5px}
+
+/* ---- STAN OBECNY: Main ---- */
+.demo-main-now .admin-data-table{width:max-content;min-width:100%;table-layout:auto}
+/* ---- STAN OBECNY: Second ---- */
+.demo-second-now .admin-data-table{width:100%;min-width:860px}
+
+/* ---- PROPOZYCJA: tokeny + dwa tryby ---- */
+.demo-next{
+  --col-num-xs:3.5rem; --col-num-sm:5rem;  --col-num-md:6.5rem;
+  --col-flag:5.5rem;   --col-date:7.5rem;  --col-text-sm:9rem;
+  --col-text-md:12rem; --col-text-lg:16rem;--col-actions:7rem;
+}
+@container stage (max-width:720px){
+  .demo-next{
+    --col-num-xs:3rem;  --col-num-sm:4rem;   --col-num-md:5.5rem;
+    --col-flag:4.5rem;  --col-date:6.5rem;   --col-text-sm:7.5rem;
+    --col-text-md:10rem;--col-text-lg:12rem; --col-actions:6rem;
+  }
+  .demo-next .admin-data-table th,.demo-next .admin-data-table td{padding:8px 6px}
+}
+.demo-next .admin-data-table{table-layout:fixed}
+.demo-next .admin-data-table.t-fluid{width:100%;min-width:var(--table-min,0)}
+.demo-next .admin-data-table.t-compact{width:auto;max-width:100%;min-width:0}
+.demo-next .admin-data-table .admin-input{min-width:0}
+.demo-next .admin-data-table th,.demo-next .admin-data-table td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ============ suwak ============ */
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:20px 0 6px;
+  padding:14px 16px;border-radius:var(--radius-md);border:1px solid var(--border2);background:rgba(0,0,0,.34)}
+.controls label{font-family:var(--font-panel);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+input[type=range]{flex:1;min-width:200px;accent-color:var(--gold)}
+.wval{font-family:var(--mono);font-size:15px;color:var(--gold);min-width:78px;text-align:right}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:5px 11px;border-radius:999px;border:1px solid var(--border2);background:rgba(0,0,0,.4);
+  color:var(--muted);font-family:var(--font-panel);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.chip:hover{border-color:var(--gold-line);color:var(--gold)}
+.chip.on{border-color:var(--gold-line);background:var(--gold-soft);color:var(--gold)}
+
+/* ============ wykresy słupkowe ============ */
+.bars{display:grid;gap:9px;margin-top:16px}
+.bar-row{display:grid;grid-template-columns:minmax(120px,210px) 1fr;gap:12px;align-items:center}
+.bar-row .name{font-family:var(--mono);font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{position:relative;height:26px;border-radius:6px;background:rgba(255,255,255,.045);overflow:hidden}
+.bar-fill{position:absolute;inset:0 auto 0 0;border-radius:6px;display:flex;align-items:center;padding:0 9px;
+  font-family:var(--mono);font-size:11.5px;color:#0a0a0c;font-weight:700}
+.bar-fill.now{background:linear-gradient(90deg,rgba(226,58,75,.95),rgba(226,58,75,.62))}
+.bar-fill.next{background:linear-gradient(90deg,rgba(43,227,139,.95),rgba(43,227,139,.6))}
+.bar-fill.neutral{background:linear-gradient(90deg,rgba(212,175,55,.9),rgba(212,175,55,.55))}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+
+/* ============ pasek budżetu ============ */
+.budget{display:flex;height:46px;border-radius:8px;overflow:hidden;border:1px solid var(--border2);margin-top:12px}
+.budget div{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;
+  color:#0a0a0c;font-weight:700;overflow:hidden;white-space:nowrap}
+.b-pad{background:rgba(226,58,75,.8)}
+.b-tab{background:rgba(43,227,139,.85)}
+
+/* ============ diagram siatki ============ */
+.gridviz{display:flex;gap:8px;height:104px;margin-top:12px}
+.gridviz > div{border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11.5px;text-align:center;padding:6px;border:1px solid var(--border2)}
+.gv-side{background:rgba(212,175,55,.2);color:#ffe9a8}
+.gv-main{background:rgba(43,227,139,.16);color:#b6ffdb}
+.gv-main.squeezed{background:rgba(226,58,75,.22);color:#ffc9d0}
+.gv-strong{font-size:16px;font-weight:700;display:block;margin-bottom:3px}
+
+/* ============ linijka ch ============ */
+.ruler{display:grid;gap:10px;margin-top:14px}
+.ruler-row{display:grid;grid-template-columns:minmax(140px,190px) 1fr;gap:12px;align-items:center}
+.ruler-row .lab{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.ch-bar{height:30px;border-radius:6px;display:flex;align-items:center;padding:0 10px;
+  font-family:var(--mono);font-size:11.5px;color:#0a0a0c;font-weight:700;white-space:nowrap}
+.ch-th{background:rgba(212,175,55,.85);width:67px}
+.ch-td{background:rgba(43,227,139,.85);width:81px}
+
+/* ============ tokeny ============ */
+.tokens{display:grid;gap:8px;margin-top:14px}
+.tok{display:grid;grid-template-columns:minmax(120px,160px) 1fr;gap:12px;align-items:center}
+.tok .tname{font-family:var(--mono);font-size:12.5px;color:#ffe9a8}
+.tok .tbar{height:28px;border-radius:6px;background:linear-gradient(90deg,rgba(212,175,55,.7),rgba(212,175,55,.3));
+  display:flex;align-items:center;padding:0 10px;font-family:var(--mono);font-size:11.5px;color:#0a0a0c;font-weight:700}
+
+/* ============ tabela porównawcza ============ */
+table.cmp{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}
+table.cmp th,table.cmp td{padding:10px 10px;border-bottom:1px solid var(--border2);text-align:left}
+table.cmp th{font-family:var(--font-panel);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(237,235,230,.8);background:rgba(0,0,0,.34)}
+table.cmp td.n{font-family:var(--mono);text-align:right;white-space:nowrap}
+table.cmp .drop{color:var(--neon);font-weight:600}
+table.cmp .keep{color:var(--muted)}
+table.cmp tbody tr:hover{background:rgba(255,255,255,.03)}
+.scroll-x{overflow-x:auto;border-radius:var(--radius-sm)}
+
+/* ============ plan ============ */
+.steps{display:grid;gap:12px;margin-top:18px}
+.step{display:grid;grid-template-columns:52px 1fr;gap:16px;padding:16px;border-radius:var(--radius-md);
+  border:1px solid var(--border2);background:rgba(0,0,0,.28)}
+.step .id{font-family:var(--font-title);font-size:24px;color:var(--gold);text-align:center;line-height:1.1}
+.step h4{margin:0 0 5px;font-family:var(--font-panel);font-size:14px;letter-spacing:.1em;text-transform:uppercase}
+.step p{margin:0;font-size:14px;color:var(--muted);max-width:none}
+.step .tags{margin-top:9px;display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-family:var(--font-panel);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 9px;border-radius:999px;border:1px solid var(--border2);color:var(--muted)}
+.tag.r-low{border-color:var(--neon-line);color:#b6ffdb}
+.tag.r-mid{border-color:var(--gold-line);color:#ffe9a8}
+.step.hi{border-color:var(--gold-line);background:linear-gradient(180deg,rgba(212,175,55,.09),rgba(0,0,0,.28))}
+
+footer{margin-top:72px;padding-top:22px;border-top:1px solid var(--border2);color:rgba(237,235,230,.42);font-size:13px;overflow-wrap:anywhere}
+footer a{color:var(--gold)}
+
+@media (max-width:720px){
+  .budget .b-pad{font-size:0}
+  .wrap{padding:0 14px 70px}
+  header.top{padding:36px 0 4px}
+  .bar-row,.ruler-row,.tok{grid-template-columns:1fr}
+  .step{grid-template-columns:1fr;gap:8px}
+  .step .id{text-align:left}
+  .gridviz{height:auto;flex-direction:column}
+  .gridviz > div{height:64px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <p class="eyebrow">Karty · Main + Tournament of Poker</p>
+  <h1>Szerokości kolumn i pól<br>— co jest nie tak i jak to naprawić</h1>
+  <p class="lede">Oba moduły wyrenderowano w przeglądarce Chromium przy szerokościach 375 / 412 / 820 / 1440 / 1920 / 2560 px i zmierzono realne szerokości tabel, kolumn, kontenerów i pól formularzy. Wszystkie liczby na tej stronie to wyniki pomiaru, nie szacunki.</p>
+  <p class="meta">2026-09-08 · analiza bez zmian w kodzie aplikacji · dokument źródłowy: Analizy/Szerokosci_Kolumn_i_Pol_Responsywnosc_2026-09-08.md</p>
+</header>
+
+<nav class="toc"><ul>
+  <li><a href="#liczby">Liczby</a></li>
+  <li><a href="#p1">1 · Ukryte 213 px</a></li>
+  <li><a href="#p2">2 · Jednostka ch</a></li>
+  <li><a href="#p3">3 · Second: 860 px</a></li>
+  <li><a href="#p4">4 · Tablet</a></li>
+  <li><a href="#p5">5 · Budżet telefonu</a></li>
+  <li><a href="#symulator">Symulator</a></li>
+  <li><a href="#tokeny">Tokeny</a></li>
+  <li><a href="#redukcja">Redukcja</a></li>
+  <li><a href="#plan">Plan</a></li>
+</ul></nav>
+
+<!-- ============================ LICZBY ============================ -->
+<section id="liczby">
+  <h2><span class="num">·</span>Stan obecny w liczbach</h2>
+  <p class="sub">Pięć wielkości, które najlepiej opisują skalę problemu.</p>
+  <div class="kpis">
+    <div class="kpi"><div class="v bad">213 px</div><div class="l">naturalna szerokość pola</div><div class="n">Każde <code>.admin-input</code> ma ukryte minimum, bo w repo nie ma ani jednego atrybutu <code>size</code>.</div></div>
+    <div class="kpi"><div class="v bad">21 %</div><div class="l">rozjazd jednostki ch</div><div class="n"><code>10ch</code> = 67 px w nagłówku i 81 px w komórce. Ta sama deklaracja, dwie wartości.</div></div>
+    <div class="kpi"><div class="v bad">190 px</div><div class="l">treść na tablecie 820 px</div><div class="n">Przy paskach bocznych 161 px i 339 px. Kolumna z tabelami jest najwęższa z trzech.</div></div>
+    <div class="kpi"><div class="v bad">31 %</div><div class="l">ekranu telefonu na paddingi</div><div class="n">116 z 375 px zjadają zagnieżdżone ramki i marginesy wewnętrzne.</div></div>
+    <div class="kpi"><div class="v">320</div><div class="l">ręcznych reguł szerokości</div><div class="n">172 w Main + 148 w Second, 27 różnych wartości w dwóch jednostkach.</div></div>
+  </div>
+</section>
+
+<!-- ============================ PROBLEM 1 ============================ -->
+<section id="p1">
+  <h2><span class="num">01</span>Ukryte 213 px w każdym polu</h2>
+  <p class="sub">W całym repozytorium nie ma ani jednego atrybutu <code>size</code> na polach, więc przeglądarka używa domyślnego <code>size=20</code>. Przy <code>table-layout: auto</code> to ta naturalna szerokość — a nie Twoja deklaracja <code>width</code> — decyduje o szerokości kolumny.</p>
+
+  <div class="ba">
+    <div class="pane before">
+      <h4>Dziś · Main <span class="badge" id="r1a">—</span></h4>
+      <div class="body">
+        <div class="stage-label">kontener 320 px</div>
+        <div class="stage" style="width:320px">
+          <div class="demo demo-main-now">
+            <div class="admin-table-scroll">
+              <table class="admin-data-table" id="t1a">
+                <thead><tr><th>LP</th><th>PODZIAŁ</th><th>KWOTA</th><th>REBUY1</th><th>REBUY2</th><th>MOD1</th></tr></thead>
+                <tbody><tr>
+                  <td><input class="admin-input" value="1"></td><td><input class="admin-input" value="30"></td>
+                  <td><input class="admin-input" value="300"></td><td><input class="admin-input" value="100"></td>
+                  <td><input class="admin-input" value="100"></td><td><input class="admin-input" value="0"></td>
+                </tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <p class="readout">Tabela: <b id="w1a">—</b> · kolumna: <b id="c1a">—</b><br>Przewijanie w bok: <b id="o1a">—</b>. Sześć pól na trzy cyfry wymusza ponad tysiąc pikseli nawigacji w poziomie.</p>
+      </div>
+    </div>
+
+    <div class="pane after">
+      <h4>Po zmianie <span class="badge" id="r1b">—</span></h4>
+      <div class="body">
+        <div class="stage-label">kontener 320 px</div>
+        <div class="stage" style="width:320px">
+          <div class="demo demo-next">
+            <div class="admin-table-scroll">
+              <table class="admin-data-table t-fluid" id="t1b" style="--table-min:0">
+                <colgroup><col style="width:var(--col-num-xs)"><col style="width:var(--col-num-sm)"><col style="width:var(--col-num-sm)"><col style="width:var(--col-num-sm)"><col style="width:var(--col-num-sm)"><col style="width:var(--col-num-sm)"></colgroup>
+                <thead><tr><th>LP</th><th>PODZIAŁ</th><th>KWOTA</th><th>REBUY1</th><th>REBUY2</th><th>MOD1</th></tr></thead>
+                <tbody><tr>
+                  <td><input class="admin-input" value="1"></td><td><input class="admin-input" value="30"></td>
+                  <td><input class="admin-input" value="300"></td><td><input class="admin-input" value="100"></td>
+                  <td><input class="admin-input" value="100"></td><td><input class="admin-input" value="0"></td>
+                </tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <p class="readout">Tabela: <b id="w1b">—</b> · kolumna: <b id="c1b">—</b><br>Przewijanie w bok: <b id="o1b">—</b>. Sześciu kolumn liczbowych nie da się zmieścić na 375 px bez ścinania cyfr — ale nawigacja spada z ponad tysiąca pikseli do kilkudziesięciu. Cała różnica to jedna reguła plus <code>&lt;colgroup&gt;</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>To nie są cztery problemy, tylko cztery łatki na jeden.</b> Ta sama przyczyna wymusiła już:
+    <code>min-width: 0</code> punktowo w trzech tabelach Main, <code>width: calc(4ch + 24px)</code> w Tabeli16,
+    osobny wariant <code>8ch</code> dla tabel rebuy oraz <code>table-layout: fixed</code> w trzech miejscach.
+    Jedna globalna reguła <code>.admin-data-table .admin-input { min-width: 0 }</code> zastępuje je wszystkie.
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Ten sam mechanizm dotyczy list rozwijanych</h3>
+    <p style="margin:0 0 6px;color:var(--muted);font-size:14px">Naturalna szerokość <code>&lt;select&gt;</code> wynika z <b>najdłuższej opcji</b>. W module Second kolumna <code>GRACZ</code> z opcją „Bardzo Dlugie Imie Gracza XYZ" urosła w pomiarze do <b>707 px</b> — dodanie jednego gracza o długim nazwisku potrafi samo z siebie rozjechać layout.</p>
+  </div>
+</section>
+
+<!-- ============================ PROBLEM 2 ============================ -->
+<section id="p2">
+  <h2><span class="num">02</span>„8ch" znaczy co innego w nagłówku, a co innego w komórce</h2>
+  <p class="sub">Jednostka <code>ch</code> to szerokość znaku „0" w foncie <b>danego elementu</b>. Nagłówek używa Rajdhani 12 px, komórka — Inter 14,5 px. Deklaracja zapisana raz na parze <code>th, td</code> tworzy więc dwa różne progi; wygrywa większy.</p>
+
+  <div class="card">
+    <div class="ruler">
+      <div class="ruler-row"><div class="lab">10ch w <code>&lt;th&gt;</code><br><span style="opacity:.6">Rajdhani 12 px</span></div><div><div class="ch-bar ch-th">67 px</div></div></div>
+      <div class="ruler-row"><div class="lab">10ch w <code>&lt;td&gt;</code><br><span style="opacity:.6">Inter 14,5 px</span></div><div><div class="ch-bar ch-td">81 px</div></div></div>
+    </div>
+    <p style="margin:16px 0 0;font-size:14px;color:var(--muted)">Piszesz <code>min-width: 8ch</code> myśląc „osiem znaków". Dostajesz 65 px, czyli około 9,7 znaku w foncie nagłówka i 8 w foncie komórki. Przy <b>30 takich deklaracjach w Second</b> i 17 w Main sterowanie szerokością przestaje być przewidywalne — i to jest bezpośredni powód, dla którego dobieranie wartości metodą prób i błędów nie zbiegało do dobrego wyniku.</p>
+    <div class="note" style="margin-bottom:0"><b>Rozwiązanie:</b> wyłącznie <code>rem</code>. Jednostka niezależna od fontu elementu, więc <code>th</code> i <code>td</code> zawsze dają tę samą liczbę pikseli.</div>
+  </div>
+</section>
+
+<!-- ============================ PROBLEM 3 ============================ -->
+<section id="p3">
+  <h2><span class="num">03</span>Second: każda tabela ma co najmniej 860 px</h2>
+  <p class="sub">Reguła <code>.admin-data-table { width: 100%; min-width: 860px }</code> obowiązuje wszystkie 45 wystąpień tabel w module. Tabele Second są budowane w <code>app.js</code> jako czysty <code>&lt;table class="admin-data-table"&gt;</code>, bez klasy per-tabela — nie ma więc czego nadpisać.</p>
+
+  <div class="ba">
+    <div class="pane before">
+      <h4>Dziś · TABELA15 <span class="badge" id="r3a">—</span></h4>
+      <div class="body">
+        <div class="stage-label">kontener 100 % szerokości panelu</div>
+        <div class="stage" style="width:100%">
+          <div class="demo demo-second-now">
+            <div class="admin-table-scroll">
+              <table class="admin-data-table" id="t3a">
+                <thead><tr><th>BUY-IN</th><th>PODZIAŁ</th></tr></thead>
+                <tbody><tr><td>1000</td><td>250</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <p class="readout">Tabela: <b id="w3a">—</b> · kolumna: <b id="c3a">—</b><br>Na monitorze 1920 px zmierzono <b>1596 px</b> szerokości na dwie liczby (kolumny 798 + 798 px). Na telefonie ta sama tabela wymusza <b>573 px</b> przewijania.</p>
+      </div>
+    </div>
+
+    <div class="pane after">
+      <h4>Po zmianie · tryb <code>t-compact</code> <span class="badge" id="r3b">—</span></h4>
+      <div class="body">
+        <div class="stage-label">ten sam kontener</div>
+        <div class="stage" style="width:100%">
+          <div class="demo demo-next">
+            <div class="admin-table-scroll">
+              <table class="admin-data-table t-compact" id="t3b">
+                <colgroup><col style="width:var(--col-num-md)"><col style="width:var(--col-num-md)"></colgroup>
+                <thead><tr><th>BUY-IN</th><th>PODZIAŁ</th></tr></thead>
+                <tbody><tr><td>1000</td><td>250</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <p class="readout">Tabela: <b id="w3b">—</b> · kolumna: <b id="c3b">—</b><br>Tabela podsumowania zajmuje dokładnie tyle, ile potrzebuje — i tak samo wygląda na telefonie, jak na monitorze.</p>
+      </div>
+    </div>
+  </div>
+
+  <p style="font-size:14px;color:var(--muted)">Ten sam wzorzec dotyczy <code>TABELA10</code>, <code>TABELA11</code>, <code>TABELA13</code>, <code>TABELA14</code>, <code>TABELA17</code> i bloków stołów w Losowaniu — wszystkie mają od 2 do 5 kolumn i wszystkie są dziś rozciągane do 860 px lub szerzej.</p>
+</section>
+
+<!-- ============================ PROBLEM 4 ============================ -->
+<section id="p4">
+  <h2><span class="num">04</span>Najgorszy przypadek to tablet, nie telefon</h2>
+  <p class="sub">Trójkolumnowy układ <code>#adminGamesTab .admin-games-layout</code> przełącza się na jedną kolumnę dopiero przy <code>max-width: 720px</code>. Powyżej tej granicy paski boczne mają stałą szerokość i wygrywają z treścią.</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">Zmierzone <code>grid-template-columns</code> przy 820 px</h3>
+    <div class="gridviz">
+      <div class="gv-side" style="flex:161"><span class="gv-strong">161 px</span>Lata</div>
+      <div class="gv-main squeezed" style="flex:190"><span class="gv-strong">190 px</span>Treść — tabele</div>
+      <div class="gv-side" style="flex:339"><span class="gv-strong">339 px</span>Ranking</div>
+    </div>
+    <p style="font-size:14px;color:var(--muted);margin:14px 0 0">Kolumna z właściwą treścią jest węższa niż każdy z pasków bocznych. Tabela <code>admin-games-table</code> (1106 px) przewija się poziomo w oknie 190 px. Defektu nie widać ani na telefonie, ani na dużym monitorze — dlatego łatwo go przeoczyć przy testowaniu „na oko".</p>
+
+    <h3>Po przesunięciu progu na 1180 px</h3>
+    <div class="gridviz">
+      <div class="gv-main" style="flex:1"><span class="gv-strong">pełna szerokość</span>Treść — tabele</div>
+    </div>
+    <p style="font-size:14px;color:var(--muted);margin:14px 0 0">Paski <code>Lata</code> i <code>Ranking</code> wracają nad i pod treść. Docelowo stałe <code>20ch</code> / <code>42ch</code> / <code>34ch</code> warto zamienić na <code>minmax()</code> z górnym limitem, żeby paski nigdy nie wygrywały z treścią.</p>
+    <div class="note" style="margin-bottom:0"><b>Przy okazji:</b> <code>.player-zone-button</code> ma <code>font-size: clamp(9px, 0.95vw, 12px)</code>. Przy 820 px <code>0.95vw</code> = 7,8 px, więc clamp daje <b>9 px</b> — etykiety sekcji na tablecie są praktycznie nieczytelne. Nadpisanie do 14 px istnieje tylko poniżej 720 px.</div>
+  </div>
+</section>
+
+<!-- ============================ PROBLEM 5 ============================ -->
+<section id="p5">
+  <h2><span class="num">05</span>Trzecia część ekranu telefonu idzie na paddingi</h2>
+  <p class="sub">Zmierzony łańcuch kontenerów w module Main przy viewporcie 375 px, zakładka „Gry admina". Żadna z tych wartości nie jest zmniejszana w media query — <code>.card</code> ma 24 px paddingu tak samo na iPhonie SE, jak na monitorze 27".</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">Dziś — tabela dostaje 259 z 375 px</h3>
+    <div class="budget">
+      <div class="b-pad" style="flex:16">16</div>
+      <div class="b-pad" style="flex:25">25</div>
+      <div class="b-pad" style="flex:17">17</div>
+      <div class="b-tab" style="flex:259">259 px — tabela</div>
+      <div class="b-pad" style="flex:17">17</div>
+      <div class="b-pad" style="flex:25">25</div>
+      <div class="b-pad" style="flex:16">16</div>
+    </div>
+    <p style="font-size:13.5px;color:var(--muted);margin:10px 0 0"><code>.page</code> 16 px · <code>.card</code> 24 px + ramka · <code>.admin-games-content</code> 16 px + ramka</p>
+
+    <h3>Po zmniejszeniu paddingów mobilnych — 303 z 375 px</h3>
+    <div class="budget">
+      <div class="b-pad" style="flex:10">10</div>
+      <div class="b-pad" style="flex:15">15</div>
+      <div class="b-pad" style="flex:11">11</div>
+      <div class="b-tab" style="flex:303">303 px — tabela</div>
+      <div class="b-pad" style="flex:11">11</div>
+      <div class="b-pad" style="flex:15">15</div>
+      <div class="b-pad" style="flex:10">10</div>
+    </div>
+    <p style="font-size:13.5px;color:var(--muted);margin:10px 0 0"><b style="color:var(--neon)">+17 % miejsca na treść</b> bez ruszania choćby jednej kolumny — sam padding w breakpointcie mobilnym.</p>
+  </div>
+</section>
+
+<!-- ============================ SYMULATOR ============================ -->
+<section id="symulator">
+  <h2><span class="num">·</span>Symulator — przeciągnij szerokość</h2>
+  <p class="sub">Ta sama tabela <code>Gracze</code> (5 kolumn, dwa pola edycyjne) w obu wariantach. Przesuń suwak, żeby zobaczyć, jak każdy z nich reaguje na zmianę szerokości ekranu. Poniżej 720 px w wariancie docelowym włącza się mobilna skala tokenów.</p>
+
+  <div class="controls">
+    <label for="vw">Szerokość</label>
+    <input type="range" id="vw" min="300" max="1280" step="5" value="375">
+    <span class="wval" id="vwv">375 px</span>
+    <div class="chips">
+      <span class="chip on" data-w="375">iPhone SE</span>
+      <span class="chip" data-w="412">Pixel</span>
+      <span class="chip" data-w="820">Tablet</span>
+      <span class="chip" data-w="1024">Laptop</span>
+      <span class="chip" data-w="1280">Desktop</span>
+    </div>
+  </div>
+
+  <div class="ba stacked">
+    <div class="pane before">
+      <h4>Dziś <span class="badge" id="r2a">—</span></h4>
+      <div class="body">
+        <div class="sim-wrap"><div class="stage sim" style="width:375px">
+          <div class="demo demo-main-now">
+            <div class="admin-table-scroll">
+              <table class="admin-data-table" id="t2a">
+                <thead><tr><th>APLIKACJA</th><th>NAZWA</th><th>PIN</th><th>UPRAWNIENIA</th><th>AKCJE</th></tr></thead>
+                <tbody>
+                  <tr><td style="text-align:center"><input type="checkbox" checked></td>
+                      <td><input class="admin-input" value="Jan Kowalski"></td>
+                      <td><input class="admin-input" value="12345"></td>
+                      <td>Czat, Statystyki</td>
+                      <td><button style="padding:8px 12px;font-size:11px;border-radius:8px;border:1px solid rgba(226,58,75,.6);background:rgba(226,58,75,.18);color:var(--ink);font-family:var(--font-panel);letter-spacing:.12em;text-transform:uppercase">Usuń</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        </div>
+        <p class="readout">Tabela: <b id="w2a">—</b> · przewijanie w bok: <b id="o2a">—</b></p>
+      </div>
+    </div>
+
+    <div class="pane after">
+      <h4>Po zmianie <span class="badge" id="r2b">—</span></h4>
+      <div class="body">
+        <div class="sim-wrap"><div class="stage sim" style="width:375px">
+          <div class="demo demo-next">
+            <div class="admin-table-scroll">
+              <table class="admin-data-table t-fluid" id="t2b"
+                     style="--table-min:calc(var(--col-flag) + var(--col-text-md) + var(--col-text-sm) + var(--col-text-lg) + var(--col-actions))">
+                <colgroup><col style="width:var(--col-flag)"><col style="width:var(--col-text-md)"><col style="width:var(--col-text-sm)"><col style="width:var(--col-text-lg)"><col style="width:var(--col-actions)"></colgroup>
+                <thead><tr><th>APLIKACJA</th><th>NAZWA</th><th>PIN</th><th>UPRAWNIENIA</th><th>AKCJE</th></tr></thead>
+                <tbody>
+                  <tr><td style="text-align:center"><input type="checkbox" checked></td>
+                      <td><input class="admin-input" value="Jan Kowalski"></td>
+                      <td><input class="admin-input" value="12345"></td>
+                      <td>Czat, Statystyki</td>
+                      <td><button style="padding:8px 12px;font-size:11px;border-radius:8px;border:1px solid rgba(226,58,75,.6);background:rgba(226,58,75,.18);color:var(--ink);font-family:var(--font-panel);letter-spacing:.12em;text-transform:uppercase">Usuń</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        </div>
+        <p class="readout">Tabela: <b id="w2b">—</b> · przewijanie w bok: <b id="o2b">—</b></p>
+      </div>
+    </div>
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);margin-top:14px">Od około 820 px oba warianty pokazują te same liczby — pięciokolumnowa lista graczy mieści się wtedy w panelu tak czy inaczej. Różnica ujawnia się na telefonie: przy 375 px wariant obecny wymaga <b style="color:var(--ink)">+394 px</b> nawigacji w poziomie, docelowy <b style="color:var(--ink)">+283 px</b>. Pięciu kolumn z dwoma polami tekstowymi nie da się zmieścić na telefonie bez ścinania treści — dlatego dla najczęściej używanych list warto rozważyć dodatkowo układ kartowy, wymieniony w dokumencie źródłowym.</p>
+
+  <div class="note"><b>Uwaga metodologiczna.</b> W demo mobilna skala tokenów przełącza się przez <code>@container</code>, żeby reagowała na szerokość ramki, a nie okna przeglądarki. W aplikacji będzie to zwykłe <code>@media (max-width: 720px)</code> — efekt identyczny, tylko punktem odniesienia jest ekran.</div>
+</section>
+
+<!-- ============================ TOKENY ============================ -->
+<section id="tokeny">
+  <h2><span class="num">·</span>Skala tokenów zamiast 27 wartości</h2>
+  <p class="sub">Dziewięć zmiennych zastępuje 320 ręcznych reguł <code>nth-child</code> w obu modułach. Zmiana jednego tokenu przestraja wszystkie tabele naraz, a wariant mobilny (−20 %) działa automatycznie, bez duplikowania czegokolwiek.</p>
+
+  <div class="card">
+    <div class="tokens" id="tokList"></div>
+    <p style="font-size:13.5px;color:var(--muted);margin:16px 0 0">Wartości desktopowe. W breakpointcie <code>max-width: 720px</code> cała skala schodzi o około 20 %: <code>--col-text-md</code> z 192 na 160 px, <code>--col-num-md</code> ze 104 na 88 px i tak dalej.</p>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Dwa tryby tabeli</h3>
+    <div class="ba" style="margin-top:8px">
+      <div class="pane after"><h4><code>t-fluid</code> — tabela danych</h4><div class="body">
+        <p style="margin:0;font-size:14px;color:var(--muted)">Wypełnia kontener, przewija się gdy jest za wąsko. Dla list graczy, gier, wpłat, faz turnieju. Ustawia <code>min-width</code> na sumę tokenów, więc kolumny nigdy nie schodzą poniżej czytelnego minimum.</p></div></div>
+      <div class="pane after"><h4><code>t-compact</code> — podsumowanie</h4><div class="body">
+        <p style="margin:0;font-size:14px;color:var(--muted)">Zajmuje dokładnie tyle, ile potrzebują kolumny — nie rozciąga się do szerokości panelu. Dla tabel 2–4 kolumnowych: TABELA10, 11, 13, 14, 15, 17, bloki stołów, tabele kalkulatora.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ REDUKCJA ============================ -->
+<section id="redukcja">
+  <h2><span class="num">·</span>Ile węższe będą tabele</h2>
+  <p class="sub">Porównanie sumy zadeklarowanych szerokości kolumn dziś i po przypisaniu tokenów. Liczby dla wariantu desktopowego — na telefonie dochodzi jeszcze około 20 % z mobilnej skali.</p>
+
+  <div class="card">
+    <div class="bars" id="barChart"></div>
+    <div class="legend">
+      <span><i style="background:rgba(226,58,75,.85)"></i>dziś</span>
+      <span><i style="background:rgba(43,227,139,.85)"></i>po zmianie</span>
+    </div>
+  </div>
+
+  <div class="scroll-x">
+    <table class="cmp">
+      <thead><tr><th>Tabela</th><th style="text-align:right">Kolumn</th><th style="text-align:right">Dziś</th><th style="text-align:right">Po zmianie</th><th style="text-align:right">Różnica</th></tr></thead>
+      <tbody id="cmpBody"></tbody>
+    </table>
+  </div>
+  <p style="font-size:13.5px;color:var(--muted);margin-top:12px"><code>admin-games-ranking-table</code> jest jedyną tabelą, która już dziś działa poprawnie — ma <code>table-layout: fixed</code> i <code>min-width: 0</code>, więc mieści się w wąskim panelu bocznym. Tokeny ustalają tam wyłącznie proporcje kolumn, bez <code>--table-min</code>.</p>
+</section>
+
+<!-- ============================ PLAN ============================ -->
+<section id="plan">
+  <h2><span class="num">·</span>Plan wdrożenia</h2>
+  <p class="sub">Etapy uszeregowane od największego efektu przy najmniejszym ryzyku. Każdy jest samodzielny i osobno wdrażalny — można zatrzymać się po dowolnym.</p>
+
+  <div class="steps">
+    <div class="step"><div class="id">0</div><div>
+      <h4>Pomiar bazowy</h4>
+      <p>Zrzuty obu modułów przy 375 / 412 / 820 / 1024 / 1440 / 1920 px, widok admina i użytkownika. Materiał porównawczy do odbioru każdego kolejnego etapu.</p>
+      <div class="tags"><span class="tag">0,5 h</span><span class="tag r-low">bez ryzyka</span></div></div></div>
+
+    <div class="step hi"><div class="id">1</div><div>
+      <h4>Trzy linie o największym efekcie</h4>
+      <p>Second: <code>min-width: 860px</code> → <code>0</code>. Oba moduły: <code>.admin-data-table .admin-input { min-width: 0 }</code>. Main: próg tabletu z 720 na 1180 px. Sam ten etap likwiduje trzy z czterech problemów krytycznych i nie dotyka markupu.</p>
+      <div class="tags"><span class="tag">1 h</span><span class="tag r-low">ryzyko niskie</span><span class="tag">tylko CSS</span></div></div></div>
+
+    <div class="step"><div class="id">2</div><div>
+      <h4>Budżet szerokości i czytelność mobilna</h4>
+      <p>Paddingi mobilne (+17 % miejsca na tabelę), <code>clamp</code> menu bocznego zamiast minimum 9 px, przyklejony nagłówek tabeli, elementy dotykowe minimum 40 px na urządzeniach dotykowych. Bez ruszania kolumn.</p>
+      <div class="tags"><span class="tag">2 h</span><span class="tag r-low">ryzyko niskie</span><span class="tag">tylko CSS</span></div></div></div>
+
+    <div class="step"><div class="id">3</div><div>
+      <h4>Skala tokenów</h4>
+      <p>Dodanie bloku <code>:root</code> z dziewięcioma tokenami do obu arkuszy. Etap czysto addytywny — nic jeszcze z nich nie korzysta, więc wygląd się nie zmienia. Przygotowanie gruntu.</p>
+      <div class="tags"><span class="tag">2 h</span><span class="tag r-low">ryzyko niskie</span></div></div></div>
+
+    <div class="step"><div class="id">4</div><div>
+      <h4>Migracja Main na <code>colgroup</code></h4>
+      <p>Od najmniej ryzykownych: ranking → potwierdzenia → gracze → gry → szczegóły gry → kalkulator → statystyki graczy (18 kolumn) na końcu. Dla każdej tabeli: <code>&lt;colgroup&gt;</code> z tokenami, tryb, <code>--table-min</code> i usunięcie odpowiadających reguł <code>nth-child</code>.</p>
+      <div class="tags"><span class="tag">1 dzień</span><span class="tag r-mid">ryzyko średnie</span></div></div></div>
+
+    <div class="step"><div class="id">5</div><div>
+      <h4>Migracja Second</h4>
+      <p>Analogicznie, ale <code>&lt;colgroup&gt;</code> trafia do szablonów w <code>Second/app.js</code>. To edycja markupu, nie logiki — struktura wierszy i wszystkie atrybuty <code>data-*</code> pozostają nietknięte. Obowiązkowo według <code>Analizy/Wazne_Fokus.md</code>, żeby nie wrócił błąd utraty fokusu po autozapisie.</p>
+      <div class="tags"><span class="tag">1 dzień</span><span class="tag r-mid">ryzyko średnie</span></div></div></div>
+
+    <div class="step"><div class="id">6</div><div>
+      <h4>Porządki</h4>
+      <p>Usunięcie 86 martwych klas z <code>Second/styles.css</code> (45 % wszystkich — cały blok kalkulatora, statystyk i potwierdzeń, których w tym module nie ma), likwidacja <code>calc(100% + 46px)</code> i <code>margin-inline: -23px</code>, ograniczenie szerokości treści na dużych monitorach.</p>
+      <div class="tags"><span class="tag">0,5 dnia</span><span class="tag r-low">ryzyko niskie</span></div></div></div>
+
+    <div class="step"><div class="id">7</div><div>
+      <h4>Dokumentacja</h4>
+      <p><code>Kolumny.md</code> i <code>DetaleLayout.md</code> przepisane na skalę tokenów, <code>Documentation.md</code> obu modułów uzupełniona o model — wraz ze sprostowaniem trzech nieaktualnych zapisów wykrytych przy analizie.</p>
+      <div class="tags"><span class="tag">0,5 dnia</span><span class="tag r-low">bez ryzyka</span></div></div></div>
+  </div>
+
+  <div class="note"><b>Wariant minimalny.</b> Jeśli ma powstać tylko fragment: <b>Etap 1 + Etap 2</b>. Około trzech godzin pracy, likwiduje wszystkie problemy krytyczne poza jednostką <code>ch</code> i nie wymaga dotykania markupu ani JavaScriptu.</div>
+</section>
+
+<footer>
+  <p>Analiza przeprowadzona bez zmian w kodzie aplikacji. Pomiary: Chromium, <code>deviceScaleFactor: 1</code>, zasoby zewnętrzne zablokowane.<br>
+  Dokument źródłowy z pełnym mapowaniem kolumn wszystkich tabel obu modułów: <code>Analizy/Szerokosci_Kolumn_i_Pol_Responsywnosc_2026-09-08.md</code></p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var px = function(n){ return Math.round(n) + " px"; };
+
+  /* ---------- odczyty szerokości z żywych demo ---------- */
+  function readTable(tableId, wOut, cOut, badge, oOut){
+    var t = document.getElementById(tableId);
+    if(!t) return;
+    var w = t.getBoundingClientRect().width;
+    var cells = t.querySelectorAll("thead th");
+    var widths = [];
+    for(var i=0;i<cells.length;i++) widths.push(Math.round(cells[i].getBoundingClientRect().width));
+    if(wOut) document.getElementById(wOut).textContent = px(w);
+    if(cOut) document.getElementById(cOut).textContent = widths.join(" · ") + " px";
+    if(badge) document.getElementById(badge).textContent = px(w);
+    if(oOut){
+      var sc = t.closest(".admin-table-scroll");
+      var ov = sc ? Math.max(0, t.scrollWidth - sc.clientWidth) : 0;
+      document.getElementById(oOut).textContent = ov > 0 ? ("+" + px(ov)) : "brak";
+    }
+  }
+
+  function readOverflow(tableId, wOut, oOut, badge){
+    var t = document.getElementById(tableId);
+    if(!t) return;
+    var scroll = t.closest(".admin-table-scroll");
+    var tw = t.scrollWidth;
+    var over = scroll ? Math.max(0, tw - scroll.clientWidth) : 0;
+    if(wOut) document.getElementById(wOut).textContent = px(tw);
+    if(oOut) document.getElementById(oOut).textContent = over > 0 ? ("+" + px(over)) : "brak";
+    if(badge) document.getElementById(badge).textContent = px(tw);
+  }
+
+  function markScrollable(){
+    var boxes = document.querySelectorAll(".demo .admin-table-scroll");
+    for(var i=0;i<boxes.length;i++){
+      var stage = boxes[i].closest(".stage");
+      if(stage) stage.classList.toggle("is-scrollable", boxes[i].scrollWidth > boxes[i].clientWidth + 1);
+    }
+  }
+
+  function refresh(){
+    readTable("t1a","w1a","c1a","r1a","o1a");
+    readTable("t1b","w1b","c1b","r1b","o1b");
+    readTable("t3a","w3a","c3a","r3a");
+    readTable("t3b","w3b","c3b","r3b");
+    readOverflow("t2a","w2a","o2a","r2a");
+    readOverflow("t2b","w2b","o2b","r2b");
+    markScrollable();
+  }
+
+  /* ---------- suwak symulatora ---------- */
+  var slider = document.getElementById("vw");
+  var label  = document.getElementById("vwv");
+  var stages = document.querySelectorAll(".stage.sim");
+  var chips  = document.querySelectorAll(".chip");
+
+  function applyWidth(w){
+    for(var i=0;i<stages.length;i++) stages[i].style.width = w + "px";
+    label.textContent = w + " px";
+    for(var j=0;j<chips.length;j++){
+      chips[j].classList.toggle("on", Number(chips[j].getAttribute("data-w")) === w);
+    }
+    window.requestAnimationFrame(refresh);
+    // scena ma przejście szerokości (.18s) — odczyty muszą poczekać na jego koniec
+    window.clearTimeout(applyWidth._t);
+    applyWidth._t = window.setTimeout(refresh, 240);
+  }
+
+  if(slider){
+    slider.addEventListener("input", function(){ applyWidth(Number(slider.value)); });
+    for(var m=0;m<stages.length;m++){
+      stages[m].addEventListener("transitionend", function(e){
+        if(e.propertyName === "width") refresh();
+      });
+    }
+    for(var k=0;k<chips.length;k++){
+      chips[k].addEventListener("click", function(){
+        var w = Number(this.getAttribute("data-w"));
+        slider.value = w;
+        applyWidth(w);
+      });
+    }
+  }
+
+  /* ---------- skala tokenów ---------- */
+  var TOKENS = [
+    ["--col-num-xs",  56, "LP, Nr, %, licznik"],
+    ["--col-num-sm",  80, "krótkie liczby, wagi"],
+    ["--col-num-md", 104, "kwoty, stack, wynik"],
+    ["--col-flag",    88, "checkbox, Tak/Nie"],
+    ["--col-date",   120, "data"],
+    ["--col-text-sm",144, "rodzaj gry, status"],
+    ["--col-text-md",192, "nazwa gracza"],
+    ["--col-text-lg",256, "nazwa gry z akcjami"],
+    ["--col-actions",112, "przyciski w wierszu"]
+  ];
+  var tokHost = document.getElementById("tokList");
+  if(tokHost){
+    var maxTok = 256;
+    TOKENS.forEach(function(t){
+      var row = document.createElement("div");
+      row.className = "tok";
+      var name = document.createElement("div");
+      name.className = "tname";
+      name.textContent = t[0];
+      var barWrap = document.createElement("div");
+      var bar = document.createElement("div");
+      bar.className = "tbar";
+      bar.style.width = Math.round(t[1] / maxTok * 100) + "%";
+      bar.textContent = t[1] + " px — " + t[2];
+      barWrap.appendChild(bar);
+      row.appendChild(name); row.appendChild(barWrap);
+      tokHost.appendChild(row);
+    });
+  }
+
+  /* ---------- wykres redukcji + tabela ---------- */
+  var CMP = [
+    ["admin-games-players-stats-table", 18, 2224, 1408],
+    ["game-details-table",               9, 1192,  832],
+    ["admin-games-table",                6, 1072,  824],
+    ["confirmations-details-table",      8, 1032,  728],
+    ["players-table",                    5,  976,  792],
+    ["confirmations-table",              5,  936,  616],
+    ["admin-calculator-cash-table9",     6,  880,  712],
+    ["admin-calculator-table2",          5,  672,  568],
+    ["admin-calculator-cash-table10",    5,  656,  560],
+    ["admin-calculator-table1",          4,  512,  416]
+  ];
+  var maxW = 2224;
+  var chart = document.getElementById("barChart");
+  var body  = document.getElementById("cmpBody");
+
+  CMP.forEach(function(r){
+    if(chart){
+      ["now","next"].forEach(function(kind, idx){
+        var val = idx === 0 ? r[2] : r[3];
+        var row = document.createElement("div");
+        row.className = "bar-row";
+        var nm = document.createElement("div");
+        nm.className = "name";
+        nm.textContent = idx === 0 ? r[0] : "";
+        var track = document.createElement("div");
+        track.className = "bar-track";
+        var fill = document.createElement("div");
+        fill.className = "bar-fill " + kind;
+        fill.style.width = Math.max(6, Math.round(val / maxW * 100)) + "%";
+        fill.textContent = val + " px";
+        track.appendChild(fill);
+        row.appendChild(nm); row.appendChild(track);
+        chart.appendChild(row);
+      });
+      var spacer = document.createElement("div");
+      spacer.style.height = "4px";
+      chart.appendChild(spacer);
+    }
+    if(body){
+      var diff = Math.round((r[3] / r[2] - 1) * 100);
+      var diffTxt = "\u2212" + Math.abs(diff) + " %";
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td><code>" + r[0] + "</code></td>" +
+        "<td class='n'>" + r[1] + "</td>" +
+        "<td class='n'>" + r[2] + " px</td>" +
+        "<td class='n'>" + r[3] + " px</td>" +
+        "<td class='n drop'>" + diffTxt + "</td>";
+      body.appendChild(tr);
+    }
+  });
+
+  /* ---------- start ---------- */
+  window.addEventListener("resize", refresh);
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(refresh); }
+  window.addEventListener("load", refresh);
+  refresh();
+})();
+</script>
+</body>
+</html>

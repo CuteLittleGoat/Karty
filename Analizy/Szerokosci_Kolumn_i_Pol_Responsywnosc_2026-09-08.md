@@ -367,7 +367,7 @@ Rekomendacja: **A** — spełnia warunek „zmieniamy tylko wygląd” dosłowni
 | `players-table` | Aplikacja `--col-flag`, Nazwa `--col-text-md`, PIN `--col-text-sm`, Uprawnienia `--col-text-lg`, Akcje `--col-actions` | 792 px | `t-fluid` |
 | `admin-games-table` | Rodzaj `--col-text-sm`, Data `--col-date`, Nazwa `--col-text-lg`, Zamknięta `--col-flag`, Potwierdzeni `--col-num-md`, Akcje `--col-actions` | 824 px | `t-fluid` |
 | `admin-user-games-table` | jw. + Liczba miejsc `--col-num-sm` | 904 px | `t-fluid` |
-| `admin-games-ranking-table` | Miejsce `--col-num-xs`, Gracz `--col-text-md`, Wynik `--col-num-sm` | 328 px | `t-fluid` |
+| `admin-games-ranking-table` | Miejsce `--col-num-xs`, Gracz `--col-text-md`, Wynik `--col-num-sm` | **bez `--table-min`** ¹ | `t-fluid` |
 | `admin-games-players-stats-table` | Gracz `--col-text-md`, 11 × `--col-num-sm`, 6 × `--col-num-xs` | 1408 px | `t-fluid` |
 | `confirmations-table` | Nr `--col-num-xs`, Gracz `--col-text-md`, Status `--col-text-sm`, Akcje 2 × `--col-actions` | 616 px | `t-fluid` |
 | `confirmations-details-table` | Nr `--col-num-xs`, Gracz `--col-text-md`, 6 × `--col-num-sm` | 728 px | `t-fluid` |
@@ -380,6 +380,8 @@ Rekomendacja: **A** — spełnia warunek „zmieniamy tylko wygląd” dosłowni
 | `admin-calculator-cash-table9` | Nazwa `--col-text-md`, 4 × `--col-num-md`, ost. `--col-num-md` | 712 px | `t-fluid` |
 | `admin-calculator-cash-table10` | LP `--col-num-xs`, Nazwa `--col-text-md`, 3 × `--col-num-md` | 560 px | `t-fluid` |
 | `adminCalculatorRebuyTable`, `game-details-rebuy-table` | n × `--col-num-sm` | dynamiczna | `t-compact` |
+
+¹ Panel `Ranking` w `#statisticsTab` ma szerokość `34ch` (~275 px), czyli mniej niż suma tokenów (328 px). Ta tabela musi pozostać ściśliwa: `t-fluid` **bez** `--table-min` (czyli `min-width: 0`), a tokeny w `<colgroup>` ustalają tam wyłącznie proporcje kolumn. Kolumna `Gracz` zachowuje obcinanie wielokropkiem. Tabela już dziś działa poprawnie (`table-layout: fixed`, `min-width: 0`) i jest jedyną, która nie wymaga zmiany zachowania.
 
 Redukcja: `admin-games-players-stats-table` **2224 → 1408 px (−37 %)**, `players-table` **976 → 792 px (−19 %)**, `admin-games-table` **1072 → 824 px (−23 %)**.
 
