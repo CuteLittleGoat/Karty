@@ -41,6 +41,21 @@
   --font-panel: "Rajdhani", "Segoe UI", "Noto Sans", sans-serif;
   --font-text: "Inter", "Segoe UI", "Noto Sans", Arial, sans-serif;
   --admin-games-panel-item-height: 41px;
+
+  /* Skala szerokości kolumn — jedyne miejsce do strojenia tabel.
+     Jednostka rem (nie ch), bo ch zależy od fontu elementu i daje inną
+     wartość w <th> (Rajdhani 12px) niż w <td> (Inter 14.5px). */
+  --col-num-xs: 3.5rem;   /*  56px  LP, Nr, %, licznik            */
+  --col-num-sm: 5rem;     /*  80px  krótkie liczby, wagi          */
+  --col-num-md: 6.5rem;   /* 104px  kwoty, stack, wynik           */
+  --col-flag: 5.5rem;     /*  88px  checkbox, Tak/Nie             */
+  --col-date: 7.5rem;     /* 120px  data                          */
+  --col-text-sm: 9rem;    /* 144px  rodzaj gry, status tekstowy   */
+  --col-text-md: 12rem;   /* 192px  nazwa gracza                  */
+  --col-text-lg: 16rem;   /* 256px  nazwa gry z akcjami           */
+  --col-actions: 7rem;    /* 112px  przyciski w wierszu           */
+
+  --content-max: 1680px;
 }
 
 * {
@@ -303,10 +318,29 @@ h1 {
 }
 
 .admin-data-table {
-  width: max-content;
   border-collapse: collapse;
-  min-width: 100%;
-  table-layout: auto;
+  table-layout: fixed;
+}
+
+/* Tabela danych — wypełnia kontener, przewija się gdy jest za wąsko. */
+.admin-data-table.t-fluid {
+  width: 100%;
+  min-width: var(--table-min, 0);
+}
+
+/* Tabela podsumowania — zajmuje dokładnie tyle, ile potrzebują kolumny.
+   Szerokość musi być konkretna (nie auto), inaczej table-layout: fixed
+   nie działa i kolumny znów zależą od treści. */
+.admin-data-table.t-compact {
+  width: var(--table-min, auto);
+  min-width: 0;
+}
+
+/* Bez tego pole formularza narzuca komórce własną szerokość naturalną
+   (ok. 213 px przy domyślnym size=20), ignorując szerokość kolumny. */
+.admin-data-table .admin-input,
+.admin-data-table select.admin-input {
+  min-width: 0;
 }
 
 .admin-data-table th,
@@ -315,6 +349,20 @@ h1 {
   border-bottom: 1px solid var(--border2);
   text-align: left;
   vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Nagłówek może się zawinąć w dwie linie — lepiej to niż ucięty wyraz.
+   Szerokości kolumny to nie zmienia, bo layout jest ustalony przez colgroup. */
+.admin-data-table th {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+
+.admin-data-table td {
+  white-space: nowrap;
 }
 
 .admin-data-table th {
@@ -324,6 +372,9 @@ h1 {
   font-family: var(--font-panel);
   color: rgba(237, 235, 230, 0.85);
   background: rgba(0, 0, 0, 0.28);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .admin-games-players-stats-table tbody tr:nth-child(even) {
@@ -334,17 +385,15 @@ h1 {
   background: rgba(0, 0, 0, 0.2);
 }
 
+/* Liczba kolumn Rebuy jest zmienna, więc szerokość tabeli to suma kolumn. */
+.game-details-rebuy-table,
 #adminCalculatorRebuyTable {
-  width: auto;
-  min-width: 0;
-  table-layout: fixed;
+  width: max-content;
 }
 
 #adminCalculatorRebuyTable th,
 #adminCalculatorRebuyTable td {
-  min-width: 8ch;
-  width: 8ch;
-  max-width: 8ch;
+  width: var(--col-num-sm);
 }
 
 #adminCalculatorRebuyTable .admin-input {
@@ -352,17 +401,9 @@ h1 {
 }
 
 
-.game-details-rebuy-table {
-  width: auto;
-  min-width: 0;
-  table-layout: fixed;
-}
-
 .game-details-rebuy-table th,
 .game-details-rebuy-table td {
-  min-width: 8ch;
-  width: 8ch;
-  max-width: 8ch;
+  width: var(--col-num-sm);
 }
 
 .game-details-rebuy-table .admin-input {
@@ -373,9 +414,7 @@ h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 8ch;
-  min-width: 8ch;
-  max-width: 8ch;
+  width: 100%;
   min-height: 34px;
   padding: 6px 10px;
   border: 1px solid rgba(43, 227, 139, 0.45);
@@ -826,131 +865,19 @@ select:disabled,
   min-width: 0;
 }
 
-.admin-games-table th,
-.admin-games-table td,
-.admin-user-games-table th,
-.admin-user-games-table td,
-.players-table th,
-.players-table td,
-.confirmations-table th,
-.confirmations-table td,
-.game-details-table th,
-.game-details-table td,
-.confirmations-details-table th,
-.confirmations-details-table td,
-.admin-games-players-stats-table th,
-.admin-games-players-stats-table td,
-.admin-games-ranking-table th,
-.admin-games-ranking-table td,
-.admin-calculator-table1 th,
-.admin-calculator-table1 td,
-.admin-calculator-table2 th,
-.admin-calculator-table2 td,
-.admin-calculator-table3 th,
-.admin-calculator-table3 td,
-.admin-calculator-table4 th,
-.admin-calculator-table4 td,
-.admin-calculator-table5 th,
-.admin-calculator-table5 td,
-.admin-calculator-cash-table7 th,
-.admin-calculator-cash-table7 td,
-.admin-calculator-cash-table8 th,
-.admin-calculator-cash-table8 td,
-.admin-calculator-cash-table9 th,
-.admin-calculator-cash-table9 td,
-.admin-calculator-cash-table10 th,
-.admin-calculator-cash-table10 td {
-  white-space: nowrap;
+
+/* Szerokości kolumn deklaruje <colgroup> w markupie (tokeny --col-*).
+   Tutaj zostaje wyłącznie wyrównanie treści. */
+.players-table th:nth-child(1), .players-table td:nth-child(1),
+.admin-games-table th:nth-child(4), .admin-games-table td:nth-child(4),
+.admin-calculator-table2 th:nth-child(4), .admin-calculator-table2 td:nth-child(4) {
+  text-align: center;
 }
 
-.players-table th:nth-child(1), .players-table td:nth-child(1) { width: 5.5rem; min-width: 5.5rem; text-align: center; }
-.players-table th:nth-child(2), .players-table td:nth-child(2) { width: 16rem; min-width: 16rem; }
-.players-table th:nth-child(3), .players-table td:nth-child(3) { width: 10rem; min-width: 10rem; }
-.players-table th:nth-child(4), .players-table td:nth-child(4) { width: 22rem; min-width: 22rem; }
-.players-table th:nth-child(5), .players-table td:nth-child(5) { width: 7.5rem; min-width: 7.5rem; }
-
-.admin-games-table th:nth-child(1), .admin-games-table td:nth-child(1) { width: 8.5rem; min-width: 8.5rem; }
-.admin-games-table th:nth-child(2), .admin-games-table td:nth-child(2) { width: 8.5rem; min-width: 8.5rem; }
-.admin-games-table th:nth-child(3), .admin-games-table td:nth-child(3) { width: 20rem; min-width: 20rem; }
-.admin-games-table th:nth-child(4), .admin-games-table td:nth-child(4) { width: 7rem; min-width: 7rem; text-align: center; }
-.admin-games-table th:nth-child(5), .admin-games-table td:nth-child(5) { width: 11rem; min-width: 11rem; }
-.admin-games-table th:nth-child(6), .admin-games-table td:nth-child(6) { width: 12rem; min-width: 12rem; }
-
-.admin-games-players-stats-table th:nth-child(1), .admin-games-players-stats-table td:nth-child(1) { width: 12rem; min-width: 12rem; }
-.admin-games-players-stats-table th:nth-child(2), .admin-games-players-stats-table td:nth-child(2),
-.admin-games-players-stats-table th:nth-child(4), .admin-games-players-stats-table td:nth-child(4),
-.admin-games-players-stats-table th:nth-child(6), .admin-games-players-stats-table td:nth-child(6),
-.admin-games-players-stats-table th:nth-child(7), .admin-games-players-stats-table td:nth-child(7),
-.admin-games-players-stats-table th:nth-child(9), .admin-games-players-stats-table td:nth-child(9),
-.admin-games-players-stats-table th:nth-child(11), .admin-games-players-stats-table td:nth-child(11),
-.admin-games-players-stats-table th:nth-child(13), .admin-games-players-stats-table td:nth-child(13),
-.admin-games-players-stats-table th:nth-child(15), .admin-games-players-stats-table td:nth-child(15),
-.admin-games-players-stats-table th:nth-child(16), .admin-games-players-stats-table td:nth-child(16),
-.admin-games-players-stats-table th:nth-child(17), .admin-games-players-stats-table td:nth-child(17),
-.admin-games-players-stats-table th:nth-child(18), .admin-games-players-stats-table td:nth-child(18) { width: 8rem; min-width: 8rem; }
-.admin-games-players-stats-table th:nth-child(3), .admin-games-players-stats-table td:nth-child(3),
-.admin-games-players-stats-table th:nth-child(5), .admin-games-players-stats-table td:nth-child(5),
-.admin-games-players-stats-table th:nth-child(8), .admin-games-players-stats-table td:nth-child(8),
-.admin-games-players-stats-table th:nth-child(10), .admin-games-players-stats-table td:nth-child(10),
-.admin-games-players-stats-table th:nth-child(12), .admin-games-players-stats-table td:nth-child(12),
-.admin-games-players-stats-table th:nth-child(14), .admin-games-players-stats-table td:nth-child(14) { width: 6.5rem; min-width: 6.5rem; }
-
-.admin-games-ranking-table th:nth-child(1), .admin-games-ranking-table td:nth-child(1) { width: 8ch; min-width: 8ch; text-align: center; }
-.admin-games-ranking-table th:nth-child(2), .admin-games-ranking-table td:nth-child(2) { width: 13ch; min-width: 13ch; }
-.admin-games-ranking-table th:nth-child(3), .admin-games-ranking-table td:nth-child(3) { width: 6.5ch; min-width: 6.5ch; text-align: center; }
-
-.confirmations-table th:nth-child(1), .confirmations-table td:nth-child(1) { width: 8rem; min-width: 8rem; }
-.confirmations-table th:nth-child(2), .confirmations-table td:nth-child(2) { width: 8.5rem; min-width: 8.5rem; }
-.confirmations-table th:nth-child(3), .confirmations-table td:nth-child(3) { width: 16rem; min-width: 16rem; }
-.confirmations-table th:nth-child(4), .confirmations-table td:nth-child(4) { width: 10rem; min-width: 10rem; }
-.confirmations-table th:nth-child(5), .confirmations-table td:nth-child(5) { width: 16rem; min-width: 16rem; }
-
-.game-details-table th:nth-child(1), .game-details-table td:nth-child(1),
-.confirmations-details-table th:nth-child(1), .confirmations-details-table td:nth-child(1) { width: 3.5rem; min-width: 3.5rem; }
-.game-details-table th:nth-child(2), .game-details-table td:nth-child(2),
-.confirmations-details-table th:nth-child(2), .confirmations-details-table td:nth-child(2) { width: 13rem; min-width: 13rem; }
-.game-details-table th:nth-child(3), .game-details-table td:nth-child(3),
-.confirmations-details-table th:nth-child(3), .confirmations-details-table td:nth-child(3),
-.game-details-table th:nth-child(4), .game-details-table td:nth-child(4),
-.confirmations-details-table th:nth-child(4), .confirmations-details-table td:nth-child(4),
-.game-details-table th:nth-child(5), .game-details-table td:nth-child(5),
-.confirmations-details-table th:nth-child(5), .confirmations-details-table td:nth-child(5),
-.game-details-table th:nth-child(6), .game-details-table td:nth-child(6),
-.confirmations-details-table th:nth-child(6), .confirmations-details-table td:nth-child(6),
-.game-details-table th:nth-child(7), .game-details-table td:nth-child(7),
-.confirmations-details-table th:nth-child(7), .confirmations-details-table td:nth-child(7),
-.game-details-table th:nth-child(8), .game-details-table td:nth-child(8),
-.confirmations-details-table th:nth-child(8), .confirmations-details-table td:nth-child(8) { width: 8rem; min-width: 8rem; }
-.game-details-table th:nth-child(9), .game-details-table td:nth-child(9) { width: 10rem; min-width: 10rem; }
-
-.admin-calculator-table1 th:nth-child(1), .admin-calculator-table1 td:nth-child(1),
-.admin-calculator-table1 th:nth-child(2), .admin-calculator-table1 td:nth-child(2),
-.admin-calculator-table1 th:nth-child(3), .admin-calculator-table1 td:nth-child(3),
-.admin-calculator-table1 th:nth-child(4), .admin-calculator-table1 td:nth-child(4) { width: 8rem; min-width: 8rem; }
-.admin-calculator-table2 th:nth-child(1), .admin-calculator-table2 td:nth-child(1) { width: 4rem; min-width: 4rem; }
-.admin-calculator-table2 th:nth-child(2), .admin-calculator-table2 td:nth-child(2) { width: 14rem; min-width: 14rem; }
-.admin-calculator-table2 th:nth-child(3), .admin-calculator-table2 td:nth-child(3) { width: 8rem; min-width: 8rem; }
-.admin-calculator-table2 th:nth-child(4), .admin-calculator-table2 td:nth-child(4) { width: 7rem; min-width: 7rem; text-align: center; }
-.admin-calculator-table2 th:nth-child(5), .admin-calculator-table2 td:nth-child(5) { width: 9rem; min-width: 9rem; }
-.admin-calculator-table3 th, .admin-calculator-table3 td,
-.admin-calculator-cash-table7 th, .admin-calculator-cash-table7 td,
-.admin-calculator-cash-table8 th, .admin-calculator-cash-table8 td,
-.admin-calculator-table4 th, .admin-calculator-table4 td { width: 8rem; min-width: 8rem; }
-.admin-calculator-table5 th:nth-child(1), .admin-calculator-table5 td:nth-child(1) { width: 4rem; min-width: 4rem; }
-.admin-calculator-table5 th:nth-child(2), .admin-calculator-table5 td:nth-child(2) { width: 9rem; min-width: 9rem; }
-.admin-calculator-table5 th:nth-child(3), .admin-calculator-table5 td:nth-child(3) { width: 8rem; min-width: 8rem; }
-.admin-calculator-table5 th:last-child, .admin-calculator-table5 td:last-child { width: 8rem; min-width: 8rem; }
-.admin-calculator-cash-table9 th:nth-child(1), .admin-calculator-cash-table9 td:nth-child(1) { width: 13rem; min-width: 13rem; }
-.admin-calculator-cash-table9 th:nth-child(2), .admin-calculator-cash-table9 td:nth-child(2),
-.admin-calculator-cash-table9 th:nth-child(3), .admin-calculator-cash-table9 td:nth-child(3),
-.admin-calculator-cash-table9 th:nth-child(4), .admin-calculator-cash-table9 td:nth-child(4),
-.admin-calculator-cash-table9 th:nth-child(5), .admin-calculator-cash-table9 td:nth-child(5) { width: 8rem; min-width: 8rem; }
-.admin-calculator-cash-table9 th:nth-child(6), .admin-calculator-cash-table9 td:nth-child(6) { width: 10rem; min-width: 10rem; }
-.admin-calculator-cash-table10 th:nth-child(1), .admin-calculator-cash-table10 td:nth-child(1) { width: 4rem; min-width: 4rem; }
-.admin-calculator-cash-table10 th:nth-child(2), .admin-calculator-cash-table10 td:nth-child(2) { width: 13rem; min-width: 13rem; }
-.admin-calculator-cash-table10 th:nth-child(3), .admin-calculator-cash-table10 td:nth-child(3),
-.admin-calculator-cash-table10 th:nth-child(4), .admin-calculator-cash-table10 td:nth-child(4),
-.admin-calculator-cash-table10 th:nth-child(5), .admin-calculator-cash-table10 td:nth-child(5) { width: 8rem; min-width: 8rem; }
+.admin-games-ranking-table th:nth-child(1), .admin-games-ranking-table td:nth-child(1),
+.admin-games-ranking-table th:nth-child(3), .admin-games-ranking-table td:nth-child(3) {
+  text-align: center;
+}
 
 .admin-games-players-stats-table input.admin-input,
 .admin-calculator-table2 .admin-input,
@@ -974,7 +901,6 @@ select:disabled,
 .admin-games-ranking-table {
   width: 100%;
   min-width: 0;
-  table-layout: fixed;
 }
 
 .admin-games-ranking-table th,
@@ -1484,9 +1410,9 @@ body:not(.is-admin) .player-zone-layout {
 }
 
 .player-zone-button {
-  font-size: clamp(9px, 0.95vw, 12px);
-  letter-spacing: clamp(0.08em, 0.18vw, 0.18em);
-  white-space: nowrap;
+  font-size: clamp(11px, 1.1vw, 14px);
+  letter-spacing: 0.1em;
+  white-space: normal;
 }
 
 .player-zone-panel {
@@ -1505,9 +1431,8 @@ body:not(.is-admin) .player-zone-layout {
   overflow-x: auto;
 }
 
-.player-zone-sections-content .admin-data-table {
-  width: max-content;
-  min-width: 100%;
+.player-zone-sections-content .admin-data-table.t-fluid {
+  width: 100%;
 }
 
 #adminGamesTab .admin-games-section .admin-table-scroll,
@@ -1517,10 +1442,9 @@ body:not(.is-admin) .player-zone-layout {
   overflow-x: auto;
 }
 
-#adminGamesTab .admin-games-section .admin-data-table,
-#adminStatisticsTab .admin-games-section .admin-data-table {
-  width: max-content;
-  min-width: 100%;
+#adminGamesTab .admin-games-section .admin-data-table.t-fluid,
+#adminStatisticsTab .admin-games-section .admin-data-table.t-fluid {
+  width: 100%;
 }
 
 
@@ -1870,9 +1794,123 @@ body.modal-open {
 }
 
 
+/* Trzy kolumny dopiero, gdy kolumna treści nie będzie węższa od pasków bocznych.
+   Wcześniej próg 720 px zostawiał na tablecie 190 px na tabele. */
+@media (max-width: 1180px) {
+  .admin-games-layout,
+  #adminGamesTab .admin-games-layout,
+  #adminStatisticsTab .admin-games-layout,
+  #statisticsTab .admin-games-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Limit szerokości treści na bardzo szerokich monitorach.
+   Karta nadal sięga krawędzi ekranu — ograniczana jest tylko treść w środku. */
+.user-tab-content > *,
+.admin-panel-content > * {
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+/* Wygodniejsze cele dotykowe na telefonach i tabletach. */
+@media (pointer: coarse) {
+  .admin-row-delete,
+  .admin-pin-random,
+  .admin-permissions-edit,
+  .admin-chat-delete,
+  .permissions-years-button {
+    min-height: 40px;
+    padding-inline: 14px;
+    font-size: 12px;
+  }
+
+  .tab-button,
+  .admin-panel-tab {
+    min-height: 40px;
+  }
+}
+
+/* Układ kartowy dla list tylko do odczytu w widoku gracza.
+   Nagłówek znika, a każda komórka pokazuje własną etykietę z data-label. */
+@media (max-width: 560px) {
+  .admin-data-table.is-table-stacked,
+  .admin-data-table.is-table-stacked tbody,
+  .admin-data-table.is-table-stacked tr,
+  .admin-data-table.is-table-stacked td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-data-table.is-table-stacked thead {
+    display: none;
+  }
+
+  .admin-data-table.is-table-stacked tr {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, 0.24);
+  }
+
+  .admin-data-table.is-table-stacked td {
+    display: grid;
+    grid-template-columns: 11ch minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    border: 0;
+    padding: 5px 0;
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .admin-data-table.is-table-stacked td::before {
+    content: attr(data-label);
+    font-family: var(--font-panel);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+}
+
 @media (max-width: 720px) {
   .page {
-    padding: 24px 16px 60px;
+    padding: 20px 10px 48px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .admin-games-sidebar,
+  .admin-games-content {
+    padding: 10px;
+  }
+
+  .admin-data-table th,
+  .admin-data-table td {
+    padding: 8px 6px;
+  }
+
+  /* Ciaśniejszy odstęp liter daje ok. 20 % więcej miejsca w nagłówku,
+     dzięki czemu słowa takie jak APLIKACJA mieszczą się bez łamania. */
+  .admin-data-table th {
+    letter-spacing: 0.04em;
+  }
+
+  /* Mobilna skala kolumn — ok. 20 % węższa od desktopowej. */
+  :root {
+    --col-num-xs: 3rem;
+    --col-num-sm: 4rem;
+    --col-num-md: 5.5rem;
+    --col-flag: 5.5rem;   /* bez zmian wobec desktopu: mieści nagłówki typu APLIKACJA */
+    --col-date: 6.5rem;
+    --col-text-sm: 7.5rem;
+    --col-text-md: 10rem;
+    --col-text-lg: 12rem;
+    --col-actions: 6rem;
   }
 
   body:not(.is-admin) .page {
@@ -1915,22 +1953,6 @@ body.modal-open {
     align-self: flex-end;
   }
 
-  .admin-games-layout {
-    grid-template-columns: 1fr;
-  }
-
-  #adminGamesTab .admin-games-layout {
-    grid-template-columns: 1fr;
-  }
-
-  #adminStatisticsTab .admin-games-layout {
-    grid-template-columns: 1fr;
-  }
-
-  #statisticsTab .admin-games-layout {
-    grid-template-columns: 1fr;
-  }
-
   .chat-form-actions {
     flex-direction: column;
     align-items: stretch;
@@ -1941,10 +1963,6 @@ body.modal-open {
     max-height: 300px;
   }
 
-  .player-zone-button {
-    font-size: 14px;
-    letter-spacing: 0.12em;
-  }
 }
 
 @media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 500px) {

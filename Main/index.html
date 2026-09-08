@@ -136,7 +136,14 @@
               <span id="adminPlayersStatus" class="status-text" aria-live="polite"></span>
               <p id="adminPlayersSummary" class="status-text">Liczba dodanych graczy: 0</p>
               <div class="admin-table-scroll">
-                <table class="admin-data-table players-table">
+                <table class="admin-data-table players-table t-fluid" style="--table-min: calc(var(--col-flag) + var(--col-text-md) + var(--col-text-md) + var(--col-text-lg) + var(--col-actions))">
+                  <colgroup>
+                  <col style="width: var(--col-flag)">
+                  <col style="width: var(--col-text-md)">
+                  <col style="width: var(--col-text-md)">
+                  <col>
+                  <col style="width: var(--col-actions)">
+                  </colgroup>
                   <thead>
                     <tr>
                       <th>Aplikacja</th>
@@ -170,7 +177,15 @@
                     <button id="adminGamesAddGame" class="primary" type="button">Dodaj</button>
                   </div>
                   <div class="admin-table-scroll">
-                    <table class="admin-data-table admin-games-table">
+                    <table class="admin-data-table admin-games-table t-fluid" style="--table-min: calc(var(--col-text-sm) + var(--col-date) + var(--col-text-lg) + var(--col-flag) + var(--col-num-md) + var(--col-actions))">
+                      <colgroup>
+                      <col style="width: var(--col-text-sm)">
+                      <col style="width: var(--col-date)">
+                      <col>
+                      <col style="width: var(--col-flag)">
+                      <col style="width: var(--col-num-md)">
+                      <col style="width: var(--col-actions)">
+                      </colgroup>
                       <thead>
                         <tr>
                           <th>Rodzaj Gry</th>
@@ -189,7 +204,11 @@
                 <div class="admin-games-section">
                   <h3>Statystyki</h3>
                   <div class="admin-table-scroll">
-                    <table class="admin-data-table">
+                    <table class="admin-data-table t-fluid" style="--table-min: calc(var(--col-text-md) + var(--col-num-md))">
+                      <colgroup>
+                      <col>
+                      <col style="width: var(--col-num-md)">
+                      </colgroup>
                       <thead>
                         <tr>
                           <th>Opis</th>
@@ -200,7 +219,27 @@
                     </table>
                   </div>
                   <div class="admin-table-scroll">
-                    <table class="admin-data-table admin-games-players-stats-table">
+                    <table class="admin-data-table admin-games-players-stats-table t-fluid" style="--table-min: calc(var(--col-text-md) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm))">
+                      <colgroup>
+                      <col>
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-xs)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-xs)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-xs)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-xs)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-xs)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-xs)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-sm)">
+                      </colgroup>
                       <thead>
                         <tr>
                           <th>Gracz</th>
@@ -233,7 +272,12 @@
                   <h3>Ranking</h3>
                 </div>
                 <div class="admin-table-scroll">
-                  <table class="admin-data-table admin-games-ranking-table">
+                  <table class="admin-data-table admin-games-ranking-table t-fluid">
+                    <colgroup>
+                    <col style="width: var(--col-num-xs)">
+                    <col>
+                    <col style="width: var(--col-num-sm)">
+                    </colgroup>
                     <thead>
                       <tr>
                         <th>Miejsce</th>
@@ -263,7 +307,16 @@
                     <button id="adminUserGamesAddGame" class="primary" type="button">Dodaj</button>
                   </div>
                   <div class="admin-table-scroll">
-                    <table class="admin-data-table admin-games-table admin-user-games-table">
+                    <table class="admin-data-table admin-games-table admin-user-games-table t-fluid" style="--table-min: calc(var(--col-text-sm) + var(--col-date) + var(--col-text-lg) + var(--col-flag) + var(--col-num-sm) + var(--col-num-md) + var(--col-actions))">
+                      <colgroup>
+                      <col style="width: var(--col-text-sm)">
+                      <col style="width: var(--col-date)">
+                      <col>
+                      <col style="width: var(--col-flag)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-md)">
+                      <col style="width: var(--col-actions)">
+                      </colgroup>
                       <thead>
                         <tr>
                           <th>Rodzaj Gry</th>
@@ -290,7 +343,14 @@
                   <h3>Najbliższa gra</h3>
                 </div>
                 <div class="admin-table-scroll">
-                  <table class="admin-data-table">
+                  <table class="admin-data-table t-fluid" style="--table-min: calc(var(--col-text-sm) + var(--col-date) + var(--col-text-lg) + var(--col-flag) + var(--col-actions))">
+                    <colgroup>
+                    <col style="width: var(--col-text-sm)">
+                    <col style="width: var(--col-date)">
+                    <col>
+                    <col style="width: var(--col-flag)">
+                    <col style="width: var(--col-actions)">
+                    </colgroup>
                     <thead>
                       <tr>
                         <th>Rodzaj gry</th>
@@ -322,7 +382,11 @@
                     <button id="adminStatisticsExport" class="secondary" type="button">Eksportuj</button>
                   </div>
                   <div class="admin-table-scroll">
-                    <table class="admin-data-table">
+                    <table class="admin-data-table t-fluid" style="--table-min: calc(var(--col-text-md) + var(--col-num-md))">
+                      <colgroup>
+                      <col>
+                      <col style="width: var(--col-num-md)">
+                      </colgroup>
                       <thead>
                         <tr>
                           <th>Opis</th>
@@ -333,7 +397,27 @@
                     </table>
                   </div>
                   <div class="admin-table-scroll">
-                    <table class="admin-data-table admin-games-players-stats-table">
+                    <table class="admin-data-table admin-games-players-stats-table t-fluid" style="--table-min: calc(var(--col-text-md) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm))">
+                      <colgroup>
+                      <col>
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-xs)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-xs)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-xs)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-xs)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-xs)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-xs)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-num-sm)">
+                      </colgroup>
                       <thead>
                         <tr>
                           <th>Gracz</th>
@@ -366,7 +450,12 @@
                   <h3>Ranking</h3>
                 </div>
                 <div class="admin-table-scroll">
-                  <table class="admin-data-table admin-games-ranking-table">
+                  <table class="admin-data-table admin-games-ranking-table t-fluid">
+                    <colgroup>
+                    <col style="width: var(--col-num-xs)">
+                    <col>
+                    <col style="width: var(--col-num-sm)">
+                    </colgroup>
                     <thead>
                       <tr>
                         <th>Miejsce</th>
@@ -547,7 +636,13 @@
                       </div>
                       <div id="nextGameContent" class="next-game-content">
                         <div class="admin-table-scroll">
-                          <table class="admin-data-table">
+                          <table class="admin-data-table t-fluid is-table-stacked" style="--table-min: calc(var(--col-text-sm) + var(--col-date) + var(--col-text-lg) + var(--col-flag))">
+                            <colgroup>
+                            <col style="width: var(--col-text-sm)">
+                            <col style="width: var(--col-date)">
+                            <col>
+                            <col style="width: var(--col-flag)">
+                            </colgroup>
                             <thead><tr><th>Rodzaj gry</th><th>Data</th><th>Nazwa</th><th>CzyWszyscyPotwierdzili</th></tr></thead>
                             <tbody id="nextGameTableBody"></tbody>
                           </table>
@@ -616,7 +711,13 @@
                   <span id="confirmationsStatus" class="status-text" aria-live="polite"></span>
                 </div>
                 <div class="admin-table-scroll">
-                  <table class="admin-data-table confirmations-table">
+                  <table class="admin-data-table confirmations-table t-fluid is-table-stacked" style="--table-min: calc(var(--col-text-sm) + var(--col-date) + var(--col-text-lg) + var(--col-actions))">
+                    <colgroup>
+                    <col style="width: var(--col-text-sm)">
+                    <col style="width: var(--col-date)">
+                    <col>
+                    <col style="width: var(--col-actions)">
+                    </colgroup>
                     <thead>
                       <tr>
                         <th>Rodzaj Gry</th>
@@ -666,7 +767,16 @@
                         <button id="userGamesAddGame" class="primary" type="button">Dodaj</button>
                       </div>
                       <div class="admin-table-scroll">
-                        <table class="admin-data-table admin-games-table admin-user-games-table">
+                        <table class="admin-data-table admin-games-table admin-user-games-table t-fluid" style="--table-min: calc(var(--col-text-sm) + var(--col-date) + var(--col-text-lg) + var(--col-flag) + var(--col-num-sm) + var(--col-num-md) + var(--col-actions))">
+                          <colgroup>
+                          <col style="width: var(--col-text-sm)">
+                          <col style="width: var(--col-date)">
+                          <col>
+                          <col style="width: var(--col-flag)">
+                          <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-num-md)">
+                          <col style="width: var(--col-actions)">
+                          </colgroup>
                           <thead>
                             <tr>
                               <th>Rodzaj Gry</th>
@@ -723,7 +833,11 @@
                         <button id="statisticsExport" class="secondary" type="button">Eksportuj</button>
                       </div>
                       <div class="admin-table-scroll">
-                        <table class="admin-data-table">
+                        <table class="admin-data-table t-fluid" style="--table-min: calc(var(--col-text-md) + var(--col-num-md))">
+                          <colgroup>
+                          <col>
+                          <col style="width: var(--col-num-md)">
+                          </colgroup>
                           <thead>
                             <tr>
                               <th>Opis</th>
@@ -734,7 +848,27 @@
                         </table>
                       </div>
                       <div class="admin-table-scroll">
-                        <table class="admin-data-table admin-games-players-stats-table">
+                        <table class="admin-data-table admin-games-players-stats-table t-fluid" style="--table-min: calc(var(--col-text-md) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-xs) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm))">
+                          <colgroup>
+                          <col>
+                          <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-num-xs)">
+                          <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-num-xs)">
+                          <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-num-xs)">
+                          <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-num-xs)">
+                          <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-num-xs)">
+                          <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-num-xs)">
+                          <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-num-sm)">
+                          </colgroup>
                           <thead>
                             <tr>
                               <th>Gracz</th>
@@ -767,7 +901,12 @@
                       <h3>Ranking</h3>
                     </div>
                     <div class="admin-table-scroll">
-                      <table class="admin-data-table admin-games-ranking-table">
+                      <table class="admin-data-table admin-games-ranking-table t-fluid">
+                        <colgroup>
+                        <col style="width: var(--col-num-xs)">
+                        <col>
+                        <col style="width: var(--col-num-sm)">
+                        </colgroup>
                         <thead>
                           <tr>
                             <th>Miejsce</th>
@@ -893,7 +1032,18 @@
         </div>
         <div class="modal-body">
           <div class="admin-table-scroll">
-            <table class="admin-data-table game-details-table">
+            <table class="admin-data-table game-details-table t-fluid" style="--table-min: calc(var(--col-num-xs) + var(--col-text-md) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-md))">
+              <colgroup>
+              <col style="width: var(--col-num-xs)">
+              <col>
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-md)">
+              </colgroup>
               <thead>
                 <tr>
                   <th>LP</th>
@@ -925,7 +1075,18 @@
         </div>
         <div class="modal-body">
           <div class="admin-table-scroll">
-            <table class="admin-data-table game-details-table">
+            <table class="admin-data-table game-details-table t-fluid" style="--table-min: calc(var(--col-num-xs) + var(--col-text-md) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-md))">
+              <colgroup>
+              <col style="width: var(--col-num-xs)">
+              <col>
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-md)">
+              </colgroup>
               <thead>
                 <tr>
                   <th>LP</th>
@@ -957,7 +1118,18 @@
         </div>
         <div class="modal-body">
           <div class="admin-table-scroll">
-            <table class="admin-data-table game-details-table">
+            <table class="admin-data-table game-details-table t-fluid" style="--table-min: calc(var(--col-num-xs) + var(--col-text-md) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-md))">
+              <colgroup>
+              <col style="width: var(--col-num-xs)">
+              <col>
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-md)">
+              </colgroup>
               <thead>
                 <tr>
                   <th>LP</th>
@@ -990,7 +1162,17 @@
         <div class="modal-body">
           <p id="confirmationsDetailsMeta" class="status-text"></p>
           <div class="admin-table-scroll">
-            <table class="admin-data-table confirmations-details-table">
+            <table class="admin-data-table confirmations-details-table t-fluid is-table-stacked" style="--table-min: calc(var(--col-num-xs) + var(--col-text-md) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm) + var(--col-num-sm))">
+              <colgroup>
+              <col style="width: var(--col-num-xs)">
+              <col>
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              <col style="width: var(--col-num-sm)">
+              </colgroup>
               <thead>
                 <tr>
                   <th>LP</th>
@@ -1009,7 +1191,12 @@
           <h4 class="confirmations-order-title">Kolejność potwierdzeń</h4>
           <p id="confirmationsOrderSummary" class="status-text"></p>
           <div class="admin-table-scroll">
-            <table class="admin-data-table confirmations-order-table">
+            <table class="admin-data-table confirmations-order-table t-fluid is-table-stacked" style="--table-min: calc(var(--col-num-xs) + var(--col-text-md) + var(--col-text-sm))">
+              <colgroup>
+              <col style="width: var(--col-num-xs)">
+              <col>
+              <col style="width: var(--col-text-sm)">
+              </colgroup>
               <thead>
                 <tr>
                   <th>Nr</th>

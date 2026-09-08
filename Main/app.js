@@ -1,3 +1,55 @@
+// Szerokości kolumn tabel — tokeny z Main/styles.css (:root --col-*).
+// Kolumny deklaruje <colgroup>, a --table-min pilnuje minimum całej tabeli.
+const COL = {
+  xs: "var(--col-num-xs)",
+  sm: "var(--col-num-sm)",
+  md: "var(--col-num-md)",
+  flag: "var(--col-flag)",
+  date: "var(--col-date)",
+  tsm: "var(--col-text-sm)",
+  tmd: "var(--col-text-md)",
+  tlg: "var(--col-text-lg)",
+  act: "var(--col-actions)",
+};
+
+// Jedna kolumna tekstowa (tlg, a jak jej nie ma to tmd) dostaje szerokość auto,
+// dzięki czemu to ona wchłania nadmiar miejsca w szerokim panelu.
+// Na ekranach do 560 px listy tylko do odczytu prezentujemy jako karty
+// „etykieta → wartość” (CSS: .is-table-stacked). Etykiety uzupełniamy
+// z nagłówka tabeli, żeby nie powielać ich w każdej komórce.
+const fillStackedLabels = (scope) => {
+  (scope || document).querySelectorAll("table.is-table-stacked").forEach((table) => {
+    const labels = Array.from(table.querySelectorAll("thead th")).map((cell) => cell.textContent.trim());
+    if (!labels.length) return;
+    table.querySelectorAll("tbody tr").forEach((row) => {
+      Array.from(row.children).forEach((cell, index) => {
+        if (cell.hasAttribute("colspan")) return;
+        if (labels[index]) cell.setAttribute("data-label", labels[index]);
+      });
+    });
+  });
+};
+
+const watchStackedLabels = () => {
+  new MutationObserver(() => fillStackedLabels(document)).observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+  fillStackedLabels(document);
+};
+
+const tableColumns = (table, tokens, mode = "t-fluid") => {
+  table.classList.add(mode);
+  table.style.setProperty("--table-min", `calc(${tokens.map((token) => COL[token]).join(" + ")})`);
+  const flexIndex = mode === "t-fluid" ? Math.max(tokens.indexOf("tlg"), -1) >= 0
+    ? tokens.indexOf("tlg")
+    : tokens.indexOf("tmd") : -1;
+  const cols = tokens
+    .map((token, index) => (index === flexIndex ? "<col>" : `<col style="width: ${COL[token]}">`))
+    .join("");
+  return `<colgroup>${cols}</colgroup>`;
+};
+
 const PIN_LENGTH = 5;
 const PIN_STORAGE_KEY = "nextGamePinVerified";
 const CHAT_PIN_STORAGE_KEY = "chatPinVerified";
@@ -2022,7 +2074,12 @@ const getConfirmationsStatusModalController = () => {
       <div class="modal-body">
         <p class="status-text" data-confirmations-status-meta></p>
         <div class="admin-table-scroll">
-          <table class="admin-data-table">
+          <table class="admin-data-table t-fluid" style="--table-min: calc(var(--col-num-xs) + var(--col-text-md) + var(--col-text-sm))">
+            <colgroup>
+              <col style="width: var(--col-num-xs)">
+              <col style="width: var(--col-text-md)">
+              <col style="width: var(--col-text-sm)">
+            </colgroup>
             <thead>
               <tr>
                 <th>Nr</th>
@@ -3138,7 +3195,7 @@ const initUserGamesManager = ({
         <button type="button" class="icon-button" data-game-rebuy-close aria-label="Zamknij okno">×</button>
       </div>
       <div class="admin-table-scroll">
-        <table class="admin-data-table game-details-rebuy-table" data-game-rebuy-table></table>
+        <table class="admin-data-table game-details-rebuy-table t-compact" data-game-rebuy-table></table>
       </div>
       <div class="admin-table-actions" data-game-rebuy-actions></div>
     </div>
@@ -5398,7 +5455,7 @@ const initAdminCalculator = () => {
       </div>
       <div class="modal-body">
         <div class="admin-table-scroll">
-          <table class="admin-data-table" id="adminCalculatorRebuyTable"></table>
+          <table class="admin-data-table t-compact" id="adminCalculatorRebuyTable"></table>
         </div>
         <div class="admin-table-actions" id="adminCalculatorRebuyActions"></div>
       </div>
@@ -5529,7 +5586,9 @@ const initAdminCalculator = () => {
 
     const table = document.createElement("table");
     table.className = "admin-data-table admin-calculator-table1";
-    table.innerHTML = `<thead><tr><th>Suma</th><th>Buy-In</th><th>Rebuy</th><th>Liczba Rebuy</th></tr></thead>`;
+    table.innerHTML =
+      tableColumns(table, ["md", "md", "md", "md"], "t-compact") +
+      `<thead><tr><th>Suma</th><th>Buy-In</th><th>Rebuy</th><th>Liczba Rebuy</th></tr></thead>`;
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
 
@@ -5596,7 +5655,9 @@ const initAdminCalculator = () => {
 
     const table = document.createElement("table");
     table.className = "admin-data-table admin-calculator-table2";
-    table.innerHTML = `<thead><tr><th>LP</th><th>Gracz</th><th>Buy-In</th><th>Rebuy</th><th>Eliminated</th><th></th></tr></thead>`;
+    table.innerHTML =
+      tableColumns(table, ["xs", "tmd", "md", "md", "flag", "act"]) +
+      `<thead><tr><th>LP</th><th>Gracz</th><th>Buy-In</th><th>Rebuy</th><th>Eliminated</th><th></th></tr></thead>`;
     const tbody = document.createElement("tbody");
 
     modeState.table2Rows.forEach((row, index) => {
@@ -5718,7 +5779,9 @@ const initAdminCalculator = () => {
 
     const table = document.createElement("table");
     table.className = "admin-data-table admin-calculator-table3";
-    table.innerHTML = `<thead><tr><th>%</th><th>Rake</th><th>Wpisowe</th><th>Rebuy</th><th>Pot</th></tr></thead>`;
+    table.innerHTML =
+      tableColumns(table, ["xs", "md", "md", "md", "md"], "t-compact") +
+      `<thead><tr><th>%</th><th>Rake</th><th>Wpisowe</th><th>Rebuy</th><th>Pot</th></tr></thead>`;
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
 
@@ -5769,7 +5832,9 @@ const initAdminCalculator = () => {
     const table4Rows = getTable4Rows();
     const table = document.createElement("table");
     table.className = "admin-data-table admin-calculator-table4";
-    table.innerHTML = `<thead><tr><th>LP</th><th>Gracz</th><th>Wygrana</th></tr></thead>`;
+    table.innerHTML =
+      tableColumns(table, ["xs", "tmd", "md"]) +
+      `<thead><tr><th>LP</th><th>Gracz</th><th>Wygrana</th></tr></thead>`;
     const tbody = document.createElement("tbody");
 
     for (let index = 0; index < modeState.table2Rows.length; index += 1) {
@@ -5804,7 +5869,11 @@ const initAdminCalculator = () => {
 
     const table = document.createElement("table");
     table.className = "admin-data-table admin-calculator-table5";
-    let headerHtml = "<thead><tr><th>LP</th><th>Podział puli</th><th>Kwota</th>";
+    const table5Tokens = ["xs", "md", "md"]
+      .concat(new Array(rebuyColumnsCount).fill("sm"))
+      .concat(["md", "md"]);
+    let headerHtml = tableColumns(table, table5Tokens);
+    headerHtml += "<thead><tr><th>LP</th><th>Podział puli</th><th>Kwota</th>";
     for (let i = 1; i <= rebuyColumnsCount; i += 1) {
       headerHtml += `<th data-rebuy-column="true">Rebuy${i}</th>`;
     }
@@ -5899,7 +5968,9 @@ const initAdminCalculator = () => {
 
     const table = document.createElement("table");
     table.className = "admin-data-table admin-calculator-cash-table7";
-    table.innerHTML = "<thead><tr><th>Buy-In</th><th>Rebuy</th><th>Suma</th></tr></thead>";
+    table.innerHTML =
+      tableColumns(table, ["md", "md", "md"], "t-compact") +
+      "<thead><tr><th>Buy-In</th><th>Rebuy</th><th>Suma</th></tr></thead>";
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
     tr.append(
@@ -5922,7 +5993,9 @@ const initAdminCalculator = () => {
 
     const table = document.createElement("table");
     table.className = "admin-data-table admin-calculator-cash-table8";
-    table.innerHTML = "<thead><tr><th>%</th><th>Rake</th><th>Pot</th></tr></thead>";
+    table.innerHTML =
+      tableColumns(table, ["xs", "md", "md"], "t-compact") +
+      "<thead><tr><th>%</th><th>Rake</th><th>Pot</th></tr></thead>";
     const tbody = document.createElement("tbody");
     const tr = document.createElement("tr");
 
@@ -5967,7 +6040,9 @@ const initAdminCalculator = () => {
 
     const table = document.createElement("table");
     table.className = "admin-data-table admin-calculator-cash-table9";
-    table.innerHTML = "<thead><tr><th>Gracz</th><th><button type=\"button\" class=\"secondary\" data-cash-buyin-bulk>Buy-In</button></th><th>Rebuy</th><th>Wypłata</th><th>+/-</th><th></th></tr></thead>";
+    table.innerHTML =
+      tableColumns(table, ["tmd", "md", "md", "md", "md", "act"]) +
+      "<thead><tr><th>Gracz</th><th><button type=\"button\" class=\"secondary\" data-cash-buyin-bulk>Buy-In</button></th><th>Rebuy</th><th>Wypłata</th><th>+/-</th><th></th></tr></thead>";
     const tbody = document.createElement("tbody");
 
     const bulkBuyInButton = table.querySelector("[data-cash-buyin-bulk]");
@@ -6130,7 +6205,9 @@ const initAdminCalculator = () => {
 
     const table = document.createElement("table");
     table.className = "admin-data-table admin-calculator-cash-table10";
-    table.innerHTML = "<thead><tr><th>Lp</th><th>Gracz</th><th>Wypłata</th><th>+/-</th><th>% Puli</th></tr></thead>";
+    table.innerHTML =
+      tableColumns(table, ["xs", "tmd", "md", "md", "sm"]) +
+      "<thead><tr><th>Lp</th><th>Gracz</th><th>Wypłata</th><th>+/-</th><th>% Puli</th></tr></thead>";
     const tbody = document.createElement("tbody");
 
     getCashTable10Rows().forEach((row, index) => {
@@ -7962,7 +8039,7 @@ const initAdminGames = () => {
         <button type="button" class="icon-button" data-game-rebuy-close aria-label="Zamknij okno">×</button>
       </div>
       <div class="admin-table-scroll">
-        <table class="admin-data-table game-details-rebuy-table" data-game-rebuy-table></table>
+        <table class="admin-data-table game-details-rebuy-table t-compact" data-game-rebuy-table></table>
       </div>
       <div class="admin-table-actions" data-game-rebuy-actions></div>
     </div>
@@ -9926,6 +10003,7 @@ const bootstrap = async () => {
     console.error("Nie udało się ustalić trybu administratora.", error);
   }
   document.body.classList.toggle("is-admin", isAdmin);
+  watchStackedLabels();
 
   [
     ["Dostęp graczy", initSharedPlayerAccess],
