@@ -7,6 +7,7 @@
 | KROK 1 — klucz reCAPTCHA Enterprise w Google Cloud | ✅ wykonane (klucz `Karty`, typ *Sieć*, domena `cutelittlegoat.github.io`) |
 | KROK 2 — rejestracja obu aplikacji `Karty-Web` w App Check | ✅ wykonane (obie: *Registered*, dostawca *reCAPTCHA Enterprise*) |
 | KROK 3 — klucz w `config/firebase-config.js` | ✅ wykonane, wypchnięte na `main` |
+| TTL tokenu | 🔵 domyślna 1 godzina — zalecana zmiana na `1 days`, patrz „Jak zmienić TTL już po rejestracji” |
 | KROK 4 — obserwacja zakładki *APIs* przez kilka dni | 🔵 **teraz to robisz** |
 | KROK 5 — *Enforce* (wymuszanie) | ⛔ **jeszcze nie klikaj** |
 
@@ -153,13 +154,14 @@ Dopóki go nie dopiszesz, nic się nie dzieje.
      Domyślne `Medium` mieści się w darmowym zakresie i nie musisz nic zmieniać.
    - Im wyższy próg, tym ostrzej App Check odrzuca ruch. Nie podnoś go — grozi to blokowaniem
      własnych graczy.
-9. Pole **Token time to live** (TTL) zostaw bez zmian — okienko Enterprise domyślnie proponuje
-   **1 godzinę** i to jest w porządku.
+9. Pole **Token time to live** (TTL) — okienko Enterprise proponuje domyślnie **1 godzinę**.
+   **Dla tej aplikacji lepszą wartością jest `1` + `days`** (patrz sekcja „Jak zmienić TTL” niżej).
    - TTL mówi, jak długo ważna jest jedna „przepustka” wydana przeglądarce. Po tym czasie
      aplikacja po cichu pobiera nową. Gracz niczego nie zauważa.
-   - Krótszy TTL = częstsze odnawianie = więcej sprawdzeń zużytych z darmowego limitu
-     10 000 miesięcznie. Przy ~30 graczach 1 godzina i tak daje spory zapas, ale gdyby kiedyś
-     limit zaczął się zbliżać, wystarczy tu wpisać większą wartość (np. `12 hours`).
+   - **Biblioteka odświeża token mniej więcej w połowie TTL.** Przy 1 godzinie oznacza to nowe
+     sprawdzenie co ~30 minut korzystania z aplikacji; przy 1 dniu — co ~12 godzin.
+   - Krótszy TTL = częstsze odnawianie = szybsze zużywanie darmowego limitu 10 000 sprawdzeń
+     miesięcznie. Dopuszczalny zakres to **od 30 minut do 7 dni**.
 
 10. Kliknij **Zapisz** (Save).
 11. **Powtórz podpunkty 5–10 dla drugiej aplikacji `Karty-Web`**, wklejając **ten sam** klucz.
@@ -279,11 +281,16 @@ Od tej chwili baza odrzuca zapytania spoza Twojej aplikacji.
 
 **Limit darmowego planu: 10 000 sprawdzeń miesięcznie.** Po jego przekroczeniu Google zwraca błąd
 i — przy **włączonym** wymuszaniu — aplikacja przestaje działać do końca miesiąca (albo do
-kliknięcia *Unenforce*). Przy ustawionym TTL = 1 godzina i 30 graczach to nadal daleko: jedna
-przeglądarka zużywa jedno sprawdzenie na godzinę **faktycznego korzystania** z aplikacji, więc
-nawet przy dwóch godzinach dziennie na osobę wychodzi rzędu 2 000 sprawdzeń miesięcznie.
-Zapas jest, ale nie jest nieograniczony — gdyby aplikacja kiedyś urosła, wystarczy podnieść TTL
-w Firebase Console (KROK 2, punkt 9).
+kliknięcia *Unenforce*). Ile realnie zużywa aplikacja, zależy wprost od TTL, bo biblioteka
+odświeża token **mniej więcej w połowie** tego czasu:
+
+| TTL | Odświeżanie tokenu | Szacunek przy 30 graczach i ~2 h korzystania dziennie |
+|---|---|---|
+| 1 godzina (domyślnie) | co ~30 min korzystania | ~3 500–4 000 sprawdzeń / miesiąc |
+| **1 dzień (zalecane)** | co ~12 godzin | **~1 000–1 500 sprawdzeń / miesiąc** |
+
+Obie wartości mieszczą się w limicie, ale 1 dzień daje znacznie większy zapas — i mniej
+zapytań sieciowych po stronie graczy. Dlatego warto ustawić `1` + `days`.
 
 **Aplikacja musi być otwierana z adresu internetowego.** Po włączeniu wymuszania otwarcie pliku
 `Main/index.html` bezpośrednio z dysku przestanie działać — reCAPTCHA nie rozpozna takiego „adresu”.
@@ -298,6 +305,31 @@ domenę do klucza w Google Cloud (krok 1), inaczej aplikacja przestanie działa�
 **Klucz witryny w publicznym repozytorium to nie jest wyciek.** Tak samo jak `apiKey` — jest jawny
 z założenia i musi być w kodzie strony. Właśnie dlatego wariant Enterprise jest wygodniejszy:
 nie ma w nim żadnego klucza tajnego, o który trzeba by się martwić.
+
+---
+
+## Jak zmienić TTL już po rejestracji
+
+Zmiana jest odwracalna, nie wymaga żadnej zmiany w kodzie i nic nie psuje.
+
+1. Firebase Console → projekt **karty-turniej** → **App Check** → zakładka **Apps**.
+2. Kliknij wiersz **pierwszej** aplikacji `Karty-Web` — rozwinie się ten sam panel,
+   który widziałeś przy rejestracji.
+3. Przy pozycji **reCAPTCHA Enterprise** kliknij ikonę **ołówka** ✏️ (edycja).
+4. W polu **Token time to live (TTL)**:
+   - w polu z liczbą zostaw **`1`**,
+   - z listy obok zmień **`hours`** na **`days`**.
+5. Kliknij **Save**.
+6. **Powtórz punkty 2–5 dla drugiej aplikacji `Karty-Web`** — tak samo jak przy rejestracji,
+   obie muszą mieć to samo ustawienie.
+
+**Na co uważać:**
+- Gdyby po kliknięciu ołówka pole na klucz okazało się puste, wklej ten sam klucz witryny
+  co poprzednio (`6Ld6x68t...`). Klucz jest w `config/firebase-config.js`, więc zawsze go odzyskasz.
+- Dopuszczalny zakres to **30 minut – 7 dni**. Wpisanie wartości spoza zakresu konsola odrzuci.
+- Zmiana działa od razu, ale **tokeny już wydane zachowują starą ważność** — pełne przejście
+  na nowe ustawienie zajmuje tyle, ile wynosił poprzedni TTL (czyli maksymalnie godzinę).
+- **W kodzie aplikacji nic nie zmieniasz.** TTL jest ustawieniem po stronie Firebase.
 
 ---
 

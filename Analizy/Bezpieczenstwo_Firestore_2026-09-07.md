@@ -775,15 +775,18 @@ kilkuset sprawdzeń miesięcznie — zapas jest bardzo duży, ale po przekroczen
 |---|---|
 | Klucz reCAPTCHA Enterprise w Google Cloud | ✅ utworzony — nazwa `Karty`, typ *Sieć* (Web), domena `cutelittlegoat.github.io`, weryfikacja domeny włączona, bez `localhost`, bez klucza testowego, bez WAF |
 | Rejestracja w Firebase App Check | ✅ **obie** aplikacje `Karty-Web` mają status *Registered* z dostawcą *reCAPTCHA Enterprise*; `Karty-Android-PUSH` nietknięta |
-| TTL tokenu | 1 godzina (wartość domyślna okienka Enterprise) |
+| TTL tokenu | 1 godzina (domyślna) — zalecana zmiana na 1 dzień, patrz uwaga niżej |
 | Klucz w `config/firebase-config.js` | ✅ `appCheckEnterpriseSiteKey` ustawiony, wypchnięty na `main` |
 | Tryb pracy App Check | 🔵 **monitorowanie** — wymuszanie (*Enforce*) jeszcze **nie** włączone |
 
 **Uwaga o TTL.** Okienko rejestracji Enterprise domyślnie proponuje **1 godzinę**, a nie 1 dzień
-(jak sugerowała pierwsza wersja instrukcji). Krótszy TTL oznacza częstsze odnawianie tokenu,
-czyli szybsze zużywanie darmowego limitu 10 000 sprawdzeń miesięcznie. Przy ~30 graczach
-i realnym czasie korzystania z aplikacji wychodzi rząd 2 000 sprawdzeń miesięcznie — zapas jest,
-ale gdyby aplikacja urosła, TTL należy podnieść w Firebase Console.
+(jak sugerowała pierwsza wersja instrukcji). Dokumentacja Firebase precyzuje dwie rzeczy:
+dopuszczalny zakres to **30 minut – 7 dni**, a biblioteka odświeża token **mniej więcej w połowie
+TTL**. Przy TTL = 1 godzina oznacza to nowe sprawdzenie co ~30 minut faktycznego korzystania
+z aplikacji — czyli ok. 3 500–4 000 sprawdzeń miesięcznie przy 30 graczach, wobec darmowego
+limitu 10 000. Zmiana TTL na **1 dzień** zbija to do ok. 1 000–1 500 i jest zalecana; procedura
+opisana w `Analizy/Instrukcja_AppCheck_2026-09-07.md`, sekcja „Jak zmienić TTL już po rejestracji”.
+TTL jest ustawieniem wyłącznie po stronie Firebase — nie wymaga żadnej zmiany w kodzie.
 
 **Klucz witryny został wpisany do publicznego repozytorium świadomie.** W wariancie Enterprise
 nie występuje klucz tajny; klucz witryny musi znaleźć się w kodzie strony, tak samo jak `apiKey`.
