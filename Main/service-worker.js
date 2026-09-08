@@ -1,12 +1,12 @@
-const APP_VERSION = "2026-09-08.2";
+const APP_VERSION = "2026-09-08.3";
 const CACHE_NAME = `karty-main-pwa-${APP_VERSION}`;
 const APP_SHELL_ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=2026-09-08.2",
-  "./app.js?v=2026-09-08.2",
-  "./pwa-config.js?v=2026-09-08.2",
-  "./pwa-bootstrap.js?v=2026-09-08.2",
+  "./styles.css?v=2026-09-08.3",
+  "./app.js?v=2026-09-08.3",
+  "./pwa-config.js?v=2026-09-08.3",
+  "./pwa-bootstrap.js?v=2026-09-08.3",
   "./manifest-any.webmanifest",
   "../Pliki/Ikona.png"
 ];
