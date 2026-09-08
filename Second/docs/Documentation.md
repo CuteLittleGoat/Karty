@@ -14,7 +14,7 @@ Warstwa prezentacji tabel opiera się na skali tokenów w `Second/styles.css`; p
 `:root` definiuje dziewięć zmiennych: `--col-num-xs` (56 px), `--col-num-sm` (80 px), `--col-num-md` (104 px), `--col-flag` (88 px), `--col-date` (120 px), `--col-text-sm` (144 px), `--col-text-md` (192 px), `--col-text-lg` (256 px), `--col-actions` (112 px). W breakpointcie `max-width: 720px` skala schodzi o ok. 20 % (poza `--col-flag`). Jednostką jest `rem`, a nie `ch`, bo `ch` zależy od fontu elementu i dawał inną wartość w `<th>` niż w `<td>`.
 
 ### Tryby tabel
-- `.admin-data-table` — `border-collapse: collapse`, `table-layout: fixed`. Poprzednie `min-width: 860px` zostało usunięte; wymuszało ono 860 px nawet na tabeli dwukolumnowej.
+- `.admin-data-table` — `border-collapse: collapse`, `table-layout: fixed`. Klasa bazowa nie narzuca żadnej minimalnej szerokości; minimum wynika wyłącznie z `--table-min` danej tabeli.
 - `.admin-data-table.t-fluid` — `width: 100%`, `min-width: var(--table-min, 0)`.
 - `.admin-data-table.t-compact` — `width: var(--table-min, auto)`, `min-width: 0`; dla podsumowań `Tabela10/11/13/14/15/17/18`.
 - `.admin-data-table.is-table-stacked` — poniżej 560 px wiersz staje się kartą „etykieta → wartość".
@@ -40,8 +40,8 @@ Warstwa prezentacji tabel opiera się na skali tokenów w `Second/styles.css`; p
 - `pointer: coarse` — przyciski i zakładki co najmniej 40 px wysokości.
 - `.user-tab-content > *` i `.admin-panel-content > *` — `max-width: var(--content-max)` = 1680 px.
 
-### Czyszczenie martwego CSS
-Z `Second/styles.css` usunięto 588 linii reguł dotyczących klas, których ten moduł nie renderuje (kalkulator, statystyki graczy, ranking, potwierdzenia, szczegóły gry), w tym 148 reguł `nth-child` ustawiających szerokości nieistniejących kolumn.
+### Zakres arkusza
+`Second/styles.css` zawiera wyłącznie reguły dla klas, które ten moduł faktycznie renderuje. Nie ma w nim stylów kalkulatora, statystyk graczy, rankingu, potwierdzeń ani szczegółów gry — te elementy istnieją tylko w module `Main`.
 
 ## Nagłówek i przycisk instrukcji
 - Tekst nagłówka modułu ustawiono na: eyebrow `To też nie jest nielegalny poker` oraz tytuł `Tournament of Poker`; tytuł karty przeglądarki brzmi `Tournament of Poker - Panel i Widok Użytkownika`.

@@ -214,7 +214,7 @@ W tabelach budowanych w JS służy do tego helper `tableColumns(table, tokens, m
 Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-details-table`, `confirmations-order-table`, tabela `Najbliższa gra`) poniżej 560 px prezentują wiersz jako kartę. Etykiety uzupełnia `fillStackedLabels()` z nagłówka tabeli, a `watchStackedLabels()` (uruchamiany w `bootstrap`) obserwuje DOM i uzupełnia je po każdym przerysowaniu, więc nie trzeba powielać `data-label` w każdym renderze.
 
 ### Breakpointy
-- `max-width: 1180px` — `.admin-games-layout` (w tym `#adminGamesTab`, `#adminStatisticsTab`, `#statisticsTab`) przechodzi na jedną kolumnę. Próg dobrany tak, aby kolumna z treścią nie była węższa od pasków bocznych; przy poprzednim progu 720 px na tablecie 820 px zostawało na tabele 190 px przy paskach 161 px i 339 px.
+- `max-width: 1180px` — `.admin-games-layout` (w tym `#adminGamesTab`, `#adminStatisticsTab`, `#statisticsTab`) przechodzi na jedną kolumnę. Próg dobrany tak, aby kolumna z treścią nigdy nie była węższa od pasków bocznych — przy niższym progu na tablecie 820 px na tabele zostawałoby ok. 190 px przy paskach 161 px i 339 px.
 - `max-width: 720px` — mobilna skala tokenów, `.page` `20px 10px 48px`, `.card` `14px`, `.admin-games-sidebar` i `.admin-games-content` `10px`, komórki `8px 6px`.
 - `max-width: 560px` — układ kartowy.
 - `pointer: coarse` — przyciski wierszowe i zakładki mają co najmniej 40 px wysokości.
