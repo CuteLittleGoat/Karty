@@ -3,6 +3,7 @@
 Data: 2026-09-08
 Zakres: `Main/styles.css`, `Main/index.html`, `Main/app.js`, `Second/styles.css`, `Second/index.html`, `Second/app.js`, `Kolumny.md`, `DetaleLayout.md`, `Main/docs/*`, `Second/docs/*`
 Charakter: **analiza — bez zmian w kodzie aplikacji.**
+Wizualizacja: `Analizy/Wizualizacja.html` — interaktywne porównania „przed/po" na żywych demach (nie zrzutach), z symulatorem szerokości ekranu.
 
 ---
 
@@ -27,6 +28,8 @@ Analiza nie opiera się wyłącznie na czytaniu CSS. Oba moduły zostały **real
 - realnie wyliczone `grid-template-columns` układu `.admin-games-layout`.
 
 Wszystkie liczby w tym dokumencie są **wynikami pomiaru**, nie szacunkami.
+
+Kluczowe pomiary zostały dodatkowo odtworzone jako **żywe dema** w `Analizy/Wizualizacja.html`: obie wersje CSS (obecna i proponowana) renderują się tam obok siebie na tej samej treści, a liczby pod nimi wylicza skrypt z faktycznego layoutu w momencie otwarcia strony. Dzięki temu wyników nie da się rozjechać z rzeczywistością przy późniejszych zmianach.
 
 ---
 
@@ -225,6 +228,8 @@ Jedna zmiana tokenu przestraja wszystkie tabele obu modułów. Skala mobilna (~�
 
 ### 5.2 Dwa tryby tabeli
 
+Dwa tryby poniżej to **czysty CSS** i wystarczają dla całej aplikacji. Trzeci, opcjonalny tryb (`is-table-stacked`, rozdz. 5.9) wymaga drobnej zmiany w markupie i jest przeznaczony wyłącznie dla list tylko do odczytu w widoku gracza na telefonie.
+
 ```css
 .admin-data-table {
   border-collapse: collapse;
@@ -284,6 +289,22 @@ Wnioski z prototypu:
 - na telefonie pozioma nawigacja spada z ~700 px do ~124 px przewinięcia;
 - `t-compact` rozwiązuje problem P1 (2 kolumny × 798 px) sprowadzając tabelę do 208 px;
 - **uwaga:** `t-fluid` rozdziela nadmiar miejsca proporcjonalnie do tokenów. Dla tabel, które nie powinny wypełniać bardzo szerokiego kontenera, należy dodać `max-width: var(--table-max)` albo użyć `t-compact`. To świadomy wybór per tabela, nie efekt uboczny.
+
+#### Pomiary z żywych dem (`Analizy/Wizualizacja.html`)
+
+Model zweryfikowano powtórnie już jako działającą stronę. Liczby poniżej odczytano z realnego layoutu:
+
+| Przypadek | Dziś | Po zmianie |
+|---|---|---|
+| `Tabela16`: 6 kolumn z polami, kontener 320 px | 1374 px, kolumny **6 × 229 px**, przewijanie **+1072 px** | 368 px, kolumny **48 / 5 × 64 px**, przewijanie **+66 px** |
+| `TABELA15`: 2 kolumny podsumowania, kontener pełnej szerokości | 860 px, kolumny **390 + 470 px** | 176 px, kolumny **88 + 88 px** |
+| `Gracze`: 5 kolumn, dwa pola, ekran 375 px | 751 px, przewijanie **+394 px** | 640 px, przewijanie **+283 px** |
+| `Gracze`: ten sam układ, ekran 820 px i szerzej | mieści się | mieści się (bez różnicy) |
+
+Dwa wnioski, które ujawniły się dopiero na działającej stronie:
+
+1. **Sześciu kolumn liczbowych nie da się zmieścić na telefonie** i żadna skala tokenów tego nie zmieni — 6 × 64 px to 368 px przy dostępnych ~300 px. Zysk jest realny (przewijanie z 1072 px na 66 px), ale to nadal przewijanie, nie „mieści się".
+2. **Powyżej ~820 px oba warianty dają ten sam wynik** dla tabel o 5 kolumnach. Cała wartość zmiany leży w zakresie 320–800 px oraz w przewidywalności szerokości, a nie w wyglądzie na dużym monitorze. Wyjątkiem jest moduł Second, gdzie `t-compact` poprawia wygląd właśnie na dużych ekranach (1596 px → 208 px).
 
 ### 5.4 Odzyskanie szerokości na telefonie (P5)
 
@@ -355,6 +376,64 @@ Dla P11 (Second) dwie możliwości:
 - **B (1 linia JS):** dopisać `document.body.classList.toggle("is-admin", isAdminView)` w `bootstrap()`, analogicznie do `Main/app.js:9928`. Czysto prezentacyjne, ale jest to zmiana w `app.js`.
 
 Rekomendacja: **A** — spełnia warunek „zmieniamy tylko wygląd” dosłownie, bez dotykania JS.
+
+### 5.9 Opcjonalnie: układ kartowy na telefonie (`is-table-stacked`)
+
+Skala tokenów rozwiązuje problem szerokości, ale nie zmienia faktu, że **tabela o sześciu kolumnach nie zmieści się na ekranie 375 px** — zmierzone dema (rozdz. 5.3) pokazują to jednoznacznie. Dla list, które gracz najczęściej otwiera na telefonie, alternatywą jest porzucenie układu tabelarycznego i pokazanie każdego wiersza jako karty „etykieta → wartość".
+
+```css
+@media (max-width: 560px) {
+  .admin-data-table.is-table-stacked,
+  .admin-data-table.is-table-stacked tbody,
+  .admin-data-table.is-table-stacked tr,
+  .admin-data-table.is-table-stacked td { display: block; width: 100%; }
+
+  .admin-data-table.is-table-stacked thead { display: none; }
+
+  .admin-data-table.is-table-stacked tr {
+    margin-bottom: 10px; padding: 10px;
+    border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, .24);
+  }
+
+  .admin-data-table.is-table-stacked td {
+    display: grid; grid-template-columns: 11ch minmax(0, 1fr);
+    gap: 10px; align-items: center; border: 0; padding: 5px 0;
+    white-space: normal; overflow: visible;
+  }
+
+  .admin-data-table.is-table-stacked td::before {
+    content: attr(data-label);
+    font-family: var(--font-panel); font-size: 11px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--muted);
+  }
+}
+```
+
+**Koszt: jeden atrybut w markupie.** Każda komórka musi dostać `data-label="NAZWA KOLUMNY"`, bo nagłówek tabeli znika. To jedyna propozycja w całym dokumencie, która wychodzi poza CSS — dlatego jest opcjonalna i wydzielona do osobnego etapu. Atrybut jest czysto prezentacyjny: nie zmienia struktury wiersza, liczby komórek, obsługi zdarzeń ani żadnego `data-role` / `data-focus-target`.
+
+**Gdzie ma sens** — wyłącznie listy **tylko do odczytu** w widoku gracza, czyli te, które ogląda się na telefonie i których się nie edytuje:
+
+| Moduł | Tabela |
+|---|---|
+| Main | `Gry do Potwierdzenia`, `Kolejność potwierdzeń`, `Najbliższa gra`, `Statystyki` (widok gracza) |
+| Second | `Tabela12` (Wpłaty, widok gracza), `Tabela19`, `Tabela21`, `Tabela23`, `Tabela24` (Wypłaty) |
+
+**Gdzie nie ma sensu:**
+- tabele edytowalne w panelu admina — utrata wyrównania kolumn utrudnia wpisywanie serii wartości w jednej kolumnie;
+- szerokie siatki liczbowe (`admin-games-players-stats-table`, `Tabela16`) — 18 kart na wiersz jest gorsze niż przewijanie;
+- tabele podsumowania w trybie `t-compact` — one i tak już się mieszczą.
+
+Tryb wyklucza się z `table-layout: fixed` i `<colgroup>` (przy `display: block` są ignorowane), ale tylko poniżej 560 px — powyżej tego progu tabela wraca do normalnego zachowania i tokenów.
+
+**Zweryfikowane pomiarem** na `Tabela12` (5 kolumn, 2 wiersze), reguły powyżej nałożone na żywy `Main/styles.css`:
+
+| Szerokość ekranu | Szerokość tabeli | Przewijanie w poziomie | Nagłówek `thead` | Etykieta z `data-label` |
+|---|---|---|---|---|
+| 375 px | 375 px | **0 px** | ukryty | renderuje się |
+| 820 px | 820 px | 0 px | widoczny | nieaktywna |
+
+Czyli: na telefonie lista mieści się w całości bez nawigacji w bok, a powyżej progu wygląda dokładnie tak, jak dziś.
 
 ---
 
@@ -454,6 +533,10 @@ Zgodnie z `Main/AGENTS.md` i `Second/AGENTS.md`:
 - `Main/docs/README.md`, `Second/docs/README.md` — tylko jeśli zmieni się coś, co użytkownik klika (pkt 2–5).
 Zgodnie z pkt 15: bez historii zmian, wyłącznie stan aktualny.
 
+### Etap 8 (opcjonalny) — układ kartowy dla list gracza (0,5 dnia, ryzyko: niskie)
+Wdrożenie `is-table-stacked` (rozdz. 5.9) dla tabel tylko do odczytu z listy w tym rozdziale. Wymaga dopisania `data-label` do komórek w renderach — jedyna zmiana wychodząca poza CSS w całym planie. Etap w pełni niezależny: można go pominąć albo zrobić dużo później, bez wpływu na etapy 1–7.
+Kryterium: na ekranie 375 px żadna z wymienionych list nie wymaga przewijania w poziomie.
+
 ### Kolejność minimalna
 Jeśli ma być zrobiony tylko fragment: **Etap 1 + Etap 2**. To ok. 3 godziny pracy, likwiduje wszystkie problemy 🔴 poza P3, i nie wymaga dotykania markupu.
 
@@ -468,6 +551,8 @@ Jeśli ma być zrobiony tylko fragment: **Etap 1 + Etap 2**. To ok. 3 godziny pr
 - Mechanizmu odtwarzania fokusu (`Analizy/Wazne_Fokus.md`).
 - Struktury `<tr>/<td>` — `<colgroup>` dodaje się **przed** `<thead>` i nie zmienia liczby ani kolejności komórek.
 
+**Jeden wyjątek od reguły „tylko CSS":** opcjonalny Etap 8 (`is-table-stacked`, rozdz. 5.9) wymaga dopisania atrybutu `data-label` do komórek w wybranych tabelach tylko do odczytu. Atrybut jest czysto prezentacyjny — nie dotyka logiki, zdarzeń ani stanu — ale formalnie jest to zmiana w markupie, nie w arkuszu stylów. Etap jest z tego powodu wydzielony i całkowicie opcjonalny.
+
 ## 9. Ryzyka
 
 | Ryzyko | Prawdopodobieństwo | Ograniczenie |
@@ -477,7 +562,8 @@ Jeśli ma być zrobiony tylko fragment: **Etap 1 + Etap 2**. To ok. 3 godziny pr
 | Tabele dynamiczne (Tabela16 REBUY1..n, Tabela18) | średnie | `<colgroup>` generowany z tej samej pętli co `<th>` |
 | Regresja w rzadko otwieranych zakładkach | niskie | zrzuty z Etapu 0; migracja tabela po tabeli |
 | `:has()` w starej przeglądarce (P11 wariant A) | niskie | fallback = obecne zachowanie (pełna szerokość), nie awaria |
+| Brak `data-label` w części komórek po Etapie 8 | niskie | pusta etykieta zamiast awarii; kontrola przeglądem renderów tabela po tabeli |
 
 ## 10. Podsumowanie w trzech zdaniach
 
-Szerokości nie są „prawie wszędzie na sztywno” — są **na sztywno w Main i wcale w Second**, a do tego liczone w dwóch różnych jednostkach, z których jedna (`ch`) daje w nagłówku i w komórce wartości różniące się o 21 %. Nakłada się na to niewidoczny bezpiecznik 213 px każdego pola `.admin-input`, przez który zadeklarowana szerokość kolumny bywa ignorowana — i to jest realna przyczyna, dla której metoda prób i błędów nie zbiegała do dobrego wyniku. Trzy linie CSS z Etapu 1 usuwają trzy z czterech najpoważniejszych problemów, a pełna migracja na skalę tokenów zamienia 320 ręcznych reguł na 9 wartości sterujących całą aplikacją na telefonie i na PC.
+Szerokości nie są „prawie wszędzie na sztywno” — są **na sztywno w Main i wcale w Second**, a do tego liczone w dwóch różnych jednostkach, z których jedna (`ch`) daje w nagłówku i w komórce wartości różniące się o 21 %. Nakłada się na to niewidoczny bezpiecznik 213 px każdego pola `.admin-input`, przez który zadeklarowana szerokość kolumny bywa ignorowana — i to jest realna przyczyna, dla której metoda prób i błędów nie zbiegała do dobrego wyniku. Trzy linie CSS z Etapu 1 usuwają trzy z czterech najpoważniejszych problemów, a pełna migracja na skalę tokenów zamienia 320 ręcznych reguł na 9 wartości sterujących całą aplikacją na telefonie i na PC. Warto przy tym wiedzieć, gdzie leży granica: żywe dema pokazały, że powyżej ~820 px oba warianty dają dla większości tabel ten sam wynik, a sześciu kolumn liczbowych nie zmieści się na telefonie niezależnie od skali — realna wartość tej zmiany to zakres 320–800 px, przewidywalność szerokości i porządek w 320 regułach, a nie sam wygląd na dużym monitorze.
