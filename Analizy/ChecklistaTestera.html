@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checklista testera — Karty (Main i Tournament of Poker)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600&display=swap&subset=latin-ext" rel="stylesheet">
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#07070a; --bg2:#0c0d12; --ink:#edebe6; --muted:rgba(237,235,230,.68);
+  --gold:#d4af37; --gold-line:rgba(212,175,55,.35); --gold-soft:rgba(212,175,55,.14);
+  --neon:#2be38b; --neon-soft:rgba(43,227,139,.12); --neon-line:rgba(43,227,139,.4);
+  --ruby:#e23a4b;
+  --border:rgba(255,255,255,.1); --border2:rgba(255,255,255,.07);
+  --radius-sm:10px; --radius-md:14px;
+  --font-title:"Cinzel","Times New Roman",serif;
+  --font-panel:"Rajdhani","Segoe UI","Noto Sans",sans-serif;
+  --font-text:"Inter","Segoe UI","Noto Sans",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; font-family:var(--font-text); font-size:15.5px; line-height:1.6; color:var(--ink);
+  background:
+    radial-gradient(circle at 15% -8%, rgba(212,175,55,.13), transparent 45%),
+    radial-gradient(circle at 82% 3%, rgba(43,227,139,.09), transparent 45%),
+    linear-gradient(180deg,var(--bg2),var(--bg));
+  background-attachment:fixed; -webkit-font-smoothing:antialiased;
+}
+.wrap{width:min(980px,100%); margin:0 auto; padding:0 18px 100px}
+
+header.top{padding:46px 0 6px}
+.eyebrow{font-family:var(--font-panel);text-transform:uppercase;letter-spacing:.2em;font-size:12px;color:var(--muted);margin:0 0 12px}
+h1{font-family:var(--font-title);font-size:clamp(26px,4vw,40px);letter-spacing:.07em;text-transform:uppercase;line-height:1.12;margin:0 0 14px}
+.lede{font-size:17px;color:var(--muted);margin:0;max-width:68ch}
+
+/* ---------- pasek postępu ---------- */
+.bar{position:sticky;top:0;z-index:40;margin:24px 0 0;padding:12px 0 10px;
+  background:rgba(7,7,10,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--border2)}
+.bar-inner{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.meter{flex:1;min-width:180px;height:12px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+.meter i{display:block;height:100%;width:0;border-radius:999px;
+  background:linear-gradient(90deg,rgba(43,227,139,.95),rgba(212,175,55,.9));transition:width .25s ease}
+.count{font-family:var(--font-panel);font-size:14px;letter-spacing:.1em;color:var(--gold);white-space:nowrap}
+.bar button{border:1px solid var(--border2);background:rgba(0,0,0,.4);color:var(--muted);
+  border-radius:999px;padding:7px 13px;font-family:var(--font-panel);font-size:11.5px;
+  letter-spacing:.11em;text-transform:uppercase;cursor:pointer}
+.bar button:hover{border-color:var(--gold-line);color:var(--gold)}
+.bar button.on{border-color:var(--neon-line);color:#b6ffdb;background:var(--neon-soft)}
+
+/* ---------- sekcje ---------- */
+section{margin-top:36px;scroll-margin-top:76px}
+h2{font-family:var(--font-title);font-size:clamp(18px,2.2vw,24px);letter-spacing:.05em;
+  text-transform:uppercase;margin:0 0 4px;display:flex;flex-wrap:wrap;align-items:baseline;gap:12px}
+h2 .sec-count{font-family:var(--font-panel);font-size:12px;letter-spacing:.12em;color:var(--muted);text-transform:none}
+.sec-intro{color:var(--muted);margin:0 0 14px;font-size:14.5px}
+h3{font-family:var(--font-panel);font-size:14px;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(237,235,230,.85);margin:24px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border2)}
+
+/* ---------- krok ---------- */
+.step{display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start;
+  padding:9px 12px;border-radius:var(--radius-sm);border:1px solid transparent}
+.step:hover{background:rgba(255,255,255,.028);border-color:var(--border2)}
+.step input[type=checkbox]{
+  appearance:none;-webkit-appearance:none;margin:3px 0 0;width:20px;height:20px;flex:none;
+  border:2px solid rgba(237,235,230,.34);border-radius:6px;background:rgba(0,0,0,.4);
+  cursor:pointer;position:relative;transition:border-color .15s ease,background .15s ease}
+.step input[type=checkbox]:hover{border-color:var(--gold-line)}
+.step input[type=checkbox]:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.step input[type=checkbox]:checked{background:var(--neon);border-color:var(--neon)}
+.step input[type=checkbox]:checked::after{
+  content:"";position:absolute;left:5px;top:1px;width:6px;height:11px;
+  border:solid #06231a;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.step label{cursor:pointer;display:block}
+.step .num{font-family:var(--font-panel);font-size:11.5px;letter-spacing:.08em;
+  color:rgba(237,235,230,.38);margin-right:8px}
+.step .hint{display:block;margin-top:3px;font-size:13.5px;color:var(--muted)}
+.step .hint b{color:var(--gold);font-weight:600}
+
+/* --- stan zaznaczony: szary, pochyły, przekreślony --- */
+.step.done label,
+.step.done label .hint{
+  color:rgba(237,235,230,.34);
+  font-style:italic;
+  text-decoration:line-through;
+  text-decoration-thickness:1px;
+}
+.step.done label .hint b{color:rgba(237,235,230,.34)}
+.step.done label kbd{color:rgba(237,235,230,.3);border-color:rgba(255,255,255,.05);background:rgba(0,0,0,.25)}
+.step.done label b{color:rgba(237,235,230,.34)}
+.step.done input[type=checkbox]:checked{background:rgba(43,227,139,.45);border-color:rgba(43,227,139,.45)}
+.step.done{background:rgba(255,255,255,.02)}
+
+body.only-todo .step.done{display:none}
+
+kbd{font-family:var(--font-panel);font-size:12px;letter-spacing:.06em;background:rgba(0,0,0,.5);
+  border:1px solid var(--border2);border-radius:5px;padding:1px 7px;color:#ffe9a8}
+.note{border-left:3px solid var(--gold-line);background:var(--gold-soft);padding:12px 15px;
+  border-radius:0 var(--radius-sm) var(--radius-sm) 0;margin:16px 0;font-size:14.5px}
+.note b{color:var(--gold)}
+
+/* ---------- notatki testera ---------- */
+.notes{margin-top:44px;padding:18px;border-radius:var(--radius-md);
+  border:1px solid var(--border2);background:rgba(0,0,0,.32)}
+.notes label{display:block;font-family:var(--font-panel);font-size:12px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.notes textarea{width:100%;min-height:170px;padding:12px;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:rgba(0,0,0,.42);color:var(--ink);
+  font-family:var(--font-text);font-size:14.5px;line-height:1.6;resize:vertical}
+.notes textarea:focus{outline:none;border-color:var(--gold-line)}
+.notes .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
+.notes button{border:1px solid var(--neon-line);background:var(--neon-soft);color:#b6ffdb;
+  border-radius:var(--radius-sm);padding:9px 15px;font-family:var(--font-panel);font-size:12px;
+  letter-spacing:.11em;text-transform:uppercase;cursor:pointer}
+.notes .status{font-size:13px;color:var(--muted)}
+
+footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--border2);
+  color:rgba(237,235,230,.4);font-size:13px}
+
+@media (max-width:720px){
+  .wrap{padding:0 12px 80px}
+  header.top{padding:30px 0 4px}
+  .step{grid-template-columns:24px 1fr;gap:10px;padding:8px 6px}
+}
+@media print{
+  body{background:#fff;color:#000}
+  .bar,.notes button{display:none}
+  .step{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <p class="eyebrow">Karty · Main + Tournament of Poker</p>
+  <h1>Checklista testera</h1>
+  <p class="lede">Lista wszystkiego, co trzeba klikniąć, żeby sprawdzić obie aplikacje. Idź po kolei od góry do dołu i zaznaczaj kwadracik przy każdym zrobionym kroku — zrobiony krok zszarzeje i zostanie przekreślony. Postęp zapisuje się w przeglądarce, więc możesz przerwać i wrócić później.</p>
+</header>
+
+<div class="bar">
+  <div class="bar-inner">
+    <div class="meter"><i id="meterFill"></i></div>
+    <span class="count" id="counter">0 / 0</span>
+    <button type="button" id="toggleTodo">Pokaż tylko niezrobione</button>
+    <button type="button" id="resetAll">Wyczyść wszystko</button>
+    <button type="button" onclick="window.print()">Drukuj</button>
+  </div>
+</div>
+
+<div class="note">
+  <b>Zanim zaczniesz.</b> Potrzebujesz: komputera z przeglądarką, telefonu (albo przeglądarki zwężonej do szerokości telefonu), hasła administratora oraz co najmniej jednego PIN-u gracza.
+  Jeżeli coś nie działa albo wygląda źle — nie zaznaczaj kroku, tylko opisz to na dole strony w polu <b>Notatki testera</b>.
+</div>
+
+<div id="content"></div>
+
+<div class="notes">
+  <label for="testerNotes">Notatki testera — co nie zadziałało</label>
+  <textarea id="testerNotes" placeholder="Np.: Krok C-14 — po kliknięciu Zapisz nic się nie dzieje, komunikat nie pojawia się.&#10;Np.: Krok F-6 — na telefonie kolumna Nazwa jest ucięta."></textarea>
+  <div class="row">
+    <button type="button" id="copyNotes">Kopiuj notatki do schowka</button>
+    <span class="status" id="notesStatus"></span>
+  </div>
+</div>
+
+<footer>
+  <p>Checklista obejmuje moduł <b>Main</b> (Gry, Statystyki, Kalkulator, Strefa Gracza) oraz moduł <b>Tournament of Poker</b> (Second). Kroki opisują wyłącznie to, co widać i klika się w aplikacji.</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     TREŚĆ CHECKLISTY
+     Każdy krok: tekst polecenia oraz opcjonalna podpowiedź (hint),
+     czyli to, co powinno się wydarzyć.
+     ============================================================ */
+  var SECTIONS = [
+  {
+    id: "A", title: "A. Przygotowanie",
+    intro: "Kilka rzeczy do ustawienia, zanim zaczniesz klikać.",
+    groups: [
+      { name: "Start", items: [
+        ["Otwórz aplikację Main w przeglądarce na komputerze.", "Powinna pojawić się strona z tytułem i zielonym panelem."],
+        ["Sprawdź, czy u góry po prawej widać ikonę i przycisk <kbd>Instrukcja</kbd>.", ""],
+        ["Kliknij <kbd>Instrukcja</kbd>.", "Otwiera się okno z instrukcją. Zamknij je krzyżykiem <kbd>×</kbd>."],
+        ["Kliknij czerwony przycisk <kbd>Przycisnąć w razie kontroli celno-skarbowej</kbd>.", "Otwiera się okno z obrazkiem. Zamknij je."],
+        ["Przygotuj sobie kartkę albo użyj pola <b>Notatki testera</b> na dole tej strony.", ""]
+      ]}
+    ]
+  },
+
+  {
+    id: "B", title: "B. Main — widok zwykłego użytkownika",
+    intro: "Testujesz to, co widzi gracz, zanim zaloguje się jako administrator.",
+    groups: [
+      { name: "Zakładka Aktualności", items: [
+        ["Kliknij zakładkę <kbd>Aktualności</kbd>.", "Widać pole <b>Najnowsze</b> z wiadomością od administratora albo informację, że jej nie ma."],
+        ["Spróbuj wpisać coś w pole z wiadomością.", "Nie powinno się dać — to pole tylko do czytania."]
+      ]},
+      { name: "Zakładka Regulamin", items: [
+        ["Kliknij zakładkę <kbd>Regulamin</kbd>.", "Widać treść regulaminu albo informację, że administrator jeszcze go nie dodał."],
+        ["Przewiń treść regulaminu w dół.", "Tekst przewija się wewnątrz pola."]
+      ]},
+      { name: "Zakładka Strefa Gracza — wejście", items: [
+        ["Kliknij zakładkę <kbd>Strefa Gracza</kbd>.", "Pojawia się prośba o PIN."],
+        ["Wpisz zły PIN (np. 00000) i kliknij <kbd>Otwórz</kbd>.", "Pojawia się komunikat, że PIN jest nieprawidłowy. Zawartość się nie odblokowuje."],
+        ["Wpisz prawidłowy PIN gracza i kliknij <kbd>Otwórz</kbd>.", "Odblokowuje się lista sekcji po lewej: Najbliższa Gra, Czat, Gry do Potwierdzenia, Gry Użytkowników, Statystyki."],
+        ["Sprawdź, czy widoczne są tylko te sekcje, do których gracz ma uprawnienia.", "Sekcje bez uprawnień nie powinny być dostępne."]
+      ]},
+      { name: "Sekcja Najbliższa Gra", items: [
+        ["Kliknij <kbd>Najbliższa Gra</kbd>.", "Widać tabelę: Rodzaj gry, Data, Nazwa, CzyWszyscyPotwierdzili."],
+        ["Sprawdź, czy dane w tabeli zgadzają się z grą ustawioną przez administratora.", ""]
+      ]},
+      { name: "Sekcja Czat", items: [
+        ["Kliknij <kbd>Czat</kbd> i podaj PIN, jeśli aplikacja o niego poprosi.", ""],
+        ["Napisz krótką wiadomość i wyślij ją.", "Wiadomość pojawia się na liście z datą i godziną."],
+        ["Odśwież stronę i wróć do czatu.", "Wysłana wiadomość nadal tam jest."],
+        ["Spróbuj wysłać pustą wiadomość.", "Nie powinna się wysłać."]
+      ]},
+      { name: "Sekcja Gry do Potwierdzenia", items: [
+        ["Kliknij <kbd>Gry do Potwierdzenia</kbd>.", "Widać listę gier z kolumną Potwierdzenie."],
+        ["Kliknij <kbd>Potwierdź</kbd> przy wybranej grze.", "Status zmienia się na potwierdzony."],
+        ["Kliknij <kbd>Szczegóły</kbd> przy tej grze.", "Otwiera się okno z listą <b>Kolejność potwierdzeń</b>: Nr, Gracz, Status."],
+        ["Sprawdź, czy Twoje nazwisko jest pogrubione na tej liście.", "Wiersz zalogowanego gracza jest wyróżniony."],
+        ["Sprawdź, gdzie kończą się miejsca w grze, a zaczyna lista rezerwowa.", "Granicę oznacza pozioma złota linia."],
+        ["Zamknij okno i kliknij <kbd>Anuluj</kbd> przy potwierdzonej grze.", "Potwierdzenie zostaje wycofane, a Twoje miejsce na liście znika."]
+      ]},
+      { name: "Sekcja Gry Użytkowników", items: [
+        ["Kliknij <kbd>Gry Użytkowników</kbd>.", "Widać listę lat po lewej i tabelę gier."],
+        ["Wybierz rok z listy po lewej.", "Tabela pokazuje gry z tego roku."],
+        ["Kliknij <kbd>Dodaj</kbd>.", "Do tabeli dochodzi nowy, pusty wiersz."],
+        ["Wypełnij pola: Rodzaj Gry, Data, Nazwa.", "Wpisane wartości zostają w polach — nie znikają po sekundzie."],
+        ["Wpisz liczbę w pole <b>Liczba miejsc</b>.", "Przyjmuje tylko cyfry. Puste pole oznacza brak limitu."],
+        ["Zaznacz <b>CzyZamknięta</b>.", "Gra zostaje oznaczona jako zamknięta."],
+        ["Kliknij <kbd>Szczegóły</kbd> przy swojej grze.", "Otwiera się okno z listą graczy i kolumnami Wpisowe, Rebuy/Add-on, Wypłata, +/-, Punkty, Mistrzostwo."],
+        ["Dodaj gracza do gry i wpisz mu Wpisowe oraz Wypłatę.", "Kolumna +/- przelicza się sama."],
+        ["Kliknij przycisk w kolumnie <b>Rebuy/Add-on</b>.", "Otwiera się małe okno z polami Rebuy1, Rebuy2 i tak dalej."],
+        ["Wpisz wartość rebuy i zamknij okno.", "Suma rebuy pokazuje się w tabeli."],
+        ["Zamknij okno szczegółów i kliknij <kbd>Notatki do gry</kbd>.", "Otwiera się okno z notatkami. Wpisz coś i zapisz."],
+        ["Sprawdź podsumowania pod tabelą.", "Widać zestawienie wyników gry."],
+        ["Usuń testową grę przyciskiem <kbd>Usuń</kbd>.", "Gra znika z listy."]
+      ]},
+      { name: "Sekcja Statystyki", items: [
+        ["Kliknij <kbd>Statystyki</kbd>.", "Widać listę lat, tabelę statystyk graczy i panel <b>Ranking</b>."],
+        ["Wybierz rok.", "Tabela i ranking przeliczają się dla tego roku."],
+        ["Sprawdź panel <b>Ranking</b>: kolumny Miejsce, Gracz, Wynik.", "Wszystkie trzy kolumny mieszczą się w panelu, bez przewijania w bok."],
+        ["Sprawdź, czy najlepsze miejsca są wyróżnione kolorem.", ""]
+      ]}
+    ]
+  },
+
+  {
+    id: "C", title: "C. Main — panel administratora",
+    intro: "Wejdź w tryb administratora (dopisek ?admin=1 na końcu adresu strony) i podaj hasło.",
+    groups: [
+      { name: "Wejście", items: [
+        ["Dopisz <kbd>?admin=1</kbd> na końcu adresu strony i naciśnij Enter.", "Pojawia się prośba o hasło administratora."],
+        ["Wpisz złe hasło.", "Panel się nie otwiera, pojawia się komunikat o błędzie."],
+        ["Wpisz prawidłowe hasło.", "Otwiera się <b>Panel Administratora</b> z paskiem zakładek."],
+        ["Sprawdź, czy widać wszystkie zakładki: Aktualności, Czat, Regulamin, Notatki, Gracze, Gry admina, Statystyki, Gry użytkowników, Najbliższa gra, Gry do potwierdzenia, Kalkulator, Kopia zapasowa.", ""],
+        ["Kliknij <kbd>Odśwież</kbd> w prawym górnym rogu panelu.", "Pojawia się komunikat o odświeżeniu danych."]
+      ]},
+      { name: "Aktualności", items: [
+        ["Wejdź w zakładkę <kbd>Aktualności</kbd> i wpisz wiadomość do graczy.", ""],
+        ["Kliknij <kbd>Wyślij</kbd>.", "Pojawia się komunikat o wysłaniu."],
+        ["Przełącz się na widok użytkownika i sprawdź zakładkę Aktualności.", "Widać wysłaną wiadomość."]
+      ]},
+      { name: "Czat (admin)", items: [
+        ["Wejdź w zakładkę <kbd>Czat</kbd>.", "Widać listę wiadomości od graczy."],
+        ["Usuń pojedynczą wiadomość przyciskiem <kbd>Usuń</kbd>.", "Wiadomość znika z listy."],
+        ["Kliknij <kbd>Usuń starsze niż 30 dni</kbd>.", "Pojawia się komunikat o liczbie usuniętych wiadomości."]
+      ]},
+      { name: "Regulamin i Notatki", items: [
+        ["Wejdź w <kbd>Regulamin</kbd>, wpisz treść i kliknij <kbd>Zapisz</kbd>.", "Pojawia się komunikat o zapisaniu."],
+        ["Sprawdź w widoku użytkownika, czy regulamin się pojawił.", ""],
+        ["Wejdź w <kbd>Notatki</kbd>, wpisz treść i kliknij <kbd>Zapisz</kbd>.", "Notatka zapisuje się. Odśwież stronę — treść nadal tam jest."]
+      ]},
+      { name: "Gracze", items: [
+        ["Wejdź w zakładkę <kbd>Gracze</kbd>.", "Widać tabelę: Aplikacja, Nazwa, PIN, Uprawnienia oraz przycisk Usuń."],
+        ["Sprawdź licznik nad tabelą.", "Pokazuje liczbę dodanych graczy."],
+        ["Kliknij <kbd>Dodaj</kbd>.", "Dochodzi pusty wiersz."],
+        ["Wpisz nazwę gracza.", "Litery zostają w polu — nie znikają po sekundzie."],
+        ["Kliknij <kbd>Losuj</kbd> obok pola PIN.", "Wpisuje się losowy 5-cyfrowy PIN. Widać wszystkie pięć cyfr."],
+        ["Wpisz PIN ręcznie.", "Pole przyjmuje tylko cyfry, maksymalnie pięć."],
+        ["Kliknij <kbd>Edytuj</kbd> w kolumnie Uprawnienia.", "Otwiera się okno z listą uprawnień do zaznaczenia."],
+        ["Zaznacz kilka uprawnień i zamknij okno.", "W kolumnie Uprawnienia pojawiają się złote plakietki z nazwami."],
+        ["Zaznacz kwadracik w kolumnie <b>Aplikacja</b>.", "Gracz dostaje dostęp do aplikacji."],
+        ["Sprawdź nowym PIN-em wejście do Strefy Gracza w widoku użytkownika.", "PIN działa, widać tylko przyznane sekcje."],
+        ["Usuń testowego gracza przyciskiem <kbd>Usuń</kbd>.", "Gracz znika z listy."]
+      ]},
+      { name: "Gry admina", items: [
+        ["Wejdź w zakładkę <kbd>Gry admina</kbd>.", "Widać trzy obszary: Lata po lewej, Tabele Gier i statystyki w środku, Ranking po prawej."],
+        ["Dodaj nowy rok na liście po lewej.", "Rok pojawia się na liście."],
+        ["Wybierz rok i kliknij <kbd>Dodaj</kbd> nad tabelą gier.", "Dochodzi pusty wiersz gry."],
+        ["Wypełnij Rodzaj Gry, Datę i Nazwę.", "Wpisane wartości zostają w polach."],
+        ["Zaznacz <b>CzyZamknięta</b>.", ""],
+        ["Kliknij <kbd>Szczegóły</kbd> przy grze.", "Otwiera się okno z listą graczy. U góry widać dane gry: Nazwa, Rodzaj, Data, Pula, Ilość graczy."],
+        ["Dodaj graczy i wypełnij Wpisowe, Wypłatę i Punkty.", "Kolumna +/- liczy się sama."],
+        ["Sprawdź kolumnę <b>Mistrzostwo</b>.", ""],
+        ["Zamknij okno i kliknij <kbd>Notatki po grze</kbd>.", "Otwiera się okno notatek — wpisz coś i zapisz."],
+        ["Zjedź do tabeli statystyk graczy pod tabelą gier.", "Widać osiemnaście kolumn: Gracz, Mistrzostwo, Wagi, Punkty i tak dalej."],
+        ["Kliknij nagłówek <kbd>Waga1</kbd>.", "Pojawia się okienko do wpisania wartości dla wszystkich graczy naraz."],
+        ["Wpisz wartość i zatwierdź.", "Pojawia się komunikat, ile wierszy zaktualizowano."],
+        ["Sprawdź panel <b>Ranking</b> po prawej.", "Trzy kolumny mieszczą się w panelu bez przewijania w bok."],
+        ["Usuń testową grę.", "Gra znika z listy."]
+      ]},
+      { name: "Statystyki (admin)", items: [
+        ["Wejdź w zakładkę <kbd>Statystyki</kbd>.", "Układ jak w Grach admina: Lata, tabela, Ranking."],
+        ["Wybierz rok i sprawdź dane.", ""],
+        ["Zmień wartość wagi w tabeli.", "Po zmianie kursor zostaje w polu — nie ucieka po sekundzie."],
+        ["Kliknij <kbd>Eksportuj</kbd>.", "Pobiera się plik z danymi."],
+        ["Sprawdź kwadraciki ukrywania kolumn w nagłówkach.", "Odznaczenie chowa kolumnę."]
+      ]},
+      { name: "Gry użytkowników (admin)", items: [
+        ["Wejdź w zakładkę <kbd>Gry użytkowników</kbd>.", "Widać gry założone przez graczy."],
+        ["Sprawdź kolumny: Rodzaj Gry, Data, Nazwa, CzyZamknięta, Liczba miejsc, IlośćPotwierdzonych.", "Liczba miejsc stoi bezpośrednio przed IlośćPotwierdzonych."],
+        ["Kliknij <kbd>Szczegóły</kbd> przy grze gracza.", "Otwiera się okno z listą uczestników."],
+        ["Kliknij <kbd>Aktualizuj z gry gracza</kbd> przy zaimportowanej grze.", "Pod nazwą pojawia się data ostatniego odświeżenia."]
+      ]},
+      { name: "Najbliższa gra i Gry do potwierdzenia", items: [
+        ["Wejdź w zakładkę <kbd>Najbliższa gra</kbd> i ustaw grę.", ""],
+        ["Sprawdź w widoku użytkownika sekcję Najbliższa Gra.", "Pokazuje ustawioną grę."],
+        ["Wejdź w zakładkę <kbd>Gry do potwierdzenia</kbd>.", "Widać listę gier i uczestników z kolumnami Nr, Gracz, Status, Akcje."],
+        ["Kliknij <kbd>Potwierdź</kbd> przy graczu.", "Status zmienia się, gracz trafia na górę listy z numerem."],
+        ["Kliknij <kbd>Anuluj</kbd>.", "Potwierdzenie znika, gracz wraca na dół z pustym numerem."],
+        ["Zmień limit miejsc w grze.", "Granica listy rezerwowej przesuwa się."]
+      ]},
+      { name: "Kalkulator", items: [
+        ["Wejdź w zakładkę <kbd>Kalkulator</kbd>.", "Po lewej lista trybów: Cash, Tournament1, Tournament2, Organizacja, Żetony."],
+        ["Kliknij tryb <kbd>Tournament1</kbd>.", "Pokazują się Tabela1 do Tabela5."],
+        ["W Tabela1 wpisz Buy-In i Rebuy.", "Suma i Liczba Rebuy przeliczają się same."],
+        ["W Tabela2 kliknij <kbd>Dodaj</kbd> i wybierz gracza z listy.", "Dochodzi wiersz z wybranym graczem."],
+        ["Kliknij przycisk rebuy przy graczu.", "Otwiera się okno Rebuy gracza z kolumnami Rebuy1, Rebuy2 i tak dalej."],
+        ["Wpisz wartości rebuy i zamknij okno.", "Wartości trafiają do tabeli."],
+        ["W Tabela3 wpisz procent rake.", "Pole pokazuje wartość ze znakiem procenta. Rake i Pot przeliczają się."],
+        ["Sprawdź Tabela5 — podział puli.", "Liczba kolumn Rebuy zmienia się zależnie od wpisanych rebuy."],
+        ["Kliknij tryb <kbd>Cash</kbd>.", "Pokazują się tabele trybu cash."],
+        ["W Tabela9 dodaj gracza, wpisz Buy-In i Wypłatę.", "Kolumna +/- liczy się sama."],
+        ["Kliknij nagłówek <kbd>Buy-In</kbd> w Tabela9.", "Można ustawić tę samą wartość wszystkim graczom naraz."],
+        ["Kliknij tryb <kbd>Organizacja</kbd>.", "Pokazują się TABELA1 i TABELA2."],
+        ["W TABELA2 kliknij <kbd>Dodaj</kbd>, a potem <kbd>Usuń</kbd> w wierszu.", "Wiersz dochodzi i znika."],
+        ["Kliknij tryb <kbd>Żetony cash1</kbd>.", "Pokazują się TABELAA, TABELAB i TABELAC."],
+        ["W TABELAA wpisz nominał i liczbę sztuk.", "Kolumna Stack liczy się sama, a pod tabelą widać Łącznie Stack."],
+        ["Sprawdź pozostałe tryby żetonów.", "Każdy działa tak samo."]
+      ]},
+      { name: "Kopia zapasowa", items: [
+        ["Wejdź w zakładkę <kbd>Kopia zapasowa</kbd>.", "Widać instrukcję i dwa przyciski."],
+        ["Kliknij <kbd>Utwórz kopię zapasową</kbd>.", "Pobiera się plik. Pod przyciskiem pojawia się data ostatniego użycia."],
+        ["Kliknij <kbd>Przywróć z pliku</kbd> i wybierz pobrany plik.", "Pojawia się pytanie o potwierdzenie, a potem komunikat o wyniku."],
+        ["Sprawdź, czy dane po przywróceniu są takie same jak przed kopią.", ""]
+      ]}
+    ]
+  },
+
+  {
+    id: "D", title: "D. Tournament of Poker — panel administratora",
+    intro: "Otwórz moduł Tournament of Poker z dopiskiem ?admin=1 i podaj hasło.",
+    groups: [
+      { name: "Wejście i zakładki", items: [
+        ["Otwórz moduł Tournament of Poker.", "Widać tytuł <b>Tournament of Poker</b>, ikonę i przycisk Instrukcja."],
+        ["Wejdź w tryb administratora i podaj hasło.", "Otwiera się panel z zakładkami: Aktualności, Czat, Regulamin, Notatki, TOURNAMENT OF POKER."],
+        ["Sprawdź zakładki Aktualności, Czat, Regulamin i Notatki.", "Działają tak samo jak w module Main."],
+        ["Kliknij zakładkę <kbd>TOURNAMENT OF POKER</kbd>.", "Po lewej pojawia się lista sekcji: Lista graczy, Losowanie stołów, Wpłaty, Podział puli, Faza grupowa, Półfinał, Finał, Wypłaty, Czat."]
+      ]},
+      { name: "Lista graczy", items: [
+        ["Kliknij <kbd>Lista graczy</kbd>.", "Widać pola z ustawieniami turnieju i tabelę graczy."],
+        ["Sprawdź licznik graczy nad tabelą.", ""],
+        ["Kliknij <kbd>Dodaj gracza</kbd>.", "Dochodzi pusty wiersz. Przycisk jest po lewej i ma naturalną szerokość."],
+        ["Wpisz nazwę gracza.", "Litery zostają w polu."],
+        ["Kliknij <kbd>Losuj</kbd> przy polu PIN.", "Wpisuje się 5-cyfrowy PIN i widać wszystkie cyfry."],
+        ["Kliknij <kbd>Edytuj</kbd> w kolumnie Uprawnienia.", "Otwiera się okno z listą: Czat, Losowanie stołów, Wpłaty, Podział Puli, Faza Grupowa, Półfinał, Finał, Wypłaty."],
+        ["Zaznacz kilka uprawnień i zamknij okno.", "W kolumnie pojawiają się złote plakietki."],
+        ["Kliknij kółeczko w kolumnie <b>Status</b>.", "Status zmienia się między <b>Do zapłaty</b> (różowy) a <b>Opłacone</b> (złoty)."],
+        ["Wpisz wartość w pole <b>RAKE</b>.", "Pole pokazuje liczbę ze znakiem procenta."],
+        ["Kliknij czerwony przycisk <kbd>Wyzeruj Rebuy</kbd>.", "Wszystkie wpisy rebuy zostają wyzerowane."],
+        ["Usuń testowego gracza przyciskiem <kbd>Usuń</kbd>.", "Przycisk jest dosunięty do prawej krawędzi kolumny."]
+      ]},
+      { name: "Losowanie stołów", items: [
+        ["Kliknij <kbd>Losowanie stołów</kbd>.", "Widać tabelę: Gracz, Status, Stół."],
+        ["Sprawdź kolumnę <b>Status</b>.", "To sama etykieta płatności, bez przycisku — status zmienia się na Liście graczy."],
+        ["Kliknij <kbd>Dodaj stół</kbd>.", "Pojawia się blok stołu z polami Nazwa i Łączna Suma oraz tabelą Gracz / BUY-IN."],
+        ["Wpisz nazwę stołu.", "Nazwa zapisuje się."],
+        ["Przypisz graczy do stołu.", "Gracze pojawiają się w bloku stołu, a Łączna Suma się przelicza."],
+        ["Sprawdź, że kolumna BUY-IN w bloku stołu jest tylko do odczytu.", ""],
+        ["Usuń stół przyciskiem <kbd>Usuń</kbd> w bloku.", "Przycisk jest przy prawej krawędzi bloku."]
+      ]},
+      { name: "Wpłaty", items: [
+        ["Kliknij <kbd>Wpłaty</kbd>.", "Widać TABELA10, TABELA11 i TABELA12."],
+        ["Sprawdź TABELA10 i TABELA11.", "Wszystkie wartości są wyliczane — nie da się ich edytować."],
+        ["Sprawdź TABELA12: LP, STÓŁ, GRACZ, BUY-IN, REBUY.", "Wiersze tego samego stołu mają wspólny kolor tła, kolejny stół ma inny."],
+        ["Kliknij przycisk w kolumnie <b>REBUY</b> przy graczu.", "Otwiera się okno <b>Rebuy gracza</b> z kolumnami Rebuy1, Rebuy2 i tak dalej."],
+        ["Wpisz wartość rebuy i zamknij okno.", "Suma rebuy pojawia się na przycisku."],
+        ["Sprawdź, czy TABELA10 i TABELA11 przeliczyły się po dodaniu rebuy.", ""]
+      ]},
+      { name: "Podział puli", items: [
+        ["Kliknij <kbd>Podział puli</kbd>.", "Widać TABELA13, TABELA14, TABELA15 i TABELA16."],
+        ["Sprawdź TABELA15: kolumny BUY-IN i PODZIAŁ.", "BUY-IN jest przepisany z TABELA14."],
+        ["W TABELA16 wpisz wartości w kolumnie <b>PODZIAŁ PULI</b>.", "Wiersze 1-3 przyjmują procenty, od 4 w górę liczby."],
+        ["Sprawdź kolumny REBUY w TABELA16.", "Kolumny z wpisanymi rebuy są tylko do odczytu i pokazują wartości z okien Rebuy gracza."],
+        ["Kliknij <kbd>Dodaj</kbd> pod TABELA16.", "Dochodzi nowy wiersz."],
+        ["Kliknij <kbd>Usuń</kbd> pod TABELA16.", "Wiersz znika."],
+        ["Sprawdź, czy pojawia się czerwone ostrzeżenie o rebuy do rozdysponowania.", "Ostrzeżenie pokazuje się tylko wtedy, gdy zostało coś do rozdzielenia."]
+      ]},
+      { name: "Faza grupowa", items: [
+        ["Kliknij <kbd>Faza grupowa</kbd>.", "Widać TABELA17, TABELA18, TABELA19, TABELA19A i TABELA19B."],
+        ["Sprawdź TABELA17: STACK GRACZA i REBUY/ADD-ON.", "Dwie kolumny, obie wyliczane."],
+        ["Sprawdź TABELA18.", "Jedna kolumna na każdy stół plus ŁĄCZNY STACK."],
+        ["W TABELA19 zaznacz kwadracik <b>ELIMINATED</b> przy graczu.", "Gracz przenosi się do TABELA19A (wyeliminowani), a znika z TABELA19B."],
+        ["W TABELA19A ustaw kolejność przyciskami <kbd>▲</kbd> i <kbd>▼</kbd>.", "Gracz przesuwa się w górę i w dół."],
+        ["Wpisz wygraną przy wyeliminowanym graczu.", "Pole przyjmuje tylko cyfry."],
+        ["W TABELA19B wpisz stack graczowi.", "Kolumna % przelicza się sama."],
+        ["Odznacz ELIMINATED.", "Gracz wraca do TABELA19B."]
+      ]},
+      { name: "Półfinał", items: [
+        ["Kliknij <kbd>Półfinał</kbd>.", "Widać TABELA21, TABELA22, TABELA22A i TABELA FINAŁOWA."],
+        ["Sprawdź kolumnę STACK w TABELA21.", "Wygląda jak pole, ale nie da się jej edytować."],
+        ["Kliknij <kbd>Dodaj nowy stół</kbd>.", "Pojawia się blok stołu półfinałowego z polami Nazwa i Łączny Stack."],
+        ["Przypisz graczy do stołu w kolumnie STÓŁ w TABELA21.", "Gracze pojawiają się w bloku stołu."],
+        ["Zaznacz ELIMINATED przy graczu w bloku stołu.", "Gracz trafia do TABELA22A."],
+        ["Ustaw kolejność w TABELA22A przyciskami <kbd>▲</kbd> i <kbd>▼</kbd>.", ""],
+        ["W TABELA FINAŁOWA wpisz STACK graczowi.", "Pole przyjmuje tylko cyfry, domyślnie jest tam 0."],
+        ["Usuń stół półfinałowy przyciskiem <kbd>Usuń stół</kbd>.", ""]
+      ]},
+      { name: "Finał", items: [
+        ["Kliknij <kbd>Finał</kbd>.", "Widać TABELA23 i TABELA23A."],
+        ["Sprawdź, czy STACK w TABELA23 zgadza się z TABELA FINAŁOWA z Półfinału.", "Wartości są takie same."],
+        ["Zaznacz ELIMINATED przy graczu.", "Gracz trafia do TABELA23A."],
+        ["Ustaw kolejność w TABELA23A przyciskami <kbd>▲</kbd> i <kbd>▼</kbd>.", ""]
+      ]},
+      { name: "Wypłaty", items: [
+        ["Kliknij <kbd>Wypłaty</kbd>.", "Widać tabelę: MIEJSCE, GRACZ, POCZĄTKOWA WYGRANA, KOŃCOWA WYGRANA."],
+        ["Włącz i wyłącz kolumny wygranych.", "Kolumny pojawiają się i znikają, a tabela nadal wygląda poprawnie."],
+        ["Wpisz kwoty wygranych.", "Wartości zapisują się."]
+      ]},
+      { name: "Czat turniejowy", items: [
+        ["Kliknij <kbd>Czat</kbd> na dole listy sekcji.", "Otwiera się czat turnieju."],
+        ["Wyślij wiadomość.", "Pojawia się na liście."]
+      ]}
+    ]
+  },
+
+  {
+    id: "E", title: "E. Tournament of Poker — widok gracza",
+    intro: "Wyjdź z trybu administratora i wejdź jako zwykły użytkownik.",
+    groups: [
+      { name: "Wejście", items: [
+        ["Otwórz moduł bez dopisku ?admin=1.", "Widać zakładki: Aktualności, Regulamin, TOURNAMENT OF POKER."],
+        ["Kliknij <kbd>TOURNAMENT OF POKER</kbd>.", "Pojawia się prośba o PIN gracza."],
+        ["Wpisz zły PIN.", "Pojawia się komunikat o błędzie."],
+        ["Wpisz prawidłowy PIN gracza.", "Otwiera się panel z listą sekcji po lewej."],
+        ["Sprawdź, czy widać tylko sekcje, do których gracz ma uprawnienia.", "Sekcje bez uprawnień są niedostępne."]
+      ]},
+      { name: "Przegląd sekcji", items: [
+        ["Kliknij kolejno każdą dostępną sekcję.", "Każda pokazuje te same dane co u administratora, ale bez możliwości edycji."],
+        ["Spróbuj zmienić jakąkolwiek wartość w tabeli.", "Nie powinno się dać — wszystko jest tylko do odczytu."],
+        ["Kliknij <kbd>Odśwież</kbd> u góry.", "Dane przeładowują się, pojawia się komunikat."],
+        ["Sprawdź sekcję Czat.", "Można wysłać wiadomość."]
+      ]}
+    ]
+  },
+
+  {
+    id: "F", title: "F. Wygląd na telefonie i na komputerze",
+    intro: "To najważniejsza część po ostatnich zmianach w wyglądzie tabel. Sprawdź obydwa moduły.",
+    groups: [
+      { name: "Na telefonie (albo w wąskim oknie ok. 375 px)", items: [
+        ["Otwórz aplikację na telefonie albo zwęź okno przeglądarki do szerokości telefonu.", ""],
+        ["Sprawdź, czy <b>cała strona</b> nie przesuwa się na boki.", "Przewijać w bok powinny się tylko same tabele, nigdy cała strona."],
+        ["Przewiń szeroką tabelę palcem w bok.", "Tabela przesuwa się wewnątrz swojej ramki, reszta strony stoi w miejscu."],
+        ["Przewiń długą tabelę w dół.", "Nagłówek tabeli zostaje przyklejony u góry i cały czas widać nazwy kolumn."],
+        ["Sprawdź nagłówki kolumn.", "Nazwy są w całości widoczne — mogą być w dwóch liniach, ale nie powinny być ucięte w połowie wyrazu."],
+        ["Sprawdź pole PIN w tabeli Gracze.", "Widać wszystkie pięć cyfr, przycisk Losuj mieści się obok."],
+        ["Sprawdź przyciski <kbd>Usuń</kbd> i <kbd>Edytuj</kbd> w wierszach.", "Da się w nie trafić palcem bez powiększania."],
+        ["Wejdź w Strefę Gracza → <b>Gry do Potwierdzenia</b>.", "Na wąskim ekranie każdy wiersz jest osobnym kafelkiem, a przy każdej wartości widnieje nazwa kolumny. Nie trzeba przewijać w bok."],
+        ["Otwórz okno <kbd>Szczegóły</kbd> na telefonie.", "Okno mieści się na ekranie, treść przewija się w środku."],
+        ["Sprawdź sekcje po lewej w Strefie Gracza.", "Przyciski sekcji są czytelne i ułożone jeden pod drugim."]
+      ]},
+      { name: "Na tablecie (ok. 800-1000 px)", items: [
+        ["Ustaw szerokość okna na mniej więcej 820 px.", ""],
+        ["Wejdź w zakładkę <b>Gry admina</b>.", "Panele <b>Lata</b> i <b>Ranking</b> są nad i pod tabelą, a nie obok niej — tabela ma pełną szerokość."],
+        ["Sprawdź napisy na przyciskach sekcji.", "Są czytelne, nie są zmniejszone do rozmiaru drobnego druku."],
+        ["Wejdź w moduł Tournament of Poker.", "Lista sekcji jest nad treścią, tabele mają pełną szerokość."]
+      ]},
+      { name: "Na komputerze (1440 px i szerzej)", items: [
+        ["Otwórz aplikację na pełnym ekranie komputera.", ""],
+        ["Wejdź w zakładkę <b>Gry admina</b>.", "Trzy obszary obok siebie: Lata, treść, Ranking. Kolumna z tabelami jest najszersza."],
+        ["Sprawdź panel <b>Ranking</b>.", "Trzy kolumny mieszczą się w panelu bez przewijania w bok."],
+        ["Wejdź w moduł Tournament of Poker → <b>Podział puli</b>.", "Małe tabele podsumowań (TABELA13, TABELA14, TABELA15) zajmują tylko tyle miejsca, ile potrzebują — nie są rozciągnięte na całą szerokość ekranu."],
+        ["Sprawdź <b>Wpłaty</b> → TABELA10 i TABELA11.", "Tak samo: tabele są zwarte, nie rozciągnięte."],
+        ["Sprawdź szerokie tabele (Lista graczy, TABELA12, TABELA19).", "Kolumny z liczbami mają rozsądną szerokość, a wolne miejsce zabiera kolumna z nazwą gracza."]
+      ]},
+      { name: "Na bardzo szerokim monitorze (1920 px i więcej)", items: [
+        ["Otwórz aplikację na szerokim monitorze albo zmaksymalizuj okno.", ""],
+        ["Sprawdź panel administratora w obu modułach.", "Treść nie rozciąga się na całą szerokość monitora — ma rozsądną maksymalną szerokość."],
+        ["Sprawdź widok użytkownika.", "Zielona ramka karty nadal sięga 1 px od lewej i prawej krawędzi ekranu."]
+      ]},
+      { name: "Telefon w poziomie", items: [
+        ["Obróć telefon poziomo i wejdź w Statystyki.", "Panele układają się jeden pod drugim, a nie obok siebie."],
+        ["Sprawdź, czy tabele nadal da się wygodnie przewijać.", ""]
+      ]}
+    ]
+  },
+
+  {
+    id: "G", title: "G. Sprawdzenie końcowe",
+    intro: "Krótkie przejście po rzeczach, które łatwo przeoczyć.",
+    groups: [
+      { name: "Zapisywanie danych", items: [
+        ["Wpisz coś w dowolne pole w tabeli i odczekaj dwie sekundy.", "Kursor zostaje w polu — nie ucieka po zapisie."],
+        ["Wpisz kilka znaków szybko jeden po drugim.", "Wszystkie znaki się wpisują, żaden nie ginie."],
+        ["Odśwież stronę.", "Wpisane dane nadal tam są."],
+        ["Otwórz aplikację na drugim urządzeniu.", "Widać te same dane."]
+      ]},
+      { name: "Rzeczy wspólne dla obu modułów", items: [
+        ["Sprawdź przycisk <kbd>Instrukcja</kbd> w obu modułach.", "Otwiera okno z instrukcją."],
+        ["Sprawdź czerwony przycisk kontroli celno-skarbowej w obu modułach.", "Otwiera okno z obrazkiem, bez nagłówka."],
+        ["Sprawdź ikonę w prawym górnym rogu w obu modułach.", "Jest ta sama i wyświetla się poprawnie."],
+        ["Zamknij każde otwarte okno krzyżykiem <kbd>×</kbd>.", "Okno się zamyka, strona pod spodem znów działa."],
+        ["Kliknij poza oknem, gdy jest otwarte.", "Okno zamyka się albo zostaje — sprawdź, czy zachowuje się tak samo w obu modułach."]
+      ]},
+      { name: "Na koniec", items: [
+        ["Przejrzyj swoje notatki na dole tej strony.", ""],
+        ["Sprawdź, czy każdy niezaznaczony krok ma opis w notatkach.", "Niezaznaczony krok bez opisu to informacja stracona."],
+        ["Skopiuj notatki przyciskiem i przekaż je dalej.", ""]
+      ]}
+    ]
+  }
+  ];
+
+  /* ============================================================
+     RENDER
+     ============================================================ */
+  var KEY = "karty-checklista-testera-v1";
+  var NOTES_KEY = "karty-checklista-notatki-v1";
+  var content = document.getElementById("content");
+  var boxes = [];
+
+  function load(){
+    try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+  function save(state){
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+  var state = load();
+
+  SECTIONS.forEach(function(sec){
+    var section = document.createElement("section");
+    section.id = "sec-" + sec.id;
+    var h2 = document.createElement("h2");
+    h2.innerHTML = sec.title + ' <span class="sec-count" data-sec="' + sec.id + '"></span>';
+    section.appendChild(h2);
+    if (sec.intro){
+      var p = document.createElement("p");
+      p.className = "sec-intro";
+      p.textContent = sec.intro;
+      section.appendChild(p);
+    }
+    var n = 0;
+    sec.groups.forEach(function(group){
+      var h3 = document.createElement("h3");
+      h3.textContent = group.name;
+      section.appendChild(h3);
+      group.items.forEach(function(item){
+        n += 1;
+        var id = sec.id + "-" + n;
+        var row = document.createElement("div");
+        row.className = "step";
+        row.dataset.sec = sec.id;
+        var cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.id = "cb-" + id;
+        cb.checked = state[id] === true;
+        var label = document.createElement("label");
+        label.setAttribute("for", cb.id);
+        label.innerHTML = '<span class="num">' + id + '</span>' + item[0] +
+          (item[1] ? '<span class="hint">' + item[1] + '</span>' : '');
+        if (cb.checked) row.classList.add("done");
+        cb.addEventListener("change", function(){
+          row.classList.toggle("done", cb.checked);
+          state[id] = cb.checked;
+          save(state);
+          refresh();
+        });
+        row.appendChild(cb);
+        row.appendChild(label);
+        section.appendChild(row);
+        boxes.push({ box: cb, sec: sec.id });
+      });
+    });
+    content.appendChild(section);
+  });
+
+  var meter = document.getElementById("meterFill");
+  var counter = document.getElementById("counter");
+
+  function refresh(){
+    var done = boxes.filter(function(b){ return b.box.checked; }).length;
+    var total = boxes.length;
+    counter.textContent = done + " / " + total + " zrobione";
+    meter.style.width = total ? (done / total * 100).toFixed(1) + "%" : "0%";
+    SECTIONS.forEach(function(sec){
+      var mine = boxes.filter(function(b){ return b.sec === sec.id; });
+      var d = mine.filter(function(b){ return b.box.checked; }).length;
+      var el = document.querySelector('.sec-count[data-sec="' + sec.id + '"]');
+      if (el) el.textContent = d + " / " + mine.length;
+    });
+  }
+
+  document.getElementById("toggleTodo").addEventListener("click", function(){
+    document.body.classList.toggle("only-todo");
+    this.classList.toggle("on", document.body.classList.contains("only-todo"));
+    this.textContent = document.body.classList.contains("only-todo")
+      ? "Pokaż wszystkie kroki" : "Pokaż tylko niezrobione";
+  });
+
+  document.getElementById("resetAll").addEventListener("click", function(){
+    if (!window.confirm("Odznaczyć wszystkie kroki? Notatki zostaną zachowane.")) return;
+    boxes.forEach(function(b){
+      b.box.checked = false;
+      b.box.closest(".step").classList.remove("done");
+    });
+    state = {};
+    save(state);
+    refresh();
+  });
+
+  /* --- notatki --- */
+  var notes = document.getElementById("testerNotes");
+  var notesStatus = document.getElementById("notesStatus");
+  try { notes.value = localStorage.getItem(NOTES_KEY) || ""; } catch (e) {}
+  notes.addEventListener("input", function(){
+    try { localStorage.setItem(NOTES_KEY, notes.value); } catch (e) {}
+  });
+  document.getElementById("copyNotes").addEventListener("click", function(){
+    var done = boxes.filter(function(b){ return b.box.checked; }).length;
+    var text = "Checklista testera — " + done + " / " + boxes.length + " zrobione\n\n" + notes.value;
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){
+        notesStatus.textContent = "Skopiowano do schowka.";
+      }, function(){
+        notesStatus.textContent = "Nie udało się skopiować — zaznacz tekst i skopiuj ręcznie.";
+      });
+    } else {
+      notes.select();
+      notesStatus.textContent = "Zaznaczono tekst — skopiuj go skrótem Ctrl+C.";
+    }
+  });
+
+  refresh();
+})();
+</script>
+</body>
+</html>
