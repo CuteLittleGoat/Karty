@@ -22,6 +22,9 @@ Instrukcja jest podzielona na dwie części:
 4c. Modal zamkniesz na trzy sposoby: przyciskiem `×`, klawiszem `Esc` albo kliknięciem w tło poza oknem.
 5. Kliknięcie **Instrukcja** otwiera okno modalne z instrukcją; zamkniesz je przyciskiem `×`.
 6. W trybie użytkownika główna zielona ramka panelu jest rozciągnięta niemal na pełną szerokość ekranu: zaczyna się 1 px od lewej i kończy 1 px przed prawą krawędzią.
+7. **Tabele na telefonie.** Szerokie tabele przewija się palcem w bok wewnątrz ramki tabeli — reszta strony pozostaje nieruchoma. Nagłówek tabeli zostaje przyklejony u góry, więc przy przewijaniu w dół zawsze widać, co oznacza dana kolumna.
+8. **Listy w Strefie Gracza na wąskim ekranie.** Na telefonie o szerokości do 560 px listy tylko do odczytu (**Najbliższa Gra**, **Gry do Potwierdzenia**, okno **Szczegóły**) zamieniają się w karty: każdy wiersz to osobny kafelek, a przy każdej wartości widnieje nazwa kolumny. Nie trzeba wtedy przewijać w bok.
+9. **Na tablecie** panele boczne (**Lata**, **Ranking**, **Sekcja**) układają się nad i pod treścią, a nie obok niej — dzięki temu tabele mają pełną szerokość ekranu.
 7. Jeśli otworzysz moduł w trybie użytkownika (bez `?admin=1`), przeglądarka może zaproponować instalację PWA lub dodanie aplikacji do ekranu głównego.
 8. Jeśli otworzysz moduł z parametrem `?admin=1`, wejście administracyjne działa jako zwykła strona/skróty URL — bez publikowania manifestu PWA dla tego adresu.
 9. W uruchomieniu PWA (aplikacja zainstalowana na urządzeniu) moduł Main nie wymusza orientacji — aplikacja działa zgodnie z ustawieniem orientacji urządzenia.
@@ -240,7 +243,7 @@ Jeśli wypłaty nie zgadzają się z pulą, pojawia się czerwone ostrzeżenie.
    - ranking.
 5. Kliknij **Eksportuj**, aby pobrać dane statystyk.
 6. Na komputerze panel **Ranking** jest po prawej stronie tabeli **Statystyki**.
-7. Na telefonie panel **Ranking** wyświetla się pod tabelą **Statystyki** (układ jednokolumnowy).
+7. Na telefonie i na tablecie (do 1180 px szerokości) panel **Ranking** wyświetla się pod tabelą **Statystyki** — układ przechodzi na jedną kolumnę, żeby tabela miała pełną szerokość ekranu.
 8. W telefonie poziomo (mobile landscape) układ również przełącza się na jedną kolumnę, więc panele **Lata** i **Ranking** pojawiają się pod treścią, a nie obok niej.
 
 ---
@@ -418,7 +421,7 @@ W podsumowaniu każdej gry użyj przycisku **Notatki po grze**:
 
 ### 10.6. Statystyki i wagi w tej zakładce
 W tabeli statystyk graczy są przyciski kolumn:
-- **Waga1**, **Waga2**, **Waga3**, **Waga4**, **Waga5**, **Waga6** (każdy przycisk ma stałą szerokość `8ch`, żeby nagłówki wag nie rozciągały kolumn).
+- **Waga1**, **Waga2**, **Waga3**, **Waga4**, **Waga5**, **Waga6** (kolumny wag są celowo wąskie, a przycisk wypełnia całą szerokość nagłówka).
 
 Działanie:
 - po kliknięciu danej „Wagi” wpisujesz jedną wartość,
@@ -457,7 +460,7 @@ Najważniejsze przyciski:
 - **Szczegóły** — edycja składu i wartości,
 - **Notatki do gry** — notatki przed grą,
 - **Usuń** — usunięcie gry,
-- Szerokości kolumn są zgodne z zakładką **Gry admina**; wyjątek to szersza kolumna **Nazwa** (dla przycisku **Notatki do gry**), żeby treść pól i przycisków nie ucinała się na mobilnych szerokościach.
+- Szerokości kolumn są zgodne z zakładką **Gry admina**, z dodatkową kolumną **Liczba miejsc**. Kolumna **Nazwa** rozciąga się na wolne miejsce, więc na szerokim ekranie to ona robi się szersza, a nie kolumny z liczbami.
 - **Wpisowe** (w nagłówku modalu szczegółów) — zbiorcze wpisowe,
 - **Dodaj** (w modalu szczegółów) — dodanie uczestnika,
 - **Usuń** (w wierszu modalu) — usunięcie uczestnika.

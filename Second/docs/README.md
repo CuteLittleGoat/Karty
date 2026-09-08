@@ -179,6 +179,14 @@
 - Podczas pisania (również przy przytrzymaniu Backspace) aplikacja nie nadpisuje aktywnie edytowanego pola starszym snapshotem.
 - Synchronizacja z serwerem jest stosowana po zakończeniu edycji pola.
 
+## Tabele — co warto wiedzieć
+
+1. **Przewijanie w bok.** Szerokie tabele (na przykład **Tabela12**, **Tabela19**, **Lista graczy**) przewija się palcem lub myszą w bok wewnątrz ramki tabeli. Reszta strony przy tym nie ucieka.
+2. **Przyklejony nagłówek.** Przy przewijaniu długiej listy w dół nagłówek tabeli zostaje na górze, więc zawsze widać, co oznacza dana kolumna.
+3. **Tabele podsumowań** (**Tabela10**, **Tabela11**, **Tabela13**, **Tabela14**, **Tabela15**, **Tabela17**, **Tabela18**) zajmują tylko tyle miejsca, ile potrzebują ich kolumny — nie rozciągają się na całą szerokość ekranu.
+4. **Na telefonie do 560 px** listy tylko do odczytu w widoku gracza zamieniają się w karty: każdy wiersz to osobny kafelek, a przy każdej wartości widnieje nazwa kolumny. Nie trzeba wtedy przewijać w bok.
+5. **Na tablecie** panel boczny z listą sekcji układa się nad treścią, a nie obok niej, żeby tabele miały pełną szerokość ekranu.
+
 ## TOURNAMENT OF POKER – aktualny przepływ (moduł Second)
 
 ### Losowanie stołów

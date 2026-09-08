@@ -1,8 +1,47 @@
 # Second — dokumentacja techniczna
 
 ## Widok użytkownika — szerokość zewnętrznej ramki
-- W widoku użytkownika (`body` bez klasy `is-admin`) kontener `.page` ma szerokość `calc(100% - 2px)` i `padding-inline: 1px`, więc panel zewnętrzny dochodzi do 1 px od lewej i prawej krawędzi ekranu.
+- Moduł `Second` **nie ustawia klasy `body.is-admin`**, dlatego reguły pełnej szerokości opierają się na selektorze `.page:has(.user-card)` — karta `user-card` występuje wyłącznie w szablonie użytkownika.
+- W widoku użytkownika kontener `.page` ma szerokość `calc(100% - 2px)` i `padding-inline: 1px`, więc panel zewnętrzny dochodzi do 1 px od lewej i prawej krawędzi ekranu.
+- W panelu administratora obowiązuje `width: min(1720px, 100%)`, więc panel nie rozciąga się na całą szerokość szerokiego monitora.
 - Dla `.user-card` pozostawiono lewy i prawy border o grubości `1px`, a pseudo-element `.user-card::before` jest wyłączony, aby pierwsza zielona ramka miała dokładnie 1 px po bokach.
+
+## System szerokości tabel (Second)
+
+Warstwa prezentacji tabel opiera się na skali tokenów w `Second/styles.css`; pełne przypisanie kolumn opisuje `Kolumny.md`.
+
+### Tokeny
+`:root` definiuje dziewięć zmiennych: `--col-num-xs` (56 px), `--col-num-sm` (80 px), `--col-num-md` (104 px), `--col-flag` (88 px), `--col-date` (120 px), `--col-text-sm` (144 px), `--col-text-md` (192 px), `--col-text-lg` (256 px), `--col-actions` (112 px). W breakpointcie `max-width: 720px` skala schodzi o ok. 20 % (poza `--col-flag`). Jednostką jest `rem`, a nie `ch`, bo `ch` zależy od fontu elementu i dawał inną wartość w `<th>` niż w `<td>`.
+
+### Tryby tabel
+- `.admin-data-table` — `border-collapse: collapse`, `table-layout: fixed`. Poprzednie `min-width: 860px` zostało usunięte; wymuszało ono 860 px nawet na tabeli dwukolumnowej.
+- `.admin-data-table.t-fluid` — `width: 100%`, `min-width: var(--table-min, 0)`.
+- `.admin-data-table.t-compact` — `width: var(--table-min, auto)`, `min-width: 0`; dla podsumowań `Tabela10/11/13/14/15/17/18`.
+- `.admin-data-table.is-table-stacked` — poniżej 560 px wiersz staje się kartą „etykieta → wartość".
+
+### Helpery w `Second/app.js`
+- `COL` — mapa skrótów tokenów (`xs`, `sm`, `md`, `flag`, `date`, `tsm`, `tmd`, `tlg`, `act`) na zmienne CSS.
+- `tCols(tokens, mode)` — zwraca `<colgroup>`; jedna kolumna tekstowa (`tlg`, a gdy jej nie ma — `tmd`) dostaje `<col>` bez szerokości i wchłania nadmiar miejsca.
+- `tAttr(tokens, mode, extraClass)` — zwraca atrybuty `class` i `style="--table-min: …"` dla `<table>`.
+- `tColsAuto(headerHtml, lead, trail, fill)` — dla tabel o zmiennej liczbie kolumn (`Tabela16`); liczy kolumny z wygenerowanego nagłówka i wypełnia środek podanym tokenem.
+- `applyStackedLayout(root)` — poniżej 560 px oznacza tabele `t-fluid` w widoku gracza klasą `is-table-stacked` i uzupełnia `data-label` z nagłówka; `Tabela16` jest wykluczona, bo szeroką siatkę liczbową czyta się lepiej z przewijaniem.
+- `watchStackedLayout(root)` — `MutationObserver` na kontenerze danych gracza, dzięki czemu etykiety uzupełniają się po każdym przerysowaniu sekcji.
+
+### Pola formularzy w tabelach
+`.admin-data-table .admin-input` i `.admin-data-table select.admin-input` mają `min-width: 0`. Bez tego pole narzuca komórce własną szerokość naturalną (ok. 213 px przy domyślnym `size=20`), a `<select>` — szerokość najdłuższej opcji.
+
+### Zachowanie treści i breakpointy
+- `.admin-data-table th` — `position: sticky; top: 0`, nagłówek zawija się w dwie linie; na mobile odstęp liter `0.04em`.
+- `.admin-data-table td` — `white-space: nowrap` i obcinanie wielokropkiem.
+- `.admin-table-scroll` — `overflow: auto`, `max-height: min(72vh, 760px)`.
+- `max-width: 1180px` — `.admin-games-layout` przechodzi na jedną kolumnę.
+- `max-width: 720px` — mobilna skala tokenów i mniejsze paddingi (`.page` `20px 10px 48px`, `.card` `14px`, panele `10px`).
+- `max-width: 560px` — układ kartowy.
+- `pointer: coarse` — przyciski i zakładki co najmniej 40 px wysokości.
+- `.user-tab-content > *` i `.admin-panel-content > *` — `max-width: var(--content-max)` = 1680 px.
+
+### Czyszczenie martwego CSS
+Z `Second/styles.css` usunięto 588 linii reguł dotyczących klas, których ten moduł nie renderuje (kalkulator, statystyki graczy, ranking, potwierdzenia, szczegóły gry), w tym 148 reguł `nth-child` ustawiających szerokości nieistniejących kolumn.
 
 ## Nagłówek i przycisk instrukcji
 - Tekst nagłówka modułu ustawiono na: eyebrow `To też nie jest nielegalny poker` oraz tytuł `Tournament of Poker`; tytuł karty przeglądarki brzmi `Tournament of Poker - Panel i Widok Użytkownika`.
@@ -59,7 +98,7 @@
      - zaznaczenie ustawia `assignments[playerId].status = "Opłacone"`,
      - odznaczenie ustawia `assignments[playerId].status = "Do zapłaty"`,
   2. `Nazwa` (input tekstowy),
-  3. `PIN` (input 5-cyfrowy o poszerzonej szerokości + przycisk `Losuj`),
+  3. `PIN` (input 5-cyfrowy + przycisk `Losuj`; kolumna ma token `--col-text-md`, żeby pole i przycisk zmieściły się obok siebie),
   4. `Uprawnienia` (badge + przycisk `Edytuj`),
   5. `Akcje` (przycisk `Usuń`).
 
@@ -120,7 +159,7 @@
 - Checkbox `ELIMINATED` zapisuje się na zdarzeniu `change` bez dodatkowych ścieżek usuwania; po kliknięciu aplikacja od razu wykonuje `render()`, więc gracz natychmiast przechodzi między `Tabela19A` i `Tabela19B`, a stan pozostaje po odświeżeniu. Odznaczenie checkboxa usuwa też gracza z `group.eliminatedOrder`, a ponowne zaznaczenie dopisuje go na końcu listy.
 
 ### Półfinał
-- `Tabela21` pobiera listę graczy z `Tabela19B`: kolumna `STACK` jest zwykłym tekstem w komórce `<td>` (bez inputa), pokazuje `semiStack` (domyślnie `group.survivorStacks[playerId]`) i używa klasy szerokości `t-stack-input`; kolumna `%` liczy udział względem `Tabela18.ŁĄCZNY STACK` na bazie `semiStack`.
+- `Tabela21` pobiera listę graczy z `Tabela19B`: kolumna `STACK` jest zwykłym tekstem w komórce `<td>` (bez inputa), pokazuje `semiStack` (domyślnie `group.survivorStacks[playerId]`) i używa klasy `t-stack-input` (odpowiada już tylko za wyrównanie do prawej — szerokość bierze się z `<colgroup>`); kolumna `%` liczy udział względem `Tabela18.ŁĄCZNY STACK` na bazie `semiStack`.
 - `Tabela21.STÓŁ` jest selectem opartym o `semi.customTables[]`; wybór zapisuje `semi.assignments[playerId].tableId`.
 - `Tabela22` renderuje po jednej karcie na każdy wpis `semi.customTables[]`; karta pokazuje nazwę stołu, `ŁĄCZNY STACK` liczony jako suma wartości `semiStack` (czyli stack po ewentualnej edycji w `Tabela21`) oraz wiersze `GRACZ / STACK / ELIMINATED`.
 - Checkbox `ELIMINATED` w `Tabela22` zapisuje się do `semi.assignments[playerId].eliminated`, a kolejność graczy wyeliminowanych w półfinale utrwala się w `semi.eliminatedOrder`; stan pozostaje po odświeżeniu i po ponownym wejściu do aplikacji.
@@ -265,7 +304,7 @@
 - Jeśli w modalach `Rebuy gracza` nie ma żadnej uzupełnionej wartości, `Tabela16` nie renderuje żadnej kolumny `REBUY`.
 - Komórki `REBUY1..REBUY30` są automatycznie przypisane do wierszy przez mapę biznesową i są readonly (jak `KWOTA`) z wartościami z modali `Rebuy gracza` pomniejszonymi o procent z `Tabela14` (`wartość * (1 - rakePercent)`).
 - Komórki od `REBUY31` wzwyż są renderowane dynamicznie, pozostają puste domyślnie (bez auto-przypisania do wiersza) i są edytowalne przez użytkownika (wartości ręczne są trzymane w `pool.rebuyValues`).
-- `Tabela16` używa klasy `.tournament-pool-table16`, która wymusza stałą szerokość kolumn i pól wejściowych pod 4 znaki.
+- `Tabela16` używa klasy `.tournament-pool-table16`; `<colgroup>` buduje się z tej samej pętli co nagłówki (`tColsAuto`), więc zmienna liczba kolumn `REBUY` i `MOD` nie rozjeżdża szerokości. Pola `.admin-input` wypełniają komórkę.
 - Kolumny `MOD` są dynamiczne względem liczby kolumn `REBUY`: dla `0..12` widoczne jest `MOD1`, dla `13..20` widoczne są `MOD1` i `MOD2`, a dla `>20` widoczne są `MOD1`, `MOD2`, `MOD3`.
 - `SUMA` = `KWOTA + suma REBUY w wierszu + MOD1 + MOD2 + MOD3` (z uwzględnieniem widocznych kolumn MOD).
 - Obliczanie sumy wszystkich komórek `REBUY` używa zagnieżdżonego `reduce` (bez `Array.prototype.flat`), co utrzymuje zgodność renderu sekcji `Podział puli` ze starszymi środowiskami WebView/przeglądarkami.
@@ -297,7 +336,7 @@
 - Wysyłka wiadomości do `second_chat_messages` zapisuje `authorName` z `players[].name` zweryfikowanego gracza.
 
 ### Modal „Rebuy gracza” — zapis i odświeżanie
-- Tabela modala używa identyfikatora `#adminCalculatorRebuyTable` i ma stałe kolumny `8ch` (spójność z Main).
+- Tabela modala używa identyfikatora `#adminCalculatorRebuyTable`, ma `width: max-content` i kolumny o szerokości `--col-num-sm` (spójność z Main).
 - Zmiana w polu rebuy jest od razu sanityzowana do cyfr i aktualizuje lokalny stan/draft oraz `Tabela12`; zapis do Firebase wykonywany jest przy zamknięciu modalu z niezapisanymi zmianami albo przy operacji `Usuń Rebuy`.
 - `saveState()` zapisuje ostatni błąd w `saveState.lastError`, a moduł loguje błędy do konsoli (`[Second] saveState error`, `[Second][Table12Rebuy] ...`) dla szybszej diagnostyki.
 - Automatyczny reset rebuy po stanie `0 graczy i 0 stołów` działa przez czyszczenie pól wewnątrz dokumentu (`payments.table12Rebuys`, `pool.rebuyValues`), więc nie koliduje z ochroną przed usunięciem ostatniego dokumentu z kolekcji Firebase.

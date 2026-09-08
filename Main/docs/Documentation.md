@@ -39,14 +39,14 @@
 - Potwierdzenia obecności i liczniki `potwierdzeni/zapisani` zostały przepięte na klucz logiczny gracza oparty o `playerId` (z fallbackiem do `playerName` dla starszych rekordów), co eliminuje konflikt przy duplikatach nazw.
 - Wiersze gier (`rows`) oraz wybór gracza w modalach szczegółów zapisują teraz jednocześnie `playerId` i `playerName`, dzięki czemu prezentacja pozostaje czytelna, a logika opiera się o identyfikator unikatowy.
 - Statystyki roczne i konfiguracja ręcznych wag (`admin_games_stats`) używają klucza gracza wyliczanego z `playerId` (fallback: `playerName`) oraz serializują `playerId` w rekordach manualnych; ten sam klucz jest używany zarówno w zakładce „Statystyki”, jak i w sekcji statystyk zakładki „Gry admina”.
-- Przyciski zbiorczej edycji wag (`.admin-weight-bulk-button`) w sekcjach statystyk zakładek „Gry admina” i „Statystyki” mają stałą szerokość `8ch` (`width/min-width/max-width`), co stabilizuje szerokość kolumn wag i zapobiega ich nadmiernemu rozciąganiu.
-- W `Main/styles.css` kontener `.admin-table-scroll` ma poziome przewijanie z widocznym stylowaniem suwaka (`overflow-x: auto`, dedykowane style paska), dzięki czemu szerokie tabele można przesuwać lewo/prawo bez nakładania treści.
-- W widoku gracza (`#statisticsTab`) desktopowa siatka `.admin-games-layout` ma trzy kolumny: `20ch` (`Lata`), `minmax(0, 1fr)` (`Statystyki`) i `34ch` (`Ranking`), dzięki czemu ranking jest po prawej stronie tabel; w breakpointcie `max-width: 720px` układ przechodzi na jedną kolumnę i ranking ląduje pod tabelą statystyk.
-- Dodatkowy breakpoint mobile-landscape (`@media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 500px)`) wymusza układ jednokolumnowy także dla szerszych telefonów w poziomie, aby panele `Lata` i `Ranking` nie układały się obok treści.
+- Przyciski zbiorczej edycji wag (`.admin-weight-bulk-button`) wypełniają szerokość komórki nagłówka (`width: 100%`); szerokość kolumny wynika z tokenu `--col-num-xs` w `<colgroup>`.
+- W `Main/styles.css` kontener `.admin-table-scroll` ma przewijanie w obu osiach (`overflow: auto`) z widocznym stylowaniem suwaka i limitem wysokości `min(72vh, 760px)`.
+- W widoku gracza (`#statisticsTab`) desktopowa siatka `.admin-games-layout` ma trzy kolumny: `20ch` (`Lata`), `minmax(0, 1fr)` (`Statystyki`) i `34ch` (`Ranking`); poniżej 1180 px układ przechodzi na jedną kolumnę i ranking ląduje pod tabelą statystyk.
+- Dodatkowy breakpoint mobile-landscape (`@media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 500px)`) wymusza układ jednokolumnowy także dla telefonów w poziomie.
 - W modalach szczegółów gry (`.game-details-modal-card`) obszar treści (`.modal-body`) działa jako kontener flex (`flex: 1; min-height: 0`), a sekcja tabeli (`.admin-table-scroll`) przejmuje przewijanie (`overflow: auto`, `-webkit-overflow-scrolling: touch`), dzięki czemu na desktopie i mobile działa pionowe i poziome przewijanie długiej listy graczy.
 - Kalkulator (tabele 2 i 9) przechowuje i serializuje `playerId` wraz z `playerName`; wybory na listach graczy działają po ID, co zabezpiecza scenariusz duplikatów nazw.
-- Tabele `Gracze` (`.players-table`) i listy gier (`.admin-games-table`) mają podniesione minimalne szerokości i minima dla kluczowych kolumn, aby nagłówki, pola i przyciski nie nachodziły na siebie w desktopie; na mniejszych ekranach działają przez przewijanie poziome.
-- Tabele list `Gry użytkowników` używają teraz tych samych bazowych klas szerokości co `Gry admina` (`.admin-games-table`) oraz dodatkowej klasy `.admin-user-games-table`, która poszerza kolumnę `Nazwa` (z przyciskiem `Notatki do gry`) do `440px` i podnosi minimalną szerokość całej tabeli do `1340px`, dzięki czemu pole `Rodzaj Gry` nie zwęża się nadmiernie w mobile.
+- Tabele `Gracze` (`.players-table`) i listy gier (`.admin-games-table`) deklarują kolumny w `<colgroup>` z tokenów; na mniejszych ekranach działają przez przewijanie poziome w `.admin-table-scroll`.
+- Tabele list `Gry użytkowników` używają klas `.admin-games-table` i `.admin-user-games-table` oraz mają o jedną kolumnę więcej (`Liczba miejsc`, token `--col-num-sm`); kolumna `Nazwa` jest kolumną elastyczną, więc to ona wchłania nadmiar miejsca.
 
 ## 3. Obsługa modala instrukcji (`initInstructionModal`)
 - Elementy DOM:
@@ -184,34 +184,41 @@ i są potrzebne, aby odtworzyć działające App Check:
 - **Podsumowania gier budowane są przez `textContent`.** Wiersze w `renderSummaries` (obie kopie) tworzone są przez `document.createElement`/`textContent` zamiast interpolacji do `innerHTML`, więc nazwy graczy ze znakami `<`, `>` czy `&` nie rozbijają układu tabeli.
 - **Identyfikator dokumentu potwierdzenia.** `initAdminConfirmations` używa `player.playerId`, następnie identyfikatora istniejącego dokumentu, a w ostateczności `buildSafeConfirmationDocId`, które zamienia znaki niedozwolone w identyfikatorach Firestore (`/ \\ . # $ [ ]`) na `_` i odrzuca nazwy puste oraz `.`/`..`.
 
-## Rework layoutu tabel (Main)
+## System szerokości tabel (Main)
 
-Zmiany obejmują wyłącznie warstwę prezentacji tabel (`Main/styles.css`):
+Warstwa prezentacji tabel opiera się na skali tokenów w `Main/styles.css`; pełne przypisanie kolumn opisuje `Kolumny.md`.
 
-- ` .admin-table-scroll`
-  - `overflow` zmienione na `auto` (obsługa osi X i Y),
-  - dodany limit wysokości `max-height: min(72vh, 760px)`,
-  - zachowane stylowanie pasków przewijania.
-- `.admin-data-table`
-  - `width: max-content`,
-  - `min-width: 100%`,
-  - dzięki temu tabela jest pełna w szerokich kontenerach, ale może też rozszerzać się wg zawartości i przewijać poziomo.
-- Usunięto wcześniejsze, rozproszone i częściowo niespójne ograniczenia szerokości (`min-width`) z poprzedniego układu dla tabel gier, graczy i rankingu.
-- Dodano pełny zestaw jawnych szerokości `width/min-width` dla kolumn we wszystkich głównych tabelach:
-- Dla rankingu (w `#adminGamesTab`, `#adminStatisticsTab` i `#statisticsTab`) ustawiono tabelę na `width: 100%` + `table-layout: fixed`, aby trzy kolumny zawsze mieściły się w panelu bez poziomego przewijania.
-- Wiersze rankingu używają standardowej wysokości panelu (`height: var(--admin-games-panel-item-height)`), a kolumna `Gracz` ma stałą szerokość `13ch` i skracanie nazw przez `text-overflow: ellipsis` (`white-space: nowrap`, `overflow: hidden`), dzięki czemu tabela mieści się bez poziomego przewijania.
-- Nagłówek kolumny `Gracz` w panelu `Ranking` jest wyrównany do lewej w `Gry admina`, `Statystyki` i w widoku użytkownika (`Strefa Gracza` → `Statystyki`), aby odpowiadał wyrównaniu danych w tej kolumnie.
-  - gracze,
-  - gry administratora i gry użytkowników,
-  - statystyki i ranking,
-  - gry do potwierdzenia,
-  - szczegóły gry (modale),
-  - kalkulator (Tournament i Cash).
+### Tokeny
+`:root` definiuje dziewięć zmiennych szerokości: `--col-num-xs` (56 px), `--col-num-sm` (80 px), `--col-num-md` (104 px), `--col-flag` (88 px), `--col-date` (120 px), `--col-text-sm` (144 px), `--col-text-md` (192 px), `--col-text-lg` (256 px), `--col-actions` (112 px). W breakpointcie `max-width: 720px` cała skala schodzi o ok. 20 % (poza `--col-flag`, który zostaje na 88 px, żeby nagłówki typu `APLIKACJA` mieściły się bez łamania). Jednostką jest `rem`, a nie `ch`, ponieważ `ch` zależy od fontu elementu i dawał inną wartość w `<th>` (Rajdhani 12 px) niż w `<td>` (Inter 14,5 px).
 
-Efekt techniczny:
-- stabilny układ kolumn niezależnie od długości danych,
-- lepsza przewidywalność renderowania przycisków i pól,
-- pełna obsługa przepełnienia danych przez scroll lokalny bez zmiany szerokości paneli bocznych.
+### Tryby tabel
+- `.admin-data-table` — `border-collapse: collapse`, `table-layout: fixed`.
+- `.admin-data-table.t-fluid` — `width: 100%`, `min-width: var(--table-min, 0)`. Tabela wypełnia kontener, a poniżej sumy tokenów przewija się poziomo.
+- `.admin-data-table.t-compact` — `width: var(--table-min, auto)`, `min-width: 0`. Szerokość musi być konkretna, inaczej `table-layout: fixed` nie działa i kolumny znów zależą od treści.
+- `.admin-data-table.is-table-stacked` — poniżej 560 px wiersz staje się kartą „etykieta → wartość"; `thead` jest ukryty, a każda komórka pokazuje `data-label` przez `::before`.
+
+### Deklaracja kolumn
+Szerokości ustala `<colgroup>` przed `<thead>`. Jedna kolumna tekstowa (priorytet: `--col-text-lg`, potem `--col-text-md`) ma `<col>` bez szerokości i wchłania nadmiar miejsca w szerokim panelu, dzięki czemu kolumny liczbowe zachowują dokładne wartości tokenów. Atrybut `--table-min` na `<table>` to suma tokenów całej tabeli.
+
+W tabelach budowanych w JS służy do tego helper `tableColumns(table, tokens, mode)` (`Main/app.js`): dodaje klasę trybu, ustawia `--table-min` i zwraca gotowy `<colgroup>`. Mapa `COL` tłumaczy skróty tokenów (`xs`, `sm`, `md`, `flag`, `date`, `tsm`, `tmd`, `tlg`, `act`) na zmienne CSS.
+
+### Pola formularzy w tabelach
+`.admin-data-table .admin-input` oraz `.admin-data-table select.admin-input` mają `min-width: 0`. Bez tego pole narzuca komórce własną szerokość naturalną (ok. 213 px przy domyślnym `size=20`), a szerokość z `<colgroup>` jest ignorowana. To samo dotyczy `<select>`, którego szerokość naturalna wynika z najdłuższej opcji.
+
+### Zachowanie treści
+- `.admin-data-table th` — `position: sticky; top: 0`, `white-space: normal`, `overflow-wrap: anywhere`; nagłówek zawija się w dwie linie zamiast być ucinany. Na mobile odstęp liter spada do `0.04em`.
+- `.admin-data-table td` — `white-space: nowrap`, `overflow: hidden`, `text-overflow: ellipsis`.
+- `.admin-table-scroll` — `overflow: auto`, `max-height: min(72vh, 760px)`, stylowane paski przewijania.
+
+### Układ kartowy na telefonie
+Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-details-table`, `confirmations-order-table`, tabela `Najbliższa gra`) poniżej 560 px prezentują wiersz jako kartę. Etykiety uzupełnia `fillStackedLabels()` z nagłówka tabeli, a `watchStackedLabels()` (uruchamiany w `bootstrap`) obserwuje DOM i uzupełnia je po każdym przerysowaniu, więc nie trzeba powielać `data-label` w każdym renderze.
+
+### Breakpointy
+- `max-width: 1180px` — `.admin-games-layout` (w tym `#adminGamesTab`, `#adminStatisticsTab`, `#statisticsTab`) przechodzi na jedną kolumnę. Próg dobrany tak, aby kolumna z treścią nie była węższa od pasków bocznych; przy poprzednim progu 720 px na tablecie 820 px zostawało na tabele 190 px przy paskach 161 px i 339 px.
+- `max-width: 720px` — mobilna skala tokenów, `.page` `20px 10px 48px`, `.card` `14px`, `.admin-games-sidebar` i `.admin-games-content` `10px`, komórki `8px 6px`.
+- `max-width: 560px` — układ kartowy.
+- `pointer: coarse` — przyciski wierszowe i zakładki mają co najmniej 40 px wysokości.
+- `.user-tab-content > *` i `.admin-panel-content > *` mają `max-width: var(--content-max)` = 1680 px.
 
 ## Modal Rebuy gracza – układ nagłówka
 - Nagłówek modala `Rebuy gracza` używa klasy `modal-header-close-right`.
