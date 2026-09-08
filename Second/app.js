@@ -136,12 +136,24 @@ const installFirestoreDeleteProtection = (firebaseApp) => {
   firebaseApp.__kartyDeleteProtectionInstalled = true;
 };
 
+const readAppCheckConfigKey = (fieldName) => (typeof window.firebaseConfig?.[fieldName] === "string"
+  ? window.firebaseConfig[fieldName].trim()
+  : "");
+
 const activateAppCheckIfConfigured = (firebase) => {
-  const siteKey = typeof window.firebaseConfig?.appCheckSiteKey === "string"
-    ? window.firebaseConfig.appCheckSiteKey.trim()
-    : "";
+  const enterpriseSiteKey = readAppCheckConfigKey("appCheckEnterpriseSiteKey");
+  const siteKey = enterpriseSiteKey || readAppCheckConfigKey("appCheckSiteKey");
 
   if (!siteKey || firebase.__kartyAppCheckActivated || typeof firebase.appCheck !== "function") {
+    return;
+  }
+
+  const AppCheckProvider = enterpriseSiteKey
+    ? firebase.appCheck.ReCaptchaEnterpriseProvider
+    : firebase.appCheck.ReCaptchaV3Provider;
+
+  if (typeof AppCheckProvider !== "function") {
+    console.error("Nie udało się włączyć App Check: brak dostawcy reCAPTCHA w SDK Firebase.");
     return;
   }
 
@@ -152,7 +164,7 @@ const activateAppCheckIfConfigured = (firebase) => {
     } else if (typeof debugToken === "string" && debugToken.trim()) {
       self.FIREBASE_APPCHECK_DEBUG_TOKEN = debugToken.trim();
     }
-    firebase.appCheck().activate(new firebase.appCheck.ReCaptchaV3Provider(siteKey), true);
+    firebase.appCheck().activate(new AppCheckProvider(siteKey), true);
     firebase.__kartyAppCheckActivated = true;
   } catch (error) {
     console.error("Nie udało się włączyć App Check.", error);

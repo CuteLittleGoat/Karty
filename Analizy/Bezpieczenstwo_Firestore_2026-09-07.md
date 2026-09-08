@@ -327,7 +327,7 @@ Przy modelu „30 znajomych osób” to jest jednak dobry stosunek efektu do nak
 ### 12.3. App Check — jak to wygląda w praktyce
 
 **Co trzeba zrobić:**
-1. W Firebase Console zarejestrować aplikację webową w App Check i wybrać dostawcę **reCAPTCHA v3** (bezpłatny; wariant „Enterprise” jest płatny i tu niepotrzebny).
+1. W Firebase Console zarejestrować aplikację webową w App Check i wybrać dostawcę **reCAPTCHA Enterprise** (patrz sprostowanie w pkt 16 — Enterprise działa na darmowym planie; klasyczna reCAPTCHA v3 jest przez Google wycofywana).
 2. Dodać do `Main/index.html` i `Second/index.html` bibliotekę App Check oraz kilka linii inicjalizacji obok istniejącej konfiguracji Firebase.
 3. W Console włączyć **wymuszanie** (enforcement) dla Firestore.
 
@@ -608,11 +608,11 @@ Jest to zapisane w instrukcji widocznej w aplikacji oraz w `Main/docs/README.md`
 
 **App Check** — przygotowany, ale nieaktywny:
 - oba moduły ładują `firebase-app-check-compat.js`,
-- `activateAppCheckIfConfigured` włącza App Check **wyłącznie wtedy**, gdy w `config/firebase-config.js` pojawi się `appCheckSiteKey`; bez klucza nie robi nic,
+- `activateAppCheckIfConfigured` włącza App Check **wyłącznie wtedy**, gdy w `config/firebase-config.js` pojawi się `appCheckEnterpriseSiteKey` albo `appCheckSiteKey`; bez klucza nie robi nic,
 - opcjonalny `appCheckDebugToken` obsługuje pracę lokalną,
 - w pliku konfiguracyjnym znajdują się zakomentowane pola z opisem.
 
-Nie mogłem dokończyć App Check samodzielnie, bo wymaga rejestracji aplikacji w Firebase Console i klucza reCAPTCHA v3, do których nie mam dostępu. Kroki po Pana stronie opisano w pkt 12.3 — **proszę pamiętać o kolejności: najpierw tryb samego monitorowania, wymuszanie dopiero gdy w Console widać, że ruch jest zweryfikowany.** Włączenie wymuszania od razu może odciąć aplikację wszystkim naraz.
+Nie mogłem dokończyć App Check samodzielnie, bo wymaga rejestracji aplikacji w Firebase Console i klucza reCAPTCHA, do których nie mam dostępu. Kroki po Pana stronie opisano w pkt 12.3 — **proszę pamiętać o kolejności: najpierw tryb samego monitorowania, wymuszanie dopiero gdy w Console widać, że ruch jest zweryfikowany.** Włączenie wymuszania od razu może odciąć aplikację wszystkim naraz.
 
 ### 14.5. Weryfikacja
 
@@ -657,7 +657,9 @@ Nie mogłem dokończyć App Check samodzielnie, bo wymaga rejestracji aplikacji 
 
 ### 15.3. App Check
 
-Kod jest gotowy w obu modułach i uruchamia się **wyłącznie** po dodaniu `appCheckSiteKey` do `config/firebase-config.js`. Instrukcja krok po kroku — od założenia wpisu w Google reCAPTCHA, przez wklejenie klucza tajnego w Firebase Console, po włączenie wymuszania — znajduje się w osobnym pliku `Analizy/Instrukcja_AppCheck_2026-09-07.md`.
+Kod jest gotowy w obu modułach i uruchamia się **wyłącznie** po dodaniu klucza witryny do `config/firebase-config.js`. Instrukcja krok po kroku — od utworzenia klucza reCAPTCHA, przez rejestrację obu aplikacji `Karty-Web` w Firebase Console, po włączenie wymuszania — znajduje się w osobnym pliku `Analizy/Instrukcja_AppCheck_2026-09-07.md`.
+
+> **Aktualizacja 2026-09-08:** dostawcą jest teraz **reCAPTCHA Enterprise**, a nie klasyczna reCAPTCHA v3. Powód i sprostowanie mojej wcześniejszej błędnej informacji o płatnościach — pkt 16.
 
 Obsługa `appCheckDebugToken` została rozszerzona: wartość `true` powoduje wypisanie tokenu w konsoli przeglądarki (do zarejestrowania w Firebase Console), a wartość tekstowa używa gotowego tokenu.
 
@@ -683,3 +685,81 @@ Do rozstrzygnięcia pozostaje więc drobiazg, a nie problem. Opcje:
 1. **App Check** — wykonać kroki z `Analizy/Instrukcja_AppCheck_2026-09-07.md`, pamiętając o kolejności: najpierw obserwacja zakładki *APIs* przez kilka dni, wymuszanie (*Enforce*) dopiero potem.
 2. **Regularne kopie zapasowe** — przycisk pokazuje datę ostatniego użycia, więc widać, kiedy minęło zbyt wiele czasu.
 3. **Decyzja o widoczności repozytorium** (pkt 15.4) — bez pośpiechu.
+
+---
+
+## 16. App Check — zmiana dostawcy na reCAPTCHA Enterprise i sprostowanie (2026-09-08)
+
+### 16.1. Prompt użytkownika (zachowany dla kontekstu)
+
+> Nie mam opcji reCAPTCHA v3 [zrzut ekranu z Firebase Console]
+
+> Mam taki komunikat. [zrzut ekranu: „reCAPTCHA is deprecated, please use reCAPTCHA Enterprise instead”]
+
+> Pole do wpisania kodu jest nieaktywne. Nie mogę go kliknąć. Sprawdź czy powinna być możliwość
+> wklejenia tam czegoś. Sprawdź dokumentację i ogólnie informacje w necie.
+
+> Jedyne co reaguje na kliknięcie to „advanced settings”. [zrzut ekranu: „App risk — Medium (0.5)”]
+
+### 16.2. Sprostowanie — moja błędna informacja
+
+W pkt 12.3 tej analizy oraz w pierwszej wersji `Analizy/Instrukcja_AppCheck_2026-09-07.md`
+napisałem, że **reCAPTCHA Enterprise jest płatna i wymaga planu Blaze**. **To nieprawda.**
+Dokumentacja Google mówi co innego:
+
+- App Check z reCAPTCHA Enterprise **działa na darmowym planie Spark**; plan płatny odblokowuje
+  jedynie pełny zakres progów ryzyka (11 poziomów zamiast 4: `0.1`, `0.3`, `0.7`, `0.9`).
+  Źródło: [App Check + reCAPTCHA Enterprise (web)](https://firebase.google.com/docs/app-check/web/recaptcha-enterprise-provider).
+- Utworzenie samego klucza reCAPTCHA w Google Cloud **również nie wymaga włączania płatności** —
+  projekt bez płatności trafia do trybu *Essentials* z limitem **10 000 sprawdzeń miesięcznie za darmo**:
+  *„To enable and use Fraud Defense on Google Cloud, you don't need to enable billing for your
+  Google Cloud project.”* Źródło: [reCAPTCHA billing information](https://docs.cloud.google.com/recaptcha/docs/billing-information).
+
+Decyzja użytkownika „tylko plan darmowy” pozostaje więc w mocy i nie stoi w sprzeczności z Enterprise.
+
+### 16.3. Dlaczego pole na klucz w konsoli było nieaktywne
+
+Dwie przesłanki, obie wskazujące w tę samą stronę:
+
+1. **Google wycofuje klasyczną reCAPTCHA z App Check.** Dokumentacja Firebase:
+   *„You should use reCAPTCHA Enterprise for new integrations, and we strongly recommend that
+   developers of apps using reCAPTCHA v3 upgrade when possible.”*
+   ([źródło](https://firebase.google.com/docs/app-check/web/recaptcha-provider)).
+   Dokumentacja nie ogłasza jeszcze twardego wyłączenia, ale komunikat w konsoli i zablokowane
+   pole wskazują, że rejestracja nowych aplikacji starą metodą jest już w tym projekcie zamknięta.
+2. **Widoczne „Advanced settings → App risk: Medium (0.5)” to ustawienie wyłącznie z Enterprise.**
+   Klasyczna reCAPTCHA v3 w App Check nie ma progu ryzyka. Okienko, w którym użytkownik utknął,
+   było więc już okienkiem Enterprise — a ono nie oczekuje *klucza tajnego*, tylko **klucza
+   witryny utworzonego w Google Cloud**, którego w projekcie jeszcze nie było.
+
+Wniosek: nie ma czego naprawiać po stronie przeglądarki. Trzeba najpierw utworzyć klucz
+w Google Cloud, a dopiero potem wrócić do Firebase Console.
+
+### 16.4. Zmiana w kodzie
+
+`activateAppCheckIfConfigured` w `Main/app.js` i `Second/app.js` obsługuje teraz **obu** dostawców
+i wybiera go na podstawie konfiguracji:
+
+| Pole w `config/firebase-config.js` | Użyty dostawca |
+|---|---|
+| `appCheckEnterpriseSiteKey` | `firebase.appCheck.ReCaptchaEnterpriseProvider` |
+| `appCheckSiteKey` | `firebase.appCheck.ReCaptchaV3Provider` |
+| oba naraz | Enterprise (ma pierwszeństwo) |
+| żadne | App Check się nie włącza — jak dotąd |
+
+Dodatkowo: jeśli wybrany dostawca nie istnieje w załadowanym SDK, kod wypisuje czytelny błąd
+w konsoli i **nie** próbuje aktywować App Check (zamiast wyrzucać wyjątek w trakcie startu
+aplikacji). Obecność `ReCaptchaEnterpriseProvider` została potwierdzona w używanej wersji
+biblioteki `firebase-app-check-compat.js` 10.12.2 — nie trzeba zmieniać żadnego `<script>`
+w `index.html`.
+
+### 16.5. Wpływ na wcześniejsze ustalenia
+
+Bez zmian pozostają: kolejność wdrożenia (monitorowanie → *Enforce*), konieczność rejestracji
+**obu** aplikacji `Karty-Web`, obowiązek dopisania domeny `cutelittlegoat.github.io` oraz
+hamulec bezpieczeństwa w postaci *Unenforce*.
+
+Nowość, o której warto pamiętać: **limit 10 000 sprawdzeń miesięcznie** na darmowym planie.
+Przy ~30 graczach i tokenie odnawianym mniej więcej raz na dobę na przeglądarkę to rząd
+kilkuset sprawdzeń miesięcznie — zapas jest bardzo duży, ale po przekroczeniu limitu
+(przy **włączonym** wymuszaniu) aplikacja przestałaby działać do końca miesiąca.

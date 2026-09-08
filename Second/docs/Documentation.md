@@ -368,3 +368,24 @@
 - `bootstrap()` uruchamia przez nią `initInstructionModal`, `initCustomsEmergencyModal` oraz `setupAdminView` / `setupUserOnlyView`; `resolveAdminMode()` jest objęte `try/catch` z domyślnym `false`.
 - Dzięki temu wyjątek w jednym kroku nie przerywa pozostałych, a informacja o awarii trafia do konsoli przeglądarki zamiast znikać jako nieobsłużone odrzucenie obietnicy.
 - Usunięto martwą, nigdy niewywoływaną kopię `initCustomsEmergencyModal` zagnieżdżoną w `setupAdminView`; obowiązuje wyłącznie definicja na poziomie modułu.
+
+## App Check (`activateAppCheckIfConfigured`)
+- Wywoływana z `getFirebaseApp()` w `Second/app.js` bezpośrednio po `firebase.initializeApp(...)`, przed `installFirestoreDeleteProtection(...)`.
+- Wymaga skryptu `https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js` (dołączony w `Second/index.html`).
+- Dostawca wybierany jest na podstawie `window.firebaseConfig` (plik `config/firebase-config.js`, wspólny dla obu modułów):
+
+| Pole konfiguracji | Klasa dostawcy |
+|---|---|
+| `appCheckEnterpriseSiteKey` | `firebase.appCheck.ReCaptchaEnterpriseProvider` |
+| `appCheckSiteKey` | `firebase.appCheck.ReCaptchaV3Provider` |
+| oba naraz | Enterprise (ma pierwszeństwo) |
+| żadne (lub sama biała spacja) | App Check nie jest aktywowany |
+
+- Pomocnicza `readAppCheckConfigKey(fieldName)` zwraca przyciętą wartość pola albo pusty ciąg, gdy pole nie jest tekstem.
+- Aktywacja: `firebase.appCheck().activate(new Provider(siteKey), true)` — drugi argument włącza automatyczne odświeżanie tokenu.
+- Zabezpieczenia:
+  - flaga `firebase.__kartyAppCheckActivated` gwarantuje jednokrotną aktywację,
+  - brak klasy dostawcy w załadowanym SDK kończy się komunikatem `console.error` i pominięciem aktywacji (bez wyjątku podczas startu),
+  - całość opakowana w `try/catch` z logiem `Nie udało się włączyć App Check.`.
+- `window.firebaseConfig.appCheckDebugToken`: wartość `true` ustawia `self.FIREBASE_APPCHECK_DEBUG_TOKEN = true` (token wypisywany w konsoli przeglądarki), wartość tekstowa ustawia gotowy token. Pole służy wyłącznie do pracy lokalnej.
+- Oba moduły korzystają z jednego projektu Firebase, więc wymuszanie App Check po stronie Firestore dotyczy modułów `Main` i `Second` jednocześnie.

@@ -14,7 +14,7 @@
   };
 
   window.addEventListener("load", () => {
-    void navigator.serviceWorker.register("service-worker.js?v=2026-09-07.2").then((registration) => {
+    void navigator.serviceWorker.register("service-worker.js?v=2026-09-08.1").then((registration) => {
       if (registration.waiting) {
         registration.waiting.postMessage({ type: "SKIP_WAITING" });
       }
