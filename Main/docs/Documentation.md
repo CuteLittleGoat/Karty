@@ -131,6 +131,30 @@
 - `window.firebaseConfig.appCheckDebugToken`: wartość `true` ustawia `self.FIREBASE_APPCHECK_DEBUG_TOKEN = true` (token wypisywany w konsoli przeglądarki), wartość tekstowa ustawia gotowy token. Pole służy wyłącznie do pracy lokalnej.
 - Bez klucza w konfiguracji funkcja kończy się natychmiast — App Check pozostaje nieaktywny i nie wpływa na działanie aplikacji.
 
+
+#### Konfiguracja po stronie Firebase Console (stan wdrożenia)
+Ustawienia poniżej nie wynikają z kodu — są zapisane w projekcie Firebase `karty-turniej`
+i są potrzebne, aby odtworzyć działające App Check:
+
+| Ustawienie | Wartość |
+|---|---|
+| Dostawca atestacji | **reCAPTCHA Enterprise** |
+| Klucz reCAPTCHA | typ **Web**, domena `cutelittlegoat.github.io`, weryfikacja domeny włączona, bez `localhost`, bez klucza testowego |
+| Zarejestrowane aplikacje | **obie** aplikacje typu Web w projekcie (mają tę samą nazwę `Karty-Web`), oba wpisy tym samym kluczem |
+| Token time to live (TTL) | **1 dzień** (`1` + `days`); wartość domyślna konsoli to 1 godzina |
+| Próg ryzyka („App risk”) | domyślny **Medium (0.5)** |
+| Wymuszanie (*Enforce*) dla Cloud Firestore | **wyłączone** — tryb samego monitorowania |
+
+- Dopuszczalny zakres TTL to **30 minut – 7 dni**. Biblioteka App Check odświeża token
+  mniej więcej **w połowie** TTL, więc przy 1 dniu odnowienie następuje co ~12 godzin,
+  a przy domyślnej 1 godzinie — co ~30 minut korzystania z aplikacji.
+- TTL zmienia się w Firebase Console → **App Check** → **Apps** → wiersz aplikacji →
+  ikona edycji przy *reCAPTCHA Enterprise* → pole *Token time to live (TTL)* → **Save**.
+  Zmianę trzeba wykonać osobno dla **każdej** zarejestrowanej aplikacji.
+- Krótszy TTL zużywa szybciej darmowy limit reCAPTCHA (10 000 sprawdzeń miesięcznie w trybie
+  *Essentials*, czyli w projekcie Google Cloud bez włączonych płatności).
+- Zmiana TTL dotyczy wyłącznie nowych tokenów; już wydane zachowują poprzednią ważność.
+
 ## 6. Kalkulator Tournament — stabilność renderu Tabela2
 - W `initAdminCalculator` funkcja `renderTable2` iteruje po `table2Rows` z sygnaturą callbacka `(row, index)`, a kolumna `LP` jest wyliczana jako `index + 1`; eliminuje to błąd runtime podczas renderu Tournament i gwarantuje dokończenie sekwencji `renderTable1..renderTable5`.
 
@@ -292,7 +316,7 @@ Efekt techniczny:
 - Zakładka `#adminBackupTab` istnieje wyłącznie w module Main, ale obejmuje dane **obu** modułów. Zawiera przyciski `#adminBackupExport` i `#adminBackupImport`, ukryte `#adminBackupFileInput`, status `#adminBackupStatus`, informacje o ostatnim użyciu (`#adminBackupExportInfo`, `#adminBackupImportInfo`) oraz pole `#adminBackupInstructions` (`readonly`) wypełniane stałą `BACKUP_INSTRUCTIONS_TEXT`.
 
 ### Zakres kopii
-- `BACKUP_COLLECTION_SCHEMA` to deklaratywne drzewo kolekcji odwzorowujące `Analizy/Wazne_Rules.txt`: kolekcje modułu Main, `Nekrolog_*` oraz `second_*`, wraz z podkolekcjami (`rows`, `confirmations`, a dla kalkulatorów `definitions`, `placeholders`, `sessions` z `variables`, `calculationFlags`, `tables/rows` i `snapshots`).
+- `BACKUP_COLLECTION_SCHEMA` to deklaratywne drzewo kolekcji odwzorowujące zestaw reguł Firestore projektu: kolekcje modułu Main, `Nekrolog_*` oraz `second_*`, wraz z podkolekcjami (`rows`, `confirmations`, a dla kalkulatorów `definitions`, `placeholders`, `sessions` z `variables`, `calculationFlags`, `tables/rows` i `snapshots`).
 - Biblioteka kliencka Firestore nie potrafi wylistować kolekcji ani podkolekcji, dlatego drzewo musi być utrzymywane ręcznie. **Nowa kolekcja niedopisana do `BACKUP_COLLECTION_SCHEMA` nie trafi do kopii.** Po wykonaniu kopii status podaje liczbę dokumentów, co pozwala zauważyć brak.
 - `collectBackupDocuments` przechodzi drzewo rekurencyjnie i zapisuje dokumenty jako płaską listę `{ path, data }`, gdzie `path` jest pełną ścieżką Firestore. Dzięki temu przywracanie sprowadza się do `db.doc(path).set(data)` i obsługuje dowolne zagnieżdżenie.
 
@@ -323,7 +347,7 @@ Efekt techniczny:
 - `app_settings/backup_state` przechowuje `lastBackupAt` i `lastRestoreAt` (`serverTimestamp`), odczytywane przez `onSnapshot`, więc informacja jest wspólna dla wszystkich urządzeń. Formatowanie przez `formatImportRefreshedAt`.
 
 ### Reguły Firestore
-- `Analizy/Wazne_Rules.txt` zawiera zaktualizowany zestaw reguł do wklejenia w Firebase Console. Zmiana względem poprzedniej wersji: `match /admin_security/{docId}` ma `allow read: if true; allow write: if false;`. Aplikacja tę kolekcję wyłącznie odczytuje (`Main/app.js` i `Second/app.js` wykonują na niej tylko `.get()`), więc blokada zapisu nie wymaga żadnych zmian w kodzie.
+- Obowiązujący zestaw reguł w Firebase Console zawiera `match /admin_security/{docId}` z `allow read: if true; allow write: if false;`. Aplikacja tę kolekcję wyłącznie odczytuje (`Main/app.js` i `Second/app.js` wykonują na niej tylko `.get()`), więc blokada zapisu nie wymaga żadnych zmian w kodzie.
 
 ### Ograniczenia
 - Rozwiązanie jest świadomie klienckie: wbudowany eksport i import Firestore oraz automatyczne kopie wymagają płatnego planu Blaze, a projekt działa na planie darmowym Spark.

@@ -389,3 +389,26 @@
   - całość opakowana w `try/catch` z logiem `Nie udało się włączyć App Check.`.
 - `window.firebaseConfig.appCheckDebugToken`: wartość `true` ustawia `self.FIREBASE_APPCHECK_DEBUG_TOKEN = true` (token wypisywany w konsoli przeglądarki), wartość tekstowa ustawia gotowy token. Pole służy wyłącznie do pracy lokalnej.
 - Oba moduły korzystają z jednego projektu Firebase, więc wymuszanie App Check po stronie Firestore dotyczy modułów `Main` i `Second` jednocześnie.
+
+### Konfiguracja po stronie Firebase Console (stan wdrożenia)
+Ustawienia poniżej nie wynikają z kodu — są zapisane w projekcie Firebase `karty-turniej`
+i są potrzebne, aby odtworzyć działające App Check:
+
+| Ustawienie | Wartość |
+|---|---|
+| Dostawca atestacji | **reCAPTCHA Enterprise** |
+| Klucz reCAPTCHA | typ **Web**, domena `cutelittlegoat.github.io`, weryfikacja domeny włączona, bez `localhost`, bez klucza testowego |
+| Zarejestrowane aplikacje | **obie** aplikacje typu Web w projekcie (mają tę samą nazwę `Karty-Web`), oba wpisy tym samym kluczem |
+| Token time to live (TTL) | **1 dzień** (`1` + `days`); wartość domyślna konsoli to 1 godzina |
+| Próg ryzyka („App risk”) | domyślny **Medium (0.5)** |
+| Wymuszanie (*Enforce*) dla Cloud Firestore | **wyłączone** — tryb samego monitorowania |
+
+- Dopuszczalny zakres TTL to **30 minut – 7 dni**. Biblioteka App Check odświeża token
+  mniej więcej **w połowie** TTL, więc przy 1 dniu odnowienie następuje co ~12 godzin,
+  a przy domyślnej 1 godzinie — co ~30 minut korzystania z aplikacji.
+- TTL zmienia się w Firebase Console → **App Check** → **Apps** → wiersz aplikacji →
+  ikona edycji przy *reCAPTCHA Enterprise* → pole *Token time to live (TTL)* → **Save**.
+  Zmianę trzeba wykonać osobno dla **każdej** zarejestrowanej aplikacji.
+- Krótszy TTL zużywa szybciej darmowy limit reCAPTCHA (10 000 sprawdzeń miesięcznie w trybie
+  *Essentials*, czyli w projekcie Google Cloud bez włączonych płatności).
+- Zmiana TTL dotyczy wyłącznie nowych tokenów; już wydane zachowują poprzednią ważność.

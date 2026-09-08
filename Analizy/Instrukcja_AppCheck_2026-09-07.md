@@ -7,7 +7,7 @@
 | KROK 1 — klucz reCAPTCHA Enterprise w Google Cloud | ✅ wykonane (klucz `Karty`, typ *Sieć*, domena `cutelittlegoat.github.io`) |
 | KROK 2 — rejestracja obu aplikacji `Karty-Web` w App Check | ✅ wykonane (obie: *Registered*, dostawca *reCAPTCHA Enterprise*) |
 | KROK 3 — klucz w `config/firebase-config.js` | ✅ wykonane, wypchnięte na `main` |
-| TTL tokenu | 🔵 domyślna 1 godzina — zalecana zmiana na `1 days`, patrz „Jak zmienić TTL już po rejestracji” |
+| TTL tokenu | ✅ **ustawione na `1 days`** w obu aplikacjach `Karty-Web` (2026-09-08) |
 | KROK 4 — obserwacja zakładki *APIs* przez kilka dni | 🔵 **teraz to robisz** |
 | KROK 5 — *Enforce* (wymuszanie) | ⛔ **jeszcze nie klikaj** |
 
@@ -154,8 +154,9 @@ Dopóki go nie dopiszesz, nic się nie dzieje.
      Domyślne `Medium` mieści się w darmowym zakresie i nie musisz nic zmieniać.
    - Im wyższy próg, tym ostrzej App Check odrzuca ruch. Nie podnoś go — grozi to blokowaniem
      własnych graczy.
-9. Pole **Token time to live** (TTL) — okienko Enterprise proponuje domyślnie **1 godzinę**.
-   **Dla tej aplikacji lepszą wartością jest `1` + `days`** (patrz sekcja „Jak zmienić TTL” niżej).
+9. Pole **Token time to live** (TTL) — okienko Enterprise proponuje domyślnie **1 godzinę**,
+   ale **w tej aplikacji ustawiono `1` + `days`** (zmienione 2026-09-08 w obu aplikacjach
+   `Karty-Web`). Jeśli kiedyś rejestrujesz aplikację od nowa, od razu wybierz `days`.
    - TTL mówi, jak długo ważna jest jedna „przepustka” wydana przeglądarce. Po tym czasie
      aplikacja po cichu pobiera nową. Gracz niczego nie zauważa.
    - **Biblioteka odświeża token mniej więcej w połowie TTL.** Przy 1 godzinie oznacza to nowe
@@ -286,11 +287,11 @@ odświeża token **mniej więcej w połowie** tego czasu:
 
 | TTL | Odświeżanie tokenu | Szacunek przy 30 graczach i ~2 h korzystania dziennie |
 |---|---|---|
-| 1 godzina (domyślnie) | co ~30 min korzystania | ~3 500–4 000 sprawdzeń / miesiąc |
-| **1 dzień (zalecane)** | co ~12 godzin | **~1 000–1 500 sprawdzeń / miesiąc** |
+| 1 godzina (domyślna Google) | co ~30 min korzystania | ~3 500–4 000 sprawdzeń / miesiąc |
+| **1 dzień ← ustawione u nas** | co ~12 godzin | **~1 000–1 500 sprawdzeń / miesiąc** |
 
 Obie wartości mieszczą się w limicie, ale 1 dzień daje znacznie większy zapas — i mniej
-zapytań sieciowych po stronie graczy. Dlatego warto ustawić `1` + `days`.
+zapytań sieciowych po stronie graczy. **Ta wartość jest już ustawiona.**
 
 **Aplikacja musi być otwierana z adresu internetowego.** Po włączeniu wymuszania otwarcie pliku
 `Main/index.html` bezpośrednio z dysku przestanie działać — reCAPTCHA nie rozpozna takiego „adresu”.
@@ -309,6 +310,10 @@ nie ma w nim żadnego klucza tajnego, o który trzeba by się martwić.
 ---
 
 ## Jak zmienić TTL już po rejestracji
+
+> **Wykonane 2026-09-08:** TTL zmieniony z `1 hours` na `1 days` w **obu** aplikacjach
+> `Karty-Web`. Opis zostaje na przyszłość — ta sama ścieżka służy do każdej późniejszej
+> zmiany TTL, np. gdyby aplikacja urosła i limit sprawdzeń zaczął się zbliżać.
 
 Zmiana jest odwracalna, nie wymaga żadnej zmiany w kodzie i nic nie psuje.
 
