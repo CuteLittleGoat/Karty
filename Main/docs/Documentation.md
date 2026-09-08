@@ -189,7 +189,7 @@ i są potrzebne, aby odtworzyć działające App Check:
 Warstwa prezentacji tabel opiera się na skali tokenów w `Main/styles.css`; pełne przypisanie kolumn opisuje `Kolumny.md`.
 
 ### Tokeny
-`:root` definiuje dziewięć zmiennych szerokości: `--col-num-xs` (56 px), `--col-num-sm` (80 px), `--col-num-md` (104 px), `--col-flag` (88 px), `--col-date` (120 px), `--col-text-sm` (144 px), `--col-text-md` (192 px), `--col-text-lg` (256 px), `--col-actions` (112 px). W breakpointcie `max-width: 720px` cała skala schodzi o ok. 20 % (poza `--col-flag`, który zostaje na 88 px, żeby nagłówki typu `APLIKACJA` mieściły się bez łamania). Jednostką jest `rem`, a nie `ch`, ponieważ `ch` zależy od fontu elementu i dawał inną wartość w `<th>` (Rajdhani 12 px) niż w `<td>` (Inter 14,5 px).
+`:root` definiuje dziewięć zmiennych szerokości: `--col-num-xs` (64 px), `--col-num-sm` (88 px), `--col-num-md` (112 px), `--col-flag` (128 px), `--col-date` (168 px), `--col-text-sm` (176 px), `--col-text-md` (192 px), `--col-text-lg` (256 px), `--col-actions` (144 px). Wartości wynikają z pomiaru minimalnej szerokości, przy której nic się nie ucina: najdłuższego słowa w nagłówku, treści listy rozwijanej, podpowiedzi w polu i etykiety przycisku. W breakpointcie `max-width: 720px` zwężają się wyłącznie kolumny liczbowe oraz `--col-text-lg`; kolumny z kontrolkami i długimi nagłówkami zostają, bo ich zawartość się nie kurczy. Jednostką jest `rem`, a nie `ch`, ponieważ `ch` zależy od fontu elementu i dawał inną wartość w `<th>` (Rajdhani 12 px) niż w `<td>` (Inter 14,5 px).
 
 ### Tryby tabel
 - `.admin-data-table` — `border-collapse: collapse`, `table-layout: fixed`.
@@ -206,19 +206,22 @@ W tabelach budowanych w JS służy do tego helper `tableColumns(table, tokens, m
 `.admin-data-table .admin-input` oraz `.admin-data-table select.admin-input` mają `min-width: 0`. Bez tego pole narzuca komórce własną szerokość naturalną (ok. 213 px przy domyślnym `size=20`), a szerokość z `<colgroup>` jest ignorowana. To samo dotyczy `<select>`, którego szerokość naturalna wynika z najdłuższej opcji.
 
 ### Zachowanie treści
-- `.admin-data-table th` — `position: sticky; top: 0`, `white-space: normal`, `overflow-wrap: anywhere`; nagłówek zawija się w dwie linie zamiast być ucinany. Na mobile odstęp liter spada do `0.04em`.
+- `.admin-data-table th` — `position: sticky; top: 0` z nieprzezroczystym tłem `var(--table-head-bg)`, `white-space: normal`, `overflow-wrap: break-word`, `letter-spacing: 0.06em`. Tło musi być nieprzezroczyste, inaczej przewijane wiersze prześwitują przez nagłówek. `break-word` łamie wyraz dopiero wtedy, gdy naprawdę nie mieści się w kolumnie, i nie pozwala kolumnie zejść poniżej długości najdłuższego słowa.
 - `.admin-data-table td` — `white-space: nowrap`, `overflow: hidden`, `text-overflow: ellipsis`.
+- Komórki zawierające `button`, `select` lub `input` (poza checkboxem) mają `white-space: normal`, a `.admin-data-table td button` ma `max-width: 100%`; dzięki temu przyciski zawijają się zamiast znikać za krawędzią kolumny. Kontenery `.admin-games-name-control`, `.admin-confirmations-count-control` i `.pin-control` mają `flex-wrap: wrap`.
 - `.admin-table-scroll` — `overflow: auto`, `max-height: min(72vh, 760px)`, stylowane paski przewijania.
 
 ### Układ kartowy na telefonie
-Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-details-table`, `confirmations-order-table`, tabela `Najbliższa gra`) poniżej 560 px prezentują wiersz jako kartę. Etykiety uzupełnia `fillStackedLabels()` z nagłówka tabeli, a `watchStackedLabels()` (uruchamiany w `bootstrap`) obserwuje DOM i uzupełnia je po każdym przerysowaniu, więc nie trzeba powielać `data-label` w każdym renderze.
+Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-order-table`, tabela `Najbliższa gra`) poniżej 560 px prezentują wiersz jako kartę. Komórka ma `width: 100%` ustawione w tej samej regule co `display: grid`, tabela traci `min-width` (inaczej karty przewijają się w bok), a etykieta zawija się w kolumnie `minmax(0, 11ch)` — bez tego długie nazwy w rodzaju `CZYWSZYSCYPOTWIERDZILI` nachodziły na wartość. Etykiety uzupełnia `fillStackedLabels()` z nagłówka tabeli, a `watchStackedLabels()` (uruchamiany w `bootstrap`) obserwuje DOM i uzupełnia je po każdym przerysowaniu, więc nie trzeba powielać `data-label` w każdym renderze.
 
 ### Breakpointy
 - `max-width: 1180px` — `.admin-games-layout` (w tym `#adminGamesTab`, `#adminStatisticsTab`, `#statisticsTab`) przechodzi na jedną kolumnę. Próg dobrany tak, aby kolumna z treścią nigdy nie była węższa od pasków bocznych — przy niższym progu na tablecie 820 px na tabele zostawałoby ok. 190 px przy paskach 161 px i 339 px.
 - `max-width: 720px` — mobilna skala tokenów, `.page` `20px 10px 48px`, `.card` `14px`, `.admin-games-sidebar` i `.admin-games-content` `10px`, komórki `8px 6px`.
 - `max-width: 560px` — układ kartowy.
 - `pointer: coarse` — przyciski wierszowe i zakładki mają co najmniej 40 px wysokości.
-- `.user-tab-content > *` i `.admin-panel-content > *` mają `max-width: var(--content-max)` = 1680 px.
+- `.user-tab-content` i `.admin-panel-content` mają `max-width: var(--content-max)` = 1680 px i `margin-inline: auto`. Ograniczenie siedzi na kontenerze, nie na elementach siatki — na elemencie siatki `margin-inline: auto` wyłącza rozciąganie i zwęża panel do szerokości własnej treści.
+- Na mobile pola tekstowe zajmują pełną szerokość karty: `.latest-message`, `.chat-form`, `.admin-message-form`, `.admin-rules` i `.admin-backup` tracą padding, ramkę i tło.
+- Przycisk `Instrukcja` jest ukryty w widoku użytkownika (`body:not(.is-admin) #adminInstructionButton`).
 
 ## Modal Rebuy gracza – układ nagłówka
 - Nagłówek modala `Rebuy gracza` używa klasy `modal-header-close-right`.

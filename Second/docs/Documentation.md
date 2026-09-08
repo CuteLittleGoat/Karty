@@ -11,7 +11,7 @@
 Warstwa prezentacji tabel opiera się na skali tokenów w `Second/styles.css`; pełne przypisanie kolumn opisuje `Kolumny.md`.
 
 ### Tokeny
-`:root` definiuje dziewięć zmiennych: `--col-num-xs` (56 px), `--col-num-sm` (80 px), `--col-num-md` (104 px), `--col-flag` (88 px), `--col-date` (120 px), `--col-text-sm` (144 px), `--col-text-md` (192 px), `--col-text-lg` (256 px), `--col-actions` (112 px). W breakpointcie `max-width: 720px` skala schodzi o ok. 20 % (poza `--col-flag`). Jednostką jest `rem`, a nie `ch`, bo `ch` zależy od fontu elementu i dawał inną wartość w `<th>` niż w `<td>`.
+`:root` definiuje dziewięć zmiennych: `--col-num-xs` (64 px), `--col-num-sm` (88 px), `--col-num-md` (112 px), `--col-flag` (128 px), `--col-date` (168 px), `--col-text-sm` (176 px), `--col-text-md` (192 px), `--col-text-lg` (256 px), `--col-actions` (144 px). Wartości wynikają z pomiaru minimalnej szerokości, przy której nic się nie ucina. W breakpointcie `max-width: 720px` zwężają się wyłącznie kolumny liczbowe i `--col-text-lg`. Jednostką jest `rem`, a nie `ch`, bo `ch` zależy od fontu elementu i dawał inną wartość w `<th>` niż w `<td>`.
 
 ### Tryby tabel
 - `.admin-data-table` — `border-collapse: collapse`, `table-layout: fixed`. Klasa bazowa nie narzuca żadnej minimalnej szerokości; minimum wynika wyłącznie z `--table-min` danej tabeli.
@@ -31,14 +31,16 @@ Warstwa prezentacji tabel opiera się na skali tokenów w `Second/styles.css`; p
 `.admin-data-table .admin-input` i `.admin-data-table select.admin-input` mają `min-width: 0`. Bez tego pole narzuca komórce własną szerokość naturalną (ok. 213 px przy domyślnym `size=20`), a `<select>` — szerokość najdłuższej opcji.
 
 ### Zachowanie treści i breakpointy
-- `.admin-data-table th` — `position: sticky; top: 0`, nagłówek zawija się w dwie linie; na mobile odstęp liter `0.04em`.
-- `.admin-data-table td` — `white-space: nowrap` i obcinanie wielokropkiem.
+- `.admin-data-table th` — `position: sticky; top: 0` z nieprzezroczystym tłem `var(--table-head-bg)`, `overflow-wrap: break-word`, `letter-spacing: 0.06em`.
+- `.admin-data-table td` — `white-space: nowrap` i obcinanie wielokropkiem; komórki z przyciskiem, listą lub polem mają `white-space: normal`, a przyciski `max-width: 100%`, żeby nie były ucinane.
 - `.admin-table-scroll` — `overflow: auto`, `max-height: min(72vh, 760px)`.
 - `max-width: 1180px` — `.admin-games-layout` przechodzi na jedną kolumnę.
 - `max-width: 720px` — mobilna skala tokenów i mniejsze paddingi (`.page` `20px 10px 48px`, `.card` `14px`, panele `10px`).
 - `max-width: 560px` — układ kartowy.
 - `pointer: coarse` — przyciski i zakładki co najmniej 40 px wysokości.
-- `.user-tab-content > *` i `.admin-panel-content > *` — `max-width: var(--content-max)` = 1680 px.
+- `.user-tab-content` i `.admin-panel-content` — `max-width: var(--content-max)` = 1680 px na kontenerze (nie na elementach siatki, bo `margin-inline: auto` wyłącza tam rozciąganie).
+- Na mobile pola tekstowe zajmują pełną szerokość karty.
+- Przycisk `Instrukcja` jest ukryty w widoku użytkownika (`.page:has(.user-card) #secondInstructionButton`).
 
 ### Zakres arkusza
 `Second/styles.css` zawiera wyłącznie reguły dla klas, które ten moduł faktycznie renderuje. Nie ma w nim stylów kalkulatora, statystyk graczy, rankingu, potwierdzeń ani szczegółów gry — te elementy istnieją tylko w module `Main`.

@@ -6,15 +6,19 @@ Szerokości wszystkich tabel w obu modułach opisuje **jedna skala tokenów** zd
 
 | Token | Desktop | Mobile (≤720 px) | Zastosowanie |
 |---|---:|---:|---|
-| `--col-num-xs` | 56 px | 48 px | LP, Nr, %, licznik |
-| `--col-num-sm` | 80 px | 64 px | krótkie liczby, wagi, Rebuy |
-| `--col-num-md` | 104 px | 88 px | kwoty, stack, wynik, pot |
-| `--col-flag` | 88 px | 88 px | checkbox, Tak/Nie, Eliminated |
-| `--col-date` | 120 px | 104 px | data |
-| `--col-text-sm` | 144 px | 120 px | rodzaj gry, stół, status |
-| `--col-text-md` | 192 px | 160 px | nazwa gracza, PIN z przyciskiem |
-| `--col-text-lg` | 256 px | 192 px | nazwa gry z akcjami, uprawnienia |
-| `--col-actions` | 112 px | 96 px | przyciski w wierszu |
+| `--col-num-xs` | 64 px | 56 px | LP, Nr, %, (+/-) |
+| `--col-num-sm` | 88 px | 80 px | krótkie liczby, wagi, liczba miejsc |
+| `--col-num-md` | 112 px | 96 px | kwoty, stack, wynik, pot |
+| `--col-flag` | 128 px | 128 px | checkbox z długim nagłówkiem (CzyZamknięta) |
+| `--col-date` | 168 px | 168 px | pole daty (natywny kalendarz) |
+| `--col-text-sm` | 176 px | 176 px | status, IlośćPotwierdzonych, rodzaj gry |
+| `--col-text-md` | 192 px | 192 px | nazwa gracza, PIN z przyciskiem |
+| `--col-text-lg` | 256 px | 208 px | nazwa gry z akcjami, uprawnienia |
+| `--col-actions` | 144 px | 144 px | przyciski w wierszu (Usuń Całkowicie) |
+
+Wartości nie są dobrane „na oko" — wynikają z **pomiaru minimalnej szerokości, przy której nic się nie ucina**: najdłuższego słowa w nagłówku, treści listy rozwijanej, podpowiedzi w polu i etykiety przycisku. Kolumna nigdy nie dostaje tokenu mniejszego niż zmierzone minimum.
+
+Na telefonie zwężają się wyłącznie kolumny liczbowe. Kolumny z przyciskami, listami i długimi nagłówkami zostają w rozmiarze desktopowym — ich zawartość się nie kurczy, więc każde zwężenie oznaczałoby ucięcie treści.
 
 Jednostką jest `rem`, nie `ch`: `ch` zależy od fontu elementu, więc ta sama deklaracja dawała inną szerokość w `<th>` (Rajdhani 12 px) niż w `<td>` (Inter 14,5 px) — różnica sięgała 21 %.
 
@@ -47,9 +51,10 @@ Wszystkie tabele mają `table-layout: fixed`, dlatego zadeklarowana szerokość 
 
 ### Zachowanie treści
 
-- Nagłówki zawijają się w dwie linie (`white-space: normal`), zamiast być ucinane.
-- Wartości w komórkach nie zawijają się i są obcinane wielokropkiem (`white-space: nowrap`, `text-overflow: ellipsis`).
-- Nagłówek tabeli jest przyklejony do góry przy przewijaniu (`position: sticky`).
+- Nagłówki zawijają się między wyrazami (`white-space: normal`); pojedynczy wyraz łamie się dopiero wtedy, gdy naprawdę nie mieści się w kolumnie (`overflow-wrap: break-word`). Odstęp liter w nagłówkach to `0.06em` — luźniejszy zjadał ok. 20 % szerokości.
+- Wartości tekstowe nie zawijają się i są obcinane wielokropkiem (`white-space: nowrap`, `text-overflow: ellipsis`).
+- **Komórki z kontrolkami nie obcinają zawartości.** Komórka zawierająca przycisk, listę lub pole ma `white-space: normal`, przyciski mają `max-width: 100%`, a kontenery z kilkoma kontrolkami (`.admin-games-name-control`, `.admin-confirmations-count-control`, `.pin-control`) zawijają się do kolejnej linii. Bez tego przyciski typu `Szczegóły` czy `Usuń Całkowicie` znikały za krawędzią kolumny.
+- Nagłówek tabeli jest przyklejony do góry przy przewijaniu (`position: sticky`) i ma **nieprzezroczyste** tło `--table-head-bg`. Tło półprzezroczyste powodowało, że przewijane wiersze prześwitywały przez nagłówek.
 
 ## Przypisanie tokenów do kolumn
 

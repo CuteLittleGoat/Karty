@@ -2570,7 +2570,6 @@ const initUserConfirmations = () => {
   const body = document.querySelector("#confirmationsBody");
   const detailsModal = document.querySelector("#confirmationsDetailsModal");
   const detailsMeta = document.querySelector("#confirmationsDetailsMeta");
-  const detailsBody = document.querySelector("#confirmationsDetailsBody");
   const detailsOrderBody = document.querySelector("#confirmationsOrderBody");
   const detailsOrderSummary = document.querySelector("#confirmationsOrderSummary");
   const detailsClose = document.querySelector("#confirmationsDetailsClose");
@@ -2692,11 +2691,10 @@ const initUserConfirmations = () => {
   };
 
   const openDetailsModal = async ({ collectionName, game }) => {
-    if (!detailsModal || !detailsMeta || !detailsBody) {
+    if (!detailsModal || !detailsMeta) {
       return;
     }
 
-    detailsBody.innerHTML = "";
     if (detailsOrderBody) {
       detailsOrderBody.innerHTML = "";
     }
@@ -2708,37 +2706,6 @@ const initUserConfirmations = () => {
     const confirmations = confirmationsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     const gamePool = rows.reduce((sum, row) => sum + parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy), 0);
     detailsMeta.textContent = `Nazwa: ${game.name || "-"} | Rodzaj gry: ${game.gameType || "-"} | Data: ${game.gameDate || "-"} | Pula: ${gamePool}`;
-
-    if (!rows.length) {
-      const emptyRow = document.createElement("tr");
-      const emptyCell = document.createElement("td");
-      emptyCell.colSpan = 8;
-      emptyCell.textContent = "Brak graczy w tej grze.";
-      emptyRow.appendChild(emptyCell);
-      detailsBody.appendChild(emptyRow);
-    }
-
-    rows.forEach((row, index) => {
-      const tr = document.createElement("tr");
-      const lpCell = document.createElement("td");
-      lpCell.textContent = String(index + 1);
-      const playerCell = document.createElement("td");
-      playerCell.textContent = resolveDisplayPlayerName(row) || "-";
-      const entryFeeCell = document.createElement("td");
-      entryFeeCell.textContent = String(parseIntegerOrZero(row.entryFee));
-      const rebuyCell = document.createElement("td");
-      rebuyCell.textContent = String(parseIntegerOrZero(row.rebuy));
-      const payoutCell = document.createElement("td");
-      payoutCell.textContent = String(parseIntegerOrZero(row.payout));
-      const profitCell = document.createElement("td");
-      profitCell.textContent = String(parseIntegerOrZero(row.payout) - (parseIntegerOrZero(row.entryFee) + parseIntegerOrZero(row.rebuy)));
-      const pointsCell = document.createElement("td");
-      pointsCell.textContent = String(parseIntegerOrZero(row.points));
-      const championshipCell = document.createElement("td");
-      championshipCell.textContent = row.championship ? "Tak" : "Nie";
-      tr.append(lpCell, playerCell, entryFeeCell, rebuyCell, payoutCell, profitCell, pointsCell, championshipCell);
-      detailsBody.appendChild(tr);
-    });
 
     renderConfirmationsOrder({ rows, confirmations, game, verifiedPlayerId: getConfirmationsVerifiedPlayer()?.id ?? "" });
 

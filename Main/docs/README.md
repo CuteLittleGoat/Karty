@@ -23,7 +23,8 @@ Instrukcja jest podzielona na dwie części:
 5. Kliknięcie **Instrukcja** otwiera okno modalne z instrukcją; zamkniesz je przyciskiem `×`.
 6. W trybie użytkownika główna zielona ramka panelu jest rozciągnięta niemal na pełną szerokość ekranu: zaczyna się 1 px od lewej i kończy 1 px przed prawą krawędzią.
 7. **Tabele na telefonie.** Szerokie tabele przewija się palcem w bok wewnątrz ramki tabeli — reszta strony pozostaje nieruchoma. Nagłówek tabeli zostaje przyklejony u góry, więc przy przewijaniu w dół zawsze widać, co oznacza dana kolumna.
-8. **Listy w Strefie Gracza na wąskim ekranie.** Na telefonie o szerokości do 560 px listy tylko do odczytu (**Najbliższa Gra**, **Gry do Potwierdzenia**, okno **Szczegóły**) zamieniają się w karty: każdy wiersz to osobny kafelek, a przy każdej wartości widnieje nazwa kolumny. Nie trzeba wtedy przewijać w bok.
+7a. **Przycisk Instrukcja** widzi tylko administrator — w widoku gracza go nie ma.
+8. **Listy w Strefie Gracza na wąskim ekranie.** Na telefonie o szerokości do 560 px listy tylko do odczytu (**Najbliższa Gra**, **Gry do Potwierdzenia**, okno **Kolejność potwierdzeń**) zamieniają się w karty: każdy wiersz to osobny kafelek, a przy każdej wartości widnieje nazwa kolumny. Nie trzeba wtedy przewijać w bok.
 9. **Na tablecie** panele boczne (**Lata**, **Ranking**, **Sekcja**) układają się nad i pod treścią, a nie obok niej — dzięki temu tabele mają pełną szerokość ekranu.
 7. Jeśli otworzysz moduł w trybie użytkownika (bez `?admin=1`), przeglądarka może zaproponować instalację PWA lub dodanie aplikacji do ekranu głównego.
 8. Jeśli otworzysz moduł z parametrem `?admin=1`, wejście administracyjne działa jako zwykła strona/skróty URL — bez publikowania manifestu PWA dla tego adresu.
@@ -127,7 +128,7 @@ Dodatkowo:
 Przyciski i funkcje w wierszu gry:
 - **Potwierdź** — zapisuje Twoją obecność na grze.
 - **Anuluj** — wycofuje potwierdzenie obecności.
-- **Szczegóły** — otwiera modal ze szczegółową tabelą uczestników i wartości (wpisowe/rebuy/wypłata/punkty/mistrzostwo), a pod nią sekcję **Kolejność potwierdzeń**.
+- **Szczegóły** — otwiera okno **Kolejność potwierdzeń**: nad listą widać dane gry (nazwa, rodzaj, data, pula), a pod nimi kolejkę potwierdzeń.
 - **Notatki do gry** — otwiera modal notatek przed grą w trybie tylko do odczytu.
 
 Sekcja **Kolejność potwierdzeń** (w oknie **Szczegóły**):

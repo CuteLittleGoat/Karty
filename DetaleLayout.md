@@ -9,15 +9,20 @@
 - Wszystkie tabele mają `table-layout: fixed`, a szerokości deklaruje `<colgroup>` przed `<thead>`.
 - Tryby tabel: `t-fluid` (wypełnia kontener, `min-width: var(--table-min)`), `t-compact` (`width: var(--table-min)`), `is-table-stacked` (poniżej 560 px wiersz staje się kartą).
 - `.admin-data-table .admin-input` ma `min-width: 0`; bez tego pole narzuca komórce własną szerokość naturalną ok. 213 px i szerokość z `<colgroup>` jest ignorowana.
-- Nagłówki tabel są przyklejone do góry (`position: sticky; top: 0`) i mogą zawijać się w dwie linie; wartości w komórkach są obcinane wielokropkiem.
-- Na mobile (`max-width: 720px`) odstęp liter w nagłówkach spada do `0.04em`, a paddingi komórek do `8px 6px`.
+- Nagłówki tabel są przyklejone do góry (`position: sticky; top: 0`) i mają nieprzezroczyste tło `--table-head-bg` (`#0a1c16`); półprzezroczyste tło powodowało prześwitywanie przewijanych wierszy przez nagłówek.
+- Nagłówki zawijają się między wyrazami, a pojedynczy wyraz łamie się dopiero gdy nie mieści się w kolumnie (`overflow-wrap: break-word`). Odstęp liter w nagłówkach: `0.06em`.
+- Wartości tekstowe są obcinane wielokropkiem, ale **komórki z przyciskami, listami i polami nie obcinają zawartości** (`white-space: normal`, `button { max-width: 100% }`), a kontenery `.admin-games-name-control`, `.admin-confirmations-count-control` i `.pin-control` zawijają kontrolki do kolejnej linii.
+- Na mobile (`max-width: 720px`) paddingi komórek spadają do `8px 6px`.
 
 ## Breakpointy i budżet szerokości
 - `max-width: 1180px` — układy `.admin-games-layout` (w tym `#adminGamesTab`, `#adminStatisticsTab`, `#statisticsTab`) przechodzą na jedną kolumnę. Próg dobrany tak, aby kolumna z treścią nigdy nie była węższa od pasków bocznych.
 - `max-width: 720px` — mobilna skala tokenów oraz zmniejszone paddingi: `.page` `20px 10px 48px`, `.card` `14px`, `.admin-games-sidebar` i `.admin-games-content` `10px`. Na ekranie 375 px daje to tabeli 303 px zamiast 259 px.
 - `max-width: 560px` — układ kartowy `is-table-stacked`.
 - `pointer: coarse` — przyciski wierszowe, zakładki i przyciski akcji mają co najmniej 40 px wysokości.
-- `.user-tab-content > *` i `.admin-panel-content > *` mają `max-width: var(--content-max)` (1680 px) i są wyśrodkowane; karta nadal sięga krawędzi ekranu, ograniczana jest tylko treść w środku.
+- `.user-tab-content` i `.admin-panel-content` mają `max-width: var(--content-max)` (1680 px) i są wyśrodkowane; karta nadal sięga krawędzi ekranu, ograniczana jest tylko treść w środku. Ograniczenie musi siedzieć na kontenerze — nałożone na elementy siatki wyłącza ich rozciąganie i zwęża panele do szerokości własnej treści.
+- Na mobile (`max-width: 720px`) pola tekstowe (`Aktualności`, `Regulamin`, `Czat`, `Notatki`, `Kopia zapasowa`) zajmują pełną szerokość karty: kontenery `.latest-message`, `.chat-form`, `.admin-message-form`, `.admin-rules` i `.admin-backup` tracą własny padding, ramkę i tło.
+- Przycisk `Instrukcja` jest widoczny wyłącznie dla administratora (`body:not(.is-admin) #adminInstructionButton` w `Main`, `.page:has(.user-card) #secondInstructionButton` w `Second`).
+- W układzie kartowym (`is-table-stacked`) komórka ma `width: 100%`, etykieta zawija się w swojej kolumnie (`minmax(0, 11ch)`), a tabela traci `min-width`, żeby karty nie przewijały się w bok.
 - Przyciski menu bocznego (`.player-zone-button`) mają `font-size: clamp(11px, 1.1vw, 14px)`.
 
 ## Rozpoznanie widoku użytkownika w module Second
