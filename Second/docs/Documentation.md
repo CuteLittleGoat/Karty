@@ -324,6 +324,7 @@ Warstwa prezentacji tabel opiera się na skali tokenów w `Second/styles.css`; p
 ## Aktualny layout paneli użytkownika (Second)
 - W trybie użytkownika kontener `.player-zone-layout` używa `width: calc(100% + 46px)` oraz `margin-inline: -23px`.
 - Zapewnia to wyrównanie wewnętrznych ciemno-zielonych paneli do 1 px od lewej i prawej strony zewnętrznej zielonej karty.
+- Lista przycisków panelu (`.player-zone-sections-list`, używana w `#adminTournamentTab` i w widoku użytkownika) ma `grid-auto-rows: 1fr`, a jej przyciski `min-height: var(--admin-games-panel-item-height)` przy `height: 100%`. Sztywna wysokość wiersza (41 px) nie mieściła dwuliniowej etykiety „Losowanie stołów” — tekst wychodził ok. 3 px poza ramkę przycisku. `1fr` wyrównuje wszystkie wiersze do najwyższego, więc lista pozostaje równa (56 px na desktopie). Reguła jest bliźniacza do tej w module Main.
 
 
 ### PIN użytkownika, czat i uprawnienia

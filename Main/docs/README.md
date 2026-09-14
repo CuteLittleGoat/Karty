@@ -46,7 +46,9 @@ Instrukcja jest podzielona na dwie części:
 
 ## 2. Sekcja użytkownika
 
-Sekcja użytkownika składa się z trzech zakładek: **Aktualności**, **Regulamin**, **Strefa Gracza**.
+Sekcja użytkownika składa się z dwóch zakładek: **Aktualności** i **Strefa Gracza**.
+
+**Regulamin** nie jest już osobną zakładką na górnym pasku — znajduje się jako **pierwsza sekcja wewnątrz „Strefy Gracza”**. Oznacza to, że do jego odczytania potrzebny jest PIN oraz uprawnienie „Regulamin”.
 
 W nagłówku sekcji użytkownika jest też przycisk **Odśwież**. Po kliknięciu odświeżane są dane tylko aktywnej zakładki (bez resetu całej strony i bez utraty sesji PIN).
 
@@ -60,16 +62,7 @@ Co możesz zrobić:
 - nie ma tu edycji ani przycisków akcji,
 - tylko odczyt informacji.
 
-### 2.2. Zakładka „Regulamin”
-
-Co widzisz:
-- pole tylko do odczytu z aktualnymi zasadami,
-- status informacyjny pod polem.
-
-Co możesz zrobić:
-- tylko odczyt (bez edycji).
-
-### 2.3. Zakładka „Strefa Gracza”
+### 2.2. Zakładka „Strefa Gracza”
 
 To strefa z dodatkowymi funkcjami, odblokowywana PIN-em.
 
@@ -82,11 +75,15 @@ To strefa z dodatkowymi funkcjami, odblokowywana PIN-em.
 5. Po odświeżeniu strony (refresh) sesja wejścia do **Strefy Gracza** pozostaje aktywna w tej samej karcie, a przełączanie między sekcjami bocznymi nie wymaga ponownego wpisywania PIN do strefy.
 
 Dostępne przyciski sekcji (widoczne zależnie od uprawnień):
+- **Regulamin**,
 - **Najbliższa Gra**,
 - **Czat**,
 - **Gry do Potwierdzenia**,
 - **Gry Użytkowników**,
-- **Statystyki**.
+- **Statystyki**,
+- **Ranking graczy**.
+
+Każda sekcja ma własną bramkę PIN — po kliknięciu przycisku sekcji wpisz swój PIN i kliknij **Otwórz**. Sekcja otwiera się tylko wtedy, gdy administrator przyznał Ci odpowiadające jej uprawnienie.
 
 ---
 
@@ -185,7 +182,7 @@ To sekcja, w której gracz (z uprawnieniem) tworzy i prowadzi własne gry.
 W wierszu każdej gry masz przyciski:
 - **Szczegóły** — otwiera modal szczegółów tej gry,
 - **Notatki do gry** — otwiera notatki przygotowawcze,
-- **Usuń** — usuwa grę wraz z powiązanymi rekordami szczegółów/potwierdzeń.
+- **Usuń** — usuwa grę wraz z powiązanymi rekordami szczegółów/potwierdzeń. Najpierw pojawia się **pytanie potwierdzające** z nazwą i datą gry; dopiero **OK** kasuje dane, **Anuluj** przerywa. Operacji nie można cofnąć.
 
 Kolumna **CzyZamknięta** (checkbox):
 - zaznacz, aby oznaczyć grę jako zamkniętą,
@@ -247,6 +244,25 @@ Jeśli wypłaty nie zgadzają się z pulą, pojawia się czerwone ostrzeżenie.
 7. Na telefonie i na tablecie (do 1180 px szerokości) panel **Ranking** wyświetla się pod tabelą **Statystyki** — układ przechodzi na jedną kolumnę, żeby tabela miała pełną szerokość ekranu.
 8. W telefonie poziomo (mobile landscape) układ również przełącza się na jedną kolumnę, więc panele **Lata** i **Ranking** pojawiają się pod treścią, a nie obok niej.
 
+## 3.6. „Ranking graczy” (widok gracza)
+
+Sekcja wygląda dokładnie tak samo jak **Statystyki**, ale pokazuje inne liczby.
+
+**Czym różni się od „Statystyk”:**
+- **Statystyki** liczą gry z zakładki **Gry admina** — czyli te, które administrator sprawdził i zatwierdził.
+- **Ranking graczy** liczy gry z zakładki **Gry Użytkowników** — czyli dane w takiej postaci, w jakiej wpisali je sami gracze, bez czekania na sprawdzenie przez administratora.
+- Do rankingu wchodzi wyłącznie gra z zaznaczoną kolumną **CzyZamknięta**. Odznaczenie tej kolumny natychmiast usuwa grę z rankingu.
+
+**Jak wejść:**
+1. Kliknij przycisk **Ranking graczy** w panelu **Sekcja**.
+2. Wpisz PIN z uprawnieniem **Ranking graczy** i kliknij **Otwórz**.
+3. Wybierz rok z panelu **Lata**.
+   - Lata w tej sekcji są nadawane **osobno** od lat statystyk. Możesz mieć dostęp do innych roczników w „Statystykach", a do innych w „Rankingu graczy".
+4. Przeglądaj tabelę zbiorczą, tabelę graczy i panel **Ranking**.
+5. Kliknij **Eksportuj**, aby pobrać dane do pliku XLSX (nazwa pliku zaczyna się od godziny i daty, a kończy słowem `Ranking` i rokiem).
+
+Które kolumny widzisz — decyduje administrator osobno dla rankingu i osobno dla statystyk.
+
 ---
 
 ## 4. Sekcja administratora
@@ -273,6 +289,7 @@ Na górze panelu są przyciski zakładek:
 - Gracze,
 - Gry admina,
 - Statystyki,
+- Ranking graczy,
 - Gry użytkowników,
 - Najbliższa gra,
 - Gry do potwierdzenia,
@@ -339,7 +356,7 @@ To kluczowa sekcja do zarządzania kontami graczy i uprawnieniami.
 - **Aplikacja** — checkbox dostępu do aplikacji (włącza/wyłącza aktywność gracza),
 - **Nazwa** — nazwa gracza,
 - **PIN** — 5-cyfrowy PIN logowania do stref,
-- **Uprawnienia** — zestaw dostępów do sekcji,
+- **Uprawnienia** — zestaw dostępów do sekcji; przy uprawnieniach „Statystyki” i „Ranking graczy” plakietka pokazuje dodatkowo liczbę przyznanych lat,
 - kolumna akcji — usunięcie gracza.
 
 ### 9.2. Dodanie nowego gracza — krok po kroku
@@ -351,10 +368,13 @@ To kluczowa sekcja do zarządzania kontami graczy i uprawnieniami.
      - ręcznie (dokładnie 5 cyfr) albo
      - kliknij **Losuj**, aby system wygenerował unikalny PIN.
 3. W kolumnie **Uprawnienia** kliknij **Edytuj**.
-4. W modalu uprawnień zaznacz checkboxy sekcji, które gracz ma widzieć (np. Czat, Gry użytkowników, Statystyki).
-5. Jeśli zaznaczysz uprawnienie do **Statystyki**, pojawi się przycisk **Lata**:
+4. W modalu uprawnień zaznacz checkboxy sekcji, które gracz ma widzieć. Do wyboru są: **Strefa Gracza**, **Regulamin**, **Najbliższa gra**, **Czat**, **Gry do potwierdzenia**, **Gry użytkowników**, **Statystyki**, **Ranking graczy**.
+   - **Strefa Gracza** jest nadrzędna — bez niej gracz nie wejdzie do żadnej z pozostałych sekcji.
+   - **Regulamin** jest od teraz zwykłym uprawnieniem. Gracz bez tego uprawnienia nie zobaczy regulaminu w ogóle.
+5. Jeśli zaznaczysz uprawnienie do **Statystyki** albo do **Ranking graczy**, obok pojawi się przycisk **Lata**:
    - kliknij **Lata**,
    - zaznacz konkretne lata, które gracz może przeglądać.
+   - **To są dwie niezależne listy.** Lata dla „Statystyk” bierze się z gier w zakładce „Gry admina”, a lata dla „Rankingu graczy” z gier w zakładce „Gry użytkowników”. Nagłówek okna mówi, którą listę właśnie ustawiasz („Lata statystyk” albo „Lata rankingu”).
 6. Zamknij modal uprawnień przyciskiem `×`.
 
 Efekt:
@@ -364,7 +384,7 @@ Efekt:
 ### 9.3. Edycja istniejącego gracza
 - Zmień nazwę bezpośrednio w polu nazwy.
 - Zmień PIN ręcznie albo użyj **Losuj**.
-- Kliknij **Edytuj**, aby zmienić uprawnienia i lata statystyk.
+- Kliknij **Edytuj**, aby zmienić uprawnienia oraz lata statystyk i lata rankingu.
 
 > **Gdzie widać zmienioną nazwę gracza.** Nowa nazwa pojawia się od razu na listach wyboru gracza — czyli w modalach **Szczegóły** gry oraz w kalkulatorze. Natomiast **podsumowania pod tabelą gier, tabela statystyk, ranking, okno „Status potwierdzeń” i zakładka „Gry do potwierdzenia” nadal pokazują nazwę zapisaną w momencie dodania gracza do danej gry** — dla już istniejących gier stara nazwa pozostaje. Liczby i historia gracza nie są tym uszkodzone: gracz rozpoznawany jest po swoim ID, a nie po nazwie.
 
@@ -443,6 +463,32 @@ Działanie:
 4. W tabeli graczy kliknij **Waga1–Waga6**, aby ustawić jedną wartość dla całej kolumny; po zapisie zobaczysz komunikat ile wierszy zaktualizowano. Jeśli nie wybrałeś roku albo w roku nie ma graczy, aplikacja powie o tym zamiast pytać o wartość.
 5. Wartości wag możesz też wpisać ręcznie w polach tabeli — pole nie traci kursora podczas pisania, a kolumna **Wynik** i **Ranking** przeliczają się na bieżąco.
 6. W panelu **Ranking** kolumny **Miejsce**, **Gracz** i **Wynik** mieszczą się na ekranie bez poziomego przewijania; kolumna **Gracz** jest zwężona, nagłówek **Gracz** jest wyrównany do lewej, a długie nazwy są obcinane wielokropkiem.
+7. Pod nazwą każdej kolumny tabeli graczy jest **kwadracik (checkbox)**. Zaznaczony = kolumna jest widoczna dla graczy w ich sekcji „Statystyki”; odznaczony = ukryta. Ustawienie zapisuje się osobno dla każdego roku. Kolumny **Waga1–Waga6** są domyślnie odznaczone, czyli niewidoczne dla graczy.
+
+---
+
+## 11a. Zakładka admina „Ranking graczy”
+
+Zakładka działa identycznie jak **Statystyki** — ma te same tabele, te same kolumny, te same przyciski **Waga1–Waga6**, te same kwadraciki ukrywania kolumn i ten sam przycisk **Eksportuj**.
+
+**Jedyna różnica to źródło danych.**
+
+| | Statystyki | Ranking graczy |
+|---|---|---|
+| Liczy gry z zakładki | **Gry admina** | **Gry użytkowników** |
+| Czyje dane pokazuje | sprawdzone i zatwierdzone przez Ciebie | wpisane przez graczy, bez Twojej weryfikacji |
+| Warunek zaliczenia gry | **CzyZamknięta** zaznaczone przez Ciebie w „Gry admina” | **CzyZamknięta** zaznaczone przy grze w „Gry użytkowników” |
+
+> **Dlaczego liczby w obu zakładkach mogą się różnić.** Gdy gracz zamyka swoją grę, aplikacja tworzy jej kopię w „Gry admina”, ale **celowo bez zaznaczonej kolumny CzyZamknięta**. Do „Statystyk” gra wejdzie dopiero, gdy sam zaznaczysz tę kolumnę na kopii. W „Rankingu graczy” ta sama gra pojawia się od razu. To jest zamierzone: Ranking to dane surowe, Statystyki to dane zweryfikowane.
+
+> **Odkliknięcie działa natychmiast.** Jeśli gracz przez pomyłkę zamknie grę i ją odklikne, gra znika z rankingu od razu — nic nie jest „zamrażane”.
+
+Czego **nie** dzieli z zakładką „Statystyki”:
+- **wagi** — wartości Waga1–Waga6 ustawione w „Rankingu graczy” dotyczą tylko rankingu; te ze „Statystyk” tylko statystyk,
+- **widoczność kolumn** — kwadraciki ustawia się osobno dla każdej z zakładek,
+- **lata przyznane graczom** — osobna lista w uprawnieniach (przycisk **Lata** przy uprawnieniu „Ranking graczy”).
+
+Nazwa pobieranego pliku eksportu kończy się słowem `Ranking` i rokiem, żeby nie mylić go z eksportem statystyk.
 
 ---
 
@@ -460,7 +506,7 @@ Najważniejsze przyciski:
 - **Dodaj** — dodanie nowej gry użytkowników,
 - **Szczegóły** — edycja składu i wartości,
 - **Notatki do gry** — notatki przed grą,
-- **Usuń** — usunięcie gry,
+- **Usuń** — usunięcie gry. Po kliknięciu pojawia się **pytanie potwierdzające** z nazwą i datą gry. Dopiero po kliknięciu **OK** gra zostaje skasowana razem z wynikami wszystkich graczy i ich potwierdzeniami; **Anuluj** nie zmienia niczego. Jeśli gra ma już kopię w „Gry admina”, pytanie dodatkowo uprzedza, że kopia tam zostanie i nadal będzie liczona do statystyk. Operacji nie da się cofnąć — jedynym ratunkiem jest przywrócenie z kopii zapasowej.
 - Szerokości kolumn są zgodne z zakładką **Gry admina**, z dodatkową kolumną **Liczba miejsc**. Kolumna **Nazwa** rozciąga się na wolne miejsce, więc na szerokim ekranie to ona robi się szersza, a nie kolumny z liczbami.
 - **Wpisowe** (w nagłówku modalu szczegółów) — zbiorcze wpisowe,
 - **Dodaj** (w modalu szczegółów) — dodanie uczestnika,

@@ -7,7 +7,8 @@ Szerokości wszystkich tabel w obu modułach opisuje **jedna skala tokenów** zd
 | Token | Desktop | Mobile (≤720 px) | Zastosowanie |
 |---|---:|---:|---|
 | `--col-num-xs` | 64 px | 56 px | LP, Nr, %, (+/-) |
-| `--col-num-sm` | 88 px | 80 px | krótkie liczby, wagi, liczba miejsc |
+| `--col-num-sm` | 88 px | 80 px | krótkie liczby, liczba miejsc |
+| `--col-weight` | 104 px | 104 px | kolumny `Waga1`–`Waga6` w tabelach statystyk i rankingu |
 | `--col-num-md` | 112 px | 96 px | kwoty, stack, wynik, pot |
 | `--col-flag` | 128 px | 128 px | checkbox z długim nagłówkiem (CzyZamknięta) |
 | `--col-date` | 168 px | 168 px | pole daty (natywny kalendarz) |
@@ -55,6 +56,17 @@ Wszystkie tabele mają `table-layout: fixed`, dlatego zadeklarowana szerokość 
 - Wartości tekstowe nie zawijają się i są obcinane wielokropkiem (`white-space: nowrap`, `text-overflow: ellipsis`).
 - **Komórki z kontrolkami nie obcinają zawartości.** Komórka zawierająca przycisk, listę lub pole ma `white-space: normal`, przyciski mają `max-width: 100%`, a kontenery z kilkoma kontrolkami (`.admin-games-name-control`, `.admin-confirmations-count-control`, `.pin-control`) zawijają się do kolejnej linii. Bez tego przyciski typu `Szczegóły` czy `Usuń Całkowicie` znikały za krawędzią kolumny.
 - Nagłówek tabeli jest przyklejony do góry przy przewijaniu (`position: sticky`) i ma **nieprzezroczyste** tło `--table-head-bg`. Tło półprzezroczyste powodowało, że przewijane wiersze prześwitywały przez nagłówek.
+
+### Nagłówek z checkboxem ukrywania kolumny
+
+Dotyczy tabel `.admin-games-players-stats-table` w zakładkach **Statystyki** i **Ranking graczy** (tylko widok administratora — w widoku gracza checkboxów nie ma).
+
+- Komórka nagłówka ma układ `.stats-column-header` (flex, `flex-wrap: wrap`, `justify-content: flex-start`, `gap: 4px 10px`).
+- Nazwa kolumny siedzi w `<span class="stats-column-label">` z `flex: 1 0 100%`, więc zajmuje całą szerokość komórki i **checkbox zawsze schodzi do osobnej linii pod nazwą**, przy lewej krawędzi.
+- Nazwa zawija się wyłącznie między wyrazami (`overflow-wrap: normal`) — pojedyncze słowa nie są łamane.
+- `th` tej tabeli ma `padding-inline: 12px` zamiast domyślnych 8 px.
+
+Dlaczego tak, a nie „nazwa i checkbox obok siebie”: przy `justify-content: space-between` kwadracik lądował przy prawej krawędzi komórki, czyli tuż przy granicy z następną kolumną. Gdy komórka była za wąska, checkbox wychodził poza `th` i ginął pod `overflow: hidden`, a nazwa sąsiedniej kolumny nachodziła na niego o ok. 4,8 px. W kolumnach `Waga1`–`Waga6` kwadracik znikał całkowicie, przez co nie dało się włączyć widoczności tych kolumn dla graczy. Po zmianie żadna komórka nie ucina zawartości, a minimalny odstęp między checkboxem a nazwą następnej kolumny wynosi 68 px.
 
 ## Przypisanie tokenów do kolumn
 
@@ -115,10 +127,24 @@ Dodatkowo dla każdego stołu:
 - Kolumna `Status` zawiera wyłącznie etykietę statusu płatności (układ w `.payment-status-cell`, bez przycisku zmiany).
 - Zmiana statusu następuje w sekcji `Lista graczy` przez zaznaczenie/odznaczenie okrągłej kontrolki w kolumnie `Status`.
 
-## Moduł Main — Ranking (Gry admina i Statystyki)
+## Moduł Main — Ranking (Gry admina, Statystyki i Ranking graczy)
 1. Miejsce
 2. Gracz
 3. Wynik
+
+## Moduł Main — Ranking graczy (tabela graczy)
+
+Tabela ma dokładnie te same 18 kolumn i te same tokeny co tabela graczy w zakładce **Statystyki**:
+
+`Gracz | Mistrzostwo | Waga1 | Ilość Spotkań | Waga2 | % udział | Punkty | Waga3 | (+/-) | Waga4 | Wypłata | Waga5 | Wpłaty | Waga6 | Suma z rozegranych gier | % Rozegranych gier | % Wszystkich gier | Wynik`
+
+- `Gracz` jest kolumną elastyczną (`<col>` bez szerokości).
+- `Mistrzostwo`, `Suma z rozegranych gier`, `% Rozegranych gier` → `--col-flag`.
+- `Waga1`–`Waga6` → `--col-weight`.
+- `% Wszystkich gier` → `--col-num-md`.
+- pozostałe → `--col-num-sm`.
+
+Różnica wobec „Statystyk” dotyczy wyłącznie źródła danych (`UserGames` zamiast `Tables`) i kolekcji z ustawieniami (`user_games_stats` zamiast `admin_games_stats`), nie układu kolumn.
 
 
 ### Układ paneli Statystyk (widok gracza, desktop)

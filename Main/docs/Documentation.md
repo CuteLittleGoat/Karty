@@ -11,7 +11,7 @@
 
 ## 2. Aktualny zakres funkcjonalny tej wersji
 - Service Worker obsługuje komunikat `SKIP_WAITING`, dzięki czemu nowy worker może szybciej przejąć kontrolę po aktualizacji.
-- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`, `../config/firebase-config.js`) z parametrem wersji (`?v=2026-09-08.3`) w celu twardego bustowania cache między release’ami.
+- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`, `../config/firebase-config.js`) z parametrem wersji (`?v=2026-09-14.1`) w celu twardego bustowania cache między release’ami.
   - `config/firebase-config.js` nie występuje w `APP_SHELL_ASSETS`, ale jako `request.destination === "script"` trafia w Service Workerze do strategii `staleWhileRevalidate`. Bez parametru wersji zmiana samej konfiguracji (np. dodanie klucza App Check) bez podbicia `APP_VERSION` byłaby serwowana z cache o jeden release wstecz. Parametr `?v=` eliminuje ten przypadek niezależnie od `APP_VERSION`.
   - Moduł `Second` nie ma Service Workera, więc jego `index.html` ładuje ten sam plik bez parametru wersji — podlega wyłącznie zwykłemu cache HTTP.
 - `Main/pwa-bootstrap.js` nasłuchuje `updatefound` i `controllerchange`; po instalacji nowego workera wymusza jego aktywację i wykonuje pojedynczy `window.location.reload()`, aby użytkownik pracował na spójnym zestawie assetów.
@@ -65,6 +65,10 @@
 - Tryb administratora włączany parametrem `?admin=1`.
 - Klasy CSS:
   - `.admin-only` / `.user-only` sterowane przez `body.is-admin`.
+- Widok użytkownika ma dwie zakładki najwyższego poziomu: `updatesTab` („Aktualności”) i `playerZoneTab` („Strefa Gracza”).
+- `AVAILABLE_PLAYER_TABS` definiuje uprawnienia nadawane w zakładce „Gracze”, w kolejności: `playerZoneTab` („Strefa Gracza”), `rulesTab` („Regulamin”), `nextGameTab`, `chatTab`, `confirmationsTab`, `userGamesTab`, `statsTab`, `rankingTab` („Ranking graczy”).
+- `PLAYER_ZONE_SECTION_PERMISSION_MAP` mapuje identyfikator panelu sekcji na klucz uprawnienia; `playerZoneTab` jest nadrzędne — bez niego bramka Strefy Gracza nie przepuszcza do żadnej sekcji.
+- Panel administratora ma zakładki: `adminNewsTab`, `adminChatTab`, `adminRulesTab`, `adminNotesTab`, `adminPlayersTab`, `adminGamesTab`, `adminStatisticsTab`, `adminRankingTab`, `adminUserGamesTab`, `adminNextGameTab`, `adminConfirmationsTab`, `adminCalculatorTab`, `adminBackupTab`.
 - Header:
   - przycisk instrukcji widoczny zawsze.
   - czerwony przycisk `#customsEmergencyButton` został przeniesiony do prawego górnego paska (`.admin-toolbar`), dzięki czemu jest dostępny zarówno w widoku użytkownika, jak i administratora; otwiera modal `#customsEmergencyModal` z GIF-em `../Koza.gif`.
@@ -96,13 +100,15 @@
   - `admin_notes`,
   - `Tables` (+ subkolekcje `rows`, `confirmations`),
   - `UserGames` (+ subkolekcje `rows`, `confirmations`),
-  - `players`, `chat_messages`, `admin_games_stats`,
+  - `players`, `chat_messages`, `admin_games_stats`, `user_games_stats`,
   - `calculators` (+ `definitions`, `placeholders`, `sessions/variables`, `sessions/calculationFlags`, `sessions/tables/rows`, `sessions/snapshots`),
   - `Nekrolog_config`, `Nekrolog_snapshots`, `Nekrolog_refresh_jobs` (w tej ostatniej zapis ograniczony do dokumentu `latest`).
 
 ### 5.2. Aktualny przekrój schematu Firestore
 - `admin_notes` przechowuje osobne dokumenty modułowe (`main`, `second`) z polami: `module`, `text`, `updatedAt`, `updatedBy`.
-- `app_settings` zawiera m.in. dokument `player_access` i listę `players[]` z polami dostępowymi (`appEnabled`, `permissions`, `statsYearsAccess`, `pin`).
+- `app_settings` zawiera m.in. dokument `player_access` i listę `players[]` z polami dostępowymi (`appEnabled`, `permissions`, `statsYearsAccess`, `rankingYearsAccess`, `pin`).
+  - `statsYearsAccess` i `rankingYearsAccess` to dwie **rozłączne** listy lat: pierwsza dotyczy zakładki „Statystyki” (lata z kolekcji `Tables`), druga zakładki „Ranking graczy” (lata z kolekcji `UserGames`). Odznaczenie odpowiedniego uprawnienia czyści powiązaną listę.
+- `admin_games_stats/{rok}` i `user_games_stats/{rok}` mają identyczny kształt (`rows[]` z wagami per gracz oraz `visibleColumns[]`), ale obsługują różne zakładki — odpowiednio „Statystyki” i „Ranking graczy”. Rozdzielenie jest celowe: zmiana wagi lub widoczności kolumny w jednej zakładce nie może wpływać na drugą.
 - `Tables` i `UserGames` mają dokumenty gry oraz subkolekcje:
   - `rows` (wiersze graczy z polami turniejowymi jak `entryFee`, `rebuy`, `payout`, `points`, `championship`),
   - `confirmations` (potwierdzenia obecności graczy).
@@ -189,7 +195,7 @@ i są potrzebne, aby odtworzyć działające App Check:
 Warstwa prezentacji tabel opiera się na skali tokenów w `Main/styles.css`; pełne przypisanie kolumn opisuje `Kolumny.md`.
 
 ### Tokeny
-`:root` definiuje dziewięć zmiennych szerokości: `--col-num-xs` (64 px), `--col-num-sm` (88 px), `--col-num-md` (112 px), `--col-flag` (128 px), `--col-date` (168 px), `--col-text-sm` (176 px), `--col-text-md` (192 px), `--col-text-lg` (256 px), `--col-actions` (144 px). Wartości wynikają z pomiaru minimalnej szerokości, przy której nic się nie ucina: najdłuższego słowa w nagłówku, treści listy rozwijanej, podpowiedzi w polu i etykiety przycisku. W breakpointcie `max-width: 720px` zwężają się wyłącznie kolumny liczbowe oraz `--col-text-lg`; kolumny z kontrolkami i długimi nagłówkami zostają, bo ich zawartość się nie kurczy. Jednostką jest `rem`, a nie `ch`, ponieważ `ch` zależy od fontu elementu i dawał inną wartość w `<th>` (Rajdhani 12 px) niż w `<td>` (Inter 14,5 px).
+`:root` definiuje dziesięć zmiennych szerokości: `--col-num-xs` (64 px), `--col-num-sm` (88 px), `--col-weight` (104 px), `--col-num-md` (112 px), `--col-flag` (128 px), `--col-date` (168 px), `--col-text-sm` (176 px), `--col-text-md` (192 px), `--col-text-lg` (256 px), `--col-actions` (144 px). `--col-weight` obsługuje wyłącznie kolumny `Waga1`–`Waga6` w tabelach `.admin-games-players-stats-table`: muszą pomieścić przycisk zbiorczej edycji wagi, a w widoku administratora dodatkowo checkbox ukrywania kolumny — przy `--col-num-sm` zawartość przekraczała komórkę o ok. 13 px i była ucinana przez `overflow: hidden`. Wartości wynikają z pomiaru minimalnej szerokości, przy której nic się nie ucina: najdłuższego słowa w nagłówku, treści listy rozwijanej, podpowiedzi w polu i etykiety przycisku. W breakpointcie `max-width: 720px` zwężają się wyłącznie kolumny liczbowe oraz `--col-text-lg`; kolumny z kontrolkami i długimi nagłówkami zostają, bo ich zawartość się nie kurczy. Jednostką jest `rem`, a nie `ch`, ponieważ `ch` zależy od fontu elementu i dawał inną wartość w `<th>` (Rajdhani 12 px) niż w `<td>` (Inter 14,5 px).
 
 ### Tryby tabel
 - `.admin-data-table` — `border-collapse: collapse`, `table-layout: fixed`.
@@ -234,7 +240,13 @@ Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-order-
 - Dzięki temu wewnętrzne ciemno-zielone ramki (`.admin-games-sidebar` i `.admin-games-content`) są wyrównane do 1 px od lewej i prawej krawędzi zewnętrznej zielonej karty.
 - W breakpointcie mobile (`@media (max-width: 720px)`) przyciski sekcji Strefy Gracza (`.player-zone-button`) mają zwiększony rozmiar pisma do `14px` i `letter-spacing: 0.12em`.
 - W orientacji poziomej na urządzeniach dotykowych z niską wysokością viewportu (`max-height: 500px`) layouty `.admin-games-layout` (`#adminGamesTab`, `#adminStatisticsTab`, `#statisticsTab`) przechodzą na jedną kolumnę niezależnie od szerokości, co eliminuje układ paneli „obok siebie” na mobile.
+- Lista sekcji `.player-zone-sections-list` ma `grid-auto-rows: 1fr`, a jej przyciski `min-height: var(--admin-games-panel-item-height)` przy `height: 100%`. Wcześniejsze sztywne `grid-auto-rows: var(--admin-games-panel-item-height)` (41 px) nie mieściło etykiet łamiących się na dwie linie („Gry do Potwierdzenia”, „Gry Użytkowników”) — tekst wychodził ok. 5 px poza ramkę przycisku. `1fr` wyrównuje wszystkie wiersze do najwyższego, więc lista pozostaje równa (58 px na desktopie), a nic się nie wylewa. Identyczna reguła obowiązuje w module `Second` dla przycisku „Losowanie stołów”.
 
+## Nagłówek tabeli statystyk z checkboxem widoczności kolumn
+- Nagłówek buduje `initStatisticsView`: treść komórki trafia do `<span class="stats-column-label">`, a obok dokładany jest `input.stats-column-visibility-checkbox`; oba w kontenerze `.stats-column-header`.
+- `.stats-column-label` ma `flex: 1 0 100%`, więc checkbox **zawsze** ląduje w osobnej linii pod nazwą, przy lewej krawędzi komórki (`justify-content: flex-start`). Etykieta zawija się wyłącznie między wyrazami (`overflow-wrap: normal`) — słowa nie są łamane.
+- Poprzedni układ (`justify-content: space-between`, checkbox po prawej) dosuwał kwadracik do granicy z następną kolumną. Przy zbyt wąskiej komórce checkbox wychodził poza `th` i był ucinany przez `overflow: hidden`, a nazwa sąsiedniej kolumny nachodziła na niego o ok. 4,8 px. W kolumnach `Waga1`–`Waga6` kwadracik znikał w całości, przez co **nie dało się włączyć widoczności tych kolumn dla graczy**.
+- Dodatkowo `.admin-games-players-stats-table th` ma `padding-inline: 12px` zamiast domyślnych 8 px. Po zmianach żadna komórka nagłówka nie ucina zawartości, a minimalny odstęp między checkboxem a nazwą kolejnej kolumny wynosi 68 px (pomiar w Chromium, okno 1600 px).
 
 ## PWA (Main-only)
 - `index.html` ładuje `pwa-config.js`, który publikuje manifest PWA (`manifest-any.webmanifest`) tylko wtedy, gdy adres nie zawiera `?admin=1`.
@@ -245,7 +257,7 @@ Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-order-
 - Tytuł dokumentu (`<title>`) w `index.html` ustawiono na `Poker - rozgrywki`.
 - Manifest PWA ustawia nazwę instalowanej aplikacji na `Poker - rozgrywki` (`short_name`: `Poker`).
 - `start_url` w manifeście jest relatywny (`./index.html?...`), a `scope` ustawiony na `./`, co zapobiega błędom 404 dla hostingu pod prefiksem repozytorium.
-- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-09-08.3`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
+- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-09-14.1`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
 
 - W `initAdminCalculator` każdy wiersz rebuy (`table2Rows` i `table9Rows`) przechowuje parę `rebuys[]` + `rebuyIndexes[]`; dodawanie rebuy nadaje globalny numer `max+1` dla całego aktywnego trybu, a usunięcie rebuy wykonuje globalną kompaktację indeksów bez luk.
 - Tabela5 buduje kolumny `RebuyX` i mapowanie wartości po posortowanych `rebuyIndexes`, zamiast po samym `flatMap` kolejności graczy, dzięki czemu semantyka numeru `RebuyX` pozostaje spójna po dodawaniu/usuwaniu kolumn u różnych graczy.
@@ -279,6 +291,48 @@ Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-order-
 - `getGamesForStatistics` zwraca `getGamesForSelectedYear().filter((game) => Boolean(game.isClosed))` i jest jedynym źródłem gier dla `getPlayersStatistics`. Dzięki temu filtr obejmuje **wyłącznie agregaty**: tabelę statystyk, ranking oraz pozycje `Gry zaliczone do statystyk` i `Łączna pula`.
 - Filtr **nie obejmuje** tabeli gier, panelu `Lata` ani podsumowań pod tabelą — inaczej gra znikałaby z listy w momencie odznaczenia checkboxa i nie dałoby się jej ponownie zaznaczyć.
 - W zakładce `Gry użytkowników` zaznaczenie `isClosed` dodatkowo wyzwala eksport gry do kolekcji gier admina (patrz sekcja o imporcie).
+- Ten sam filtr obowiązuje w zakładce `Ranking graczy`, tyle że po stronie kolekcji `UserGames`. Gra wchodzi do rankingu, gdy ma `isClosed === true` w `UserGames`; odznaczenie natychmiast ją wyklucza, bo agregat liczony jest na żywo (nie ma migawki podsumowania).
+
+## Zakładka „Ranking graczy” (`initRankingViews`)
+- Zakładka jest czwartym i piątym wywołaniem tego samego silnika co „Statystyki” — funkcji `initStatisticsView`. Logika liczenia (`getPlayersStatistics`, `buildRankingRowsFromStatistics`, render tabel, eksport XLSX) nie jest duplikowana.
+- `initStatisticsView` przyjmuje parametry rozdzielające obie zakładki:
+
+| Parametr | „Statystyki” | „Ranking graczy” |
+|---|---|---|
+| `gamesCollectionName` | `getGamesCollectionName()` → `Tables` | `getUserGamesCollectionName()` → `UserGames` |
+| `statsConfigCollectionName` | `admin_games_stats` | `user_games_stats` |
+| `getVerifiedPlayer` | `getStatisticsVerifiedPlayer` | `getRankingVerifiedPlayer` |
+| `permissionKey` | `statsTab` | `rankingTab` |
+| `yearsAccessField` | `statsYearsAccess` | `rankingYearsAccess` |
+| `accessUpdatedEvent` | `statistics-access-updated` | `ranking-access-updated` |
+| `exportLabel` | `Statystyki` | `Ranking` |
+| `countedGamesLabel` | `Gry zaliczone do statystyk` | `Gry zaliczone do rankingu` |
+
+- Pozostałe parametry (`emptyDataText`, `noYearsAdminText`, `noAssignedYearsText`, `noAvailableYearsText`) zmieniają wyłącznie komunikaty tekstowe.
+- Kontenery DOM administratora: `#adminRankingTab`, `#adminRankingYearsList`, `#adminRankingStatsBody`, `#adminRankingPlayersStatsBody`, `#adminRankingRankingBody`, `#adminRankingStatus`, `#adminRankingExport`, przyciski wag `.admin-ranking-weight-bulk-button`.
+- Kontenery DOM gracza: `#rankingTab`, `#rankingPinGate`, `#rankingContent`, `#rankingYearsList`, `#rankingStatsBody`, `#rankingPlayersStatsBody`, `#rankingRankingBody`, `#rankingStatus`, `#rankingExport`.
+- Klucze wybranego roku w `localStorage`: `adminRankingSelectedYear`, `userRankingSelectedYear`.
+- Cykl życia danych: gracz zamyka grę w `UserGames` → gra natychmiast wchodzi do „Rankingu graczy”; równolegle `importUserGameToAdminGames` tworzy kopię w `Tables` z `isClosed: false`, więc do „Statystyk” trafia dopiero po ręcznym zaznaczeniu `CzyZamknięta` przez administratora. Obie zakładki mogą więc pokazywać różne liczby i jest to zachowanie zamierzone.
+
+## Bramki PIN sekcji Strefy Gracza (`createPlayerZoneSectionGate`)
+- Fabryka `createPlayerZoneSectionGate({ gateSelector, contentSelector, inputSelector, submitSelector, statusSelector, permissionKey, accessUpdatedEvent, getPinGateState, setPinGateState, setVerifiedPlayerId, getVerifiedPlayer, deniedText })` zwraca `{ init, updateVisibility, synchronizeAccessState }` i odtwarza zachowanie znane z `initStatisticsTab`.
+- Używają jej dwie nowe sekcje: `rankingSectionGate` (uprawnienie `rankingTab`, zdarzenie `ranking-access-updated`) i `rulesSectionGate` (uprawnienie `rulesTab`, zdarzenie `rules-access-updated`).
+- Stan sesji w `sessionStorage`: `rankingPinVerified` / `rankingPlayerId` oraz `rulesPinVerified` / `rulesPlayerId`.
+- `initSharedPlayerAccess` po każdym snapshocie listy graczy woła `synchronizeStatisticsAccessState()`, `synchronizeRankingAccessState()` i `synchronizeRulesAccessState()` oraz emituje trzy zdarzenia dostępu, dzięki czemu cofnięcie uprawnienia natychmiast zamyka otwartą sekcję.
+
+## Przeniesienie „Regulaminu” do Strefy Gracza
+- `#rulesTab` nie jest już panelem najwyższego poziomu (`.tab-panel`), tylko sekcją Strefy Gracza (`.player-zone-panel`), ustawioną jako **pierwsza** pozycja listy `#playerZoneSectionsList`.
+- Górny pasek widoku użytkownika ma teraz dwie zakładki: `updatesTab` i `playerZoneTab`.
+- `rulesTab` jest pełnoprawnym uprawnieniem: występuje w `AVAILABLE_PLAYER_TABS` i w `PLAYER_ZONE_SECTION_PERMISSION_MAP`, więc podlega tym samym regułom co pozostałe sekcje.
+- **Skutek dostępowy:** regulamin przestał być treścią publiczną. Do odczytu wymaga PIN-u do Strefy Gracza, PIN-u sekcji oraz uprawnienia `rulesTab`.
+- Handler `#userPanelRefresh` obsługuje regulamin w gałęzi sekcji Strefy Gracza (`activeZoneTabId === "rulesTab"`), a nie w gałęzi zakładek najwyższego poziomu; dodano też gałąź `rankingTab` wołającą `synchronizeRankingAccessState()`.
+- `initRulesDisplay` pozostaje bez zmian — nadal zasila `#rulesOutput` i `#rulesStatus`, które przeniesiono razem z panelem.
+
+## Potwierdzenie usunięcia gry użytkownika (`confirmUserGameDeletion`)
+- Funkcja zwraca wynik `window.confirm` z nazwą i datą gry oraz ostrzeżeniem, że kasowanie obejmuje skład i potwierdzenia i jest nieodwracalne.
+- Gdy gra ma ustawione `exportedToAdminGameId`, komunikat dopisuje informację, że kopia w „Gry admina” pozostanie i nadal będzie liczona do statystyk.
+- Wywoływana w handlerze przycisku `Usuń` w `initUserGamesManager`, po sprawdzeniu `hasWriteAccessToGame(game)` i **przed** jakimkolwiek odczytem subkolekcji — anulowanie nie generuje żadnego ruchu do Firestore.
+- Pozostałe przyciski `Usuń` (zakładki `Gry admina`, `Gracze`, `Czat`) nie mają potwierdzenia — zakres świadomie ograniczony do zakładki `Gry użytkowników`.
 
 ## Aktualizacja techniczna: RebuyX i mobilna klawiatura
 - `Main/app.js`: w modalu rebuy kalkulatora każde pole `RebuyX` korzysta z `applyIntegerInputHints` (`type=text`, `inputmode=numeric`, `pattern=[0-9]*`) i sanitizacji cyfr.
@@ -326,7 +380,7 @@ Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-order-
 - Zakładka `#adminBackupTab` istnieje wyłącznie w module Main, ale obejmuje dane **obu** modułów. Zawiera przyciski `#adminBackupExport` i `#adminBackupImport`, ukryte `#adminBackupFileInput`, status `#adminBackupStatus`, informacje o ostatnim użyciu (`#adminBackupExportInfo`, `#adminBackupImportInfo`) oraz pole `#adminBackupInstructions` (`readonly`) wypełniane stałą `BACKUP_INSTRUCTIONS_TEXT`.
 
 ### Zakres kopii
-- `BACKUP_COLLECTION_SCHEMA` to deklaratywne drzewo kolekcji odwzorowujące zestaw reguł Firestore projektu: kolekcje modułu Main, `Nekrolog_*` oraz `second_*`, wraz z podkolekcjami (`rows`, `confirmations`, a dla kalkulatorów `definitions`, `placeholders`, `sessions` z `variables`, `calculationFlags`, `tables/rows` i `snapshots`).
+- `BACKUP_COLLECTION_SCHEMA` to deklaratywne drzewo kolekcji odwzorowujące zestaw reguł Firestore projektu: kolekcje modułu Main (w tym `admin_games_stats` i `user_games_stats`), `Nekrolog_*` oraz `second_*`, wraz z podkolekcjami (`rows`, `confirmations`, a dla kalkulatorów `definitions`, `placeholders`, `sessions` z `variables`, `calculationFlags`, `tables/rows` i `snapshots`).
 - Biblioteka kliencka Firestore nie potrafi wylistować kolekcji ani podkolekcji, dlatego drzewo musi być utrzymywane ręcznie. **Nowa kolekcja niedopisana do `BACKUP_COLLECTION_SCHEMA` nie trafi do kopii.** Po wykonaniu kopii status podaje liczbę dokumentów, co pozwala zauważyć brak.
 - `collectBackupDocuments` przechodzi drzewo rekurencyjnie i zapisuje dokumenty jako płaską listę `{ path, data }`, gdzie `path` jest pełną ścieżką Firestore. Dzięki temu przywracanie sprowadza się do `db.doc(path).set(data)` i obsługuje dowolne zagnieżdżenie.
 

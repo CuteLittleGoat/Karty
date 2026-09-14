@@ -48,7 +48,9 @@
      Jednostka rem (nie ch), bo ch zależy od fontu elementu i daje inną
      wartość w <th> (Rajdhani 12px) niż w <td> (Inter 14.5px). */
   --col-num-xs: 4rem;      /*  64px  LP, Nr, %, (+/-)                    */
-  --col-num-sm: 5.5rem;    /*  88px  krótkie liczby, wagi, liczba miejsc */
+  --col-num-sm: 5.5rem;    /*  88px  krótkie liczby, liczba miejsc       */
+  --col-weight: 6.5rem;    /* 104px  kolumny Waga1-6: przycisk zbiorczy  */
+                           /*        + checkbox ukrywania kolumny        */
   --col-num-md: 7rem;      /* 112px  kwoty, stack, wynik, pot            */
   --col-flag: 8rem;        /* 128px  checkbox z długim nagłówkiem        */
   --col-date: 10.5rem;     /* 168px  pole daty (natywny kalendarz)       */
@@ -906,16 +908,42 @@ select:disabled,
 }
 
 
+/* Nagłówek z checkboxem ukrywania kolumny. Napis dostaje własny element,
+   żeby mógł się zawijać i kurczyć — bez tego długa nazwa wypychała checkbox
+   poza komórkę (th ma overflow: hidden), więc kwadracik był ucinany i wchodził
+   na nazwę sąsiedniej kolumny. */
+/* Checkbox ukrywania kolumny stoi zawsze w osobnej linii pod nazwą, przy lewej
+   krawędzi komórki. Wcześniej siedział po prawej stronie (space-between), czyli
+   tuż przy granicy z następną kolumną — i przy zbyt wąskiej komórce wychodził
+   poza nią, wchodząc na nazwę sąsiada i znikając pod overflow: hidden. */
 .stats-column-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  min-width: 0;
+}
+
+/* Nazwa zajmuje pełną szerokość komórki (przez co checkbox zawsze przechodzi
+   niżej) i zawija się wyłącznie między wyrazami — bez łamania słów. */
+.stats-column-label {
+  flex: 1 0 100%;
+  min-width: 0;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .stats-column-visibility-checkbox {
+  flex: 0 0 auto;
   width: 16px;
   height: 16px;
+}
+
+/* Odstęp między kolumnami tabeli statystyk większy niż domyślne 8px,
+   żeby checkbox jednej kolumny nie stykał się z nazwą następnej. */
+.admin-games-players-stats-table th {
+  padding-inline: 12px;
 }
 
 .admin-games-ranking-table {
@@ -1427,8 +1455,18 @@ body:not(.is-admin) .user-card::before {
   display: grid;
 }
 
+/* Wysokość wiersza dobiera się do najwyższego przycisku, a 1fr wyrównuje
+   wszystkie do tej samej wartości. Sztywne --admin-games-panel-item-height
+   nie mieściło dwuliniowych nazw („Gry do Potwierdzenia", „Gry Użytkowników"),
+   przez co tekst wychodził poza ramkę przycisku. */
 .player-zone-sections-list {
   width: 100%;
+  grid-auto-rows: 1fr;
+}
+
+.player-zone-sections-list .admin-games-year-button {
+  min-height: var(--admin-games-panel-item-height);
+  height: 100%;
 }
 
 body:not(.is-admin) .player-zone-layout {

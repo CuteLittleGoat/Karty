@@ -60,6 +60,10 @@ const USER_GAMES_PIN_STORAGE_KEY = "userGamesPinVerified";
 const USER_GAMES_PLAYER_ID_STORAGE_KEY = "userGamesPlayerId";
 const STATISTICS_PIN_STORAGE_KEY = "statisticsPinVerified";
 const STATISTICS_PLAYER_ID_STORAGE_KEY = "statisticsPlayerId";
+const RANKING_PIN_STORAGE_KEY = "rankingPinVerified";
+const RANKING_PLAYER_ID_STORAGE_KEY = "rankingPlayerId";
+const RULES_PIN_STORAGE_KEY = "rulesPinVerified";
+const RULES_PLAYER_ID_STORAGE_KEY = "rulesPlayerId";
 const PLAYER_ZONE_PIN_STORAGE_KEY = "playerZonePinVerified";
 const PLAYER_ZONE_PLAYER_ID_STORAGE_KEY = "playerZonePlayerId";
 const PLAYER_ACCESS_UPDATED_EVENT = "player-access-updated";
@@ -119,6 +123,10 @@ const AVAILABLE_PLAYER_TABS = [
     label: "Strefa Gracza"
   },
   {
+    key: "rulesTab",
+    label: "Regulamin"
+  },
+  {
     key: "nextGameTab",
     label: "Najbliższa gra"
   },
@@ -138,15 +146,21 @@ const AVAILABLE_PLAYER_TABS = [
     key: "statsTab",
     label: "Statystyki"
   },
+  {
+    key: "rankingTab",
+    label: "Ranking graczy"
+  },
 ];
 
 
 const PLAYER_ZONE_SECTION_PERMISSION_MAP = {
+  rulesTab: "rulesTab",
   nextGameTab: "nextGameTab",
   chatTab: "chatTab",
   confirmationsTab: "confirmationsTab",
   userGamesTab: "userGamesTab",
-  statsTab: "statsTab"
+  statsTab: "statsTab",
+  rankingTab: "rankingTab"
 };
 
 const CHAT_COLLECTION = "chat_messages";
@@ -161,6 +175,10 @@ const USER_GAMES_COLLECTION_CONFIG_KEY = "userGamesCollection";
 const TABLE_ROWS_COLLECTION = "rows";
 const GAME_CONFIRMATIONS_COLLECTION = "confirmations";
 const ADMIN_GAMES_STATS_COLLECTION = "admin_games_stats";
+/* Wagi i widoczność kolumn dla zakładki „Ranking graczy”. Osobna kolekcja od
+   admin_games_stats, bo Ranking liczy z UserGames i ma własne ustawienia —
+   zmiana wagi w Rankingu nie może ruszać Statystyk (i odwrotnie). */
+const USER_GAMES_STATS_COLLECTION = "user_games_stats";
 const DEFAULT_TABLE_META = {
   gameType: "rodzaj gry",
   gameDate: "data"
@@ -345,6 +363,8 @@ const ADMIN_USER_GAMES_SELECTED_YEAR_STORAGE_KEY = "adminUserGamesSelectedYear";
 const USER_GAMES_SELECTED_YEAR_STORAGE_KEY = "userGamesSelectedYear";
 const ADMIN_STATISTICS_SELECTED_YEAR_STORAGE_KEY = "adminStatisticsSelectedYear";
 const USER_STATISTICS_SELECTED_YEAR_STORAGE_KEY = "userStatisticsSelectedYear";
+const ADMIN_RANKING_SELECTED_YEAR_STORAGE_KEY = "adminRankingSelectedYear";
+const USER_RANKING_SELECTED_YEAR_STORAGE_KEY = "userRankingSelectedYear";
 
 const getDateSortValue = (value) => {
   if (typeof value !== "string") {
@@ -1627,6 +1647,50 @@ const getStatisticsVerifiedPlayer = () => {
   return adminPlayersState.players.find((player) => player.id === playerId) ?? null;
 };
 
+const getRankingPinGateState = () => sessionStorage.getItem(RANKING_PIN_STORAGE_KEY) === "1";
+
+const setRankingPinGateState = (isVerified) => {
+  sessionStorage.setItem(RANKING_PIN_STORAGE_KEY, isVerified ? "1" : "0");
+};
+
+const setRankingVerifiedPlayerId = (playerId) => {
+  if (playerId) {
+    sessionStorage.setItem(RANKING_PLAYER_ID_STORAGE_KEY, playerId);
+    return;
+  }
+  sessionStorage.removeItem(RANKING_PLAYER_ID_STORAGE_KEY);
+};
+
+const getRankingVerifiedPlayer = () => {
+  const playerId = sessionStorage.getItem(RANKING_PLAYER_ID_STORAGE_KEY);
+  if (!playerId) {
+    return null;
+  }
+  return adminPlayersState.players.find((player) => player.id === playerId) ?? null;
+};
+
+const getRulesPinGateState = () => sessionStorage.getItem(RULES_PIN_STORAGE_KEY) === "1";
+
+const setRulesPinGateState = (isVerified) => {
+  sessionStorage.setItem(RULES_PIN_STORAGE_KEY, isVerified ? "1" : "0");
+};
+
+const setRulesVerifiedPlayerId = (playerId) => {
+  if (playerId) {
+    sessionStorage.setItem(RULES_PLAYER_ID_STORAGE_KEY, playerId);
+    return;
+  }
+  sessionStorage.removeItem(RULES_PLAYER_ID_STORAGE_KEY);
+};
+
+const getRulesVerifiedPlayer = () => {
+  const playerId = sessionStorage.getItem(RULES_PLAYER_ID_STORAGE_KEY);
+  if (!playerId) {
+    return null;
+  }
+  return adminPlayersState.players.find((player) => player.id === playerId) ?? null;
+};
+
 const getPlayerZonePinGateState = () => sessionStorage.getItem(PLAYER_ZONE_PIN_STORAGE_KEY) === "1";
 
 const setPlayerZonePinGateState = (isVerified) => {
@@ -1942,6 +2006,25 @@ const importUserGameToAdminGames = async ({
   } finally {
     pendingUserGameImports.delete(gameId);
   }
+};
+
+/* Potwierdzenie przed usunięciem gry z zakładki „Gry użytkowników”.
+   Kasowanie jest kaskadowe (skład + potwierdzenia + sama gra) i nieodwracalne,
+   więc pytanie wymienia wprost, co zniknie. Gdy gra została już zaimportowana
+   do „Gry admina”, kopia tam zostaje — o tym też trzeba uprzedzić. */
+const confirmUserGameDeletion = (game) => {
+  const gameName = typeof game?.name === "string" && game.name.trim() ? game.name.trim() : "bez nazwy";
+  const gameDate = typeof game?.gameDate === "string" && game.gameDate.trim() ? game.gameDate.trim() : "bez daty";
+  const hasAdminCopy = Boolean(game?.exportedToAdminGameId);
+  const adminCopyNote = hasAdminCopy
+    ? "\n\nKopia tej gry w zakładce „Gry admina” pozostanie i nadal będzie liczona do statystyk."
+    : "";
+
+  return window.confirm(
+    `Czy na pewno usunąć grę „${gameName}” z dnia ${gameDate}?\n\n`
+    + "Skasowane zostaną także wyniki wszystkich graczy i ich potwierdzenia. "
+    + `Tej operacji nie można cofnąć.${adminCopyNote}`
+  );
 };
 
 const getUniquePlayersFromRows = (rows = []) => {
@@ -3078,6 +3161,132 @@ const initStatisticsTab = () => {
   synchronizeStatisticsAccessState();
 };
 
+/* Bramka PIN sekcji Strefy Gracza. „Ranking graczy” i „Regulamin” działają
+   dokładnie tak jak pozostałe sekcje (Statystyki, Czat, Gry użytkowników):
+   własny PIN, własne uprawnienie, własny stan w sessionStorage. */
+const createPlayerZoneSectionGate = ({
+  gateSelector,
+  contentSelector,
+  inputSelector,
+  submitSelector,
+  statusSelector,
+  permissionKey,
+  accessUpdatedEvent,
+  getPinGateState,
+  setPinGateState,
+  setVerifiedPlayerId,
+  getVerifiedPlayer,
+  deniedText
+}) => {
+  const updateVisibility = () => {
+    const gate = document.querySelector(gateSelector);
+    const content = document.querySelector(contentSelector);
+    if (!gate || !content) {
+      return;
+    }
+    const isVerified = getPinGateState();
+    gate.style.display = isVerified ? "none" : "block";
+    content.classList.toggle("is-visible", isVerified);
+  };
+
+  const synchronizeAccessState = () => {
+    if (!getPinGateState()) {
+      updateVisibility();
+      return;
+    }
+
+    const verifiedPlayer = getVerifiedPlayer();
+    if (!verifiedPlayer || !isPlayerAllowedForTab(verifiedPlayer, permissionKey)) {
+      setPinGateState(false);
+      setVerifiedPlayerId("");
+    }
+
+    updateVisibility();
+    window.dispatchEvent(new CustomEvent(accessUpdatedEvent));
+  };
+
+  const init = () => {
+    const input = document.querySelector(inputSelector);
+    const submitButton = document.querySelector(submitSelector);
+    const pinStatus = document.querySelector(statusSelector);
+
+    if (!input || !submitButton || !pinStatus) {
+      return;
+    }
+
+    const verifyPin = () => {
+      const pinValue = sanitizePin(input.value);
+      if (!isPinValid(pinValue)) {
+        pinStatus.textContent = "Wpisz komplet 5 cyfr.";
+        return;
+      }
+
+      const player = adminPlayersState.playerByPin.get(pinValue);
+      if (player && isPlayerAllowedForTab(player, permissionKey)) {
+        setPinGateState(true);
+        setVerifiedPlayerId(player.id);
+        pinStatus.textContent = `PIN poprawny. Witaj ${player.name || "graczu"}.`;
+        updateVisibility();
+        window.dispatchEvent(new CustomEvent(accessUpdatedEvent));
+        return;
+      }
+
+      pinStatus.textContent = deniedText;
+    };
+
+    input.addEventListener("input", () => {
+      input.value = sanitizePin(input.value);
+    });
+
+    submitButton.addEventListener("click", verifyPin);
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        verifyPin();
+      }
+    });
+
+    updateVisibility();
+    synchronizeAccessState();
+  };
+
+  return { init, updateVisibility, synchronizeAccessState };
+};
+
+const rankingSectionGate = createPlayerZoneSectionGate({
+  gateSelector: "#rankingPinGate",
+  contentSelector: "#rankingContent",
+  inputSelector: "#rankingPinInput",
+  submitSelector: "#rankingPinSubmit",
+  statusSelector: "#rankingPinStatus",
+  permissionKey: "rankingTab",
+  accessUpdatedEvent: "ranking-access-updated",
+  getPinGateState: getRankingPinGateState,
+  setPinGateState: setRankingPinGateState,
+  setVerifiedPlayerId: setRankingVerifiedPlayerId,
+  getVerifiedPlayer: getRankingVerifiedPlayer,
+  deniedText: "Błędny PIN lub brak uprawnień do zakładki „Ranking graczy”."
+});
+
+const rulesSectionGate = createPlayerZoneSectionGate({
+  gateSelector: "#rulesPinGate",
+  contentSelector: "#rulesContent",
+  inputSelector: "#rulesPinInput",
+  submitSelector: "#rulesPinSubmit",
+  statusSelector: "#rulesPinStatus",
+  permissionKey: "rulesTab",
+  accessUpdatedEvent: "rules-access-updated",
+  getPinGateState: getRulesPinGateState,
+  setPinGateState: setRulesPinGateState,
+  setVerifiedPlayerId: setRulesVerifiedPlayerId,
+  getVerifiedPlayer: getRulesVerifiedPlayer,
+  deniedText: "Błędny PIN lub brak uprawnień do zakładki „Regulamin”."
+});
+
+const synchronizeRankingAccessState = () => rankingSectionGate.synchronizeAccessState();
+const synchronizeRulesAccessState = () => rulesSectionGate.synchronizeAccessState();
+const initRankingTab = () => rankingSectionGate.init();
+const initRulesTab = () => rulesSectionGate.init();
+
 const initUserGamesManager = ({
   yearsListSelector,
   addGameButtonSelector,
@@ -3737,6 +3946,7 @@ const initUserGamesManager = ({
       deleteButton.disabled = !writeEnabled;
       deleteButton.addEventListener("click", async () => {
         if (!hasWriteAccessToGame(game)) return;
+        if (!confirmUserGameDeletion(game)) return;
         const gameRef = db.collection(gamesCollectionName).doc(game.id);
         const detailsSnapshot = await gameRef.collection(gameDetailsCollectionName).get();
         const confirmationsSnapshot = await gameRef.collection(GAME_CONFIRMATIONS_COLLECTION).get();
@@ -4560,7 +4770,12 @@ const initUserTabs = () => {
           return;
         }
 
-        if (activeTabId === "rulesTab") {
+        if (activeTabId !== "playerZoneTab") {
+          setUserRefreshStatus("Ta zakładka nie ma danych do odświeżenia.");
+          return;
+        }
+
+        if (activeZoneTabId === "rulesTab") {
           const firebaseApp = getFirebaseApp();
           if (!firebaseApp) {
             setUserRefreshStatus("Brak połączenia z Firebase.");
@@ -4568,11 +4783,6 @@ const initUserTabs = () => {
           }
           await firebaseApp.firestore().collection(PLAYER_ACCESS_COLLECTION).doc(RULES_DOCUMENT).get({ source: "server" });
           setUserRefreshStatus("Regulamin został odświeżony.");
-          return;
-        }
-
-        if (activeTabId !== "playerZoneTab") {
-          setUserRefreshStatus("Ta zakładka nie ma danych do odświeżenia.");
           return;
         }
 
@@ -4585,6 +4795,12 @@ const initUserTabs = () => {
         if (activeZoneTabId === "statsTab") {
           synchronizeStatisticsAccessState();
           setUserRefreshStatus("Statystyki zostały odświeżone.");
+          return;
+        }
+
+        if (activeZoneTabId === "rankingTab") {
+          synchronizeRankingAccessState();
+          setUserRefreshStatus("Ranking został odświeżony.");
           return;
         }
 
@@ -4659,7 +4875,8 @@ const normalizePlayerRecord = (player, index) => ({
         AVAILABLE_PLAYER_TABS.some((availableTab) => availableTab.key === permission)
       )
     : [],
-  statsYearsAccess: normalizeStatsYearsAccess(player.statsYearsAccess)
+  statsYearsAccess: normalizeStatsYearsAccess(player.statsYearsAccess),
+  rankingYearsAccess: normalizeStatsYearsAccess(player.rankingYearsAccess)
 });
 
 const rebuildAdminPlayersPinMap = () => {
@@ -4694,18 +4911,25 @@ const initSharedPlayerAccess = () => {
       adminPlayersState.players = rawPlayers.map(normalizePlayerRecord);
       rebuildAdminPlayersPinMap();
       synchronizeStatisticsAccessState();
+      synchronizeRankingAccessState();
+      synchronizeRulesAccessState();
       window.dispatchEvent(new CustomEvent(PLAYER_ACCESS_UPDATED_EVENT));
       window.dispatchEvent(new CustomEvent("statistics-access-updated"));
+      window.dispatchEvent(new CustomEvent("ranking-access-updated"));
+      window.dispatchEvent(new CustomEvent("rules-access-updated"));
     });
 };
 
-const getAllowedStatisticsYearsForPlayer = (player, availableYears) => {
+/* Lata widoczne dla gracza w danej zakładce. „Statystyki” i „Ranking graczy”
+   mają rozłączne listy lat (statsYearsAccess / rankingYearsAccess), więc ta
+   sama funkcja obsługuje obie — różni je klucz uprawnienia i nazwa pola. */
+const getAllowedYearsForPlayerTab = (player, availableYears, permissionKey, yearsAccessField) => {
   const sourceYears = normalizeYearList(availableYears);
-  if (!player || !isPlayerAllowedForTab(player, "statsTab")) {
+  if (!player || !isPlayerAllowedForTab(player, permissionKey)) {
     return [];
   }
 
-  const allowedYears = normalizeStatsYearsAccess(player.statsYearsAccess);
+  const allowedYears = normalizeStatsYearsAccess(player?.[yearsAccessField]);
   if (!allowedYears.length) {
     return [];
   }
@@ -4713,6 +4937,9 @@ const getAllowedStatisticsYearsForPlayer = (player, availableYears) => {
   const allowedSet = new Set(allowedYears);
   return sourceYears.filter((year) => allowedSet.has(year));
 };
+
+const getAllowedStatisticsYearsForPlayer = (player, availableYears) =>
+  getAllowedYearsForPlayerTab(player, availableYears, "statsTab", "statsYearsAccess");
 
 const loadSavedSelectedGamesYear = (storageKey = ADMIN_GAMES_SELECTED_YEAR_STORAGE_KEY) => {
   const rawValue = Number(localStorage.getItem(storageKey));
@@ -6639,6 +6866,8 @@ const initAdminPlayers = () => {
   const yearsModal = document.querySelector("#playerStatsYearsModal");
   const yearsModalList = document.querySelector("#playerStatsYearsList");
   const yearsModalStatus = document.querySelector("#playerStatsYearsStatus");
+  const yearsModalTitle = document.querySelector("#playerStatsYearsTitle");
+  const yearsModalDescription = document.querySelector("#playerStatsYearsDescription");
   const yearsModalCloseButton = document.querySelector("#playerStatsYearsClose");
 
   if (!body || !status || !summary || !addButton || !modal || !modalList || !modalStatus) {
@@ -6655,6 +6884,28 @@ const initAdminPlayers = () => {
   const db = firebaseApp.firestore();
 
   let availableStatisticsYears = [];
+  let availableRankingYears = [];
+  /* Okno „Lata” obsługuje dwie zakładki. „Statystyki” czerpią lata z gier
+     administratora, „Ranking graczy” z gier użytkowników, a każda zakładka
+     trzyma swoją listę dozwolonych lat w osobnym polu gracza. */
+  const YEARS_MODAL_CONFIG = {
+    statsTab: {
+      field: "statsYearsAccess",
+      title: "Lata statystyk",
+      description: "Zaznacz lata, które gracz może zobaczyć w zakładce „Statystyki”.",
+      emptyText: "Brak dostępnych lat statystyk. Dodaj gry, aby lata pojawiły się automatycznie.",
+      getYears: () => availableStatisticsYears
+    },
+    rankingTab: {
+      field: "rankingYearsAccess",
+      title: "Lata rankingu",
+      description: "Zaznacz lata, które gracz może zobaczyć w zakładce „Ranking graczy”.",
+      emptyText: "Brak dostępnych lat rankingu. Dodaj gry użytkowników, aby lata pojawiły się automatycznie.",
+      getYears: () => availableRankingYears
+    }
+  };
+  let yearsModalTabKey = "statsTab";
+  const getYearsModalConfig = () => YEARS_MODAL_CONFIG[yearsModalTabKey] ?? YEARS_MODAL_CONFIG.statsTab;
 
   const getPinOwnerId = (pin, excludedId) => {
     if (!pin) {
@@ -6714,9 +6965,17 @@ const initAdminPlayers = () => {
     document.body.classList.remove("modal-open");
   };
 
-  const openYearsModal = () => {
+  const openYearsModal = (tabKey = "statsTab") => {
     if (!yearsModal) {
       return;
+    }
+    yearsModalTabKey = YEARS_MODAL_CONFIG[tabKey] ? tabKey : "statsTab";
+    const config = getYearsModalConfig();
+    if (yearsModalTitle) {
+      yearsModalTitle.textContent = config.title;
+    }
+    if (yearsModalDescription) {
+      yearsModalDescription.textContent = config.description;
     }
     yearsModal.classList.add("is-visible");
     yearsModal.setAttribute("aria-hidden", "false");
@@ -6785,14 +7044,16 @@ const initAdminPlayers = () => {
       return;
     }
 
-    if (!availableStatisticsYears.length) {
-      yearsModalStatus.textContent = "Brak dostępnych lat statystyk. Dodaj gry, aby lata pojawiły się automatycznie.";
+    const config = getYearsModalConfig();
+    const modalYears = config.getYears();
+    if (!modalYears.length) {
+      yearsModalStatus.textContent = config.emptyText;
       return;
     }
 
     yearsModalStatus.textContent = "";
-    const selectedSet = new Set(normalizeStatsYearsAccess(player.statsYearsAccess));
-    availableStatisticsYears.forEach((year) => {
+    const selectedSet = new Set(normalizeStatsYearsAccess(player[config.field]));
+    modalYears.forEach((year) => {
       const label = document.createElement("label");
       label.className = "permissions-item";
 
@@ -6804,13 +7065,13 @@ const initAdminPlayers = () => {
         if (!targetPlayer) {
           return;
         }
-        const nextSet = new Set(normalizeStatsYearsAccess(targetPlayer.statsYearsAccess));
+        const nextSet = new Set(normalizeStatsYearsAccess(targetPlayer[config.field]));
         if (checkbox.checked) {
           nextSet.add(year);
         } else {
           nextSet.delete(year);
         }
-        targetPlayer.statsYearsAccess = normalizeStatsYearsAccess(Array.from(nextSet));
+        targetPlayer[config.field] = normalizeStatsYearsAccess(Array.from(nextSet));
         renderPermissions();
         void savePlayers();
       });
@@ -6847,8 +7108,9 @@ const initAdminPlayers = () => {
           targetPlayer.permissions = Array.from(new Set([...targetPlayer.permissions, tab.key]));
         } else {
           targetPlayer.permissions = targetPlayer.permissions.filter((permission) => permission !== tab.key);
-          if (tab.key === "statsTab") {
-            targetPlayer.statsYearsAccess = [];
+          const yearsConfig = YEARS_MODAL_CONFIG[tab.key];
+          if (yearsConfig) {
+            targetPlayer[yearsConfig.field] = [];
             closeYearsModal();
           }
         }
@@ -6863,14 +7125,14 @@ const initAdminPlayers = () => {
       label.appendChild(checkbox);
       label.appendChild(text);
 
-      if (tab.key === "statsTab") {
+      if (YEARS_MODAL_CONFIG[tab.key]) {
         const yearsButton = document.createElement("button");
         yearsButton.type = "button";
         yearsButton.className = "secondary permissions-years-button";
         yearsButton.textContent = "Lata";
         yearsButton.disabled = !checkbox.checked;
         yearsButton.addEventListener("click", () => {
-          openYearsModal();
+          openYearsModal(tab.key);
           renderStatsYearsPermissions();
         });
         label.appendChild(yearsButton);
@@ -6976,9 +7238,10 @@ const initAdminPlayers = () => {
           const tab = AVAILABLE_PLAYER_TABS.find((entry) => entry.key === permission);
           const badge = document.createElement("span");
           badge.className = "permission-badge";
-          if (permission === "statsTab") {
-            const yearsCount = normalizeStatsYearsAccess(player.statsYearsAccess).length;
-            badge.textContent = `${tab ? tab.label : permission}${yearsCount ? ` (${yearsCount} lat)` : " (0 lat)"}`;
+          const yearsConfig = YEARS_MODAL_CONFIG[permission];
+          if (yearsConfig) {
+            const yearsCount = normalizeStatsYearsAccess(player[yearsConfig.field]).length;
+            badge.textContent = `${tab ? tab.label : permission} (${yearsCount} lat)`;
           } else {
             badge.textContent = tab ? tab.label : permission;
           }
@@ -7068,17 +7331,27 @@ const initAdminPlayers = () => {
       }
     );
 
-  const gamesCollectionName = getGamesCollectionName();
-  db.collection(gamesCollectionName).orderBy("createdAt", "asc").onSnapshot((snapshot) => {
-    const years = normalizeYearList(
-      snapshot.docs
-        .map((doc) => extractYearFromDate(doc.data()?.gameDate))
-        .filter((year) => Number.isInteger(year))
-    );
-    availableStatisticsYears = years;
+  const collectYearsFromSnapshot = (snapshot) => normalizeYearList(
+    snapshot.docs
+      .map((doc) => extractYearFromDate(doc.data()?.gameDate))
+      .filter((year) => Number.isInteger(year))
+  );
+
+  const refreshOpenYearsModal = () => {
     if (yearsModal?.classList.contains("is-visible")) {
       renderStatsYearsPermissions();
     }
+  };
+
+  const gamesCollectionName = getGamesCollectionName();
+  db.collection(gamesCollectionName).orderBy("createdAt", "asc").onSnapshot((snapshot) => {
+    availableStatisticsYears = collectYearsFromSnapshot(snapshot);
+    refreshOpenYearsModal();
+  });
+
+  db.collection(getUserGamesCollectionName()).orderBy("createdAt", "asc").onSnapshot((snapshot) => {
+    availableRankingYears = collectYearsFromSnapshot(snapshot);
+    refreshOpenYearsModal();
   });
 
   if (yearsModalCloseButton) {
@@ -7270,6 +7543,10 @@ const initAdminChat = () => {
   });
 };
 
+/* Wspólny silnik zakładek „Statystyki” i „Ranking graczy”. Różnią się wyłącznie
+   parametrami: źródłem gier (Tables vs UserGames), kolekcją z wagami i
+   widocznością kolumn, bramką PIN gracza oraz kluczem uprawnienia i polem
+   z listą dozwolonych lat. Logika liczenia jest jedna dla obu zakładek. */
 const initStatisticsView = ({
   yearsListSelector,
   statsBodySelector,
@@ -7280,7 +7557,19 @@ const initStatisticsView = ({
   selectedYearStorageKey,
   isAdminView,
   yearButtonsClassName,
-  weightButtonsSelector
+  weightButtonsSelector,
+  gamesCollectionName: gamesCollectionNameParam,
+  statsConfigCollectionName = ADMIN_GAMES_STATS_COLLECTION,
+  getVerifiedPlayer = getStatisticsVerifiedPlayer,
+  permissionKey = "statsTab",
+  yearsAccessField = "statsYearsAccess",
+  accessUpdatedEvent = "statistics-access-updated",
+  exportLabel = "Statystyki",
+  emptyDataText = "Brak danych. Do statystyk liczone są wyłącznie gry oznaczone jako CzyZamknięta.",
+  noYearsAdminText = "Brak lat. Dodaj pierwszą grę, aby rok pojawił się automatycznie.",
+  noAssignedYearsText = "Brak przypisanych lat do podglądu statystyk.",
+  noAvailableYearsText = "Brak dostępnych lat statystyk dla Twojego konta.",
+  countedGamesLabel = "Gry zaliczone do statystyk"
 }) => {
   const yearsList = document.querySelector(yearsListSelector);
   const statsBody = document.querySelector(statsBodySelector);
@@ -7301,7 +7590,7 @@ const initStatisticsView = ({
   }
 
   const db = firebaseApp.firestore();
-  const gamesCollectionName = getGamesCollectionName();
+  const gamesCollectionName = gamesCollectionNameParam ?? getGamesCollectionName();
   const gameDetailsCollectionName = getGameDetailsCollectionName();
   const manualStatsFields = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6"];
   const state = {
@@ -7357,7 +7646,7 @@ const initStatisticsView = ({
       }))
       .sort((a, b) => a.playerName.localeCompare(b.playerName, "pl"));
 
-    return db.collection(ADMIN_GAMES_STATS_COLLECTION).doc(yearKey).set({
+    return db.collection(statsConfigCollectionName).doc(yearKey).set({
       rows: serializedRows,
       visibleColumns: getVisibleColumnsForYear(year)
     }, { merge: true });
@@ -7487,8 +7776,8 @@ const initStatisticsView = ({
       return availableYears;
     }
 
-    const verifiedPlayer = getStatisticsVerifiedPlayer();
-    return getAllowedStatisticsYearsForPlayer(verifiedPlayer, availableYears);
+    const verifiedPlayer = getVerifiedPlayer();
+    return getAllowedYearsForPlayerTab(verifiedPlayer, availableYears, permissionKey, yearsAccessField);
   };
 
   const renderYears = () => {
@@ -7497,18 +7786,18 @@ const initStatisticsView = ({
       const info = document.createElement("p");
       info.className = "status-text";
       if (isAdminView) {
-        info.textContent = "Brak lat. Dodaj pierwszą grę, aby rok pojawił się automatycznie.";
+        info.textContent = noYearsAdminText;
       } else {
-        const verifiedPlayer = getStatisticsVerifiedPlayer();
+        const verifiedPlayer = getVerifiedPlayer();
         const baseYears = normalizeYearList(
           state.games
             .map((game) => extractYearFromDate(game.gameDate))
             .filter((year) => Number.isInteger(year))
         );
-        const hasAssignedYears = normalizeStatsYearsAccess(verifiedPlayer?.statsYearsAccess).length > 0;
+        const hasAssignedYears = normalizeStatsYearsAccess(verifiedPlayer?.[yearsAccessField]).length > 0;
         info.textContent = baseYears.length && !hasAssignedYears
-          ? "Brak przypisanych lat do podglądu statystyk."
-          : "Brak dostępnych lat statystyk dla Twojego konta.";
+          ? noAssignedYearsText
+          : noAvailableYearsText;
       }
       yearsList.appendChild(info);
       return;
@@ -7536,11 +7825,11 @@ const initStatisticsView = ({
 
     if (!state.selectedYear) {
       if (!isAdminView) {
-        const verifiedPlayer = getStatisticsVerifiedPlayer();
-        const hasAssignedYears = normalizeStatsYearsAccess(verifiedPlayer?.statsYearsAccess).length > 0;
+        const verifiedPlayer = getVerifiedPlayer();
+        const hasAssignedYears = normalizeStatsYearsAccess(verifiedPlayer?.[yearsAccessField]).length > 0;
         status.textContent = hasAssignedYears
-          ? "Brak dostępnych lat statystyk dla Twojego konta."
-          : "Brak przypisanych lat do podglądu statystyk.";
+          ? noAvailableYearsText
+          : noAssignedYearsText;
       } else {
         status.textContent = "Wybierz rok z panelu po lewej stronie.";
       }
@@ -7570,7 +7859,7 @@ const initStatisticsView = ({
       });
     }
 
-    status.textContent = `Wybrany rok: ${state.selectedYear}. Gry zaliczone do statystyk: ${statistics.gameCount}.`;
+    status.textContent = `Wybrany rok: ${state.selectedYear}. ${countedGamesLabel}: ${statistics.gameCount}.`;
     [["Liczba gier", statistics.gameCount], ["Łączna pula", statistics.totalPool]].forEach(([label, value]) => {
       const tr = document.createElement("tr");
       const labelCell = document.createElement("td");
@@ -7585,7 +7874,7 @@ const initStatisticsView = ({
       const tr = document.createElement("tr");
       const td = document.createElement("td");
       td.colSpan = visibleColumns.length || STATS_COLUMN_CONFIG.length;
-      td.textContent = "Brak danych. Do statystyk liczone są wyłącznie gry oznaczone jako CzyZamknięta.";
+      td.textContent = emptyDataText;
       tr.appendChild(td);
       playersStatsBody.appendChild(tr);
       renderRankingTable(rankingBody, []);
@@ -7676,7 +7965,7 @@ const initStatisticsView = ({
     renderStats();
   };
 
-  db.collection(ADMIN_GAMES_STATS_COLLECTION).onSnapshot((snapshot) => {
+  db.collection(statsConfigCollectionName).onSnapshot((snapshot) => {
     state.manualStatsByYear.clear();
     state.visibleColumnsByYear.clear();
     const missingVisibilityConfigYears = [];
@@ -7711,7 +8000,7 @@ const initStatisticsView = ({
     });
 
     if (missingVisibilityConfigYears.length) {
-      Promise.allSettled(missingVisibilityConfigYears.map((yearKey) => db.collection(ADMIN_GAMES_STATS_COLLECTION).doc(yearKey).set({
+      Promise.allSettled(missingVisibilityConfigYears.map((yearKey) => db.collection(statsConfigCollectionName).doc(yearKey).set({
         visibleColumns: DEFAULT_VISIBLE_STATS_COLUMNS
       }, { merge: true }))).then((results) => {
         const hasRejected = results.some((result) => result.status === "rejected");
@@ -7784,9 +8073,12 @@ const initStatisticsView = ({
       });
       const wrapper = document.createElement("div");
       wrapper.className = "stats-column-header";
+      const labelWrap = document.createElement("span");
+      labelWrap.className = "stats-column-label";
       while (cell.firstChild) {
-        wrapper.appendChild(cell.firstChild);
+        labelWrap.appendChild(cell.firstChild);
       }
+      wrapper.appendChild(labelWrap);
       wrapper.appendChild(checkbox);
       cell.appendChild(wrapper);
     });
@@ -7834,7 +8126,7 @@ const initStatisticsView = ({
 
 
   if (!isAdminView) {
-    window.addEventListener("statistics-access-updated", () => {
+    window.addEventListener(accessUpdatedEvent, () => {
       synchronizeYears();
     });
   }
@@ -7891,12 +8183,12 @@ const initStatisticsView = ({
     }
 
     const workbook = window.XLSX.utils.book_new();
-    window.XLSX.utils.book_append_sheet(workbook, worksheet, "Statystyki");
+    window.XLSX.utils.book_append_sheet(workbook, worksheet, exportLabel);
 
     const now = new Date();
     const hour = `${String(now.getHours()).padStart(2, "0")}-${String(now.getMinutes()).padStart(2, "0")}-${String(now.getSeconds()).padStart(2, "0")}`;
     const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-    const fileName = `${hour}_${date}_Statystyki_${state.selectedYear}.xlsx`;
+    const fileName = `${hour}_${date}_${exportLabel}_${state.selectedYear}.xlsx`;
     window.XLSX.writeFile(workbook, fileName);
   });
 };
@@ -7927,6 +8219,58 @@ const initStatisticsViews = () => {
     selectedYearStorageKey: USER_STATISTICS_SELECTED_YEAR_STORAGE_KEY,
     isAdminView: false,
     yearButtonsClassName: "admin-games-year-button",
+    weightButtonsSelector: ""
+  });
+};
+
+/* „Ranking graczy” — ten sam widok co „Statystyki”, ale liczony z gier
+   zamkniętych przez graczy w zakładce „Gry użytkowników” (kolekcja UserGames),
+   bez pośrednictwa weryfikacji administratora. */
+const RANKING_EMPTY_DATA_TEXT =
+  "Brak danych. Do rankingu liczone są wyłącznie gry użytkowników oznaczone jako CzyZamknięta.";
+
+const initRankingViews = () => {
+  registerAdminRefreshHandler("adminRankingTab", async () => {});
+
+  const sharedRankingOptions = {
+    gamesCollectionName: getUserGamesCollectionName(),
+    statsConfigCollectionName: USER_GAMES_STATS_COLLECTION,
+    getVerifiedPlayer: getRankingVerifiedPlayer,
+    permissionKey: "rankingTab",
+    yearsAccessField: "rankingYearsAccess",
+    accessUpdatedEvent: "ranking-access-updated",
+    exportLabel: "Ranking",
+    emptyDataText: RANKING_EMPTY_DATA_TEXT,
+    noYearsAdminText: "Brak lat. Rok pojawi się po dodaniu pierwszej gry użytkownika.",
+    noAssignedYearsText: "Brak przypisanych lat do podglądu rankingu.",
+    noAvailableYearsText: "Brak dostępnych lat rankingu dla Twojego konta.",
+    countedGamesLabel: "Gry zaliczone do rankingu",
+    yearButtonsClassName: "admin-games-year-button"
+  };
+
+  initStatisticsView({
+    ...sharedRankingOptions,
+    yearsListSelector: "#adminRankingYearsList",
+    statsBodySelector: "#adminRankingStatsBody",
+    playersStatsBodySelector: "#adminRankingPlayersStatsBody",
+    rankingBodySelector: "#adminRankingRankingBody",
+    statusSelector: "#adminRankingStatus",
+    exportButtonSelector: "#adminRankingExport",
+    selectedYearStorageKey: ADMIN_RANKING_SELECTED_YEAR_STORAGE_KEY,
+    isAdminView: true,
+    weightButtonsSelector: ".admin-ranking-weight-bulk-button"
+  });
+
+  initStatisticsView({
+    ...sharedRankingOptions,
+    yearsListSelector: "#rankingYearsList",
+    statsBodySelector: "#rankingStatsBody",
+    playersStatsBodySelector: "#rankingPlayersStatsBody",
+    rankingBodySelector: "#rankingRankingBody",
+    statusSelector: "#rankingStatus",
+    exportButtonSelector: "#rankingExport",
+    selectedYearStorageKey: USER_RANKING_SELECTED_YEAR_STORAGE_KEY,
+    isAdminView: false,
     weightButtonsSelector: ""
   });
 };
@@ -9257,6 +9601,7 @@ const BACKUP_COLLECTION_SCHEMA = [
   { name: "admin_notes" },
   { name: "chat_messages" },
   { name: "admin_games_stats" },
+  { name: "user_games_stats" },
   { name: "players" },
   { name: "Collection1" },
   { name: "Tables", children: GAME_SUBCOLLECTIONS },
@@ -9992,8 +10337,11 @@ const bootstrap = async () => {
     ["Gry do potwierdzenia (gracz)", initUserConfirmations],
     ["Gry użytkowników (bramka)", initUserGamesTab],
     ["Statystyki (bramka)", initStatisticsTab],
+    ["Ranking graczy (bramka)", initRankingTab],
+    ["Regulamin (bramka)", initRulesTab],
     ["Gry użytkowników (gracz)", initPlayerUserGames],
     ["Statystyki", initStatisticsViews],
+    ["Ranking graczy", initRankingViews],
     ["Najnowsza wiadomość", initLatestMessage],
     ["Regulamin (widok)", initRulesDisplay],
     ["Modal instrukcji", initInstructionModal],

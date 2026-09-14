@@ -665,6 +665,19 @@ select:disabled,
   justify-content: flex-start;
 }
 
+/* Wysokość wiersza dobiera się do najwyższego przycisku, a 1fr wyrównuje
+   wszystkie do tej samej wartości. Sztywne --admin-games-panel-item-height
+   nie mieściło dwuliniowej nazwy („Losowanie stołów"), przez co tekst
+   wychodził poza ramkę przycisku. */
+.player-zone-sections-list {
+  grid-auto-rows: 1fr;
+}
+
+.player-zone-sections-list .admin-games-year-button {
+  min-height: var(--admin-games-panel-item-height);
+  height: 100%;
+}
+
 .admin-games-year-button.is-active {
   background: rgba(212, 175, 55, 0.2);
   border-color: var(--gold-line);

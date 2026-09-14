@@ -5,7 +5,7 @@
 - W obu modułach (`Main` i `Second`) czerwony przycisk akcji awaryjnej (`button.danger`) „Przycisnąć w razie kontroli celno-skarbowej” znajduje się w prawym górnym pasku (`.admin-toolbar`), więc jest widoczny zarówno dla użytkownika, jak i administratora.
 - W obu modułach modal z GIF-em `Koza.gif` został zachowany, ale bez nagłówka tekstowego; obraz korzysta z klas `.customs-emergency-modal-body` i `.customs-emergency-image` (wycentrowanie, ograniczenie szerokości i wysokości, `object-fit: contain`, zaokrąglenie i obramowanie).
 ## System szerokości tabel (Main i Second)
-- Szerokości kolumn opisuje skala 9 tokenów `--col-*` w `:root` obu arkuszy; szczegóły i przypisanie kolumn są w `Kolumny.md`.
+- Szerokości kolumn opisuje skala tokenów `--col-*` w `:root` obu arkuszy (10 w `Main`, 9 w `Second` — `Main` ma dodatkowo `--col-weight`); szczegóły i przypisanie kolumn są w `Kolumny.md`.
 - Wszystkie tabele mają `table-layout: fixed`, a szerokości deklaruje `<colgroup>` przed `<thead>`.
 - Tryby tabel: `t-fluid` (wypełnia kontener, `min-width: var(--table-min)`), `t-compact` (`width: var(--table-min)`), `is-table-stacked` (poniżej 560 px wiersz staje się kartą).
 - `.admin-data-table .admin-input` ma `min-width: 0`; bez tego pole narzuca komórce własną szerokość naturalną ok. 213 px i szerokość z `<colgroup>` jest ignorowana.
@@ -24,6 +24,7 @@
 - Przycisk `Instrukcja` jest widoczny wyłącznie dla administratora (`body:not(.is-admin) #adminInstructionButton` w `Main`, `.page:has(.user-card) #secondInstructionButton` w `Second`).
 - W układzie kartowym (`is-table-stacked`) komórka ma `width: 100%`, etykieta zawija się w swojej kolumnie (`minmax(0, 11ch)`), a tabela traci `min-width`, żeby karty nie przewijały się w bok.
 - Przyciski menu bocznego (`.player-zone-button`) mają `font-size: clamp(11px, 1.1vw, 14px)`.
+- Lista przycisków menu bocznego (`.player-zone-sections-list`, oba moduły) ma `grid-auto-rows: 1fr`, a jej przyciski `min-height: var(--admin-games-panel-item-height)` (41 px) przy `height: 100%`. Wiersz dopasowuje się do najwyższego przycisku i wszystkie pozostają równe: 58 px w `Main`, 56 px w `Second` na desktopie. Sztywne 41 px nie mieściło etykiet dwuliniowych („Gry do Potwierdzenia”, „Gry Użytkowników” w `Main`, „Losowanie stołów” w `Second`) — tekst wychodził 3–5 px poza ramkę przycisku.
 
 ## Rozpoznanie widoku użytkownika w module Second
 - Second nie ustawia klasy `body.is-admin`, dlatego reguły pełnej szerokości karty opierają się na selektorze `.page:has(.user-card)`, a nie na `body:not(.is-admin)`.
@@ -93,6 +94,15 @@
 
 - W panelu `Finał` usunięto wizualizację stołu (`.poker-table-svg`); sekcja pokazuje `Tabela23` oraz `Tabela23A` z przyciskami pozycji `▲/▼`.
 - W module `Second`, w widoku użytkownika dla `#tournamentTab` na mobile (`max-width: 760px`), layout Tournament wymusza jedną kolumnę (`minmax(0,1fr)`), pełną szerokość sidebara i lokalne przewijanie szerokich tabel; etykiety przycisków sekcji pozostają widoczne bez przełączania na `Czat`.
+
+## Main — nagłówek tabeli statystyk i rankingu (checkbox widoczności kolumn)
+- Dotyczy `.admin-games-players-stats-table` w zakładkach `Statystyki` i `Ranking graczy`, wyłącznie w widoku administratora.
+- Kontener `.stats-column-header`: `display: flex`, `align-items: center`, `justify-content: flex-start`, `flex-wrap: wrap`, `gap: 4px 10px`, `min-width: 0`.
+- Nazwa kolumny w `.stats-column-label`: `flex: 1 0 100%`, `min-width: 0`, `overflow-wrap: normal`, `word-break: normal` — zajmuje pełną szerokość, więc checkbox zawsze trafia do osobnej linii pod nazwą, przy lewej krawędzi komórki.
+- Checkbox `.stats-column-visibility-checkbox`: `flex: 0 0 auto`, `16 × 16 px`.
+- `.admin-games-players-stats-table th` ma `padding-inline: 12px` (domyślne w tabelach to `10px 8px`).
+- Kolumny `Waga1`–`Waga6` używają tokenu `--col-weight` (104 px) zamiast `--col-num-sm` (88 px), bo muszą pomieścić przycisk zbiorczej edycji wagi.
+- Efekt mierzony w Chromium (okno 1600 px): zero komórek nagłówka ucinających zawartość, zero checkboxów wychodzących poza komórkę, minimalny odstęp między checkboxem a nazwą następnej kolumny 68 px, wysokość wiersza nagłówka 92 px.
 
 ## Main — lista kolejności potwierdzeń i import gier
 - Sekcja `Kolejność potwierdzeń` w modalu `#confirmationsDetailsModal` używa nagłówka `.confirmations-order-title` (`margin: 16px 0 0`, `font-size: 15px`, kolor `--muted`) oraz tabeli `.confirmations-order-table`.

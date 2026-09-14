@@ -68,6 +68,10 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    match /user_games_stats/{year} {
+      allow read, write: if true;
+    }
+
     match /players/{docId} {
       allow read, write: if true;
     }
