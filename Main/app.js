@@ -2008,23 +2008,82 @@ const importUserGameToAdminGames = async ({
   }
 };
 
+/* Okno potwierdzenia we wnętrzu aplikacji, zamiast systemowego window.confirm.
+   Natywne okno przeglądarki dokleja własne elementy, których nie da się usunąć:
+   adres strony w nagłówku oraz checkbox „Nie pozwalaj … pytać ponownie”.
+   Ten checkbox jest dodatkowo groźny — zaznaczony sprawia, że wszystkie kolejne
+   wywołania window.confirm zwracają false, czyli usuwanie przestałoby działać
+   bez żadnego komunikatu. Własny modal nie ma ani tych elementów, ani tego ryzyka. */
+const openConfirmDialog = ({ title = "Potwierdzenie", message = "", acceptLabel = "Usuń", cancelLabel = "Anuluj" } = {}) => {
+  const modal = document.querySelector("#confirmDialogModal");
+  const titleNode = document.querySelector("#confirmDialogTitle");
+  const messageNode = document.querySelector("#confirmDialogMessage");
+  const acceptButton = document.querySelector("#confirmDialogAccept");
+  const cancelButton = document.querySelector("#confirmDialogCancel");
+  const closeButton = document.querySelector("#confirmDialogClose");
+
+  if (!modal || !titleNode || !messageNode || !acceptButton || !cancelButton) {
+    return Promise.resolve(false);
+  }
+
+  titleNode.textContent = title;
+  messageNode.textContent = message;
+  acceptButton.textContent = acceptLabel;
+  cancelButton.textContent = cancelLabel;
+
+  modal.classList.add("is-visible");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+
+  return new Promise((resolve) => {
+    const finish = (result) => {
+      modal.classList.remove("is-visible");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+      acceptButton.removeEventListener("click", onAccept);
+      cancelButton.removeEventListener("click", onCancel);
+      closeButton?.removeEventListener("click", onCancel);
+      modal.removeEventListener("click", onOverlayClick);
+      document.removeEventListener("keydown", onKeyDown);
+      resolve(result);
+    };
+    const onAccept = () => finish(true);
+    const onCancel = () => finish(false);
+    const onOverlayClick = (event) => {
+      if (event.target === modal) {
+        finish(false);
+      }
+    };
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") {
+        finish(false);
+      }
+    };
+
+    acceptButton.addEventListener("click", onAccept);
+    cancelButton.addEventListener("click", onCancel);
+    closeButton?.addEventListener("click", onCancel);
+    modal.addEventListener("click", onOverlayClick);
+    document.addEventListener("keydown", onKeyDown);
+    acceptButton.focus();
+  });
+};
+
 /* Potwierdzenie przed usunięciem gry z zakładki „Gry użytkowników”.
    Kasowanie jest kaskadowe (skład + potwierdzenia + sama gra) i nieodwracalne,
-   więc pytanie wymienia wprost, co zniknie. Gdy gra została już zaimportowana
-   do „Gry admina”, kopia tam zostaje — o tym też trzeba uprzedzić. */
+   więc pytanie wymienia wprost, co zniknie. */
 const confirmUserGameDeletion = (game) => {
   const gameName = typeof game?.name === "string" && game.name.trim() ? game.name.trim() : "bez nazwy";
   const gameDate = typeof game?.gameDate === "string" && game.gameDate.trim() ? game.gameDate.trim() : "bez daty";
-  const hasAdminCopy = Boolean(game?.exportedToAdminGameId);
-  const adminCopyNote = hasAdminCopy
-    ? "\n\nKopia tej gry w zakładce „Gry admina” pozostanie i nadal będzie liczona do statystyk."
-    : "";
 
-  return window.confirm(
-    `Czy na pewno usunąć grę „${gameName}” z dnia ${gameDate}?\n\n`
-    + "Skasowane zostaną także wyniki wszystkich graczy i ich potwierdzenia. "
-    + `Tej operacji nie można cofnąć.${adminCopyNote}`
-  );
+  return openConfirmDialog({
+    title: "Usunięcie gry",
+    message: `Czy na pewno usunąć grę „${gameName}” z dnia ${gameDate}? `
+      + "Skasowane zostaną także wyniki wszystkich graczy i ich potwierdzenia. "
+      + "Tej operacji nie można cofnąć.",
+    acceptLabel: "Usuń",
+    cancelLabel: "Anuluj"
+  });
 };
 
 const getUniquePlayersFromRows = (rows = []) => {
@@ -3879,9 +3938,12 @@ const initUserGamesManager = ({
           return;
         }
 
+        /* Przekazanie gry do „Gry admina” to mechanizm wewnętrzny — gracz nie ma
+           powodu oglądać komunikatów o jego przebiegu przy zwykłym zamykaniu gry.
+           Zostaje wyłącznie informacja o niepowodzeniu, bo wtedy gra nie trafiła
+           do administratora i cisza byłaby myląca. */
         try {
-          status.textContent = "Przekazywanie gry do zakładki „Gry admina”...";
-          const result = await importUserGameToAdminGames({
+          await importUserGameToAdminGames({
             firebaseApp,
             db,
             userGamesCollectionName: gamesCollectionName,
@@ -3889,11 +3951,6 @@ const initUserGamesManager = ({
             gameDetailsCollectionName,
             gameId: game.id
           });
-          if (result) {
-            status.textContent = result.isNewCopy
-              ? "Gra została przekazana do zakładki „Gry admina”."
-              : "Zaktualizowano kopię gry w zakładce „Gry admina”.";
-          }
         } catch (error) {
           status.textContent = "Nie udało się przekazać gry do zakładki „Gry admina”. Spróbuj ponownie.";
         }
@@ -3946,7 +4003,7 @@ const initUserGamesManager = ({
       deleteButton.disabled = !writeEnabled;
       deleteButton.addEventListener("click", async () => {
         if (!hasWriteAccessToGame(game)) return;
-        if (!confirmUserGameDeletion(game)) return;
+        if (!(await confirmUserGameDeletion(game))) return;
         const gameRef = db.collection(gamesCollectionName).doc(game.id);
         const detailsSnapshot = await gameRef.collection(gameDetailsCollectionName).get();
         const confirmationsSnapshot = await gameRef.collection(GAME_CONFIRMATIONS_COLLECTION).get();
@@ -4584,12 +4641,16 @@ const initUserTabs = () => {
     setConfirmationsPinGateState(isZoneVerified && hasSectionAccess("confirmationsTab"));
     setUserGamesPinGateState(isZoneVerified && hasSectionAccess("userGamesTab"));
     setStatisticsPinGateState(isZoneVerified && hasSectionAccess("statsTab"));
+    setRankingPinGateState(isZoneVerified && hasSectionAccess("rankingTab"));
+    setRulesPinGateState(isZoneVerified && hasSectionAccess("rulesTab"));
 
     const playerId = player?.id || "";
     setChatVerifiedPlayerId(hasSectionAccess("chatTab") ? playerId : "");
     setConfirmationsVerifiedPlayerId(hasSectionAccess("confirmationsTab") ? playerId : "");
     setUserGamesVerifiedPlayerId(hasSectionAccess("userGamesTab") ? playerId : "");
     setStatisticsVerifiedPlayerId(hasSectionAccess("statsTab") ? playerId : "");
+    setRankingVerifiedPlayerId(hasSectionAccess("rankingTab") ? playerId : "");
+    setRulesVerifiedPlayerId(hasSectionAccess("rulesTab") ? playerId : "");
 
     if (hasSectionAccess("chatTab") && typeof chatState.startPlayerSubscription === "function") {
       chatState.startPlayerSubscription();
@@ -4605,6 +4666,8 @@ const initUserTabs = () => {
     updateUserGamesVisibility();
     window.dispatchEvent(new CustomEvent("user-games-access-updated"));
     synchronizeStatisticsAccessState();
+    synchronizeRankingAccessState();
+    synchronizeRulesAccessState();
   };
 
   const setActiveZoneSection = (target) => {

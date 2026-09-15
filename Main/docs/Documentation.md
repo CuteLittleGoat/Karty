@@ -11,7 +11,7 @@
 
 ## 2. Aktualny zakres funkcjonalny tej wersji
 - Service Worker obsługuje komunikat `SKIP_WAITING`, dzięki czemu nowy worker może szybciej przejąć kontrolę po aktualizacji.
-- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`, `../config/firebase-config.js`) z parametrem wersji (`?v=2026-09-14.1`) w celu twardego bustowania cache między release’ami.
+- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`, `../config/firebase-config.js`) z parametrem wersji (`?v=2026-09-15.1`) w celu twardego bustowania cache między release’ami.
   - `config/firebase-config.js` nie występuje w `APP_SHELL_ASSETS`, ale jako `request.destination === "script"` trafia w Service Workerze do strategii `staleWhileRevalidate`. Bez parametru wersji zmiana samej konfiguracji (np. dodanie klucza App Check) bez podbicia `APP_VERSION` byłaby serwowana z cache o jeden release wstecz. Parametr `?v=` eliminuje ten przypadek niezależnie od `APP_VERSION`.
   - Moduł `Second` nie ma Service Workera, więc jego `index.html` ładuje ten sam plik bez parametru wersji — podlega wyłącznie zwykłemu cache HTTP.
 - `Main/pwa-bootstrap.js` nasłuchuje `updatefound` i `controllerchange`; po instalacji nowego workera wymusza jego aktywację i wykonuje pojedynczy `window.location.reload()`, aby użytkownik pracował na spójnym zestawie assetów.
@@ -257,7 +257,7 @@ Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-order-
 - Tytuł dokumentu (`<title>`) w `index.html` ustawiono na `Poker - rozgrywki`.
 - Manifest PWA ustawia nazwę instalowanej aplikacji na `Poker - rozgrywki` (`short_name`: `Poker`).
 - `start_url` w manifeście jest relatywny (`./index.html?...`), a `scope` ustawiony na `./`, co zapobiega błędom 404 dla hostingu pod prefiksem repozytorium.
-- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-09-14.1`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
+- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-09-15.1`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
 
 - W `initAdminCalculator` każdy wiersz rebuy (`table2Rows` i `table9Rows`) przechowuje parę `rebuys[]` + `rebuyIndexes[]`; dodawanie rebuy nadaje globalny numer `max+1` dla całego aktywnego trybu, a usunięcie rebuy wykonuje globalną kompaktację indeksów bez luk.
 - Tabela5 buduje kolumny `RebuyX` i mapowanie wartości po posortowanych `rebuyIndexes`, zamiast po samym `flatMap` kolejności graczy, dzięki czemu semantyka numeru `RebuyX` pozostaje spójna po dodawaniu/usuwaniu kolumn u różnych graczy.
@@ -319,6 +319,7 @@ Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-order-
 - Używają jej dwie nowe sekcje: `rankingSectionGate` (uprawnienie `rankingTab`, zdarzenie `ranking-access-updated`) i `rulesSectionGate` (uprawnienie `rulesTab`, zdarzenie `rules-access-updated`).
 - Stan sesji w `sessionStorage`: `rankingPinVerified` / `rankingPlayerId` oraz `rulesPinVerified` / `rulesPlayerId`.
 - `initSharedPlayerAccess` po każdym snapshocie listy graczy woła `synchronizeStatisticsAccessState()`, `synchronizeRankingAccessState()` i `synchronizeRulesAccessState()` oraz emituje trzy zdarzenia dostępu, dzięki czemu cofnięcie uprawnienia natychmiast zamyka otwartą sekcję.
+- **Preautoryzacja po PIN-ie do Strefy Gracza.** `syncPlayerZoneSectionAccess(player)` ustawia stan bramki i identyfikator gracza dla **każdej** sekcji, do której gracz ma uprawnienie — łącznie z `rankingTab` i `rulesTab`. Dzięki temu jeden PIN do „Strefy Gracza” odblokowuje komplet sekcji i żadna nie pyta o PIN po raz drugi. Bramki sekcyjne zostają jako ścieżka zapasowa (np. wejście do sekcji bez wcześniejszej weryfikacji strefy) oraz jako miejsce, w którym cofnięcie uprawnienia zamyka dostęp.
 
 ## Przeniesienie „Regulaminu” do Strefy Gracza
 - `#rulesTab` nie jest już panelem najwyższego poziomu (`.tab-panel`), tylko sekcją Strefy Gracza (`.player-zone-panel`), ustawioną jako **pierwsza** pozycja listy `#playerZoneSectionsList`.
@@ -328,11 +329,19 @@ Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-order-
 - Handler `#userPanelRefresh` obsługuje regulamin w gałęzi sekcji Strefy Gracza (`activeZoneTabId === "rulesTab"`), a nie w gałęzi zakładek najwyższego poziomu; dodano też gałąź `rankingTab` wołającą `synchronizeRankingAccessState()`.
 - `initRulesDisplay` pozostaje bez zmian — nadal zasila `#rulesOutput` i `#rulesStatus`, które przeniesiono razem z panelem.
 
+## Okno potwierdzenia (`openConfirmDialog`)
+- `openConfirmDialog({ title, message, acceptLabel, cancelLabel })` zwraca `Promise<boolean>` i obsługuje modal `#confirmDialogModal` (`#confirmDialogTitle`, `#confirmDialogMessage`, `#confirmDialogAccept`, `#confirmDialogCancel`, `#confirmDialogClose`).
+- Rozstrzygnięcie na `false` dają: przycisk anulowania, `×`, kliknięcie w overlay i `Escape`. Wszystkie nasłuchy są zdejmowane przy zamknięciu, więc kolejne otwarcia nie kumulują handlerów.
+- **Dlaczego nie `window.confirm`.** Natywne okno dokleja elementy, których nie da się usunąć ani ostylować: adres strony w nagłówku oraz checkbox „Nie pozwalaj … pytać ponownie”. Ten checkbox jest realnym zagrożeniem — po zaznaczeniu przeglądarka zwraca z `window.confirm` `false` bez pokazywania okna, więc usuwanie gry przestałoby działać i to bez żadnego komunikatu.
+
 ## Potwierdzenie usunięcia gry użytkownika (`confirmUserGameDeletion`)
-- Funkcja zwraca wynik `window.confirm` z nazwą i datą gry oraz ostrzeżeniem, że kasowanie obejmuje skład i potwierdzenia i jest nieodwracalne.
-- Gdy gra ma ustawione `exportedToAdminGameId`, komunikat dopisuje informację, że kopia w „Gry admina” pozostanie i nadal będzie liczona do statystyk.
-- Wywoływana w handlerze przycisku `Usuń` w `initUserGamesManager`, po sprawdzeniu `hasWriteAccessToGame(game)` i **przed** jakimkolwiek odczytem subkolekcji — anulowanie nie generuje żadnego ruchu do Firestore.
+- Buduje treść pytania z nazwą i datą gry oraz ostrzeżeniem, że kasowanie obejmuje skład i potwierdzenia i jest nieodwracalne, po czym oddaje sterowanie do `openConfirmDialog`.
+- Handler przycisku `Usuń` w `initUserGamesManager` czeka na wynik (`await`), po sprawdzeniu `hasWriteAccessToGame(game)` i **przed** jakimkolwiek odczytem subkolekcji — anulowanie nie generuje żadnego ruchu do Firestore.
 - Pozostałe przyciski `Usuń` (zakładki `Gry admina`, `Gracze`, `Czat`) nie mają potwierdzenia — zakres świadomie ograniczony do zakładki `Gry użytkowników`.
+
+## Cisza przy przekazywaniu gry do „Gry admina”
+- Zaznaczenie `CzyZamknięta` w zakładce `Gry użytkowników` uruchamia `importUserGameToAdminGames` bez żadnego komunikatu o przebiegu — import jest mechanizmem wewnętrznym, a gracz zamyka po prostu swoją grę.
+- Wyjątkiem jest niepowodzenie: wtedy `status` dostaje tekst „Nie udało się przekazać gry do zakładki »Gry admina«. Spróbuj ponownie.”, bo gra nie trafiła do administratora i cisza byłaby myląca.
 
 ## Aktualizacja techniczna: RebuyX i mobilna klawiatura
 - `Main/app.js`: w modalu rebuy kalkulatora każde pole `RebuyX` korzysta z `applyIntegerInputHints` (`type=text`, `inputmode=numeric`, `pattern=[0-9]*`) i sanitizacji cyfr.

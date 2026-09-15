@@ -112,6 +112,13 @@
 - Podsumowanie nad listą (`#confirmationsOrderSummary`) korzysta ze standardowej klasy `.status-text`.
 - Data ostatniego odświeżenia przy grze zaimportowanej używa klasy `.admin-import-refreshed-at` (`display: block`, `width: 100%`, `margin-top: 4px`, `font-size: 12px`) w obrębie `.admin-games-name-control`.
 
+## Main — okno potwierdzenia (`#confirmDialogModal`)
+- Standardowy `.modal-overlay` + `.modal-card.modal-card-sm`, nagłówek `.modal-header` z tytułem i `×`, stopka `.modal-footer.confirm-dialog-footer`.
+- `.confirm-dialog-message`: `margin: 0`, `font-size: var(--fs-body)`, `line-height: 1.55`, kolor `--ink`.
+- `.confirm-dialog-footer`: `justify-content: flex-end`, `flex-wrap: wrap` — przyciski przy prawej krawędzi, a na wąskim ekranie zawijają się zamiast wychodzić poza okno.
+- Przycisk akceptacji ma klasę `danger`, anulowania `secondary`. Szerokość okna: 520 px na desktopie, 358 px przy viewport 390 px (mieści się bez przewijania w bok).
+- Okno zastępuje systemowe `window.confirm`, które dokleja adres strony i checkbox „Nie pozwalaj … pytać ponownie” — elementy nieusuwalne i nieostylowalne.
+
 ## Main — zakładka „Kopia zapasowa”
 - Sekcja `.admin-backup` powiela wygląd `.admin-rules`: `margin-top: var(--gap-3)`, `padding: 16px`, `border-radius: var(--radius-md)`, obramowanie `--border2`, tło `rgba(0, 0, 0, 0.32)`, układ `grid` z odstępem `10px`.
 - Etykiety (`.admin-backup label`) mają `font-size: 12px`, wersaliki i `letter-spacing: 0.08em` w kolorze `--muted`.

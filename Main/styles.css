@@ -1781,6 +1781,20 @@ body:not(.is-admin) .player-zone-layout {
   border-bottom: none;
 }
 
+/* Okno potwierdzenia — treść pytania i para przycisków wyrównana do prawej,
+   żeby „Anuluj” i akcja niszcząca nie leżały pod kciukiem obok siebie. */
+.confirm-dialog-message {
+  margin: 0;
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.confirm-dialog-footer {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
 .modal-header h3 {
   margin: 0;
   font-size: 20px;

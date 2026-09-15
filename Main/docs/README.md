@@ -83,7 +83,7 @@ Dostępne przyciski sekcji (widoczne zależnie od uprawnień):
 - **Statystyki**,
 - **Ranking graczy**.
 
-Każda sekcja ma własną bramkę PIN — po kliknięciu przycisku sekcji wpisz swój PIN i kliknij **Otwórz**. Sekcja otwiera się tylko wtedy, gdy administrator przyznał Ci odpowiadające jej uprawnienie.
+**Wystarczy jeden PIN.** Po wejściu do „Strefy Gracza” wszystkie sekcje, do których masz uprawnienia, są od razu odblokowane — żadna nie pyta o PIN po raz drugi. Sekcje bez uprawnienia w ogóle się nie pokazują.
 
 ---
 
@@ -182,7 +182,7 @@ To sekcja, w której gracz (z uprawnieniem) tworzy i prowadzi własne gry.
 W wierszu każdej gry masz przyciski:
 - **Szczegóły** — otwiera modal szczegółów tej gry,
 - **Notatki do gry** — otwiera notatki przygotowawcze,
-- **Usuń** — usuwa grę wraz z powiązanymi rekordami szczegółów/potwierdzeń. Najpierw pojawia się **pytanie potwierdzające** z nazwą i datą gry; dopiero **OK** kasuje dane, **Anuluj** przerywa. Operacji nie można cofnąć.
+- **Usuń** — usuwa grę wraz z powiązanymi rekordami szczegółów/potwierdzeń. Najpierw otwiera się okno **„Usunięcie gry”** z nazwą i datą gry; dopiero przycisk **Usuń** kasuje dane, **Anuluj** przerywa. Operacji nie można cofnąć.
 
 Kolumna **CzyZamknięta** (checkbox):
 - zaznacz, aby oznaczyć grę jako zamkniętą,
@@ -255,11 +255,10 @@ Sekcja wygląda dokładnie tak samo jak **Statystyki**, ale pokazuje inne liczby
 
 **Jak wejść:**
 1. Kliknij przycisk **Ranking graczy** w panelu **Sekcja**.
-2. Wpisz PIN z uprawnieniem **Ranking graczy** i kliknij **Otwórz**.
-3. Wybierz rok z panelu **Lata**.
+2. Wybierz rok z panelu **Lata**.
    - Lata w tej sekcji są nadawane **osobno** od lat statystyk. Możesz mieć dostęp do innych roczników w „Statystykach", a do innych w „Rankingu graczy".
-4. Przeglądaj tabelę zbiorczą, tabelę graczy i panel **Ranking**.
-5. Kliknij **Eksportuj**, aby pobrać dane do pliku XLSX (nazwa pliku zaczyna się od godziny i daty, a kończy słowem `Ranking` i rokiem).
+3. Przeglądaj tabelę zbiorczą, tabelę graczy i panel **Ranking**.
+4. Kliknij **Eksportuj**, aby pobrać dane do pliku XLSX (nazwa pliku zaczyna się od godziny i daty, a kończy słowem `Ranking` i rokiem).
 
 Które kolumny widzisz — decyduje administrator osobno dla rankingu i osobno dla statystyk.
 
@@ -506,7 +505,7 @@ Najważniejsze przyciski:
 - **Dodaj** — dodanie nowej gry użytkowników,
 - **Szczegóły** — edycja składu i wartości,
 - **Notatki do gry** — notatki przed grą,
-- **Usuń** — usunięcie gry. Po kliknięciu pojawia się **pytanie potwierdzające** z nazwą i datą gry. Dopiero po kliknięciu **OK** gra zostaje skasowana razem z wynikami wszystkich graczy i ich potwierdzeniami; **Anuluj** nie zmienia niczego. Jeśli gra ma już kopię w „Gry admina”, pytanie dodatkowo uprzedza, że kopia tam zostanie i nadal będzie liczona do statystyk. Operacji nie da się cofnąć — jedynym ratunkiem jest przywrócenie z kopii zapasowej.
+- **Usuń** — usunięcie gry. Po kliknięciu otwiera się okno **„Usunięcie gry”** z nazwą i datą gry oraz przyciskami **Anuluj** i **Usuń**. Dopiero **Usuń** kasuje grę razem z wynikami wszystkich graczy i ich potwierdzeniami; **Anuluj**, krzyżyk, klawisz `Esc` i kliknięcie obok okna przerywają bez żadnej zmiany. Operacji nie da się cofnąć — jedynym ratunkiem jest przywrócenie z kopii zapasowej.
 - Szerokości kolumn są zgodne z zakładką **Gry admina**, z dodatkową kolumną **Liczba miejsc**. Kolumna **Nazwa** rozciąga się na wolne miejsce, więc na szerokim ekranie to ona robi się szersza, a nie kolumny z liczbami.
 - **Wpisowe** (w nagłówku modalu szczegółów) — zbiorcze wpisowe,
 - **Dodaj** (w modalu szczegółów) — dodanie uczestnika,
