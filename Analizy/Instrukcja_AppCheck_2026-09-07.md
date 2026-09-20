@@ -1,6 +1,6 @@
 # App Check — instrukcja krok po kroku
 
-## Gdzie jesteśmy (stan na 2026-09-08)
+## Gdzie jesteśmy (stan na 2026-09-20)
 
 | Krok | Stan |
 |---|---|
@@ -8,8 +8,15 @@
 | KROK 2 — rejestracja obu aplikacji `Karty-Web` w App Check | ✅ wykonane (obie: *Registered*, dostawca *reCAPTCHA Enterprise*) |
 | KROK 3 — klucz w `config/firebase-config.js` | ✅ wykonane, wypchnięte na `main` |
 | TTL tokenu | ✅ **ustawione na `1 days`** w obu aplikacjach `Karty-Web` (2026-09-08) |
-| KROK 4 — obserwacja zakładki *APIs* przez kilka dni | 🔵 **teraz to robisz** |
-| KROK 5 — *Enforce* (wymuszanie) | ⛔ **jeszcze nie klikaj** |
+| KROK 4 — obserwacja zakładki *APIs* przez kilka dni | ✅ wykonane — ruch zweryfikowany |
+| KROK 5 — *Enforce* (wymuszanie) | ✅ **włączone 2026-09-20** |
+
+> **Wdrożenie App Check jest zakończone. Reguł Firestore nie trzeba było zmieniać** — App Check
+> jest osobnym przełącznikiem w konsoli, sprawdzanym zanim reguły w ogóle ruszą. Szczegóły i to,
+> czego App Check **nie** załatwia, opisuje `Analizy/Stan_Po_Enforce_AppCheck_2026-09-20.md`.
+>
+> Zostaje tylko zwykła obserwacja: czy aplikacja normalnie działa (także PWA na telefonie)
+> i czy zużycie mieści się w darmowym limicie. **Hamulec to *Unenforce*** — patrz KROK 5.
 
 ## Prompt użytkownika (zachowany dla kontekstu)
 

@@ -777,7 +777,7 @@ kilkuset sprawdzeń miesięcznie — zapas jest bardzo duży, ale po przekroczen
 | Rejestracja w Firebase App Check | ✅ **obie** aplikacje `Karty-Web` mają status *Registered* z dostawcą *reCAPTCHA Enterprise*; `Karty-Android-PUSH` nietknięta |
 | TTL tokenu | ✅ **1 dzień** — zmienione 2026-09-08 z domyślnej 1 godziny, w obu aplikacjach `Karty-Web` |
 | Klucz w `config/firebase-config.js` | ✅ `appCheckEnterpriseSiteKey` ustawiony, wypchnięty na `main` |
-| Tryb pracy App Check | 🔵 **monitorowanie** — wymuszanie (*Enforce*) jeszcze **nie** włączone |
+| Tryb pracy App Check | ✅ **wymuszanie (*Enforce*) włączone 2026-09-20** — poprzedzone kilkoma dniami monitorowania |
 
 **Uwaga o TTL.** Okienko rejestracji Enterprise domyślnie proponuje **1 godzinę**, a nie 1 dzień
 (jak sugerowała pierwsza wersja instrukcji). Dokumentacja Firebase precyzuje dwie rzeczy:
@@ -800,3 +800,74 @@ zero zapytań do Firestore.
 
 **Pozostaje:** kilka dni obserwacji zakładki *App Check → APIs → Cloud Firestore* i dopiero potem
 *Enforce*.
+
+---
+
+## 17. Włączenie wymuszania App Check (2026-09-20)
+
+### 17.1. Prompt użytkownika (zachowany dla kontekstu)
+
+> Zapoznaj się z dokumentacją Analizy/Instrukcja_AppCheck_2026-09-07.md - na wykresie było ok,
+> więc kliknąłem Enforce. Czy wszystko już gotowe czy jeszcze trzeba zmienić rules?
+
+### 17.2. Rozstrzygnięcie
+
+**Reguł nie trzeba było zmieniać i nie ma czego dopisywać.** App Check nie jest konfigurowany
+w regułach — to osobny przełącznik w konsoli, sprawdzany **zanim** reguły ruszą. W regułach
+Firestore nie istnieje żadna zmienna opisująca token App Check (jest `request.auth`, nie ma
+odpowiednika dla App Check). `Analizy/Wazne_Rules.txt` pozostaje bez zmian.
+
+Etap App Check z pkt 12.6 (krok 3) jest tym samym **zamknięty**.
+
+### 17.3. Co to zmienia, a czego nie
+
+- ✅ **Zamknięte:** dostęp do bazy dla dowolnego obcego programu, skryptu lub narzędzia
+  działającego spoza aplikacji — czyli główna dziura z pkt 2.
+- ❌ **Nadal otwarte:** osoba, która otworzy stronę w przeglądarce i użyje konsoli (F12).
+  Ma wtedy ważny token App Check, bo zapytanie naprawdę wychodzi z aplikacji, a reguły
+  przepuszczają wszystko. Zgodnie z zastrzeżeniem przy opcji C w pkt 7.
+- **Reguły tego nie naprawią**, dopóki nie ma logowania: bez `request.auth` reguła nie ma po czym
+  rozróżnić zapytania administratora, gracza i konsoli przeglądarki. Zamyka to dopiero **opcja B**.
+
+### 17.4. Skreślenie opcji A z planu
+
+**Opcja A (logowanie anonimowe + `request.auth != null`) staje się zbędna.** Jej jedyną korzyścią
+było odcięcie skanowania z zewnątrz — App Check robi to samo skuteczniej (sesję anonimową każdy
+założy sobie sam, tokenu App Check spoza domeny nie zdobędzie). Przeciwko dostępowi z konsoli F12
+opcja A również nie pomaga. Koszt: zmiany w kodzie obu modułów i przepisanie reguł. Zysk: żaden.
+
+### 17.5. Zawężanie reguł — sprawdzone, brak bezkosztowych kandydatów
+
+Punkt E.3 z pkt 7 jest wyczerpany. Poza wykonaną już blokadą zapisu do `admin_security` nie ma
+zmiany, która nie wymagałaby dotknięcia kodu: przywracanie z kopii
+(`RESTORE_SKIPPED_COLLECTIONS = ["admin_security"]`) zapisuje do **wszystkich** pozostałych
+kolekcji, więc każda kolejna blokada zapisu wymaga dopisania kolekcji także do tej listy.
+Jedyny kandydat bez zastosowania w aplikacji — `Collection1`, obecna wyłącznie w drzewie kopii
+zapasowej (`Main/app.js:9669`) — daje zysk bliski zeru i tego samego ryzyka przy przywracaniu
+nie unika.
+
+Odnotowane przy okazji: funkcje `isSignedIn()` i `isAdmin()` na początku `Wazne_Rules.txt`
+**nie są nigdzie wywoływane** i przy braku logowania nie mają czego sprawdzać. Są martwym kodem
+przygotowanym pod opcję B — nie dają żadnej ochrony.
+
+### 17.6. Weryfikacja w kodzie (2026-09-20)
+
+| Co sprawdzone | Wynik |
+|---|---|
+| Klucz `appCheckEnterpriseSiteKey` w konfiguracji | ✅ obecny i aktywny |
+| `activateAppCheckIfConfigured` przed każdym dostępem do bazy (oba moduły) | ✅ wywoływane z `getFirebaseApp()` |
+| Ścieżka do Firestore omijająca `getFirebaseApp()` | ✅ brak takiej w obu modułach |
+| Inne usługi Firebase (Auth, Storage, Functions, Realtime DB) | ✅ **żadna nie jest używana** — wymuszanie na samym Cloud Firestore wystarcza |
+| Service worker modułu Main | ✅ nie dotyka bazy; cache wersjonowany, starsze kasowane przy aktywacji |
+
+### 17.7. Co pozostaje
+
+1. **Obserwacja** — czy aplikacja normalnie działa z adresu internetowego, w obu modułach
+   i w wersji PWA na telefonie. Hamulec: *Unenforce*, działa natychmiast.
+2. **Limit 10 000 sprawdzeń miesięcznie** — po włączeniu wymuszania jego przekroczenie
+   zatrzymałoby aplikację do końca miesiąca. Przy TTL 1 dzień zużycie to ok. 1 000–1 500,
+   ale warto zerknąć na licznik po pierwszym pełnym miesiącu.
+3. **Regularne kopie zapasowe** — bez zmian.
+4. **PIN-y** — świadoma decyzja użytkownika, temat zamknięty (pkt 15.2).
+5. **Widoczność repozytorium** — rekomendacja bez zmian: zostawić publiczne (pkt 15.4).
+6. **Opcja B (konta i role)** — jedyny kierunek dalej, osobny projekt, bez terminu.
