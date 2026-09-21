@@ -3,9 +3,10 @@
   "short_name": "Poker",
   "start_url": "./index.html?pwa=1&view=user",
   "scope": "./",
-  "display": "standalone",
-  "theme_color": "#0f172a",
-  "background_color": "#0f172a",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "theme_color": "#07070a",
+  "background_color": "#07070a",
   "icons": [
     {
       "src": "../Pliki/Ikona.png",

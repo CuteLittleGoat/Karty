@@ -4,22 +4,28 @@
 
 Szerokości wszystkich tabel w obu modułach opisuje **jedna skala tokenów** zdefiniowana w `:root` (`Main/styles.css` i `Second/styles.css`). To jedyne miejsce, w którym stroi się szerokości — nie ma już reguł `th:nth-child(n)` / `td:nth-child(n)`.
 
-| Token | Desktop | Mobile (≤720 px) | Zastosowanie |
-|---|---:|---:|---|
-| `--col-num-xs` | 64 px | 56 px | LP, Nr, %, (+/-) |
-| `--col-num-sm` | 88 px | 80 px | krótkie liczby, liczba miejsc |
-| `--col-weight` | 104 px | 104 px | kolumny `Waga1`–`Waga6` w tabelach statystyk i rankingu |
-| `--col-num-md` | 112 px | 96 px | kwoty, stack, wynik, pot |
-| `--col-flag` | 128 px | 128 px | checkbox z długim nagłówkiem (CzyZamknięta) |
-| `--col-date` | 168 px | 168 px | pole daty (natywny kalendarz) |
-| `--col-text-sm` | 176 px | 176 px | status, IlośćPotwierdzonych, rodzaj gry |
-| `--col-text-md` | 192 px | 192 px | nazwa gracza, PIN z przyciskiem |
-| `--col-text-lg` | 256 px | 208 px | nazwa gry z akcjami, uprawnienia |
-| `--col-actions` | 144 px | 144 px | przyciski w wierszu (Usuń Całkowicie) |
+| Token | Desktop | Mobile (≤720 px) | Modal „Szczegóły”, telefon poziomo | Zastosowanie |
+|---|---:|---:|---:|---|
+| `--col-num-xs` | 64 px | 56 px | 64 px | LP, Nr, %, (+/-) |
+| `--col-num-sm` | 88 px | 80 px | 88 px | krótkie liczby, liczba miejsc |
+| `--col-weight` | 104 px | 104 px | 104 px | kolumny `Waga1`–`Waga6` w tabelach statystyk i rankingu |
+| `--col-num-md` | 112 px | 96 px | **96 px** | kwoty, stack, wynik, pot |
+| `--col-flag` | 128 px | 128 px | **96 px** | checkbox z długim nagłówkiem (CzyZamknięta, Mistrzostwo) |
+| `--col-date` | 168 px | 168 px | 168 px | pole daty (natywny kalendarz) |
+| `--col-text-sm` | 176 px | 176 px | 176 px | status, IlośćPotwierdzonych, rodzaj gry |
+| `--col-text-md` | 192 px | 192 px | **144 px** | nazwa gracza, PIN z przyciskiem |
+| `--col-text-lg` | 256 px | 208 px | 256 px | nazwa gry z akcjami, uprawnienia |
+| `--col-actions` | 144 px | 144 px | **112 px** | przyciski w wierszu (Usuń Całkowicie) |
+
+Ostatnia kolumna dotyczy **wyłącznie** karty `.game-details-modal-card` na telefonie trzymanym poziomo (`@media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 500px)`). Nadpisanie jest zakresowe — postawione na karcie modala, nie w `:root` — więc pozostałe tabele aplikacji zachowują w tym trybie wartości desktopowe. `--col-num-sm` celowo zostaje bez zmian: musi mieścić kwoty pięciocyfrowe (zmierzone: `12000` i `-12000` nie są ucinane).
+
+Suma tokenów tabeli „Szczegółów” spada dzięki temu z 1040 px do 896 px. Przy ekranie 915 × 412 dostępne miejsce to 869 px, więc 27 px pozostaje do przewinięcia w bok (przed zmianą: 219 px). Zejście do zera wymagałoby zwężenia `--col-num-sm`, co ucina kwoty pięciocyfrowe, albo skrócenia nagłówków — świadomie nie zrobiono ani jednego, ani drugiego. Tabela mieści się bez przewijania na ekranie od ok. 945 px szerokości w poziomie.
 
 Wartości nie są dobrane „na oko" — wynikają z **pomiaru minimalnej szerokości, przy której nic się nie ucina**: najdłuższego słowa w nagłówku, treści listy rozwijanej, podpowiedzi w polu i etykiety przycisku. Kolumna nigdy nie dostaje tokenu mniejszego niż zmierzone minimum.
 
 Na telefonie zwężają się wyłącznie kolumny liczbowe. Kolumny z przyciskami, listami i długimi nagłówkami zostają w rozmiarze desktopowym — ich zawartość się nie kurczy, więc każde zwężenie oznaczałoby ucięcie treści.
+
+Wyjątkiem jest tabela w modalu „Szczegóły” na telefonie trzymanym poziomo (kolumna w tabeli wyżej). Zwężone są tam tylko kolumny z zapasem: `Gracz` (kolumna elastyczna, jej token wpływa wyłącznie na `--table-min`), `Mistrzostwo` (sam checkbox, nagłówek i tak zawija się już przy 128 px) oraz `Usuń` (krótka etykieta przycisku). Zmierzone zapotrzebowanie nagłówków: `Rebuy/Add-on` 136 px, `Mistrzostwo` 133 px, `Wypłata` 89 px, `Wpisowe` 83 px, `Punkty` 80 px.
 
 Jednostką jest `rem`, nie `ch`: `ch` zależy od fontu elementu, więc ta sama deklaracja dawała inną szerokość w `<th>` (Rajdhani 12 px) niż w `<td>` (Inter 14,5 px) — różnica sięgała 21 %.
 

@@ -187,6 +187,7 @@
 2. **Przyklejony nagłówek.** Przy przewijaniu długiej listy w dół nagłówek tabeli zostaje na górze, więc zawsze widać, co oznacza dana kolumna.
 3. **Tabele podsumowań** (**Tabela10**, **Tabela11**, **Tabela13**, **Tabela14**, **Tabela15**, **Tabela17**, **Tabela18**) zajmują tylko tyle miejsca, ile potrzebują ich kolumny — nie rozciągają się na całą szerokość ekranu.
 4. **Na telefonie do 560 px** listy tylko do odczytu w widoku gracza zamieniają się w karty: każdy wiersz to osobny kafelek, a przy każdej wartości widnieje nazwa kolumny. Nie trzeba wtedy przewijać w bok.
+5. **Okna na telefonie trzymanym poziomo.** Okna **Uprawnienia gracza** i **Rebuy gracza** rozciągają się wtedy na całą szerokość ekranu, a ramki i odstępy schodzą do minimum — mieści się w nich więcej wierszy naraz. Pozostałe okna (np. z obrazkiem) celowo zostają wąskie.
 5. **Na tablecie** panel boczny z listą sekcji układa się nad treścią, a nie obok niej, żeby tabele miały pełną szerokość ekranu.
 
 ## TOURNAMENT OF POKER – aktualny przepływ (moduł Second)

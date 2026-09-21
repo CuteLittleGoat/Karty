@@ -1162,7 +1162,7 @@ const setupAdminTournament = (rootCard) => {
   table12RebuyModal.className = "modal-overlay";
   table12RebuyModal.setAttribute("aria-hidden", "true");
   table12RebuyModal.innerHTML = `
-    <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="secondTable12RebuyTitle">
+    <div class="modal-card modal-card-sm modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="secondTable12RebuyTitle">
       <div class="modal-header">
         <h3 id="secondTable12RebuyTitle">Rebuy gracza</h3>
         <button type="button" class="icon-button" data-game-rebuy-close aria-label="Zamknij okno">×</button>

@@ -119,6 +119,19 @@
 - Przycisk akceptacji ma klasę `danger`, anulowania `secondary`. Szerokość okna: 520 px na desktopie, 358 px przy viewport 390 px (mieści się bez przewijania w bok).
 - Okno zastępuje systemowe `window.confirm`, które dokleja adres strony i checkbox „Nie pozwalaj … pytać ponownie” — elementy nieusuwalne i nieostylowalne.
 
+## Oba moduły — modale na telefonie trzymanym poziomo
+- Margines między kartą modala a krawędzią ekranu opisuje token `--modal-gutter` w `:root`: `24px` domyślnie, `8px` w trybie poziomym telefonu, `16px` poniżej 520 px szerokości. `.modal-overlay` stosuje go przez `max(var(--modal-gutter), env(safe-area-inset-*))`, więc margines nigdy nie schodzi poniżej strefy bezpiecznej ekranu z wycięciem aparatu.
+- Zapytanie medialne `@media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 500px)` w obu modułach ustawia: `.modal-card { max-height: calc(100dvh - 16px) }`, `.modal-header`/`.modal-footer` `padding: 8px 14px`, `.modal-body` `padding: 10px 14px 12px`.
+- `.game-details-modal-card` i `.summary-notes-modal-card` (Main) dostają w tym trybie `height: calc(100dvh - 16px)`. Wcześniej `max-height: min(82vh, 720px)` z `.modal-card` unieważniało `height: min(92dvh, 900px)` z `.game-details-modal-card`; obie wartości liczone są teraz w `dvh`.
+- `.modal-card-wide` ustawia `width: min(1320px, 100%)` wyłącznie w tym trybie — poza nim klasa nic nie zmienia. Nosi ją okno notatek (`#summaryNotesModal`), modal „Status potwierdzeń” budowany w `Main/app.js`, a w module Second `#secondPlayerPermissionsModal` i modal „Rebuy gracza”. Okno potwierdzenia usunięcia (`#confirmDialogModal`) i modale z obrazkiem celowo jej nie mają i zostają przy 520 px z `.modal-card-sm`.
+- `body` ma wyściółkę `env(safe-area-inset-*)`, a `<meta name="viewport">` w `Main/index.html` — `viewport-fit=cover`. To warunek poprawnego wyglądu w trybie pełnoekranowym PWA oraz na iOS przy `apple-mobile-web-app-status-bar-style: black-translucent`.
+- Kolor `theme-color` (meta oraz `theme_color`/`background_color` w manifeście) to `#07070a`, zgodny z tłem aplikacji `--bg`. Wcześniejsze `#0f172a` (granat) odcinało się od reszty ekranu.
+
+## Main — okno notatek (`#summaryNotesModal`)
+- Karta ma klasy `modal-card modal-card-sm modal-card-wide summary-notes-modal-card`, a treść — `modal-body summary-notes-modal-body`.
+- `.summary-notes-editor`: `min-height: 180px`, `overflow: auto`, `overscroll-behavior: contain`, `white-space: pre-wrap`, `overflow-wrap: anywhere`. `overflow: auto` jest obowiązkowe — przy domyślnym `visible` tekst dłuższy od pola wylewał się poza nie i był obcinany przez `.modal-body { overflow: hidden }` bez żadnego paska przewijania.
+- W trybie poziomym telefonu `.summary-notes-modal-body` dostaje `flex: 1`, `min-height: 0` i `grid-template-rows: auto minmax(0, 1fr) auto`, a `.summary-notes-editor` `min-height: 0` — pole dopasowuje wysokość do okna zamiast trzymać sztywne 180 px. Pusty `.status-text` w tym modalu jest ukrywany (`:empty { display: none }`).
+
 ## Main — zakładka „Kopia zapasowa”
 - Sekcja `.admin-backup` powiela wygląd `.admin-rules`: `margin-top: var(--gap-3)`, `padding: 16px`, `border-radius: var(--radius-md)`, obramowanie `--border2`, tło `rgba(0, 0, 0, 0.32)`, układ `grid` z odstępem `10px`.
 - Etykiety (`.admin-backup label`) mają `font-size: 12px`, wersaliki i `letter-spacing: 0.08em` w kolorze `--muted`.

@@ -2208,7 +2208,7 @@ const getConfirmationsStatusModalController = () => {
   modal.className = "modal-overlay";
   modal.setAttribute("aria-hidden", "true");
   modal.innerHTML = `
-    <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="confirmationsStatusModalTitle">
+    <div class="modal-card modal-card-sm modal-card-wide" role="dialog" aria-modal="true" aria-labelledby="confirmationsStatusModalTitle">
       <div class="modal-header">
         <h3 id="confirmationsStatusModalTitle">Status potwierdzeń</h3>
         <button type="button" class="icon-button" data-confirmations-status-close aria-label="Zamknij okno">×</button>

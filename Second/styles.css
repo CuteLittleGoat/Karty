@@ -59,6 +59,10 @@
 
   --content-max: 1680px;
 
+  /* Margines między kartą modala a krawędzią ekranu. Nadpisywany w zapytaniach
+     medialnych: 8 px na telefonie w poziomie, 16 px na wąskim ekranie. */
+  --modal-gutter: 24px;
+
   /* Tło przyklejonego nagłówka tabeli. Musi być nieprzezroczyste, inaczej
      przewijane wiersze prześwitują przez nagłówek. */
   --table-head-bg: #0a1c16;
@@ -1129,13 +1133,20 @@ button.danger {
   gap: 12px;
 }
 
+/* Margines wokół karty modala — wielkością steruje `--modal-gutter`,
+   a `max()` z `env(safe-area-inset-*)` nie pozwala zejść poniżej strefy
+   bezpiecznej na ekranach z wycięciem aparatu. */
 .modal-overlay {
   position: fixed;
   inset: 0;
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: var(--modal-gutter);
+  padding-top: max(var(--modal-gutter), env(safe-area-inset-top));
+  padding-right: max(var(--modal-gutter), env(safe-area-inset-right));
+  padding-bottom: max(var(--modal-gutter), env(safe-area-inset-bottom));
+  padding-left: max(var(--modal-gutter), env(safe-area-inset-left));
   background: rgba(0, 0, 0, 0.72);
   z-index: 20;
 }
@@ -1420,9 +1431,38 @@ body.modal-open {
   }
 }
 
+/* Telefon w poziomie ma ok. 412 px wysokości — odstępy policzone pod monitor
+   zjadały tu ponad połowę okna modalnego. Margines, sufit wysokości karty i
+   wyściółki nagłówka/treści schodzą do minimum, a okna z listami rozciągają
+   się na całą szerokość ekranu. */
+@media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 500px) {
+  :root {
+    --modal-gutter: 8px;
+  }
+
+  .modal-card {
+    max-height: calc(100dvh - 16px);
+  }
+
+  /* Klasa nakładana punktowo — poza nią karta zachowuje szerokość
+     z `.modal-card-sm`, żeby nie poszerzać okien, gdzie to pogorszenie. */
+  .modal-card-wide {
+    width: min(1320px, 100%);
+  }
+
+  .modal-header,
+  .modal-footer {
+    padding: 8px 14px;
+  }
+
+  .modal-body {
+    padding: 10px 14px 12px;
+  }
+}
+
 @media (max-width: 520px) {
-  .modal-overlay {
-    padding: 16px;
+  :root {
+    --modal-gutter: 16px;
   }
 }
 

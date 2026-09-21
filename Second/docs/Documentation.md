@@ -62,6 +62,17 @@ Warstwa prezentacji tabel opiera się na skali tokenów w `Second/styles.css`; p
 
 ### Główna logika
 - Funkcja: `setupAdminTournament(rootCard)` w `Second/app.js`.
+## Modale na telefonie trzymanym poziomo
+
+Zapytanie medialne `@media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 500px)` w `Second/styles.css` obejmuje wyłącznie telefon w orientacji poziomej — widok pionowy i komputer pozostają bez zmian. Reguły są zgodne z modułem `Main`.
+
+- `--modal-gutter` (token w `:root`) steruje marginesem między kartą modala a krawędzią ekranu: 24 px domyślnie, 8 px na telefonie w poziomie, 16 px poniżej 520 px szerokości. `.modal-overlay` używa go przez `max(var(--modal-gutter), env(safe-area-inset-*))`.
+- `.modal-card { max-height: calc(100dvh - 16px) }` zastępuje w tym trybie sufit `min(82vh, 720px)`.
+- `.modal-card-wide { width: min(1320px, 100%) }` — klasa nakładana punktowo na `#secondPlayerPermissionsModal` i na modal „Rebuy gracza”. Pozostałe okna (m.in. modal z GIF-em) zachowują 520 px z `.modal-card-sm`.
+- `.modal-header`, `.modal-footer` mają `padding: 8px 14px`, a `.modal-body` `padding: 10px 14px 12px`.
+
+Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekranowego (ukrycia systemowego paska stanu) nie da się w nim włączyć — działa wyłącznie jako zwykła strona w przeglądarce.
+
 ### Edycja uprawnień gracza (modal)
 - Zamiast `window.prompt` używany jest dedykowany modal: `#secondPlayerPermissionsModal` w `Second/index.html`.
 - Inicjalizacja i obsługa: `initSecondPlayerPermissionsModal(...)` w `Second/app.js`.
@@ -280,6 +291,7 @@ Warstwa prezentacji tabel opiera się na skali tokenów w `Second/styles.css`; p
 - Po otwarciu pustego modala nie renderuje się żadna kolumna; pierwsza kolumna pojawia się dopiero po kliknięciu `Dodaj Rebuy` (zgodnie z modułem Main).
 - Numeracja nagłówków (`Rebuy1..n`) opiera się na trwałych globalnych indeksach (`indexes[]`) dla całej `Tabela12` i nie zależy od kolejności graczy renderowanych aktualnie w tabeli.
 - Układ modala (`modal-header` + `modal-body`) jest wierną kopią modala z modułu Main.
+- Karta modala ma klasy `modal-card modal-card-sm modal-card-wide` — ostatnia działa tylko na telefonie trzymanym poziomo (patrz „Modale na telefonie trzymanym poziomo”).
 - Dodanie nowej kolumny rebuy nadaje `nextIndex = max(indexes)+1` globalnie dla całego turnieju, ale maksimum liczone jest już tylko z wpisów aktywnych graczy (`players[].id`).
 - `Dodaj Rebuy` aktualizuje najpierw tylko lokalny draft i główny stan UI; zapis pustej kolumny do Firestore nie jest wykonywany od razu.
 - Usunięcie kolumny wykonuje globalną kompaktację (`index > removedIndex => index-1`) we wszystkich wpisach graczy.

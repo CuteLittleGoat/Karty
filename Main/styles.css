@@ -61,6 +61,10 @@
 
   --content-max: 1680px;
 
+  /* Margines między kartą modala a krawędzią ekranu. Nadpisywany w zapytaniach
+     medialnych: 8 px na telefonie w poziomie, 16 px na wąskim ekranie. */
+  --modal-gutter: 24px;
+
   /* Tło przyklejonego nagłówka tabeli. Musi być nieprzezroczyste, inaczej
      przewijane wiersze prześwitują przez nagłówek. */
   --table-head-bg: #0a1c16;
@@ -72,6 +76,15 @@
 
 body {
   margin: 0;
+  /* Aplikacja uruchomiona w trybie pełnoekranowym (manifest `display: fullscreen`)
+     oraz na iOS z `apple-mobile-web-app-status-bar-style: black-translucent`
+     dostaje do dyspozycji cały ekran — razem z pasem pod wycięciem aparatu i
+     pod zegarem. Wyściółka strefy bezpiecznej jest na `body`, a nie na `.page`,
+     bo `.page` ma własne wyściółki nadpisywane w zapytaniach medialnych. */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
   font-family: var(--font-text);
   font-size: var(--fs-body);
   background: radial-gradient(circle at 18% -10%, rgba(212, 175, 55, 0.16), transparent 45%),
@@ -1101,8 +1114,14 @@ select:disabled,
   margin-bottom: 10px;
 }
 
+/* Pole notatek przewija własną treść. Bez `overflow: auto` tekst dłuższy od
+   pola wylewał się poza nie, a `.modal-body` z `overflow: hidden` obcinał go
+   bezpowrotnie — notatka była zapisana, ale niewidoczna i nie do doscrollowania. */
 .summary-notes-editor {
   min-height: 180px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -1718,13 +1737,21 @@ body:not(.is-admin) .player-zone-layout {
   gap: 12px;
 }
 
+/* Margines wokół karty modala. W trybie pełnoekranowym system nie rezerwuje już
+   miejsca na pasek stanu ani na wycięcie aparatu, więc margines nie może zejść
+   poniżej strefy bezpiecznej — stąd `max()` z `env(safe-area-inset-*)`.
+   Wielkość marginesu steruje zmienna `--modal-gutter` (patrz zapytania medialne). */
 .modal-overlay {
   position: fixed;
   inset: 0;
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: var(--modal-gutter);
+  padding-top: max(var(--modal-gutter), env(safe-area-inset-top));
+  padding-right: max(var(--modal-gutter), env(safe-area-inset-right));
+  padding-bottom: max(var(--modal-gutter), env(safe-area-inset-bottom));
+  padding-left: max(var(--modal-gutter), env(safe-area-inset-left));
   background: rgba(0, 0, 0, 0.72);
   z-index: 20;
 }
@@ -2090,11 +2117,79 @@ body.modal-open {
   #statisticsTab .admin-games-layout {
     grid-template-columns: 1fr;
   }
+
+  /* Telefon w poziomie ma ok. 412 px wysokości — odstępy policzone pod monitor
+     zjadały tu ponad połowę okna modalnego. Margines overlaya, sufit wysokości
+     karty i wyściółki nagłówka/treści schodzą do minimum, żeby w „Szczegółach”
+     zmieściły się 3 wiersze zamiast 1. */
+  :root {
+    --modal-gutter: 8px;
+  }
+
+  /* `max-height: min(82vh, 720px)` z `.modal-card` unieważniał `height: min(92dvh, 900px)`
+     z `.game-details-modal-card` — karta była niższa, niż deklarowano. Oba sufity
+     są tu ustawione na tę samą wartość i liczone w `dvh`, czyli w wysokości
+     realnie dostępnej, a nie w `vh`, które ignoruje paski przeglądarki. */
+  .modal-card {
+    max-height: calc(100dvh - 16px);
+  }
+
+  .game-details-modal-card,
+  .summary-notes-modal-card {
+    height: calc(100dvh - 16px);
+  }
+
+  /* Karta notatek dostaje tu określoną wysokość, więc pole tekstowe może
+     zająć wiersz `1fr` siatki i dopasować się do okna zamiast trzymać sztywne
+     180 px, które przy 412 px wysokości ekranu wypychały przyciski poza kartę. */
+  .summary-notes-modal-body {
+    flex: 1;
+    min-height: 0;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .summary-notes-editor {
+    min-height: 0;
+  }
+
+  /* Pusty komunikat statusu to nadal akapit — jego marginesy i wiersz zabierały
+     ok. 50 px z 412 px wysokości ekranu, czyli dwie linijki notatki. */
+  .summary-notes-modal-body .status-text:empty {
+    display: none;
+  }
+
+  /* Okna z listami i notatkami rozciągają się na całą szerokość ekranu.
+     Klasa jest nakładana punktowo, żeby nie poszerzać okienka potwierdzenia
+     usunięcia ani modala z obrazkiem, gdzie szerokie okno jest pogorszeniem. */
+  .modal-card-wide {
+    width: min(1320px, 100%);
+  }
+
+  .modal-header,
+  .modal-footer {
+    padding: 8px 14px;
+  }
+
+  .modal-body {
+    padding: 10px 14px 12px;
+  }
+
+  /* Skala kolumn wyłącznie dla tabeli „Szczegółów” — poza tym modalem tokeny
+     zostają bez zmian, żeby nie ruszać tabel poprawianych 2026-09-14.
+     Kolumny liczbowe (`--col-num-sm`) celowo nie są zwężane: muszą pomieścić
+     kwoty pięciocyfrowe. Zwężone są tylko te z zapasem — nazwa gracza (kolumna
+     elastyczna), checkbox „Mistrzostwo” i przycisk „Usuń”. */
+  .game-details-modal-card {
+    --col-text-md: 9rem;
+    --col-num-md: 6rem;
+    --col-flag: 6rem;
+    --col-actions: 7rem;
+  }
 }
 
 @media (max-width: 520px) {
-  .modal-overlay {
-    padding: 16px;
+  :root {
+    --modal-gutter: 16px;
   }
 }
 

@@ -6,12 +6,12 @@
 - `Main/app.js` — logika Firebase, zakładek, panelu admina, strefy gracza, kalkulatora i modali.
 - `Main/pwa-config.js` — dynamiczne podpinanie manifestu PWA tylko dla wejścia użytkownika (bez `?admin=1`).
 - `Main/pwa-bootstrap.js` — rejestracja Service Workera po załadowaniu aplikacji.
-- `Main/manifest-any.webmanifest` — manifest PWA bez wymuszania orientacji; układ zależy od ustawień urządzenia.
+- `Main/manifest-any.webmanifest` — jedyny manifest PWA modułu; `display: fullscreen` (z `display_override: ["fullscreen", "standalone"]`), bez wymuszania orientacji — układ zależy od ustawień urządzenia.
 - `Main/service-worker.js` — wersjonowany cache PWA (`APP_VERSION`) i strategie per typ zasobu: `network-first` dla HTML, `stale-while-revalidate` dla krytycznych JS/CSS, `cache-first` dla pozostałych statycznych plików.
 
 ## 2. Aktualny zakres funkcjonalny tej wersji
 - Service Worker obsługuje komunikat `SKIP_WAITING`, dzięki czemu nowy worker może szybciej przejąć kontrolę po aktualizacji.
-- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`, `../config/firebase-config.js`) z parametrem wersji (`?v=2026-09-15.1`) w celu twardego bustowania cache między release’ami.
+- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`, `../config/firebase-config.js`) z parametrem wersji (`?v=2026-09-21.1`) w celu twardego bustowania cache między release’ami.
   - `config/firebase-config.js` nie występuje w `APP_SHELL_ASSETS`, ale jako `request.destination === "script"` trafia w Service Workerze do strategii `staleWhileRevalidate`. Bez parametru wersji zmiana samej konfiguracji (np. dodanie klucza App Check) bez podbicia `APP_VERSION` byłaby serwowana z cache o jeden release wstecz. Parametr `?v=` eliminuje ten przypadek niezależnie od `APP_VERSION`.
   - Moduł `Second` nie ma Service Workera, więc jego `index.html` ładuje ten sam plik bez parametru wersji — podlega wyłącznie zwykłemu cache HTTP.
 - `Main/pwa-bootstrap.js` nasłuchuje `updatefound` i `controllerchange`; po instalacji nowego workera wymusza jego aktywację i wykonuje pojedynczy `window.location.reload()`, aby użytkownik pracował na spójnym zestawie assetów.
@@ -254,13 +254,47 @@ Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-order-
 - Uruchomienie z konfiguracji PWA (`?pwa=1&view=user`) wymusza tryb użytkownika: `getAdminMode()` zawsze zwraca `false` dla takiego startu.
 - Wejście administracyjne (`?admin=1`) nie publikuje manifestu, więc przeglądarka traktuje je jako zwykłą stronę/skróty URL zamiast instalowalnej aplikacji user-only.
 - Konfiguracja PWA nie wymusza orientacji ekranu.
+- Manifest ustawia `display: fullscreen` oraz `display_override: ["fullscreen", "standalone"]`. Na Androidzie zainstalowana aplikacja pracuje bez systemowego paska stanu i bez paska nawigacji; `standalone` jest zapasem dla przeglądarek, które `fullscreen` ignorują.
+- Tryb wyświetlania jest częścią zainstalowanego WebAPK, a nie odczytywany przy każdym starcie — po zmianie `display` aplikacja przechodzi na nowy tryb dopiero po przebudowie WebAPK przez przeglądarkę (w tle, z opóźnieniem) albo po ręcznej reinstalacji skrótu z ekranu głównego.
+- Safari nie obsługuje `display: fullscreen` i cofa się do `standalone`, dlatego na iOS pasek stanu pozostaje widoczny. `index.html` deklaruje `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style: black-translucent` oraz `apple-mobile-web-app-title`, przez co treść wchodzi pod pasek, ale zegar i bateria nadal są rysowane na wierzchu.
+- `<meta name="viewport">` ma `viewport-fit=cover`, a `body` wyściółkę `env(safe-area-inset-*)`. Bez tego w trybie pełnoekranowym treść wchodziłaby pod wycięcie aparatu i pod zaokrąglone rogi ekranu. `.modal-overlay` pilnuje strefy bezpiecznej przez `max(var(--modal-gutter), env(safe-area-inset-*))`.
+- `theme_color` i `background_color` w manifeście oraz `<meta name="theme-color">` mają wartość `#07070a`, zgodną z tłem aplikacji (`--bg`). Wcześniejsze `#0f172a` odcinało się od reszty ekranu tam, gdzie pasek systemowy pozostaje widoczny.
 - Tytuł dokumentu (`<title>`) w `index.html` ustawiono na `Poker - rozgrywki`.
 - Manifest PWA ustawia nazwę instalowanej aplikacji na `Poker - rozgrywki` (`short_name`: `Poker`).
 - `start_url` w manifeście jest relatywny (`./index.html?...`), a `scope` ustawiony na `./`, co zapobiega błędom 404 dla hostingu pod prefiksem repozytorium.
-- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-09-15.1`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
+- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-09-21.1`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
 
 - W `initAdminCalculator` każdy wiersz rebuy (`table2Rows` i `table9Rows`) przechowuje parę `rebuys[]` + `rebuyIndexes[]`; dodawanie rebuy nadaje globalny numer `max+1` dla całego aktywnego trybu, a usunięcie rebuy wykonuje globalną kompaktację indeksów bez luk.
 - Tabela5 buduje kolumny `RebuyX` i mapowanie wartości po posortowanych `rebuyIndexes`, zamiast po samym `flatMap` kolejności graczy, dzięki czemu semantyka numeru `RebuyX` pozostaje spójna po dodawaniu/usuwaniu kolumn u różnych graczy.
+
+## Modale na telefonie trzymanym poziomo
+
+Zapytanie medialne `@media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 500px)` w `Main/styles.css` obejmuje wyłącznie telefon w orientacji poziomej — widok pionowy i komputer pozostają bez zmian.
+
+- `--modal-gutter` (token w `:root`) steruje marginesem między kartą modala a krawędzią ekranu: 24 px domyślnie, 8 px na telefonie w poziomie, 16 px poniżej 520 px szerokości. `.modal-overlay` używa go przez `max(var(--modal-gutter), env(safe-area-inset-*))`.
+- `.modal-card { max-height: calc(100dvh - 16px) }` zastępuje w tym trybie sufit `min(82vh, 720px)`. Poprzedni sufit unieważniał `height: min(92dvh, 900px)` z `.game-details-modal-card` — karta „Szczegółów” była niższa, niż deklarowano (338 px zamiast 379 px przy ekranie 915 × 412). Obie reguły liczą teraz wysokość w `dvh`.
+- `.game-details-modal-card` i `.summary-notes-modal-card` dostają `height: calc(100dvh - 16px)`.
+- `.modal-card-wide` ustawia `width: min(1320px, 100%)`. Klasa jest nakładana punktowo — na `#summaryNotesModal`, na modal „Status potwierdzeń” budowany w `getConfirmationsStatusModalController` oraz w module `Second` na `#secondPlayerPermissionsModal` i modal „Rebuy gracza”. Poza tymi oknami `.modal-card-sm` zachowuje 520 px, żeby okno potwierdzenia usunięcia (`#confirmDialogModal`) i modal z obrazkiem nie rozciągały się na cały ekran.
+- `.modal-header`, `.modal-footer` mają `padding: 8px 14px`, a `.modal-body` `padding: 10px 14px 12px`.
+- `.summary-notes-modal-body` dostaje `flex: 1`, `min-height: 0` i `grid-template-rows: auto minmax(0, 1fr) auto`, a `.summary-notes-editor` `min-height: 0` — pole notatek dopasowuje się wtedy do wysokości okna zamiast trzymać sztywne 180 px. Pusty `.status-text` w tym modalu jest ukrywany (`:empty { display: none }`), bo sam akapit zabierał ok. 50 px wysokości.
+- `.game-details-modal-card` nadpisuje lokalnie tokeny kolumn: `--col-text-md: 9rem`, `--col-num-md: 6rem`, `--col-flag: 6rem`, `--col-actions: 7rem`. Nadpisanie jest zakresowe (na karcie modala), więc nie dotyczy pozostałych tabel aplikacji. `--col-num-sm` celowo zostaje bez zmian — musi mieścić kwoty pięciocyfrowe.
+
+Pomiary w Chromium (viewport 915 × 412, `deviceScaleFactor: 2`, tryb dotykowy), okno „Szczegóły” z ośmioma wierszami i kwotami `12000`:
+
+| Miara | Przed | Po |
+|---|---|---|
+| Karta „Szczegóły” | 867 × 338 px (95 % szerokości) | 899 × 396 px (98 %) |
+| Widoczne wiersze graczy | 1 | 3 |
+| Przewijanie tabeli w bok | 219 px | 27 px |
+| Karta „Notatki” / „Statusy” | 520 px (57 %) | 899 px (98 %) |
+| Widoczni gracze w „Statusach” (gra na 12 osób) | 3 | 6 |
+| Przewijanie listy „Statusy” w bok | brak miejsca na kolumny | 0 px |
+
+Tabela „Szczegółów” po zwężeniu tokenów ma 896 px przy 869 px dostępnego miejsca, więc 27 px pozostaje do przewinięcia w bok. Pełne zmieszczenie wymagałoby zwężenia `--col-num-sm`, co ucina kwoty pięciocyfrowe. Na ekranie od ok. 945 px szerokości w poziomie tabela mieści się bez przewijania.
+
+## Pole notatek — przewijanie treści
+
+`.summary-notes-editor` ma `overflow: auto` (oraz `overscroll-behavior: contain`). Wcześniej pole miało domyślne `overflow: visible`, a jego kontener `.modal-body` — `overflow: hidden`. Tekst dłuższy od pola wylewał się poza nie i był obcinany bez żadnego paska przewijania: notatka pozostawała zapisana w Firestore, ale jej końcówka była niedostępna do odczytu (pomiar: pole 178 px wysokości przy treści wymagającej 445 px, czyli ok. 4–5 widocznych linii z 20 na telefonie w poziomie i ok. 13 z 20 w pionie).
 
 ## Aktualizacja techniczna: Kalkulator (Organizacja + Żetony)
 - `Main/index.html`: w sidebarze kalkulatora dodano tryby `organization`, `chips-cash1`, `chips-cash2`, `chips-tournament1`, `chips-tournament2`.

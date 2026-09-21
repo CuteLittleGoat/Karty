@@ -26,9 +26,15 @@ Instrukcja jest podzielona na dwie części:
 7a. **Przycisk Instrukcja** widzi tylko administrator — w widoku gracza go nie ma.
 8. **Listy w Strefie Gracza na wąskim ekranie.** Na telefonie o szerokości do 560 px listy tylko do odczytu (**Najbliższa Gra**, **Gry do Potwierdzenia**, okno **Kolejność potwierdzeń**) zamieniają się w karty: każdy wiersz to osobny kafelek, a przy każdej wartości widnieje nazwa kolumny. Nie trzeba wtedy przewijać w bok.
 9. **Na tablecie** panele boczne (**Lata**, **Ranking**, **Sekcja**) układają się nad i pod treścią, a nie obok niej — dzięki temu tabele mają pełną szerokość ekranu.
+10. **Okna na telefonie trzymanym poziomo.** Okna **Szczegóły**, **Notatki do gry** / **Notatki po grze** oraz **Statusy** rozciągają się wtedy na całą szerokość i wysokość ekranu, a ramki i odstępy schodzą do minimum — w „Szczegółach” widać 3 wiersze graczy zamiast 1, a w „Statusach” 6 graczy zamiast 3. W „Szczegółach” tabela nadal wystaje o ok. 27 px, więc ostatnią kolumnę dosuwa się krótkim przesunięciem palca w bok. Okienko **potwierdzenia usunięcia** i okno z obrazkiem celowo zostają wąskie, żeby przyciski „Anuluj” i „Usuń” nie oddaliły się od siebie.
+11. **Notatki dłuższe niż okno** przewija się palcem wewnątrz pola tekstowego. Wcześniej dalszy tekst był niewidoczny — jeśli w starych notatkach czegoś brakowało, teraz powinno być widoczne w całości.
 7. Jeśli otworzysz moduł w trybie użytkownika (bez `?admin=1`), przeglądarka może zaproponować instalację PWA lub dodanie aplikacji do ekranu głównego.
 8. Jeśli otworzysz moduł z parametrem `?admin=1`, wejście administracyjne działa jako zwykła strona/skróty URL — bez publikowania manifestu PWA dla tego adresu.
 9. W uruchomieniu PWA (aplikacja zainstalowana na urządzeniu) moduł Main nie wymusza orientacji — aplikacja działa zgodnie z ustawieniem orientacji urządzenia.
+9a. **Tryb pełnoekranowy (Android).** Aplikacja zainstalowana na ekranie głównym uruchamia się bez górnego paska systemowego (godzina, bateria, powiadomienia) i bez dolnego paska nawigacji. Z aplikacji wychodzisz gestem — przeciągnięciem palcem od dolnej krawędzi ekranu.
+9b. **Zmiana trybu wymaga ponownej instalacji.** Telefon zapamiętuje tryb wyświetlania w momencie dodania skrótu. Jeżeli po aktualizacji pasek nadal jest widoczny, usuń ikonę aplikacji z ekranu głównego i dodaj ją jeszcze raz.
+9c. **Na iPhone pasek stanu pozostaje.** Safari nie pozwala aplikacjom internetowym ukryć górnego paska. Treść aplikacji wchodzi pod pasek, ale zegar i bateria nadal są widoczne. To ograniczenie systemu, nie błąd aplikacji.
+9d. **W zwykłej karcie przeglądarki pasek stanu również pozostaje** — tryb pełnoekranowy działa tylko dla aplikacji zainstalowanej na ekranie głównym.
 10. Nazwa karty w przeglądarce dla modułu Main to **"Poker - rozgrywki"**.
 11. Po instalacji PWA aplikacja na urządzeniu również wyświetla nazwę **"Poker - rozgrywki"**.
 
