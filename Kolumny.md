@@ -6,7 +6,7 @@ Szerokości wszystkich tabel w obu modułach opisuje **jedna skala tokenów** zd
 
 | Token | Desktop | Mobile (≤720 px) | Modal „Szczegóły”, telefon poziomo | Zastosowanie |
 |---|---:|---:|---:|---|
-| `--col-num-xs` | 64 px | 56 px | 64 px | LP, Nr, %, (+/-) |
+| `--col-num-xs` | 64 px | 56 px | 64 px | LP, Lp., Nr, % |
 | `--col-num-sm` | 88 px | 80 px | 88 px | krótkie liczby, liczba miejsc |
 | `--col-weight` | 104 px | 104 px | 104 px | kolumny `Waga1`–`Waga6` w tabelach statystyk i rankingu |
 | `--col-num-md` | 112 px | 96 px | **96 px** | kwoty, stack, wynik, pot |
@@ -25,7 +25,7 @@ Wartości nie są dobrane „na oko" — wynikają z **pomiaru minimalnej szerok
 
 Na telefonie zwężają się wyłącznie kolumny liczbowe. Kolumny z przyciskami, listami i długimi nagłówkami zostają w rozmiarze desktopowym — ich zawartość się nie kurczy, więc każde zwężenie oznaczałoby ucięcie treści.
 
-Wyjątkiem jest tabela w modalu „Szczegóły” na telefonie trzymanym poziomo (kolumna w tabeli wyżej). Zwężone są tam tylko kolumny z zapasem: `Gracz` (kolumna elastyczna, jej token wpływa wyłącznie na `--table-min`), `Mistrzostwo` (sam checkbox, nagłówek i tak zawija się już przy 128 px) oraz `Usuń` (krótka etykieta przycisku). Zmierzone zapotrzebowanie nagłówków: `Rebuy/Add-on` 136 px, `Mistrzostwo` 133 px, `Wypłata` 89 px, `Wpisowe` 83 px, `Punkty` 80 px.
+Wyjątkiem jest tabela w modalu „Szczegóły” na telefonie trzymanym poziomo (kolumna w tabeli wyżej). Zwężone są tam tylko kolumny z zapasem: `Gracz` (kolumna elastyczna, jej token wpływa wyłącznie na `--table-min`), `Mistrzostwo` (sam checkbox, nagłówek i tak zawija się już przy 128 px) oraz `Usuń` (krótka etykieta przycisku). Zmierzone zapotrzebowanie nagłówków w jednej linii (tekst + wyściółka): `Mistrzostwo` 133 px, `Powroty` 96 px, `Punkty` 81 px, `Koniec` 75 px, `Start` 66 px. `Żetony na koniec` (170 px w jednej linii) zawija się między wyrazami na dwie linie — najdłuższy wyraz mieści się w 88 px.
 
 Jednostką jest `rem`, nie `ch`: `ch` zależy od fontu elementu, więc ta sama deklaracja dawała inną szerokość w `<th>` (Rajdhani 12 px) niż w `<td>` (Inter 14,5 px) — różnica sięgała 21 %.
 
@@ -65,7 +65,7 @@ Wszystkie tabele mają `table-layout: fixed`, dlatego zadeklarowana szerokość 
 
 ### Nagłówek z checkboxem ukrywania kolumny
 
-Dotyczy tabel `.admin-games-players-stats-table` w zakładkach **Statystyki** i **Ranking graczy** (tylko widok administratora — w widoku gracza checkboxów nie ma).
+Dotyczy tabel `.admin-games-players-stats-table` w zakładkach **Statystyki** i **Bilans żetonów** (tylko widok administratora — w widoku gracza checkboxów nie ma). Kolumna `Lp.` nie ma checkboxa — jest widoczna zawsze.
 
 - Komórka nagłówka ma układ `.stats-column-header` (flex, `flex-wrap: wrap`, `justify-content: flex-start`, `gap: 4px 10px`).
 - Nazwa kolumny siedzi w `<span class="stats-column-label">` z `flex: 1 0 100%`, więc zajmuje całą szerokość komórki i **checkbox zawsze schodzi do osobnej linii pod nazwą**, przy lewej krawędzi.
@@ -133,24 +133,32 @@ Dodatkowo dla każdego stołu:
 - Kolumna `Status` zawiera wyłącznie etykietę statusu płatności (układ w `.payment-status-cell`, bez przycisku zmiany).
 - Zmiana statusu następuje w sekcji `Lista graczy` przez zaznaczenie/odznaczenie okrągłej kontrolki w kolumnie `Status`.
 
-## Moduł Main — Ranking (Gry admina, Statystyki i Ranking graczy)
+## Moduł Main — Ranking (Gry admina, Statystyki i Bilans żetonów)
 1. Miejsce
 2. Gracz
 3. Wynik
 
-## Moduł Main — Ranking graczy (tabela graczy)
+## Moduł Main — tabela graczy w zakładkach Statystyki i Bilans żetonów
 
-Tabela ma dokładnie te same 18 kolumn i te same tokeny co tabela graczy w zakładce **Statystyki**:
+Obie zakładki mają tę samą tabelę z 19 kolumnami:
 
-`Gracz | Mistrzostwo | Waga1 | Ilość Spotkań | Waga2 | % udział | Punkty | Waga3 | (+/-) | Waga4 | Wypłata | Waga5 | Wpłaty | Waga6 | Suma z rozegranych gier | % Rozegranych gier | % Wszystkich gier | Wynik`
+`Lp. | Gracz | Mistrzostwo | Waga1 | Ilość Spotkań | Waga2 | % udział | Punkty | Waga3 | Żetony na koniec | Waga4 | Wygrane żetony | Waga5 | Żetony na start | Waga6 | Suma z rozegranych gier | % Rozegranych gier | % Wszystkich gier | Wynik`
 
+- `Lp.` → `--col-num-xs`.
 - `Gracz` jest kolumną elastyczną (`<col>` bez szerokości).
 - `Mistrzostwo`, `Suma z rozegranych gier`, `% Rozegranych gier` → `--col-flag`.
 - `Waga1`–`Waga6` → `--col-weight`.
 - `% Wszystkich gier` → `--col-num-md`.
-- pozostałe → `--col-num-sm`.
+- pozostałe (`Ilość Spotkań`, `% udział`, `Punkty`, `Żetony na koniec`, `Wygrane żetony`, `Żetony na start`, `Wynik`) → `--col-num-sm`.
+- `--table-min` to suma wszystkich 19 tokenów (`--col-text-md` dla kolumny `Gracz`).
+- W widoku gracza kolumny ukryte przez administratora znikają razem ze swoim `<col>`, a `--table-min` jest przeliczany z widocznych kolumn. Dzięki temu każda widoczna kolumna zachowuje własny token — szerokości nie przesuwają się na sąsiednie kolumny.
+- Nagłówki `Żetony na koniec`, `Wygrane żetony`, `Żetony na start` w kolumnie 88 px zawijają się na dwie linie między wyrazami (zmierzone z fontem Rajdhani: brak łamania w środku wyrazu i brak ucinania).
 
-Różnica wobec „Statystyk” dotyczy wyłącznie źródła danych (`UserGames` zamiast `Tables`) i kolekcji z ustawieniami (`user_games_stats` zamiast `admin_games_stats`), nie układu kolumn.
+Różnica między zakładkami dotyczy wyłącznie źródła danych (`UserGames` zamiast `Tables`) i kolekcji z ustawieniami (`user_games_stats` zamiast `admin_games_stats`), nie układu kolumn.
+
+Tabela opisowa nad tabelą graczy: `Opis | Wartość` z wierszami `Liczba gier` i `Łącznie żetonów`.
+
+Tabela statystyk w zakładce **Gry admina** ma osobny układ (bez `Lp.`, z nagłówkami `(+/-)`, `Wypłata`, `Wpłaty`) i nie jest objęta powyższym opisem.
 
 
 ### Układ paneli Statystyk (widok gracza, desktop)
@@ -209,6 +217,20 @@ Różnica wobec „Statystyk” dotyczy wyłącznie źródła danych (`UserGames
 5. IlośćPotwierdzonych — wypełniana **tylko dla gier zaimportowanych**; dla gier założonych ręcznie komórka pozostaje pusta
 6. Akcje (`Usuń`)
 
+## Moduł Main — modal „Szczegóły” (Gry admina, Gry użytkowników)
+1. LP — `--col-num-sm`
+2. Gracz — kolumna elastyczna
+3. Start (przycisk zbiorczy) — `--col-num-md`
+4. Powroty (przycisk otwierający `Rebuy gracza`) — `--col-num-md`
+5. Koniec — `--col-num-sm`
+6. Żetony na koniec — `--col-num-sm`
+7. Punkty — `--col-num-sm`
+8. Mistrzostwo — `--col-flag`
+9. Akcje (`Usuń`) — `--col-actions`
+
+## Moduł Main — podsumowanie gry (Gry admina, Gry użytkowników)
+`Gracz | Start | Powroty | Koniec | Żetony na koniec | % puli | Punkty | Mistrzostwo` — tabela bez `<colgroup>`, szerokości wynikają z treści.
+
 ## Moduł Main — listy potwierdzeń
 ### Modal „Status potwierdzeń” (Gry admina, Gry użytkowników, widok gracza)
 1. Nr
@@ -229,12 +251,8 @@ Różnica wobec „Statystyk” dotyczy wyłącznie źródła danych (`UserGames
 - Kolumna `Nr` używa tokenu `--col-num-xs` i jest wyrównana do środka.
 - Potwierdzeni są na górze w kolejności potwierdzania, niepotwierdzeni pod spodem w kolejności dopisania do gry i z pustą komórką `Nr`.
 
-## Main — kolumny nowych tabel kalkulatora
-- Zakładka `Organizacja`:
-  - `TABELA1`: `KALKULATOR | ORGANIZACJA | POT`.
-  - `TABELA2`: `<dynamiczny nagłówek = wartość ORGANIZACJA> | PODZIAŁ | AKCJE`.
-  - `TABELA2`: przycisk `Dodaj` jest pod tabelą po lewej, a `Usuń` jest po prawej stronie w każdym wierszu (kolumna `AKCJE`).
-- Zakładki `Żetony ...`:
+## Main — kolumny tabel żetonów w kalkulatorze
+- Zakładki `Żetony niski nominał 1`, `Żetony niski nominał 2`, `Żetony wysoki nominał 1`, `Żetony wysoki nominał 2` (identyczny układ):
   - `TABELAA`: `NOMINAŁ | SZTUK | STACK | AKCJE`.
   - `TABELAA`: przycisk `Dodaj` jest pod tabelą po lewej, a `Usuń` jest po prawej stronie każdego wiersza w kolumnie `AKCJE`.
   - `TABELAA`: `Łącznie Stack` nie jest osobnym wierszem tabeli — jest prezentowane jako tekst pod tabelą.

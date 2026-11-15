@@ -12,12 +12,12 @@ Instrukcja jest podzielona na dwie części:
 ## 1. Start aplikacji
 
 1. Otwórz plik `Main/index.html` w przeglądarce.
-2. Na górze ekranu zobaczysz nagłówek oraz sekcję z ikoną `Pliki/Ikona.png` i przyciskiem **Instrukcja** (prawy górny róg, ikona po lewej stronie przycisku w tej samej linii).
+2. Na górze ekranu, w prawym górnym rogu, zobaczysz ikonę `Pliki/Ikona.png` i przyciski (ikona po lewej stronie przycisków, w tej samej linii). Nagłówek nie ma tytułu tekstowego.
 3. Jeśli otworzysz moduł z parametrem `?admin=1`, najpierw pojawi się okno logowania administratora z polem hasła.
 4. Po poprawnym wpisaniu hasła zobaczysz dwa główne obszary:
    - **Panel Administratora** (duża karta z wieloma zakładkami),
    - **Panel użytkownika** (zakładki: Aktualności, Regulamin, Strefa Gracza).
-4a. W prawym górnym rogu (obok przycisku **Instrukcja**) znajduje się czerwony przycisk **Przycisnąć w razie kontroli celno-skarbowej** — widoczny zarówno w trybie użytkownika, jak i administratora.
+4a. W prawym górnym rogu (obok przycisku **Instrukcja**) znajduje się czerwony przycisk **Nie wciskać** — widoczny zarówno w trybie użytkownika, jak i administratora.
 4b. Po kliknięciu tego przycisku otworzy się modal z GIF-em `Koza.gif` (bez tytułu tekstowego).
 4c. Modal zamkniesz na trzy sposoby: przyciskiem `×`, klawiszem `Esc` albo kliknięciem w tło poza oknem.
 5. Kliknięcie **Instrukcja** otwiera okno modalne z instrukcją; zamkniesz je przyciskiem `×`.
@@ -87,7 +87,7 @@ Dostępne przyciski sekcji (widoczne zależnie od uprawnień):
 - **Gry do Potwierdzenia**,
 - **Gry Użytkowników**,
 - **Statystyki**,
-- **Ranking graczy**.
+- **Bilans żetonów**.
 
 **Wystarczy jeden PIN.** Po wejściu do „Strefy Gracza” wszystkie sekcje, do których masz uprawnienia, są od razu odblokowane — żadna nie pyta o PIN po raz drugi. Sekcje bez uprawnienia w ogóle się nie pokazują.
 
@@ -208,32 +208,34 @@ W modalu:
 2. Kliknij **Dodaj**, aby dodać nowego uczestnika (wiersz).
 3. W każdym wierszu ustaw:
    - **Gracz** (lista wyboru),
-   - **Wpisowe**,
-   - **Rebuy/Add-on**,
-   - **Wypłata**,
+   - **Start** — żetony na start,
+   - **Powroty** — dokupione żetony (przycisk, patrz pkt 8),
+   - **Koniec** — żetony gracza na koniec gry,
    - **Punkty**,
    - **Mistrzostwo** (checkbox).
-4. Kolumna **+/-** liczy się automatycznie.
+4. Kolumna **Żetony na koniec** liczy się automatycznie: `Koniec − (Start + Powroty)`.
 5. Kliknij **Usuń** w wierszu, aby usunąć konkretnego gracza z tej gry.
-6. Nagłówek **Wpisowe** (przycisk zbiorczy) pozwala nadać jedną wartość wpisowego wszystkim wierszom naraz.
-7. Kolumna **Rebuy/Add-on** ma zwykły nagłówek tekstowy (bez akcji zbiorczej).
-8. W każdym wierszu kliknij przycisk z wartością w kolumnie **Rebuy/Add-on**, aby otworzyć okno `Rebuy gracza` i dodać/usunąć kolejne wpisy rebuy (tak jak w Kalkulatorze).
+6. Nagłówek **Start** (przycisk zbiorczy) pozwala nadać jedną wartość wszystkim wierszom naraz — po kliknięciu wpisz liczbę w okienku „Podaj wartość kolumny Start dla wszystkich graczy”.
+7. Kolumna **Powroty** ma zwykły nagłówek tekstowy (bez akcji zbiorczej).
+8. W każdym wierszu kliknij przycisk z wartością w kolumnie **Powroty**, aby otworzyć okno `Rebuy gracza` i dodać/usunąć kolejne wpisy (tak jak w Kalkulatorze).
 9. W oknie `Rebuy gracza` nowe kolumny są numerowane per gracz (`Rebuy1`, `Rebuy2`, …); po usunięciu ostatniej kolumny kolejne dodanie przywraca numer ostatniego dostępnego rebuy.
-10. Suma z okna `Rebuy gracza` jest wyświetlana na przycisku w wierszu i automatycznie uwzględniana w kolumnach **+/-**, puli i podsumowaniach.
+10. Suma z okna `Rebuy gracza` jest wyświetlana na przycisku w wierszu i automatycznie uwzględniana w kolumnie **Żetony na koniec**, puli i podsumowaniach.
 11. Modal szczegółów nie koloruje już wierszy po statusie potwierdzenia.
-12. Pola **Wpisowe**, **Wypłata**, **Punkty** oraz wartości w oknie `Rebuy gracza` otwierają na urządzeniach mobilnych klawiaturę numeryczną.
+12. Pola **Start**, **Koniec**, **Punkty** oraz wartości w oknie `Rebuy gracza` otwierają na urządzeniach mobilnych klawiaturę numeryczną.
 13. Gdy lista graczy jest długa, sekcja tabeli w modalu ma pionowy pasek przewijania — przewiń w dół, aby edytować kolejne wiersze.
 14. Zamknięcie modalu: przycisk `×`, kliknięcie poza modalem lub klawisz `Esc`.
 
 ### F) Modal „Notatki do gry”
+Nowa gra ma puste pole notatek — wpisujesz w nim dowolny tekst od zera.
+
 Przyciski:
 - **Złoty / Zielony / Czerwony / Biały** — zmieniają kolor zaznaczonego fragmentu tekstu (kolor można zmieniać wielokrotnie),
 - **Zapisz** — zapisuje treść notatek,
-- **Domyślne** — przywraca domyślną treść szablonu notatek dla gry.
+- **Usuń** — czyści notatkę (zapisuje puste pole).
 
 ### G) Podsumowania pod tabelą
-Pod każdą grą wyświetla się podsumowanie z puli, wypłat, wyników i procentów.
-Jeśli wypłaty nie zgadzają się z pulą, pojawia się czerwone ostrzeżenie.
+Pod każdą grą wyświetla się podsumowanie z kolumnami **Gracz**, **Start**, **Powroty**, **Koniec**, **Żetony na koniec**, **% puli**, **Punkty**, **Mistrzostwo**.
+Jeśli suma kolumny **Koniec** nie zgadza się z sumą kolumn **Start** i **Powroty**, pojawia się czerwone ostrzeżenie „Nie zgadza się suma kolumny Koniec z sumą kolumn Start i Powroty”.
 
 ## 3.5. „Statystyki” (widok gracza)
 
@@ -242,31 +244,36 @@ Jeśli wypłaty nie zgadzają się z pulą, pojawia się czerwone ostrzeżenie.
 3. Wybierz rok z panelu **Lata**.
    - Dane i lista lat pojawiają się automatycznie od razu po poprawnej weryfikacji PIN (bez ręcznego odświeżania strony).
 4. Przeglądaj:
-   - tabelę statystyk zbiorczych,
+   - tabelę statystyk zbiorczych (**Liczba gier**, **Łącznie żetonów**),
    - tabelę statystyk graczy,
    - ranking.
-5. Kliknij **Eksportuj**, aby pobrać dane statystyk.
-6. Na komputerze panel **Ranking** jest po prawej stronie tabeli **Statystyki**.
-7. Na telefonie i na tablecie (do 1180 px szerokości) panel **Ranking** wyświetla się pod tabelą **Statystyki** — układ przechodzi na jedną kolumnę, żeby tabela miała pełną szerokość ekranu.
-8. W telefonie poziomo (mobile landscape) układ również przełącza się na jedną kolumnę, więc panele **Lata** i **Ranking** pojawiają się pod treścią, a nie obok niej.
+5. Pierwsza kolumna tabeli graczy, **Lp.**, numeruje graczy od 1 w kolejności tabeli (od największej wartości w kolumnie **Żetony na koniec**). Ta kolumna jest widoczna zawsze.
+6. Kolumny z żetonami w tabeli graczy:
+   - **Żetony na start** — suma żetonów na start i dokupionych w zaliczonych grach,
+   - **Wygrane żetony** — suma żetonów na koniec gier (kolumna **Koniec** ze szczegółów gier),
+   - **Żetony na koniec** — bilans gracza: wygrane żetony minus żetony na start.
+7. Kliknij **Eksportuj**, aby pobrać dane statystyk (plik zawiera także kolumnę **Lp.**).
+8. Na komputerze panel **Ranking** jest po prawej stronie tabeli **Statystyki**.
+9. Na telefonie i na tablecie (do 1180 px szerokości) panel **Ranking** wyświetla się pod tabelą **Statystyki** — układ przechodzi na jedną kolumnę, żeby tabela miała pełną szerokość ekranu.
+10. W telefonie poziomo (mobile landscape) układ również przełącza się na jedną kolumnę, więc panele **Lata** i **Ranking** pojawiają się pod treścią, a nie obok niej.
 
-## 3.6. „Ranking graczy” (widok gracza)
+## 3.6. „Bilans żetonów” (widok gracza)
 
-Sekcja wygląda dokładnie tak samo jak **Statystyki**, ale pokazuje inne liczby.
+Sekcja wygląda dokładnie tak samo jak **Statystyki** (te same kolumny, w tym **Lp.**), ale pokazuje inne liczby.
 
 **Czym różni się od „Statystyk”:**
 - **Statystyki** liczą gry z zakładki **Gry admina** — czyli te, które administrator sprawdził i zatwierdził.
-- **Ranking graczy** liczy gry z zakładki **Gry Użytkowników** — czyli dane w takiej postaci, w jakiej wpisali je sami gracze, bez czekania na sprawdzenie przez administratora.
-- Do rankingu wchodzi wyłącznie gra z zaznaczoną kolumną **CzyZamknięta**. Odznaczenie tej kolumny natychmiast usuwa grę z rankingu.
+- **Bilans żetonów** liczy gry z zakładki **Gry Użytkowników** — czyli dane w takiej postaci, w jakiej wpisali je sami gracze, bez czekania na sprawdzenie przez administratora.
+- Do bilansu wchodzi wyłącznie gra z zaznaczoną kolumną **CzyZamknięta**. Odznaczenie tej kolumny natychmiast usuwa grę z bilansu.
 
 **Jak wejść:**
-1. Kliknij przycisk **Ranking graczy** w panelu **Sekcja**.
+1. Kliknij przycisk **Bilans żetonów** w panelu **Sekcja**.
 2. Wybierz rok z panelu **Lata**.
-   - Lata w tej sekcji są nadawane **osobno** od lat statystyk. Możesz mieć dostęp do innych roczników w „Statystykach", a do innych w „Rankingu graczy".
+   - Lata w tej sekcji są nadawane **osobno** od lat statystyk. Możesz mieć dostęp do innych roczników w „Statystykach", a do innych w „Bilansie żetonów".
 3. Przeglądaj tabelę zbiorczą, tabelę graczy i panel **Ranking**.
-4. Kliknij **Eksportuj**, aby pobrać dane do pliku XLSX (nazwa pliku zaczyna się od godziny i daty, a kończy słowem `Ranking` i rokiem).
+4. Kliknij **Eksportuj**, aby pobrać dane do pliku XLSX (nazwa pliku zaczyna się od godziny i daty, a kończy słowami `Bilans żetonów` i rokiem).
 
-Które kolumny widzisz — decyduje administrator osobno dla rankingu i osobno dla statystyk.
+Które kolumny widzisz — decyduje administrator osobno dla bilansu żetonów i osobno dla statystyk. Kolumny **Lp.** i **Gracz** widzisz zawsze.
 
 ---
 
@@ -294,7 +301,7 @@ Na górze panelu są przyciski zakładek:
 - Gracze,
 - Gry admina,
 - Statystyki,
-- Ranking graczy,
+- Bilans żetonów,
 - Gry użytkowników,
 - Najbliższa gra,
 - Gry do potwierdzenia,
@@ -361,7 +368,7 @@ To kluczowa sekcja do zarządzania kontami graczy i uprawnieniami.
 - **Aplikacja** — checkbox dostępu do aplikacji (włącza/wyłącza aktywność gracza),
 - **Nazwa** — nazwa gracza,
 - **PIN** — 5-cyfrowy PIN logowania do stref,
-- **Uprawnienia** — zestaw dostępów do sekcji; przy uprawnieniach „Statystyki” i „Ranking graczy” plakietka pokazuje dodatkowo liczbę przyznanych lat,
+- **Uprawnienia** — zestaw dostępów do sekcji; przy uprawnieniach „Statystyki” i „Bilans żetonów” plakietka pokazuje dodatkowo liczbę przyznanych lat,
 - kolumna akcji — usunięcie gracza.
 
 ### 9.2. Dodanie nowego gracza — krok po kroku
@@ -373,13 +380,13 @@ To kluczowa sekcja do zarządzania kontami graczy i uprawnieniami.
      - ręcznie (dokładnie 5 cyfr) albo
      - kliknij **Losuj**, aby system wygenerował unikalny PIN.
 3. W kolumnie **Uprawnienia** kliknij **Edytuj**.
-4. W modalu uprawnień zaznacz checkboxy sekcji, które gracz ma widzieć. Do wyboru są: **Strefa Gracza**, **Regulamin**, **Najbliższa gra**, **Czat**, **Gry do potwierdzenia**, **Gry użytkowników**, **Statystyki**, **Ranking graczy**.
+4. W modalu uprawnień zaznacz checkboxy sekcji, które gracz ma widzieć. Do wyboru są: **Strefa Gracza**, **Regulamin**, **Najbliższa gra**, **Czat**, **Gry do potwierdzenia**, **Gry użytkowników**, **Statystyki**, **Bilans żetonów**.
    - **Strefa Gracza** jest nadrzędna — bez niej gracz nie wejdzie do żadnej z pozostałych sekcji.
    - **Regulamin** jest od teraz zwykłym uprawnieniem. Gracz bez tego uprawnienia nie zobaczy regulaminu w ogóle.
-5. Jeśli zaznaczysz uprawnienie do **Statystyki** albo do **Ranking graczy**, obok pojawi się przycisk **Lata**:
+5. Jeśli zaznaczysz uprawnienie do **Statystyki** albo do **Bilans żetonów**, obok pojawi się przycisk **Lata**:
    - kliknij **Lata**,
    - zaznacz konkretne lata, które gracz może przeglądać.
-   - **To są dwie niezależne listy.** Lata dla „Statystyk” bierze się z gier w zakładce „Gry admina”, a lata dla „Rankingu graczy” z gier w zakładce „Gry użytkowników”. Nagłówek okna mówi, którą listę właśnie ustawiasz („Lata statystyk” albo „Lata rankingu”).
+   - **To są dwie niezależne listy.** Lata dla „Statystyk” bierze się z gier w zakładce „Gry admina”, a lata dla „Bilansu żetonów” z gier w zakładce „Gry użytkowników”. Nagłówek okna mówi, którą listę właśnie ustawiasz („Lata statystyk” albo „Lata bilansu żetonów”).
 6. Zamknij modal uprawnień przyciskiem `×`.
 
 Efekt:
@@ -389,7 +396,7 @@ Efekt:
 ### 9.3. Edycja istniejącego gracza
 - Zmień nazwę bezpośrednio w polu nazwy.
 - Zmień PIN ręcznie albo użyj **Losuj**.
-- Kliknij **Edytuj**, aby zmienić uprawnienia oraz lata statystyk i lata rankingu.
+- Kliknij **Edytuj**, aby zmienić uprawnienia oraz lata statystyk i lata bilansu żetonów.
 
 > **Gdzie widać zmienioną nazwę gracza.** Nowa nazwa pojawia się od razu na listach wyboru gracza — czyli w modalach **Szczegóły** gry oraz w kalkulatorze. Natomiast **podsumowania pod tabelą gier, tabela statystyk, ranking, okno „Status potwierdzeń” i zakładka „Gry do potwierdzenia” nadal pokazują nazwę zapisaną w momencie dodania gracza do danej gry** — dla już istniejących gier stara nazwa pozostaje. Liczby i historia gracza nie są tym uszkodzone: gracz rozpoznawany jest po swoim ID, a nie po nazwie.
 
@@ -421,7 +428,7 @@ Sekcja zarządzania główną listą gier administracyjnych.
 W każdym wierszu gry:
 - **Szczegóły** — modal szczegółów gry (uczestnicy i wartości),
 - **Usuń** — usuwa grę wraz z powiązanymi szczegółami i potwierdzeniami,
-- checkbox **CzyZamknięta** — **decyduje, czy gra liczy się do statystyk i rankingu**. Zaznacz go dopiero, gdy sprawdzisz dane gry; tylko zaznaczone gry są uwzględniane w tabeli statystyk, w rankingu oraz w pozycjach „Gry zaliczone do statystyk” i „Łączna pula”,
+- checkbox **CzyZamknięta** — **decyduje, czy gra liczy się do statystyk i rankingu**. Zaznacz go dopiero, gdy sprawdzisz dane gry; tylko zaznaczone gry są uwzględniane w tabeli statystyk, w rankingu oraz w pozycjach „Gry zaliczone do statystyk” i „Łącznie żetonów”,
 - **Aktualizuj z gry gracza** — przycisk widoczny wyłącznie przy grach, które przyszły z zakładki „Gry użytkowników”; pobiera od gracza aktualną wersję składu i kwot. Obok przycisku widnieje data ostatniego odświeżenia,
 - kolumna **IlośćPotwierdzonych** — licznik `potwierdzeni/zapisani` i przycisk **Statusy** pojawiają się **tylko przy grach zaimportowanych** od graczy. Gry założone ręcznie w tej zakładce mają tę komórkę pustą, bo nie zbiera się w nich potwierdzeń.
 
@@ -430,22 +437,27 @@ W każdym wierszu gry:
 ### 10.4. Modal „Szczegóły” gry admina
 1. W pierwszej linii modalu odczytasz szczegóły gry (`Nazwa | Rodzaj gry | Data | Pula | Ilość graczy`) — ta linia zajmuje miejsce wcześniejszego tytułu „Szczegóły gry”.
 2. Kliknij **Dodaj**, aby dodać uczestnika.
-3. Wypełnij kolumny: gracz, wpisowe, rebuy/add-on, wypłata, punkty, mistrzostwo.
-4. **+/-** wylicza się automatycznie.
+3. Wypełnij kolumny: **Gracz**, **Start**, **Powroty**, **Koniec**, **Punkty**, **Mistrzostwo**.
+4. **Żetony na koniec** wylicza się automatycznie (`Koniec − (Start + Powroty)`).
 5. Kliknij **Usuń** w wierszu, aby usunąć jednego uczestnika.
-6. Kliknij nagłówek-przycisk **Wpisowe**, by ustawić jedno wpisowe dla wszystkich wierszy.
-7. Kliknij przycisk z wartością w kolumnie **Rebuy/Add-on** dla wybranego gracza, aby otworzyć okno `Rebuy gracza` i zarządzać wieloma wpisami rebuy/add-on (przyciski **Dodaj Rebuy** i **Usuń Rebuy**). Numeracja kolumn (`Rebuy1`, `Rebuy2`, …) jest niezależna dla każdego gracza, a po usunięciu ostatniej kolumny następne dodanie przywraca ten numer.
+6. Kliknij nagłówek-przycisk **Start**, by ustawić jedną wartość startową dla wszystkich wierszy.
+7. Kliknij przycisk z wartością w kolumnie **Powroty** dla wybranego gracza, aby otworzyć okno `Rebuy gracza` i zarządzać wieloma wpisami (przyciski **Dodaj Rebuy** i **Usuń Rebuy**). Numeracja kolumn (`Rebuy1`, `Rebuy2`, …) jest niezależna dla każdego gracza, a po usunięciu ostatniej kolumny następne dodanie przywraca ten numer.
 8. W polach liczbowych tego modalu i w oknie `Rebuy gracza` na telefonie uruchamia się klawiatura numeryczna.
 9. Przy większej liczbie uczestników sekcja tabeli w modalu ma pionowy scrollbar, więc możesz przewijać listę graczy i uzupełniać dane wszystkich wierszy.
 
-### 10.5. „Notatki po grze”
+### 10.5. Podsumowanie gry
+Pod tabelą gier każda gra ma podsumowanie z kolumnami **Gracz**, **Start**, **Powroty**, **Koniec**, **Żetony na koniec**, **% puli**, **Punkty**, **Mistrzostwo**. Czerwone ostrzeżenie „Nie zgadza się suma kolumny Koniec z sumą kolumn Start i Powroty” oznacza, że trzeba sprawdzić wpisane wartości w oknie **Szczegóły**.
+
+Nowa gra dodana przyciskiem **Dodaj** ma puste **Notatki do gry**.
+
+### 10.6. „Notatki po grze”
 W podsumowaniu każdej gry użyj przycisku **Notatki po grze**:
 - wpisz komentarz po rozegranej partii,
 - **Zapisz** — zapis,
 - **Usuń** — wyczyszczenie treści notatki po grze,
 - przyciski koloru ustawiają motyw notatek.
 
-### 10.6. Statystyki i wagi w tej zakładce
+### 10.7. Statystyki i wagi w tej zakładce
 W tabeli statystyk graczy są przyciski kolumn:
 - **Waga1**, **Waga2**, **Waga3**, **Waga4**, **Waga5**, **Waga6** (kolumny wag są celowo wąskie, a przycisk wypełnia całą szerokość nagłówka).
 
@@ -465,35 +477,36 @@ Działanie:
 1. Wybierz rok z panelu **Lata**.
 2. Analizuj tabelę statystyk i ranking.
 3. Kliknij **Eksportuj**, aby pobrać statystyki.
+3a. Tabela zbiorcza pokazuje **Liczba gier** i **Łącznie żetonów**. Tabela graczy zaczyna się od kolumny **Lp.** (numeracja graczy od 1), a kolumny z żetonami to **Żetony na koniec**, **Wygrane żetony** i **Żetony na start**.
 4. W tabeli graczy kliknij **Waga1–Waga6**, aby ustawić jedną wartość dla całej kolumny; po zapisie zobaczysz komunikat ile wierszy zaktualizowano. Jeśli nie wybrałeś roku albo w roku nie ma graczy, aplikacja powie o tym zamiast pytać o wartość.
 5. Wartości wag możesz też wpisać ręcznie w polach tabeli — pole nie traci kursora podczas pisania, a kolumna **Wynik** i **Ranking** przeliczają się na bieżąco.
 6. W panelu **Ranking** kolumny **Miejsce**, **Gracz** i **Wynik** mieszczą się na ekranie bez poziomego przewijania; kolumna **Gracz** jest zwężona, nagłówek **Gracz** jest wyrównany do lewej, a długie nazwy są obcinane wielokropkiem.
-7. Pod nazwą każdej kolumny tabeli graczy jest **kwadracik (checkbox)**. Zaznaczony = kolumna jest widoczna dla graczy w ich sekcji „Statystyki”; odznaczony = ukryta. Ustawienie zapisuje się osobno dla każdego roku. Kolumny **Waga1–Waga6** są domyślnie odznaczone, czyli niewidoczne dla graczy.
+7. Pod nazwą każdej kolumny tabeli graczy jest **kwadracik (checkbox)**. Zaznaczony = kolumna jest widoczna dla graczy w ich sekcji „Statystyki”; odznaczony = ukryta. Ustawienie zapisuje się osobno dla każdego roku. Kolumny **Waga1–Waga6** są domyślnie odznaczone, czyli niewidoczne dla graczy. Kolumna **Lp.** nie ma kwadracika — gracze widzą ją zawsze.
 
 ---
 
-## 11a. Zakładka admina „Ranking graczy”
+## 11a. Zakładka admina „Bilans żetonów”
 
 Zakładka działa identycznie jak **Statystyki** — ma te same tabele, te same kolumny, te same przyciski **Waga1–Waga6**, te same kwadraciki ukrywania kolumn i ten sam przycisk **Eksportuj**.
 
 **Jedyna różnica to źródło danych.**
 
-| | Statystyki | Ranking graczy |
+| | Statystyki | Bilans żetonów |
 |---|---|---|
 | Liczy gry z zakładki | **Gry admina** | **Gry użytkowników** |
 | Czyje dane pokazuje | sprawdzone i zatwierdzone przez Ciebie | wpisane przez graczy, bez Twojej weryfikacji |
 | Warunek zaliczenia gry | **CzyZamknięta** zaznaczone przez Ciebie w „Gry admina” | **CzyZamknięta** zaznaczone przy grze w „Gry użytkowników” |
 
-> **Dlaczego liczby w obu zakładkach mogą się różnić.** Gdy gracz zamyka swoją grę, aplikacja tworzy jej kopię w „Gry admina”, ale **celowo bez zaznaczonej kolumny CzyZamknięta**. Do „Statystyk” gra wejdzie dopiero, gdy sam zaznaczysz tę kolumnę na kopii. W „Rankingu graczy” ta sama gra pojawia się od razu. To jest zamierzone: Ranking to dane surowe, Statystyki to dane zweryfikowane.
+> **Dlaczego liczby w obu zakładkach mogą się różnić.** Gdy gracz zamyka swoją grę, aplikacja tworzy jej kopię w „Gry admina”, ale **celowo bez zaznaczonej kolumny CzyZamknięta**. Do „Statystyk” gra wejdzie dopiero, gdy sam zaznaczysz tę kolumnę na kopii. W „Bilansie żetonów” ta sama gra pojawia się od razu. To jest zamierzone: Bilans żetonów to dane surowe, Statystyki to dane zweryfikowane.
 
-> **Odkliknięcie działa natychmiast.** Jeśli gracz przez pomyłkę zamknie grę i ją odklikne, gra znika z rankingu od razu — nic nie jest „zamrażane”.
+> **Odkliknięcie działa natychmiast.** Jeśli gracz przez pomyłkę zamknie grę i ją odklikne, gra znika z bilansu od razu — nic nie jest „zamrażane”.
 
 Czego **nie** dzieli z zakładką „Statystyki”:
-- **wagi** — wartości Waga1–Waga6 ustawione w „Rankingu graczy” dotyczą tylko rankingu; te ze „Statystyk” tylko statystyk,
+- **wagi** — wartości Waga1–Waga6 ustawione w „Bilansie żetonów” dotyczą tylko bilansu; te ze „Statystyk” tylko statystyk,
 - **widoczność kolumn** — kwadraciki ustawia się osobno dla każdej z zakładek,
-- **lata przyznane graczom** — osobna lista w uprawnieniach (przycisk **Lata** przy uprawnieniu „Ranking graczy”).
+- **lata przyznane graczom** — osobna lista w uprawnieniach (przycisk **Lata** przy uprawnieniu „Bilans żetonów”; okno nazywa się „Lata bilansu żetonów”).
 
-Nazwa pobieranego pliku eksportu kończy się słowem `Ranking` i rokiem, żeby nie mylić go z eksportem statystyk.
+Nazwa pobieranego pliku eksportu kończy się słowami `Bilans żetonów` i rokiem, żeby nie mylić go z eksportem statystyk.
 
 ---
 
@@ -510,10 +523,10 @@ Działanie jest analogiczne do sekcji gracza „Gry Użytkowników”, ale jako 
 Najważniejsze przyciski:
 - **Dodaj** — dodanie nowej gry użytkowników,
 - **Szczegóły** — edycja składu i wartości,
-- **Notatki do gry** — notatki przed grą,
+- **Notatki do gry** — notatki przed grą; w nowej grze pole jest puste, a przycisk **Usuń** w oknie notatek czyści treść,
 - **Usuń** — usunięcie gry. Po kliknięciu otwiera się okno **„Usunięcie gry”** z nazwą i datą gry oraz przyciskami **Anuluj** i **Usuń**. Dopiero **Usuń** kasuje grę razem z wynikami wszystkich graczy i ich potwierdzeniami; **Anuluj**, krzyżyk, klawisz `Esc` i kliknięcie obok okna przerywają bez żadnej zmiany. Operacji nie da się cofnąć — jedynym ratunkiem jest przywrócenie z kopii zapasowej.
 - Szerokości kolumn są zgodne z zakładką **Gry admina**, z dodatkową kolumną **Liczba miejsc**. Kolumna **Nazwa** rozciąga się na wolne miejsce, więc na szerokim ekranie to ona robi się szersza, a nie kolumny z liczbami.
-- **Wpisowe** (w nagłówku modalu szczegółów) — zbiorcze wpisowe,
+- **Start** (w nagłówku modalu szczegółów) — zbiorcze ustawienie wartości startowej,
 - **Dodaj** (w modalu szczegółów) — dodanie uczestnika,
 - **Usuń** (w wierszu modalu) — usunięcie uczestnika.
 
@@ -562,13 +575,15 @@ Typowe akcje:
 
 ## 15. Zakładka admina „Kalkulator”
 
-Kalkulator rozliczeń posiada trzy tryby:
-- **Tournament1**,
-- **Tournament2**,
-- **Cash**.
+Kalkulator ma w panelu bocznym **Rodzaj gry** pięć przycisków:
+- **Tournament1** — rozliczenie turnieju (Tabela1–Tabela5),
+- **Żetony niski nominał 1**,
+- **Żetony niski nominał 2**,
+- **Żetony wysoki nominał 1**,
+- **Żetony wysoki nominał 2** — cztery niezależne kalkulatory żetonów (opis w pkt 19).
 
 ### 15.1. Przełączanie trybu
-- Kliknij jeden z przycisków trybu: **Tournament1**, **Tournament2**, **Cash**.
+- Kliknij jeden z przycisków w panelu **Rodzaj gry**.
 - Aktywny tryb podświetla się wizualnie.
 
 ### 15.2. Typowe działania w tabelach kalkulatora
@@ -577,30 +592,15 @@ W zależności od trybu dostępne są przyciski w wierszach:
 - **Usuń** — usunięcie rekordu/wiersza,
 - **Dodaj Rebuy** — dopisanie kolejnego rebuy dla gracza,
 - **Usuń Rebuy** — usunięcie rebuy,
-- **Buy-In** (przycisk nagłówkowy) — zbiorcze ustawienie buy-in.
-- W trybach **Tournament1/Tournament2** tabela graczy (Tabela2) renderuje się od razu po wejściu w zakładkę, a kolumna **LP** pokazuje kolejność 1..N dla każdego wiersza.
+- W trybie **Tournament1** tabela graczy (Tabela2) renderuje się od razu po wejściu w zakładkę, a kolumna **LP** pokazuje kolejność 1..N dla każdego wiersza.
 
 ### 15.3. Modal rebuy
 Przycisk:
 - **×** (prawy górny róg) — zamyka okno zarządzania rebuy.
-- Numeracja `RebuyX` jest **globalna** dla aktywnego trybu kalkulatora (Tournament1/Tournament2/Cash): każde nowe pole dostaje kolejny numer względem wszystkich graczy w tym trybie.
+- Numeracja `RebuyX` jest **globalna** dla trybu **Tournament1**: każde nowe pole dostaje kolejny numer względem wszystkich graczy.
+- Każde pole `RebuyX` otwiera na telefonie klawiaturę numeryczną.
 - Po usunięciu ostatniego rebuy u wybranego gracza aplikacja wykonuje globalną kompaktację numerów (`Rebuy` o numerach większych od usuniętego przesuwają się o `-1`), więc numeracja pozostaje bez luk.
 
-### 15.4. Cash — edycja Tabela9 na telefonie
-- W **Tabela9** pola **Buy-In** i **Wypłata** otwierają na telefonie numeryczną klawiaturę ekranową, więc możesz od razu wpisywać cyfry bez przełączania układu.
-- Kolumna **Rebuy** pozostaje przyciskiem otwierającym modal `Rebuy gracza`; po jego otwarciu każde pole `RebuyX` także korzysta z klawiatury numerycznej.
-
-### 15.5. Cash — sposób liczenia Rake w Tabela8
-- W trybie **Cash** kolumna **Rake** w **Tabela8** jest liczona ze wzoru:
-  - `Rake = (Suma Buy-In z Tabela9 + Suma Rebuy z Tabela9) × % z Tabela8`.
-- W trybie **Cash** kolumna **Suma** w **Tabela7** pokazuje zawsze:
-  - `Suma = Suma Buy-In z Tabela9 + Suma Rebuy z Tabela9`.
-- Przykład:
-  - Buy-In = 80,
-  - Rebuy = 20,
-  - % = 10,
-  - Suma (Tabela7) = `80 + 20 = 100`,
-  - Rake = `(80 + 20) × 10% = 10`.
 
 ---
 
@@ -619,8 +619,7 @@ Dla wygody, skrót semantyczny:
 - **Notatki do gry / Notatki po grze** — otwiera notatki kontekstowe,
 - **Eksportuj** — pobiera dane statystyk,
 - **Waga1…Waga6** — zbiorcze ustawienie wartości wag w kolumnie,
-- **Wpisowe** (nagłówek tabeli szczegółów) — zbiorcze ustawienie wpisowego,
-- **Domyślne** — przywraca domyślną treść notatek,
+- **Start** (nagłówek tabeli szczegółów) — zbiorcze ustawienie wartości startowej,
 - **× / Zamknij** — zamknięcie modalu.
 
 ---
@@ -644,8 +643,8 @@ Dla wygody, skrót semantyczny:
 5. Ustaw rodzaj gry, datę, nazwę.
 6. Kliknij **Szczegóły**.
 7. W modalu kliknij **Dodaj** (wiersz gracza).
-8. Uzupełnij wartości (wpisowe/rebuy/wypłata/punkty/mistrzostwo).
-9. (Opcjonalnie) Użyj nagłówka **Wpisowe** do zbiorczego ustawienia jednej stawki.
+8. Uzupełnij wartości (Start / Powroty / Koniec / Punkty / Mistrzostwo).
+9. (Opcjonalnie) Użyj nagłówka **Start** do zbiorczego ustawienia jednej wartości.
 10. Zamknij modal `×`.
 11. (Opcjonalnie) Kliknij **Notatki do gry** i zapisz notatki.
 
@@ -696,27 +695,22 @@ Wskazówka użycia:
 2. Ciemno-zielone panele sekcji (lewy panel przycisków i prawy panel treści) są dosunięte do szerokości karty: zaczynają się 1 px od lewej krawędzi zielonej ramki i kończą 1 px przed prawą krawędzią.
 3. Na telefonie napisy na przyciskach sekcji w **Strefa Gracza** (np. „Najbliższa Gra”, „Czat”, „Gry do Potwierdzenia”) są większe niż na desktopie, żeby były czytelniejsze.
 
-## 19. Kalkulator — nowe zakładki Organizacja i Żetony
+## 19. Kalkulator — zakładki żetonów
 1. Wejdź do panelu **Admin** → zakładka **Kalkulator**.
-2. W panelu bocznym pod **Cash** masz nowe zakładki:
-   - **Organizacja**
-   - **Żetony cash1**
-   - **Żetony cash2**
-   - **Żetony tournament1**
-   - **Żetony tournament2**
-3. **Organizacja**:
-   - W `TABELA1` wpisz procent (wiersz 1, kolumna `KALKULATOR`) i bazę (wiersz 2, kolumna `KALKULATOR`).
-   - System pokaże `ORGANIZACJA` i `POT` automatycznie (zaokrąglenie w górę) tylko w pierwszym wierszu.
-   - W drugim wierszu `TABELA1` pola pod kolumnami `ORGANIZACJA` i `POT` są celowo puste (bez kontrolek).
-   - W `TABELA2` możesz dodawać/usuwać wiersze (`Dodaj`/`Usuń`) i wpisywać procenty; kolumna `PODZIAŁ` liczy się automatycznie.
-4. **Zakładki Żetony** (każda niezależna):
+2. W panelu bocznym pod **Tournament1** masz cztery zakładki żetonów:
+   - **Żetony niski nominał 1**
+   - **Żetony niski nominał 2**
+   - **Żetony wysoki nominał 1**
+   - **Żetony wysoki nominał 2**
+3. Każda z nich działa tak samo, ale ma własne, niezależnie zapisywane dane — możesz w nich przygotować cztery różne zestawy żetonów.
+4. **Tabele w każdej zakładce żetonów**:
    - `TABELAA`: wpisz `NOMINAŁ` i `SZTUK`, `STACK` liczy się automatycznie.
    - W `TABELAA` przycisk `Dodaj` jest pod tabelą po lewej, a `Usuń` po prawej stronie każdego wiersza.
    - Pod `TABELAA` widzisz podsumowanie `Łącznie Stack: ...` jako informację tekstową (nie jako osobny wiersz tabeli).
    - `TABELAB`: wpisz `L.GRACZY` i `STACK GRACZA`, `ŁĄCZNY STACK` liczy się automatycznie.
    - `TABELAC`: liczba wierszy jest synchronizowana z `TABELAA`; wpisujesz `SZTUK`, a pozostałe kolumny liczą się automatycznie.
-5. Puste pasy pod `TABELA2` (Organizacja) i pod `TABELAC` (zakładki Żetony) są ukrywane automatycznie — system chowa tylko puste kontenery, czyli takie bez nagłówka i bez tabeli.
-6. Wszystkie pola liczbowe w nowych tabelach mają mobilne wymuszenie klawiatury numerycznej.
+5. Pod `TABELAC` nie ma pustych pasów — system automatycznie chowa niewykorzystane miejsca na tabele.
+6. Wszystkie pola liczbowe w tabelach żetonów otwierają na telefonie klawiaturę numeryczną.
 7. Dane każdej zakładki są zapisywane i wracają po odświeżeniu strony.
 
 ## 20. Potwierdzenia i Najbliższa gra — źródło danych

@@ -31,7 +31,6 @@
   --gap-3: 16px;
   --gap-4: 24px;
   --gap-5: 32px;
-  --fs-title: clamp(26px, 3.2vw, 40px);
   --fs-subtitle: clamp(16px, 1.8vw, 22px);
   --fs-panel: 13px;
   --fs-body: 14.5px;
@@ -128,27 +127,6 @@ body:not(.is-admin) .page {
   justify-content: space-between;
   margin-bottom: var(--gap-5);
 }
-
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: var(--fs-small);
-  font-weight: 600;
-  font-family: var(--font-panel);
-  color: var(--muted);
-  margin: 0 0 var(--gap-2);
-}
-
-h1 {
-  margin: 0 0 var(--gap-2);
-  font-size: var(--fs-title);
-  font-family: var(--font-title);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  line-height: 1.05;
-  color: var(--ink);
-}
-
 
 .header-icon {
   display: block;
@@ -618,25 +596,6 @@ select:disabled,
   min-width: 100%;
 }
 
-.admin-calculator-cash-empty {
-  padding: 18px;
-  border-radius: var(--radius-md);
-  border: 1px dashed var(--border2);
-  background: rgba(0, 0, 0, 0.2);
-  display: grid;
-  gap: 8px;
-}
-
-.admin-calculator-cash-empty h4 {
-  margin: 0;
-  font-family: var(--font-subtitle);
-  letter-spacing: 0.06em;
-}
-
-.admin-calculator-cash-empty p {
-  margin: 0;
-}
-
 .summary-table {
   min-width: 480px;
 }
@@ -915,8 +874,7 @@ select:disabled,
 }
 
 .admin-games-players-stats-table input.admin-input,
-.admin-calculator-table2 .admin-input,
-.admin-calculator-cash-table9 .admin-input {
+.admin-calculator-table2 .admin-input {
   min-width: 0;
 }
 

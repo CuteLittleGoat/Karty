@@ -9,26 +9,22 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Poker" />
-    <script src="pwa-config.js?v=2026-09-21.1"></script>
+    <script src="pwa-config.js?v=2026-11-15.1"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600&display=swap&subset=latin-ext"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=2026-09-21.1" />
+    <link rel="stylesheet" href="styles.css?v=2026-11-15.1" />
   </head>
   <body>
     <div class="page">
       <header class="page-header">
-        <div class="header-intro admin-only">
-          <p class="eyebrow">TO NIE JEST nielegalny poker</p>
-          <h1>TO NIE JEST nielegalne kasyno</h1>
-        </div>
         <div class="header-controls">
           <img class="header-icon" src="../Pliki/Ikona.png" alt="Ikona" />
           <div class="admin-toolbar">
-            <button id="customsEmergencyButton" class="danger" type="button">Przycisnąć w razie kontroli celno-skarbowej</button>
+            <button id="customsEmergencyButton" class="danger" type="button">Nie wciskać</button>
             <button id="adminInstructionButton" class="secondary" type="button">Instrukcja</button>
           </div>
         </div>
@@ -53,7 +49,7 @@
             <button class="admin-panel-tab" type="button" data-target="adminPlayersTab">Gracze</button>
             <button class="admin-panel-tab" type="button" data-target="adminGamesTab">Gry admina</button>
             <button class="admin-panel-tab" type="button" data-target="adminStatisticsTab">Statystyki</button>
-            <button class="admin-panel-tab" type="button" data-target="adminRankingTab">Ranking graczy</button>
+            <button class="admin-panel-tab" type="button" data-target="adminRankingTab">Bilans żetonów</button>
             <button class="admin-panel-tab" type="button" data-target="adminUserGamesTab">Gry użytkowników</button>
             <button class="admin-panel-tab" type="button" data-target="adminNextGameTab">Najbliższa gra</button>
             <button class="admin-panel-tab" type="button" data-target="adminConfirmationsTab">Gry do potwierdzenia</button>
@@ -402,22 +398,23 @@
                     </table>
                   </div>
                   <div class="admin-table-scroll">
-                    <table class="admin-data-table admin-games-players-stats-table t-fluid" style="--table-min: calc(var(--col-text-md) + var(--col-flag) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-flag) + var(--col-flag) + var(--col-num-md) + var(--col-num-sm))">
+                    <table class="admin-data-table admin-games-players-stats-table t-fluid" style="--table-min: calc(var(--col-num-xs) + var(--col-text-md) + var(--col-flag) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-flag) + var(--col-flag) + var(--col-num-md) + var(--col-num-sm))">
                     <colgroup>
+                      <col style="width: var(--col-num-xs)">
                       <col>
                       <col style="width: var(--col-flag)">
                       <col style="width: var(--col-weight)">
-                      <col style="width: var(--col-weight)">
-                      <col style="width: var(--col-weight)">
-                      <col style="width: var(--col-weight)">
-                      <col style="width: var(--col-weight)">
+                      <col style="width: var(--col-num-sm)">
                       <col style="width: var(--col-weight)">
                       <col style="width: var(--col-num-sm)">
                       <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-weight)">
                       <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-weight)">
                       <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-weight)">
                       <col style="width: var(--col-num-sm)">
-                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-weight)">
                       <col style="width: var(--col-flag)">
                       <col style="width: var(--col-flag)">
                       <col style="width: var(--col-num-md)">
@@ -425,6 +422,7 @@
                     </colgroup>
                       <thead>
                         <tr>
+                          <th>Lp.</th>
                           <th>Gracz</th>
                           <th>Mistrzostwo</th>
                           <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight1">Waga1</button></th>
@@ -433,11 +431,11 @@
                           <th>% udział</th>
                           <th>Punkty</th>
                           <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight3">Waga3</button></th>
-                          <th>(+/-)</th>
+                          <th>Żetony na koniec</th>
                           <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight4">Waga4</button></th>
-                          <th>Wypłata</th>
+                          <th>Wygrane żetony</th>
                           <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight5">Waga5</button></th>
-                          <th>Wpłaty</th>
+                          <th>Żetony na start</th>
                           <th><button type="button" class="admin-weight-bulk-button admin-statistics-weight-bulk-button" data-weight-key="weight6">Waga6</button></th>
                           <th>Suma z rozegranych gier</th>
                           <th>% Rozegranych gier</th>
@@ -486,7 +484,7 @@
                 <span id="adminRankingStatus" class="status-text" aria-live="polite"></span>
                 <div class="admin-games-section">
                   <div class="card-header admin-tables-header">
-                    <h3>Ranking graczy</h3>
+                    <h3>Bilans żetonów</h3>
                     <button id="adminRankingExport" class="secondary" type="button">Eksportuj</button>
                   </div>
                   <div class="admin-table-scroll">
@@ -505,22 +503,23 @@
                     </table>
                   </div>
                   <div class="admin-table-scroll">
-                    <table class="admin-data-table admin-games-players-stats-table t-fluid" style="--table-min: calc(var(--col-text-md) + var(--col-flag) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-flag) + var(--col-flag) + var(--col-num-md) + var(--col-num-sm))">
+                    <table class="admin-data-table admin-games-players-stats-table t-fluid" style="--table-min: calc(var(--col-num-xs) + var(--col-text-md) + var(--col-flag) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-flag) + var(--col-flag) + var(--col-num-md) + var(--col-num-sm))">
                     <colgroup>
+                      <col style="width: var(--col-num-xs)">
                       <col>
                       <col style="width: var(--col-flag)">
                       <col style="width: var(--col-weight)">
-                      <col style="width: var(--col-weight)">
-                      <col style="width: var(--col-weight)">
-                      <col style="width: var(--col-weight)">
-                      <col style="width: var(--col-weight)">
+                      <col style="width: var(--col-num-sm)">
                       <col style="width: var(--col-weight)">
                       <col style="width: var(--col-num-sm)">
                       <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-weight)">
                       <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-weight)">
                       <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-weight)">
                       <col style="width: var(--col-num-sm)">
-                      <col style="width: var(--col-num-sm)">
+                      <col style="width: var(--col-weight)">
                       <col style="width: var(--col-flag)">
                       <col style="width: var(--col-flag)">
                       <col style="width: var(--col-num-md)">
@@ -528,6 +527,7 @@
                     </colgroup>
                       <thead>
                         <tr>
+                          <th>Lp.</th>
                           <th>Gracz</th>
                           <th>Mistrzostwo</th>
                           <th><button type="button" class="admin-weight-bulk-button admin-ranking-weight-bulk-button" data-weight-key="weight1">Waga1</button></th>
@@ -536,11 +536,11 @@
                           <th>% udział</th>
                           <th>Punkty</th>
                           <th><button type="button" class="admin-weight-bulk-button admin-ranking-weight-bulk-button" data-weight-key="weight3">Waga3</button></th>
-                          <th>(+/-)</th>
+                          <th>Żetony na koniec</th>
                           <th><button type="button" class="admin-weight-bulk-button admin-ranking-weight-bulk-button" data-weight-key="weight4">Waga4</button></th>
-                          <th>Wypłata</th>
+                          <th>Wygrane żetony</th>
                           <th><button type="button" class="admin-weight-bulk-button admin-ranking-weight-bulk-button" data-weight-key="weight5">Waga5</button></th>
-                          <th>Wpłaty</th>
+                          <th>Żetony na start</th>
                           <th><button type="button" class="admin-weight-bulk-button admin-ranking-weight-bulk-button" data-weight-key="weight6">Waga6</button></th>
                           <th>Suma z rozegranych gier</th>
                           <th>% Rozegranych gier</th>
@@ -601,13 +601,10 @@
                   </div>
                   <div class="admin-calculator-switch" aria-label="Tryb kalkulatora">
                     <button type="button" class="admin-calculator-switch-button is-active" data-calculator-mode="tournament1">Tournament1</button>
-                    <button type="button" class="admin-calculator-switch-button" data-calculator-mode="tournament2">Tournament2</button>
-                    <button type="button" class="admin-calculator-switch-button" data-calculator-mode="cash">Cash</button>
-                    <button type="button" class="admin-calculator-switch-button" data-calculator-mode="organization">Organizacja</button>
-                    <button type="button" class="admin-calculator-switch-button" data-calculator-mode="chips-cash1">Żetony cash1</button>
-                    <button type="button" class="admin-calculator-switch-button" data-calculator-mode="chips-cash2">Żetony cash2</button>
-                    <button type="button" class="admin-calculator-switch-button" data-calculator-mode="chips-tournament1">Żetony tournament1</button>
-                    <button type="button" class="admin-calculator-switch-button" data-calculator-mode="chips-tournament2">Żetony tournament2</button>
+                    <button type="button" class="admin-calculator-switch-button" data-calculator-mode="chips-cash1">Żetony niski nominał 1</button>
+                    <button type="button" class="admin-calculator-switch-button" data-calculator-mode="chips-cash2">Żetony niski nominał 2</button>
+                    <button type="button" class="admin-calculator-switch-button" data-calculator-mode="chips-tournament1">Żetony wysoki nominał 1</button>
+                    <button type="button" class="admin-calculator-switch-button" data-calculator-mode="chips-tournament2">Żetony wysoki nominał 2</button>
                   </div>
                 </aside>
                 <div class="admin-calculator-content">
@@ -710,7 +707,7 @@
                       <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="confirmationsTab">Gry do Potwierdzenia</button>
                       <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="userGamesTab">Gry Użytkowników</button>
                       <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="statsTab">Statystyki</button>
-                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="rankingTab">Ranking graczy</button>
+                      <button class="admin-games-year-button player-zone-button" type="button" data-zone-target="rankingTab">Bilans żetonów</button>
                     </div>
                     <p id="playerZoneSectionsStatus" class="status-text" aria-live="polite"></p>
                   </aside>
@@ -976,22 +973,23 @@
                         </table>
                       </div>
                       <div class="admin-table-scroll">
-                        <table class="admin-data-table admin-games-players-stats-table t-fluid" style="--table-min: calc(var(--col-text-md) + var(--col-flag) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-flag) + var(--col-flag) + var(--col-num-md) + var(--col-num-sm))">
+                        <table class="admin-data-table admin-games-players-stats-table t-fluid" style="--table-min: calc(var(--col-num-xs) + var(--col-text-md) + var(--col-flag) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-flag) + var(--col-flag) + var(--col-num-md) + var(--col-num-sm))">
                         <colgroup>
+                          <col style="width: var(--col-num-xs)">
                           <col>
                           <col style="width: var(--col-flag)">
                           <col style="width: var(--col-weight)">
-                          <col style="width: var(--col-weight)">
-                          <col style="width: var(--col-weight)">
-                          <col style="width: var(--col-weight)">
-                          <col style="width: var(--col-weight)">
+                          <col style="width: var(--col-num-sm)">
                           <col style="width: var(--col-weight)">
                           <col style="width: var(--col-num-sm)">
                           <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-weight)">
                           <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-weight)">
                           <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-weight)">
                           <col style="width: var(--col-num-sm)">
-                          <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-weight)">
                           <col style="width: var(--col-flag)">
                           <col style="width: var(--col-flag)">
                           <col style="width: var(--col-num-md)">
@@ -999,6 +997,7 @@
                         </colgroup>
                           <thead>
                             <tr>
+                              <th>Lp.</th>
                               <th>Gracz</th>
                               <th>Mistrzostwo</th>
                               <th>Waga1</th>
@@ -1007,11 +1006,11 @@
                               <th>% udział</th>
                               <th>Punkty</th>
                               <th>Waga3</th>
-                              <th>(+/-)</th>
+                              <th>Żetony na koniec</th>
                               <th>Waga4</th>
-                              <th>Wypłata</th>
+                              <th>Wygrane żetony</th>
                               <th>Waga5</th>
-                              <th>Wpłaty</th>
+                              <th>Żetony na start</th>
                               <th>Waga6</th>
                               <th>Suma z rozegranych gier</th>
                               <th>% Rozegranych gier</th>
@@ -1052,7 +1051,7 @@
             <div id="rankingTab" class="player-zone-panel" role="tabpanel">
               <div id="rankingPinGate" class="pin-gate" aria-live="polite">
                 <div class="pin-card">
-                  <p class="pin-title">Wpisz PIN z uprawnieniem Ranking graczy, aby wejść do tej sekcji.</p>
+                  <p class="pin-title">Wpisz PIN z uprawnieniem Bilans żetonów, aby wejść do tej sekcji.</p>
                   <div class="pin-inputs">
                     <input
                       id="rankingPinInput"
@@ -1081,7 +1080,7 @@
                     <span id="rankingStatus" class="status-text" aria-live="polite"></span>
                     <div class="admin-games-section">
                       <div class="card-header admin-tables-header">
-                        <h3>Ranking graczy</h3>
+                        <h3>Bilans żetonów</h3>
                         <button id="rankingExport" class="secondary" type="button">Eksportuj</button>
                       </div>
                       <div class="admin-table-scroll">
@@ -1100,22 +1099,23 @@
                         </table>
                       </div>
                       <div class="admin-table-scroll">
-                        <table class="admin-data-table admin-games-players-stats-table t-fluid" style="--table-min: calc(var(--col-text-md) + var(--col-flag) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-flag) + var(--col-flag) + var(--col-num-md) + var(--col-num-sm))">
+                        <table class="admin-data-table admin-games-players-stats-table t-fluid" style="--table-min: calc(var(--col-num-xs) + var(--col-text-md) + var(--col-flag) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-num-sm) + var(--col-weight) + var(--col-flag) + var(--col-flag) + var(--col-num-md) + var(--col-num-sm))">
                         <colgroup>
+                          <col style="width: var(--col-num-xs)">
                           <col>
                           <col style="width: var(--col-flag)">
                           <col style="width: var(--col-weight)">
-                          <col style="width: var(--col-weight)">
-                          <col style="width: var(--col-weight)">
-                          <col style="width: var(--col-weight)">
-                          <col style="width: var(--col-weight)">
+                          <col style="width: var(--col-num-sm)">
                           <col style="width: var(--col-weight)">
                           <col style="width: var(--col-num-sm)">
                           <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-weight)">
                           <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-weight)">
                           <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-weight)">
                           <col style="width: var(--col-num-sm)">
-                          <col style="width: var(--col-num-sm)">
+                          <col style="width: var(--col-weight)">
                           <col style="width: var(--col-flag)">
                           <col style="width: var(--col-flag)">
                           <col style="width: var(--col-num-md)">
@@ -1123,6 +1123,7 @@
                         </colgroup>
                           <thead>
                             <tr>
+                              <th>Lp.</th>
                               <th>Gracz</th>
                               <th>Mistrzostwo</th>
                               <th>Waga1</th>
@@ -1131,11 +1132,11 @@
                               <th>% udział</th>
                               <th>Punkty</th>
                               <th>Waga3</th>
-                              <th>(+/-)</th>
+                              <th>Żetony na koniec</th>
                               <th>Waga4</th>
-                              <th>Wypłata</th>
+                              <th>Wygrane żetony</th>
                               <th>Waga5</th>
-                              <th>Wpłaty</th>
+                              <th>Żetony na start</th>
                               <th>Waga6</th>
                               <th>Suma z rozegranych gier</th>
                               <th>% Rozegranych gier</th>
@@ -1208,7 +1209,7 @@
         </div>
         <div class="modal-footer">
           <button id="summaryNotesSave" class="primary" type="button">Zapisz</button>
-          <button id="summaryNotesClear" class="danger" type="button">Domyślne</button>
+          <button id="summaryNotesClear" class="danger" type="button">Usuń</button>
         </div>
       </div>
     </div>
@@ -1245,7 +1246,7 @@
     </div>
 
     <div id="customsEmergencyModal" class="modal-overlay" aria-hidden="true">
-      <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-label="Kontrola celno-skarbowa">
+      <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-label="Nie wciskać">
         <div class="modal-header">
           <button id="customsEmergencyClose" class="icon-button" type="button" aria-label="Zamknij okno">
             ×
@@ -1316,10 +1317,10 @@
                 <tr>
                   <th>LP</th>
                   <th>Gracz</th>
-                  <th><button type="button" class="admin-weight-bulk-button game-entry-fee-bulk-button" data-target-modal="userGameDetailsModal">Wpisowe</button></th>
-                  <th>Rebuy/Add-on</th>
-                  <th>Wypłata</th>
-                  <th>+/-</th>
+                  <th><button type="button" class="admin-weight-bulk-button game-entry-fee-bulk-button" data-target-modal="userGameDetailsModal">Start</button></th>
+                  <th>Powroty</th>
+                  <th>Koniec</th>
+                  <th>Żetony na koniec</th>
                   <th>Punkty</th>
                   <th>Mistrzostwo</th>
                   <th></th>
@@ -1359,10 +1360,10 @@
                 <tr>
                   <th>LP</th>
                   <th>Gracz</th>
-                  <th><button type="button" class="admin-weight-bulk-button game-entry-fee-bulk-button" data-target-modal="playerUserGameDetailsModal">Wpisowe</button></th>
-                  <th>Rebuy/Add-on</th>
-                  <th>Wypłata</th>
-                  <th>+/-</th>
+                  <th><button type="button" class="admin-weight-bulk-button game-entry-fee-bulk-button" data-target-modal="playerUserGameDetailsModal">Start</button></th>
+                  <th>Powroty</th>
+                  <th>Koniec</th>
+                  <th>Żetony na koniec</th>
                   <th>Punkty</th>
                   <th>Mistrzostwo</th>
                   <th></th>
@@ -1402,10 +1403,10 @@
                 <tr>
                   <th>LP</th>
                   <th>Gracz</th>
-                  <th><button type="button" class="admin-weight-bulk-button game-entry-fee-bulk-button" data-target-modal="gameDetailsModal">Wpisowe</button></th>
-                  <th>Rebuy/Add-on</th>
-                  <th>Wypłata</th>
-                  <th>+/-</th>
+                  <th><button type="button" class="admin-weight-bulk-button game-entry-fee-bulk-button" data-target-modal="gameDetailsModal">Start</button></th>
+                  <th>Powroty</th>
+                  <th>Koniec</th>
+                  <th>Żetony na koniec</th>
                   <th>Punkty</th>
                   <th>Mistrzostwo</th>
                   <th></th>
@@ -1451,12 +1452,12 @@
       </div>
     </div>
 
-    <script src="../config/firebase-config.js?v=2026-09-21.1"></script>
+    <script src="../config/firebase-config.js?v=2026-11-15.1"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-    <script src="pwa-bootstrap.js?v=2026-09-21.1"></script>
-    <script src="app.js?v=2026-09-21.1"></script>
+    <script src="pwa-bootstrap.js?v=2026-11-15.1"></script>
+    <script src="app.js?v=2026-11-15.1"></script>
   </body>
 </html>

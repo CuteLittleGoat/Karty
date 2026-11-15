@@ -78,14 +78,17 @@ const ADMIN_SECURITY_PASSWORD_FIELD = "passwordHash";
 const ADMIN_NOTES_COLLECTION = "admin_notes";
 const MAIN_ADMIN_NOTES_DOCUMENT = "main";
 const RULES_DEFAULT_TEXT = "";
-const DEFAULT_GAME_NOTES_TEMPLATE = "Rodzaj gry:\nPrzewidywani gracze:\nStack:\nWpisowe:\nRebuy:\nAdd-on:\nBlindy:\nOrganizacja:\nPodział puli:";
+/* Nowa gra startuje z pustymi „Notatkami do gry”. Gry utworzone wcześniej mogą
+   mieć w bazie zapisany szablon poniżej — jeśli nikt go nie zmienił, notatka
+   jest pokazywana jako pusta. Baza nie jest przy tym modyfikowana. */
+const UNTOUCHED_GAME_NOTES_TEMPLATE = "Rodzaj gry:\nPrzewidywani gracze:\nStack:\nWpisowe:\nRebuy:\nAdd-on:\nBlindy:\nOrganizacja:\nPodział puli:";
 let refreshUserConfirmationsData = async () => {};
 
 const getPreGameNotes = (game) => {
-  if (typeof game?.preGameNotes === "string") {
-    return game.preGameNotes;
+  if (typeof game?.preGameNotes !== "string") {
+    return "";
   }
-  return "";
+  return game.preGameNotes.trim() === UNTOUCHED_GAME_NOTES_TEMPLATE ? "" : game.preGameNotes;
 };
 
 const getPostGameNotes = (game) => {
@@ -148,7 +151,7 @@ const AVAILABLE_PLAYER_TABS = [
   },
   {
     key: "rankingTab",
-    label: "Ranking graczy"
+    label: "Bilans żetonów"
   },
 ];
 
@@ -175,9 +178,9 @@ const USER_GAMES_COLLECTION_CONFIG_KEY = "userGamesCollection";
 const TABLE_ROWS_COLLECTION = "rows";
 const GAME_CONFIRMATIONS_COLLECTION = "confirmations";
 const ADMIN_GAMES_STATS_COLLECTION = "admin_games_stats";
-/* Wagi i widoczność kolumn dla zakładki „Ranking graczy”. Osobna kolekcja od
-   admin_games_stats, bo Ranking liczy z UserGames i ma własne ustawienia —
-   zmiana wagi w Rankingu nie może ruszać Statystyk (i odwrotnie). */
+/* Wagi i widoczność kolumn dla zakładki „Bilans żetonów”. Osobna kolekcja od
+   admin_games_stats, bo Bilans żetonów liczy z UserGames i ma własne ustawienia —
+   zmiana wagi w Bilansie żetonów nie może ruszać Statystyk (i odwrotnie). */
 const USER_GAMES_STATS_COLLECTION = "user_games_stats";
 const DEFAULT_TABLE_META = {
   gameType: "rodzaj gry",
@@ -197,7 +200,12 @@ const TABLE_COLUMNS = [
   { key: "rebuyTotal", label: "suma rebuy" }
 ];
 
+/* Kolumny tabeli graczy w zakładkach „Statystyki” i „Bilans żetonów”. Kolejność
+   musi odpowiadać komórkom <th> w index.html — nagłówki są mapowane po indeksie.
+   Kolumna z `alwaysVisible` nie ma checkboxa ukrywania, nie trafia do zapisanej
+   w bazie listy `visibleColumns` i jest pokazywana zawsze, także graczom. */
 const STATS_COLUMN_CONFIG = [
+  { key: "ordinal", label: "Lp.", editable: false, weight: false, alwaysVisible: true, value: (row) => row.ordinal },
   { key: "playerName", label: "Gracz", editable: false, weight: false, value: (row) => row.playerName },
   { key: "championshipCount", label: "Mistrzostwo", editable: false, weight: false, value: (row) => row.championshipCount },
   { key: "weight1", label: "Waga1", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight1", manual?.weight1) },
@@ -206,11 +214,11 @@ const STATS_COLUMN_CONFIG = [
   { key: "participationPercent", label: "% udział", editable: false, weight: false, value: (row) => `${row.participationPercent}%` },
   { key: "points", label: "Punkty", editable: false, weight: false, value: (row) => row.pointsSum },
   { key: "weight3", label: "Waga3", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight3", manual?.weight3) },
-  { key: "plusMinusSum", label: "(+/-)", editable: false, weight: false, value: (row) => row.plusMinusSum },
+  { key: "plusMinusSum", label: "Żetony na koniec", editable: false, weight: false, value: (row) => row.plusMinusSum },
   { key: "weight4", label: "Waga4", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight4", manual?.weight4) },
-  { key: "payoutSum", label: "Wypłata", editable: false, weight: false, value: (row) => row.payoutSum },
+  { key: "payoutSum", label: "Wygrane żetony", editable: false, weight: false, value: (row) => row.payoutSum },
   { key: "weight5", label: "Waga5", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight5", manual?.weight5) },
-  { key: "depositsSum", label: "Wpłaty", editable: false, weight: false, value: (row) => row.depositsSum },
+  { key: "depositsSum", label: "Żetony na start", editable: false, weight: false, value: (row) => row.depositsSum },
   { key: "weight6", label: "Waga6", editable: true, weight: true, value: (row, manual, getDefault) => getDefault("weight6", manual?.weight6) },
   { key: "playedGamesPoolSum", label: "Suma z rozegranych gier", editable: false, weight: false, value: (row) => row.playedGamesPoolSum },
   { key: "percentAllGames", label: "% Rozegranych gier", editable: false, weight: false, value: (row) => `${row.percentAllGames}%` },
@@ -229,7 +237,7 @@ const STATS_COLUMN_CONFIG = [
   }
 ];
 const DEFAULT_VISIBLE_STATS_COLUMNS = STATS_COLUMN_CONFIG
-  .filter((column) => !column.weight)
+  .filter((column) => !column.weight && !column.alwaysVisible)
   .map((column) => column.key);
 const WEIGHT_STATS_FIELDS = ["weight1", "weight2", "weight3", "weight4", "weight5", "weight6"];
 
@@ -689,7 +697,6 @@ const getSummaryNotesModalController = (() => {
       onSave: null,
       triggerButton: null,
       clearButtonLabel: "Usuń",
-      clearToDefault: false,
       readOnlyMessage: "Brak uprawnień do edycji notatek.",
       textareaPlaceholder: "Wpisz notatki..."
     };
@@ -768,7 +775,6 @@ const getSummaryNotesModalController = (() => {
       triggerButton,
       notesLabel,
       clearButtonLabel,
-      clearToDefault,
       readOnlyMessage,
       textareaPlaceholder
     }) => {
@@ -782,7 +788,6 @@ const getSummaryNotesModalController = (() => {
       state.onSave = typeof onSave === "function" ? onSave : null;
       state.triggerButton = triggerButton instanceof HTMLElement ? triggerButton : null;
       state.clearButtonLabel = String(clearButtonLabel ?? "Usuń");
-      state.clearToDefault = Boolean(clearToDefault);
       state.readOnlyMessage = String(readOnlyMessage ?? "Brak uprawnień do edycji notatek.");
       state.textareaPlaceholder = String(textareaPlaceholder ?? "Wpisz notatki...");
 
@@ -836,10 +841,7 @@ const getSummaryNotesModalController = (() => {
     });
 
     clearButton.addEventListener("click", () => {
-      const nextValue = state.clearToDefault
-        ? sanitizeRichTextWithAllowedColors(DEFAULT_GAME_NOTES_TEMPLATE, NOTES_COLOR_MAP)
-        : "";
-      void persist(nextValue);
+      void persist("");
     });
 
     colorButtons.forEach((button) => {
@@ -2999,8 +3001,6 @@ const initUserConfirmations = () => {
             canWrite: false,
             onSave: null,
             notesLabel: "Notatki do gry",
-            clearButtonLabel: "Domyślne",
-            clearToDefault: true,
             readOnlyMessage: "Podgląd notatek do gry (tylko odczyt).",
             triggerButton: notesButton
           });
@@ -3220,7 +3220,7 @@ const initStatisticsTab = () => {
   synchronizeStatisticsAccessState();
 };
 
-/* Bramka PIN sekcji Strefy Gracza. „Ranking graczy” i „Regulamin” działają
+/* Bramka PIN sekcji Strefy Gracza. „Bilans żetonów” i „Regulamin” działają
    dokładnie tak jak pozostałe sekcje (Statystyki, Czat, Gry użytkowników):
    własny PIN, własne uprawnienie, własny stan w sessionStorage. */
 const createPlayerZoneSectionGate = ({
@@ -3323,7 +3323,7 @@ const rankingSectionGate = createPlayerZoneSectionGate({
   setPinGateState: setRankingPinGateState,
   setVerifiedPlayerId: setRankingVerifiedPlayerId,
   getVerifiedPlayer: getRankingVerifiedPlayer,
-  deniedText: "Błędny PIN lub brak uprawnień do zakładki „Ranking graczy”."
+  deniedText: "Błędny PIN lub brak uprawnień do zakładki „Bilans żetonów”."
 });
 
 const rulesSectionGate = createPlayerZoneSectionGate({
@@ -3704,7 +3704,6 @@ const initUserGamesManager = ({
           },
           notesLabel: "Notatki po grze",
           clearButtonLabel: "Usuń",
-          clearToDefault: false,
           textareaPlaceholder: "Wpisz notatki po grze...",
           triggerButton: notesButton
         });
@@ -3717,7 +3716,7 @@ const initUserGamesManager = ({
       const metrics = getGameSummaryMetrics(game.id);
       const mismatchWarning = document.createElement("p");
       mismatchWarning.className = "status-text status-text-danger";
-      mismatchWarning.textContent = "Nie zgadza się suma wypłat oraz wpisowych i rebuy/add-on";
+      mismatchWarning.textContent = "Nie zgadza się suma kolumny Koniec z sumą kolumn Start i Powroty";
 
       const poolInfo = document.createElement("p");
       poolInfo.className = "status-text";
@@ -3736,10 +3735,10 @@ const initUserGamesManager = ({
         <thead>
           <tr>
             <th>Gracz</th>
-            <th>Wpisowe</th>
-            <th>Rebuy/Add-on</th>
-            <th>Wypłata</th>
-            <th>+/-</th>
+            <th>Start</th>
+            <th>Powroty</th>
+            <th>Koniec</th>
+            <th>Żetony na koniec</th>
             <th>% puli</th>
             <th>Punkty</th>
             <th>Mistrzostwo</th>
@@ -3912,8 +3911,7 @@ const initUserGamesManager = ({
             }
           },
           notesLabel: "Notatki do gry",
-          clearButtonLabel: "Domyślne",
-          clearToDefault: true,
+          clearButtonLabel: "Usuń",
           textareaPlaceholder: "Wpisz notatki do gry...",
           triggerButton: notesButton
         });
@@ -4259,7 +4257,7 @@ const initUserGamesManager = ({
         additionalPayload: {
           isClosed: false,
           seatCount: "",
-          preGameNotes: DEFAULT_GAME_NOTES_TEMPLATE,
+          preGameNotes: "",
           postGameNotes: "",
           createdAt: firebaseApp.firestore.FieldValue.serverTimestamp(),
           ...createGamePayload()
@@ -4305,7 +4303,7 @@ const initUserGamesManager = ({
         return;
       }
       if (!state.activeGameIdInModal) {
-        status.textContent = "Otwórz szczegóły gry, aby zbiorczo ustawić wpisowe.";
+        status.textContent = "Otwórz szczegóły gry, aby zbiorczo ustawić kolumnę Start.";
         return;
       }
       const activeGame = state.games.find((game) => game.id === state.activeGameIdInModal);
@@ -4313,13 +4311,13 @@ const initUserGamesManager = ({
         status.textContent = "Brak uprawnień do edycji tej gry.";
         return;
       }
-      const promptValue = window.prompt("Podaj wartość wpisowego dla wszystkich graczy.", "0");
+      const promptValue = window.prompt("Podaj wartość kolumny Start dla wszystkich graczy.", "0");
       if (promptValue === null) {
         return;
       }
       const normalized = sanitizeIntegerInput(promptValue);
       if (!normalized || normalized === "-") {
-        status.textContent = "Podaj poprawną wartość liczbową wpisowego.";
+        status.textContent = "Podaj poprawną wartość liczbową dla kolumny Start.";
         return;
       }
       const rows = state.detailsByGame.get(state.activeGameIdInModal) ?? [];
@@ -4328,7 +4326,7 @@ const initUserGamesManager = ({
         .collection(gameDetailsCollectionName)
         .doc(row.id)
         .update({ entryFee: normalized })));
-      status.textContent = `Ustawiono wpisowe ${normalized} dla ${rows.length} wierszy.`;
+      status.textContent = `Ustawiono Start ${normalized} dla ${rows.length} wierszy.`;
     });
   }
 
@@ -4863,7 +4861,7 @@ const initUserTabs = () => {
 
         if (activeZoneTabId === "rankingTab") {
           synchronizeRankingAccessState();
-          setUserRefreshStatus("Ranking został odświeżony.");
+          setUserRefreshStatus("Bilans żetonów został odświeżony.");
           return;
         }
 
@@ -4983,7 +4981,7 @@ const initSharedPlayerAccess = () => {
     });
 };
 
-/* Lata widoczne dla gracza w danej zakładce. „Statystyki” i „Ranking graczy”
+/* Lata widoczne dla gracza w danej zakładce. „Statystyki” i „Bilans żetonów”
    mają rozłączne listy lat (statsYearsAccess / rankingYearsAccess), więc ta
    sama funkcja obsługuje obie — różni je klucz uprawnienia i nazwa pola. */
 const getAllowedYearsForPlayerTab = (player, availableYears, permissionKey, yearsAccessField) => {
@@ -5061,10 +5059,13 @@ const initAdminCalculator = () => {
 
   const firebaseApp = getFirebaseApp();
   const CALCULATOR_COLLECTION = "calculators";
-  const TOURNAMENT_MODES = new Set(["tournament1", "tournament2"]);
-  const ORGANIZATION_MODE = "organization";
+  /* Klucze trybów są jednocześnie identyfikatorami dokumentów w kolekcji
+     `calculators` (tryb `tournament1` zapisuje się w dokumencie `tournament`),
+     dlatego tryby żetonów zachowują historyczne klucze `chips-cash*` /
+     `chips-tournament*`, choć w UI nazywają się „niski/wysoki nominał”. */
+  const TOURNAMENT_MODES = new Set(["tournament1"]);
   const CHIPS_MODES = new Set(["chips-cash1", "chips-cash2", "chips-tournament1", "chips-tournament2"]);
-  const ALL_CALCULATOR_MODES = ["tournament1", "tournament2", "cash", ORGANIZATION_MODE, ...CHIPS_MODES];
+  const ALL_CALCULATOR_MODES = [...TOURNAMENT_MODES, ...CHIPS_MODES];
 
   const createInitialState = () => ({
     table1Row: { id: `table1-${Date.now()}-0`, buyIn: "", rebuy: "" },
@@ -5073,16 +5074,6 @@ const initAdminCalculator = () => {
     table5SplitPercents: [],
     table5Mods: [],
     eliminatedOrder: []
-  });
-
-  const createInitialCashState = () => ({
-    table8Row: { rake: "" },
-    table9Rows: [{ id: `table9-${Date.now()}-0`, playerId: "", playerName: "", buyIn: "0", payout: "0", rebuys: [], rebuyIndexes: [] }]
-  });
-
-  const createInitialOrganizationState = () => ({
-    table1: { percent: "", base: "" },
-    table2Rows: [{ id: `org-table2-${Date.now()}-0`, percent: "" }]
   });
 
   const createInitialChipsState = () => ({
@@ -5095,9 +5086,6 @@ const initAdminCalculator = () => {
     mode: "tournament1",
     playerOptions: [],
     tournament1: createInitialState(),
-    tournament2: createInitialState(),
-    cash: createInitialCashState(),
-    organization: createInitialOrganizationState(),
     "chips-cash1": createInitialChipsState(),
     "chips-cash2": createInitialChipsState(),
     "chips-tournament1": createInitialChipsState(),
@@ -5154,27 +5142,6 @@ const initAdminCalculator = () => {
   };
 
   const normalizeCalculatorModeState = (mode, rawState) => {
-    if (mode === ORGANIZATION_MODE) {
-      const source = rawState && typeof rawState === "object" ? rawState : {};
-      const table1 = source.table1 && typeof source.table1 === "object" ? source.table1 : {};
-      const table2Rows = Array.isArray(source.table2Rows)
-        ? source.table2Rows.map((row, index) => {
-          const rowSource = row && typeof row === "object" ? row : {};
-          return {
-            id: typeof rowSource.id === "string" && rowSource.id.trim() ? rowSource.id.trim() : `org-table2-${Date.now()}-${index}`,
-            percent: sanitizeInteger(rowSource.percent)
-          };
-        }).filter((row) => row.id)
-        : [];
-      return {
-        table1: {
-          percent: sanitizeInteger(table1.percent),
-          base: sanitizeInteger(table1.base)
-        },
-        table2Rows: table2Rows.length ? table2Rows : [{ id: `org-table2-${Date.now()}-0`, percent: "" }]
-      };
-    }
-
     if (CHIPS_MODES.has(mode)) {
       const source = rawState && typeof rawState === "object" ? rawState : {};
       const tableAARows = Array.isArray(source.tableAARows)
@@ -5204,41 +5171,6 @@ const initAdminCalculator = () => {
           playerStack: sanitizeInteger(tableAB.playerStack)
         },
         tableACRows: tableACRows.length ? tableACRows : [{ id: `chips-ac-${Date.now()}-0`, count: "" }]
-      };
-    }
-
-    if (mode === "cash") {
-      const baseCashState = createInitialCashState();
-      const source = rawState && typeof rawState === "object" ? rawState : {};
-      const table8Source = source.table8Row && typeof source.table8Row === "object" ? source.table8Row : {};
-
-      const table9Rows = Array.isArray(source.table9Rows)
-        ? source.table9Rows
-          .map((row, index) => {
-            const rowSource = row && typeof row === "object" ? row : {};
-            const normalizedRebuys = Array.isArray(rowSource.rebuys)
-              ? rowSource.rebuys.map((value) => sanitizeInteger(value))
-              : [];
-            return {
-              id: typeof rowSource.id === "string" && rowSource.id.trim()
-                ? rowSource.id.trim()
-                : `table9-${Date.now()}-${index}`,
-              playerId: typeof rowSource.playerId === "string" ? rowSource.playerId : "",
-              playerName: typeof rowSource.playerName === "string" ? rowSource.playerName : "",
-              buyIn: sanitizeInteger(rowSource.buyIn),
-              payout: sanitizeInteger(rowSource.payout),
-              rebuys: normalizedRebuys,
-              rebuyIndexes: normalizeRebuyIndexes(rowSource.rebuyIndexes, normalizedRebuys.length)
-            };
-          })
-          .filter((row) => row.id)
-        : [];
-
-      return {
-        table8Row: {
-          rake: sanitizeInteger(table8Source.rake)
-        },
-        table9Rows: table9Rows.length ? table9Rows : baseCashState.table9Rows
       };
     }
 
@@ -5294,21 +5226,6 @@ const initAdminCalculator = () => {
   };
 
   const serializeCalculatorModeState = (mode, modeState) => {
-    if (mode === ORGANIZATION_MODE) {
-      return {
-        table1: {
-          percent: sanitizeInteger(modeState.table1?.percent),
-          base: sanitizeInteger(modeState.table1?.base)
-        },
-        table2Rows: Array.isArray(modeState.table2Rows)
-          ? modeState.table2Rows.map((row, index) => ({
-            id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `org-table2-${Date.now()}-${index}`,
-            percent: sanitizeInteger(row.percent)
-          }))
-          : []
-      };
-    }
-
     if (CHIPS_MODES.has(mode)) {
       return {
         tableAARows: Array.isArray(modeState.tableAARows)
@@ -5326,25 +5243,6 @@ const initAdminCalculator = () => {
           ? modeState.tableACRows.map((row, index) => ({
             id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `chips-ac-${Date.now()}-${index}`,
             count: sanitizeInteger(row.count)
-          }))
-          : []
-      };
-    }
-
-    if (mode === "cash") {
-      return {
-        table8Row: {
-          rake: sanitizeInteger(modeState.table8Row?.rake)
-        },
-        table9Rows: Array.isArray(modeState.table9Rows)
-          ? modeState.table9Rows.map((row, index) => ({
-            id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `table9-${Date.now()}-${index}`,
-            playerId: typeof row.playerId === "string" ? row.playerId : "",
-            playerName: typeof row.playerName === "string" ? row.playerName : "",
-            buyIn: sanitizeInteger(row.buyIn),
-            payout: sanitizeInteger(row.payout),
-            rebuys: Array.isArray(row.rebuys) ? row.rebuys.map((value) => sanitizeInteger(value)) : [],
-            rebuyIndexes: normalizeRebuyIndexes(row.rebuyIndexes, Array.isArray(row.rebuys) ? row.rebuys.length : 0)
           }))
           : []
       };
@@ -5383,8 +5281,7 @@ const initAdminCalculator = () => {
       return Promise.resolve();
     }
 
-    const modeState = mode === "cash" ? state.cash : state[mode];
-    const payload = serializeCalculatorModeState(mode, modeState);
+    const payload = serializeCalculatorModeState(mode, state[mode]);
     return getCalculatorDocRef(mode).set({
       ...payload,
       updatedAt: firebaseApp.firestore.FieldValue.serverTimestamp()
@@ -5424,17 +5321,9 @@ const initAdminCalculator = () => {
     return td;
   };
 
-  const getModalModeState = () => {
-    if (state.rebuyModal.mode === "cash") {
-      return state.cash;
-    }
-    if (TOURNAMENT_MODES.has(state.rebuyModal.mode)) {
-      return state[state.rebuyModal.mode];
-    }
-    return null;
-  };
+  const getModalModeState = () => (TOURNAMENT_MODES.has(state.rebuyModal.mode) ? state[state.rebuyModal.mode] : null);
 
-  const getRebuyRowsForMode = (modeState, mode) => (mode === "cash" ? modeState.table9Rows : modeState.table2Rows);
+  const getRebuyRowsForMode = (modeState) => modeState.table2Rows;
 
   const getRebuyRow = () => {
     const modeState = getModalModeState();
@@ -5649,57 +5538,6 @@ const initAdminCalculator = () => {
   };
 
 
-  const getCashMetrics = () => {
-    const cashState = state.cash;
-    const totalBuyIn = cashState.table9Rows.reduce((sum, row) => sum + parseInteger(row.buyIn), 0);
-    const totalRebuy = cashState.table9Rows.reduce((sum, row) => sum + getRowRebuySum(row), 0);
-    const rakePercent = parseInteger(cashState.table8Row.rake);
-    const rakeDecimal = rakePercent / 100;
-    const totalBeforeRake = totalBuyIn + totalRebuy;
-    const rakeValue = totalBeforeRake * rakeDecimal;
-    const buyInAfterPercent = totalBuyIn * (1 - rakeDecimal);
-    const rebuyAfterPercent = totalRebuy * (1 - rakeDecimal);
-    const totalAfterPercent = buyInAfterPercent + rebuyAfterPercent;
-    const pot = totalAfterPercent;
-
-    return {
-      totalBuyIn,
-      totalRebuy,
-      rakePercent,
-      rakeDecimal,
-      buyInAfterPercent,
-      rebuyAfterPercent,
-      totalAfterPercent,
-      rakeValue,
-      pot
-    };
-  };
-
-  const getCashTable10Rows = () => {
-    const metrics = getCashMetrics();
-    const sumValue = metrics.totalAfterPercent;
-    return state.cash.table9Rows
-      .map((row) => {
-        const payout = parseInteger(row.payout);
-        const rebuy = getRowRebuySum(row);
-        const buyIn = parseInteger(row.buyIn);
-        const plusMinus = payout - (buyIn + rebuy);
-        const poolPercent = sumValue > 0 ? (payout / sumValue) * 100 : 0;
-        return {
-          playerName: row.playerName,
-          payout,
-          plusMinus,
-          poolPercent
-        };
-      })
-      .sort((a, b) => {
-        if (b.plusMinus !== a.plusMinus) {
-          return b.plusMinus - a.plusMinus;
-        }
-        return String(a.playerName).localeCompare(String(b.playerName), "pl");
-      });
-  };
-
   const rebuyModal = document.createElement("div");
   rebuyModal.id = "adminCalculatorRebuyModal";
   rebuyModal.className = "modal-overlay";
@@ -5741,7 +5579,7 @@ const initAdminCalculator = () => {
 
     const focusState = getFocusedAdminInputState(rebuyModal);
 
-    const modeState = state.rebuyModal.mode === "cash" ? state.cash : state[state.rebuyModal.mode];
+    const modeState = getModalModeState();
     ensureModeRebuyIndexes(modeState, state.rebuyModal.mode);
     ensureRowRebuyIndexes(row);
 
@@ -6218,289 +6056,6 @@ const initAdminCalculator = () => {
     }
   };
 
-  const renderCashTable7 = () => {
-    const metrics = getCashMetrics();
-    rootTable1.innerHTML = "";
-    rootTable1.appendChild(createHeader("Tabela7"));
-
-    const table = document.createElement("table");
-    table.className = "admin-data-table admin-calculator-cash-table7";
-    table.innerHTML =
-      tableColumns(table, ["md", "md", "md"], "t-compact") +
-      "<thead><tr><th>Buy-In</th><th>Rebuy</th><th>Suma</th></tr></thead>";
-    const tbody = document.createElement("tbody");
-    const tr = document.createElement("tr");
-    tr.append(
-      createReadonlyCell(formatNumber(metrics.buyInAfterPercent)),
-      createReadonlyCell(formatNumber(metrics.rebuyAfterPercent)),
-      createReadonlyCell(formatNumber(metrics.totalBuyIn + metrics.totalRebuy))
-    );
-    tbody.appendChild(tr);
-    table.appendChild(tbody);
-
-    const scroll = createScroll();
-    scroll.appendChild(table);
-    rootTable1.appendChild(scroll);
-  };
-
-  const renderCashTable8 = () => {
-    const metrics = getCashMetrics();
-    rootTable2.innerHTML = "";
-    rootTable2.appendChild(createHeader("Tabela8"));
-
-    const table = document.createElement("table");
-    table.className = "admin-data-table admin-calculator-cash-table8";
-    table.innerHTML =
-      tableColumns(table, ["xs", "md", "md"], "t-compact") +
-      "<thead><tr><th>%</th><th>Rake</th><th>Pot</th></tr></thead>";
-    const tbody = document.createElement("tbody");
-    const tr = document.createElement("tr");
-
-    const rakeCell = document.createElement("td");
-    const rakeInput = document.createElement("input");
-    rakeInput.type = "text";
-    rakeInput.className = "admin-input";
-    rakeInput.value = formatPercentDisplay(state.cash.table8Row.rake);
-    rakeInput.dataset.focusTarget = "admin-calculator";
-    rakeInput.dataset.section = "table8";
-    rakeInput.dataset.tableId = "cash";
-    rakeInput.dataset.rowId = "0";
-    rakeInput.dataset.columnKey = "rake";
-    rakeInput.addEventListener("focus", () => {
-      rakeInput.value = state.cash.table8Row.rake;
-    });
-    rakeInput.addEventListener("input", () => {
-      state.cash.table8Row.rake = sanitizeInteger(rakeInput.value);
-      rakeInput.value = state.cash.table8Row.rake;
-      render();
-      schedulePersistCalculatorModeState("cash");
-    });
-    rakeInput.addEventListener("blur", () => {
-      rakeInput.value = formatPercentDisplay(state.cash.table8Row.rake);
-    });
-    rakeCell.appendChild(rakeInput);
-
-    const rakeValueCell = createReadonlyCell(formatNumber(metrics.rakeValue));
-
-    tr.append(rakeCell, rakeValueCell, createReadonlyCell(formatNumber(metrics.pot)));
-    tbody.appendChild(tr);
-    table.appendChild(tbody);
-
-    const scroll = createScroll();
-    scroll.appendChild(table);
-    rootTable2.appendChild(scroll);
-  };
-
-  const renderCashTable9 = () => {
-    rootTable3.innerHTML = "";
-    rootTable3.appendChild(createHeader("Tabela9"));
-
-    const table = document.createElement("table");
-    table.className = "admin-data-table admin-calculator-cash-table9";
-    table.innerHTML =
-      tableColumns(table, ["tmd", "md", "md", "md", "md", "act"]) +
-      "<thead><tr><th>Gracz</th><th><button type=\"button\" class=\"secondary\" data-cash-buyin-bulk>Buy-In</button></th><th>Rebuy</th><th>Wypłata</th><th>+/-</th><th></th></tr></thead>";
-    const tbody = document.createElement("tbody");
-
-    const bulkBuyInButton = table.querySelector("[data-cash-buyin-bulk]");
-    bulkBuyInButton?.addEventListener("click", () => {
-      const promptValue = window.prompt("Podaj wartość Buy-In dla wszystkich graczy.", "0");
-      if (promptValue === null) {
-        return;
-      }
-      const sanitizedValue = sanitizeInteger(promptValue) || "0";
-      state.cash.table9Rows.forEach((entry) => {
-        entry.buyIn = sanitizedValue;
-      });
-      render();
-      schedulePersistCalculatorModeState("cash");
-    });
-
-    state.cash.table9Rows.forEach((row, index) => {
-      const tr = document.createElement("tr");
-
-      const playerCell = document.createElement("td");
-      const playerSelect = document.createElement("select");
-      playerSelect.className = "admin-input";
-      const defaultOption = document.createElement("option");
-      defaultOption.value = "";
-      defaultOption.textContent = "Wybierz gracza";
-      playerSelect.appendChild(defaultOption);
-      const currentIdentifier = row.playerId ? `id:${row.playerId}` : (row.playerName ? `name:${row.playerName}` : "");
-      const availablePlayers = getAvailablePlayersForRow(state.cash.table9Rows, row.id, state.playerOptions, currentIdentifier);
-      availablePlayers.forEach((player) => {
-        const option = document.createElement("option");
-        option.value = player.id;
-        option.textContent = player.name;
-        playerSelect.appendChild(option);
-      });
-      playerSelect.value = row.playerId;
-      playerSelect.dataset.focusTarget = "admin-calculator";
-      playerSelect.dataset.section = "table9";
-      playerSelect.dataset.tableId = "cash";
-      playerSelect.dataset.rowId = row.id;
-      playerSelect.dataset.columnKey = "playerId";
-      playerSelect.addEventListener("change", () => {
-        const selectedPlayer = state.playerOptions.find((player) => player.id === playerSelect.value) ?? null;
-        row.playerId = selectedPlayer?.id ?? "";
-        row.playerName = selectedPlayer?.name ?? "";
-        render();
-        schedulePersistCalculatorModeState("cash");
-      });
-      playerCell.appendChild(playerSelect);
-
-      const buyInCell = document.createElement("td");
-      const buyInInput = document.createElement("input");
-      applyIntegerInputHints(buyInInput);
-      buyInInput.className = "admin-input";
-      buyInInput.value = row.buyIn;
-      buyInInput.dataset.focusTarget = "admin-calculator";
-      buyInInput.dataset.section = "table9";
-      buyInInput.dataset.tableId = "cash";
-      buyInInput.dataset.rowId = row.id;
-      buyInInput.dataset.columnKey = "buyIn";
-      buyInInput.addEventListener("input", () => {
-        row.buyIn = sanitizeInteger(buyInInput.value);
-        buyInInput.value = row.buyIn;
-        render();
-        schedulePersistCalculatorModeState("cash");
-      });
-      buyInCell.appendChild(buyInInput);
-
-      const rebuyCell = document.createElement("td");
-      const rebuyButton = document.createElement("button");
-      rebuyButton.type = "button";
-      rebuyButton.className = "secondary";
-      rebuyButton.textContent = formatNumber(getRowRebuySum(row));
-      rebuyButton.addEventListener("click", () => {
-        state.rebuyModal.mode = "cash";
-        openRebuyModal(row.id);
-      });
-      rebuyCell.appendChild(rebuyButton);
-
-      const payoutCell = document.createElement("td");
-      const payoutInput = document.createElement("input");
-      applyIntegerInputHints(payoutInput);
-      payoutInput.className = "admin-input";
-      payoutInput.value = row.payout;
-      payoutInput.dataset.focusTarget = "admin-calculator";
-      payoutInput.dataset.section = "table9";
-      payoutInput.dataset.tableId = "cash";
-      payoutInput.dataset.rowId = row.id;
-      payoutInput.dataset.columnKey = "payout";
-      payoutInput.addEventListener("input", () => {
-        row.payout = sanitizeInteger(payoutInput.value);
-        payoutInput.value = row.payout;
-        render();
-        schedulePersistCalculatorModeState("cash");
-      });
-      payoutCell.appendChild(payoutInput);
-
-      const plusMinus = parseInteger(row.payout) - (parseInteger(row.buyIn) + getRowRebuySum(row));
-
-      const actionsCell = document.createElement("td");
-      const actionsWrap = document.createElement("div");
-      actionsWrap.className = "admin-table-actions";
-
-      if (index === state.cash.table9Rows.length - 1) {
-        const addButton = document.createElement("button");
-        addButton.type = "button";
-        addButton.className = "secondary";
-        addButton.textContent = "Dodaj";
-        addButton.addEventListener("click", () => {
-          state.cash.table9Rows.push({
-            id: `table9-${Date.now()}-${state.cash.table9Rows.length}`,
-            playerId: "",
-            playerName: "",
-            buyIn: "0",
-            payout: "0",
-            rebuys: [],
-            rebuyIndexes: []
-          });
-          render();
-          schedulePersistCalculatorModeState("cash");
-        });
-        actionsWrap.appendChild(addButton);
-      }
-
-      const deleteButton = document.createElement("button");
-      deleteButton.type = "button";
-      deleteButton.className = "danger admin-row-delete";
-      deleteButton.textContent = "Usuń";
-      deleteButton.disabled = state.cash.table9Rows.length === 1;
-      deleteButton.addEventListener("click", () => {
-        state.cash.table9Rows = state.cash.table9Rows.filter((entry) => entry.id !== row.id);
-        if (!state.cash.table9Rows.length) {
-          state.cash.table9Rows.push({ id: `table9-${Date.now()}-0`, playerId: "", playerName: "", buyIn: "0", payout: "0", rebuys: [], rebuyIndexes: [] });
-        }
-        render();
-        schedulePersistCalculatorModeState("cash");
-      });
-      actionsWrap.appendChild(deleteButton);
-      actionsCell.appendChild(actionsWrap);
-
-      tr.append(
-        playerCell,
-        buyInCell,
-        rebuyCell,
-        payoutCell,
-        createReadonlyCell(formatNumber(plusMinus)),
-        actionsCell
-      );
-      tbody.appendChild(tr);
-    });
-
-    table.appendChild(tbody);
-    const scroll = createScroll();
-    scroll.appendChild(table);
-    rootTable3.appendChild(scroll);
-  };
-
-  const renderCashTable10 = () => {
-    rootTable4.innerHTML = "";
-    rootTable4.appendChild(createHeader("Tabela10"));
-
-    const table = document.createElement("table");
-    table.className = "admin-data-table admin-calculator-cash-table10";
-    table.innerHTML =
-      tableColumns(table, ["xs", "tmd", "md", "md", "sm"]) +
-      "<thead><tr><th>Lp</th><th>Gracz</th><th>Wypłata</th><th>+/-</th><th>% Puli</th></tr></thead>";
-    const tbody = document.createElement("tbody");
-
-    getCashTable10Rows().forEach((row, index) => {
-      const tr = document.createElement("tr");
-      tr.append(
-        createReadonlyCell(String(index + 1)),
-        createReadonlyCell(row.playerName),
-        createReadonlyCell(formatNumber(row.payout)),
-        createReadonlyCell(formatNumber(row.plusMinus)),
-        createReadonlyCell(`${Math.round(row.poolPercent)}%`)
-      );
-      tbody.appendChild(tr);
-    });
-
-    table.appendChild(tbody);
-    const scroll = createScroll();
-    scroll.appendChild(table);
-    rootTable4.appendChild(scroll);
-    rootTable5.innerHTML = "";
-  };
-
-  const getOrganizationMetrics = () => {
-    const modeState = state.organization;
-    const percentValue = parseInteger(modeState.table1.percent);
-    const baseValue = parseInteger(modeState.table1.base);
-    const organizationValue = Math.ceil(baseValue * (percentValue / 100));
-    const potValue = Math.ceil(baseValue - organizationValue);
-    return { percentValue, baseValue, organizationValue, potValue };
-  };
-
-  const ensureOrganizationRows = () => {
-    if (!Array.isArray(state.organization.table2Rows) || !state.organization.table2Rows.length) {
-      state.organization.table2Rows = [{ id: `org-table2-${Date.now()}-0`, percent: "" }];
-    }
-  };
-
   const ensureChipsRows = (modeState) => {
     if (!Array.isArray(modeState.tableAARows) || !modeState.tableAARows.length) {
       modeState.tableAARows = [{ id: `chips-aa-${Date.now()}-0`, nominal: "", count: "" }];
@@ -6512,137 +6067,6 @@ const initAdminCalculator = () => {
         count: sanitizeInteger(current?.count)
       };
     });
-  };
-
-  const renderOrganizationTables = () => {
-    const modeState = state.organization;
-    ensureOrganizationRows();
-    const metrics = getOrganizationMetrics();
-
-    rootTable1.innerHTML = "";
-    rootTable1.appendChild(createHeader("TABELA1"));
-    const table1 = document.createElement("table");
-    table1.className = "admin-data-table";
-    table1.innerHTML = "<thead><tr><th>KALKULATOR</th><th>ORGANIZACJA</th><th>POT</th></tr></thead>";
-    const tbody1 = document.createElement("tbody");
-    const row1 = document.createElement("tr");
-    const percentCell = document.createElement("td");
-    const percentInput = document.createElement("input");
-    applyIntegerInputHints(percentInput);
-    percentInput.className = "admin-input";
-    percentInput.value = formatPercentDisplay(modeState.table1.percent);
-    percentInput.dataset.focusTarget = "admin-calculator";
-    percentInput.dataset.section = "organization-table1";
-    percentInput.dataset.tableId = ORGANIZATION_MODE;
-    percentInput.dataset.rowId = "1";
-    percentInput.dataset.columnKey = "percent";
-    percentInput.addEventListener("focus", () => { percentInput.value = modeState.table1.percent; });
-    percentInput.addEventListener("input", () => {
-      modeState.table1.percent = sanitizeInteger(percentInput.value);
-      percentInput.value = modeState.table1.percent;
-      render();
-      schedulePersistCalculatorModeState(ORGANIZATION_MODE);
-    });
-    percentInput.addEventListener("blur", () => { percentInput.value = formatPercentDisplay(modeState.table1.percent); });
-    percentCell.appendChild(percentInput);
-    row1.append(percentCell, createReadonlyCell(formatNumber(metrics.organizationValue)), createReadonlyCell(formatNumber(metrics.potValue)));
-    tbody1.appendChild(row1);
-
-    const row2 = document.createElement("tr");
-    const baseCell = document.createElement("td");
-    const baseInput = document.createElement("input");
-    applyIntegerInputHints(baseInput);
-    baseInput.className = "admin-input";
-    baseInput.value = modeState.table1.base;
-    baseInput.dataset.focusTarget = "admin-calculator";
-    baseInput.dataset.section = "organization-table1";
-    baseInput.dataset.tableId = ORGANIZATION_MODE;
-    baseInput.dataset.rowId = "2";
-    baseInput.dataset.columnKey = "base";
-    baseInput.addEventListener("input", () => {
-      modeState.table1.base = sanitizeInteger(baseInput.value);
-      baseInput.value = modeState.table1.base;
-      render();
-      schedulePersistCalculatorModeState(ORGANIZATION_MODE);
-    });
-    baseCell.appendChild(baseInput);
-    const emptyOrganizationCell = document.createElement("td");
-    const emptyPotCell = document.createElement("td");
-    row2.append(baseCell, emptyOrganizationCell, emptyPotCell);
-    tbody1.appendChild(row2);
-    table1.appendChild(tbody1);
-    const scroll1 = createScroll();
-    scroll1.appendChild(table1);
-    rootTable1.appendChild(scroll1);
-
-    rootTable2.innerHTML = "";
-    rootTable2.appendChild(createHeader("TABELA2"));
-    const table2 = document.createElement("table");
-    table2.className = "admin-data-table";
-    table2.innerHTML = `<thead><tr><th>${formatNumber(metrics.organizationValue)}</th><th>PODZIAŁ</th><th></th></tr></thead>`;
-    const tbody2 = document.createElement("tbody");
-    modeState.table2Rows.forEach((row) => {
-      const tr = document.createElement("tr");
-      const percentValue = parseInteger(row.percent);
-      const percentRowCell = document.createElement("td");
-      const percentRowInput = document.createElement("input");
-      applyIntegerInputHints(percentRowInput);
-      percentRowInput.className = "admin-input";
-      percentRowInput.value = formatPercentDisplay(row.percent);
-      percentRowInput.dataset.focusTarget = "admin-calculator";
-      percentRowInput.dataset.section = "organization-table2";
-      percentRowInput.dataset.tableId = ORGANIZATION_MODE;
-      percentRowInput.dataset.rowId = row.id;
-      percentRowInput.dataset.columnKey = "percent";
-      percentRowInput.addEventListener("focus", () => { percentRowInput.value = row.percent; });
-      percentRowInput.addEventListener("input", () => {
-        row.percent = sanitizeInteger(percentRowInput.value);
-        percentRowInput.value = row.percent;
-        render();
-        schedulePersistCalculatorModeState(ORGANIZATION_MODE);
-      });
-      percentRowInput.addEventListener("blur", () => { percentRowInput.value = formatPercentDisplay(row.percent); });
-      percentRowCell.appendChild(percentRowInput);
-
-      const actions = document.createElement("td");
-      const actionsWrap = document.createElement("div");
-      actionsWrap.className = "admin-table-actions admin-table-actions--row-end";
-      const delBtn = document.createElement("button");
-      delBtn.type = "button";
-      delBtn.className = "danger admin-row-delete";
-      delBtn.textContent = "Usuń";
-      delBtn.disabled = modeState.table2Rows.length === 1;
-      delBtn.addEventListener("click", () => {
-        modeState.table2Rows = modeState.table2Rows.filter((entry) => entry.id !== row.id);
-        ensureOrganizationRows();
-        render();
-        schedulePersistCalculatorModeState(ORGANIZATION_MODE);
-      });
-      actionsWrap.appendChild(delBtn);
-      actions.appendChild(actionsWrap);
-      tr.append(percentRowCell, createReadonlyCell(formatNumber(metrics.organizationValue * (percentValue / 100))), actions);
-      tbody2.appendChild(tr);
-    });
-    table2.appendChild(tbody2);
-    const scroll2 = createScroll();
-    scroll2.appendChild(table2);
-    rootTable2.appendChild(scroll2);
-    const table2FooterActions = document.createElement("div");
-    table2FooterActions.className = "admin-table-footer-actions";
-    const table2AddButton = document.createElement("button");
-    table2AddButton.type = "button";
-    table2AddButton.className = "secondary";
-    table2AddButton.textContent = "Dodaj";
-    table2AddButton.addEventListener("click", () => {
-      modeState.table2Rows.push({ id: `org-table2-${Date.now()}-${modeState.table2Rows.length}`, percent: "" });
-      render();
-      schedulePersistCalculatorModeState(ORGANIZATION_MODE);
-    });
-    table2FooterActions.appendChild(table2AddButton);
-    rootTable2.appendChild(table2FooterActions);
-    rootTable3.innerHTML = "";
-    rootTable4.innerHTML = "";
-    rootTable5.innerHTML = "";
   };
 
   const renderChipsTables = () => {
@@ -6778,25 +6202,6 @@ const initAdminCalculator = () => {
 
   const render = () => {
     const focusState = getFocusedAdminInputState(calculatorContent);
-    if (state.mode === "cash") {
-      renderCashTable7();
-      renderCashTable8();
-      renderCashTable9();
-      renderCashTable10();
-      restoreFocusedAdminInputState(calculatorContent, focusState);
-
-      if (rebuyModal.classList.contains("is-visible")) {
-        renderRebuyModal();
-      }
-      return;
-    }
-
-    if (state.mode === ORGANIZATION_MODE) {
-      renderOrganizationTables();
-      restoreFocusedAdminInputState(calculatorContent, focusState);
-      return;
-    }
-
     if (CHIPS_MODES.has(state.mode)) {
       renderChipsTables();
       restoreFocusedAdminInputState(calculatorContent, focusState);
@@ -6843,7 +6248,7 @@ const initAdminCalculator = () => {
       if (!snapshot.exists) {
         return;
       }
-      if (state.mode === mode && (isEditingSection(["table1", "table2", "table3", "table5", "table9", "organization-table1", "organization-table2", "chips-aa", "chips-ab", "chips-ac"]) || hasPendingDebounceWithPrefix(`admin-calculator-${mode}`))) {
+      if (state.mode === mode && (isEditingSection(["table1", "table2", "table3", "table5", "chips-aa", "chips-ab", "chips-ac"]) || hasPendingDebounceWithPrefix(`admin-calculator-${mode}`))) {
         return;
       }
       state[mode] = normalizeCalculatorModeState(mode, snapshot.data());
@@ -6949,7 +6354,7 @@ const initAdminPlayers = () => {
   let availableStatisticsYears = [];
   let availableRankingYears = [];
   /* Okno „Lata” obsługuje dwie zakładki. „Statystyki” czerpią lata z gier
-     administratora, „Ranking graczy” z gier użytkowników, a każda zakładka
+     administratora, „Bilans żetonów” z gier użytkowników, a każda zakładka
      trzyma swoją listę dozwolonych lat w osobnym polu gracza. */
   const YEARS_MODAL_CONFIG = {
     statsTab: {
@@ -6961,9 +6366,9 @@ const initAdminPlayers = () => {
     },
     rankingTab: {
       field: "rankingYearsAccess",
-      title: "Lata rankingu",
-      description: "Zaznacz lata, które gracz może zobaczyć w zakładce „Ranking graczy”.",
-      emptyText: "Brak dostępnych lat rankingu. Dodaj gry użytkowników, aby lata pojawiły się automatycznie.",
+      title: "Lata bilansu żetonów",
+      description: "Zaznacz lata, które gracz może zobaczyć w zakładce „Bilans żetonów”.",
+      emptyText: "Brak dostępnych lat bilansu żetonów. Dodaj gry użytkowników, aby lata pojawiły się automatycznie.",
       getYears: () => availableRankingYears
     }
   };
@@ -7606,7 +7011,7 @@ const initAdminChat = () => {
   });
 };
 
-/* Wspólny silnik zakładek „Statystyki” i „Ranking graczy”. Różnią się wyłącznie
+/* Wspólny silnik zakładek „Statystyki” i „Bilans żetonów”. Różnią się wyłącznie
    parametrami: źródłem gier (Tables vs UserGames), kolekcją z wagami i
    widocznością kolumn, bramką PIN gracza oraz kluczem uprawnienia i polem
    z listą dozwolonych lat. Logika liczenia jest jedna dla obu zakładek. */
@@ -7665,7 +7070,9 @@ const initStatisticsView = ({
     manualStatsByYear: new Map(),
     visibleColumnsByYear: new Map()
   };
-  const playersStatsHeaderCells = playersStatsBody.closest("table")?.querySelectorAll("thead th") ?? [];
+  const playersStatsTable = playersStatsBody.closest("table");
+  const playersStatsHeaderCells = playersStatsTable?.querySelectorAll("thead th") ?? [];
+  const playersStatsColumns = playersStatsTable?.querySelectorAll("colgroup col") ?? [];
   const adminColumnVisibilityCheckboxes = new Map();
 
   const getDefaultManualFieldValue = (field, value) => getDefaultStatsManualFieldValue(field, value);
@@ -7686,6 +7093,16 @@ const initStatisticsView = ({
     }
     const available = new Set(STATS_COLUMN_CONFIG.map((column) => column.key));
     return stored.filter((key) => available.has(key));
+  };
+
+  /* Kolumny faktycznie rysowane w tabeli: administrator widzi wszystkie,
+     gracz — zaznaczone przez administratora oraz kolumny `alwaysVisible`. */
+  const getShownColumnsForYear = (year) => {
+    if (isAdminView) {
+      return STATS_COLUMN_CONFIG;
+    }
+    const visibleKeys = getVisibleColumnsForYear(year);
+    return STATS_COLUMN_CONFIG.filter((column) => column.alwaysVisible || visibleKeys.includes(column.key));
   };
 
   const persistYearConfig = (year) => {
@@ -7823,6 +7240,7 @@ const initStatisticsView = ({
           percentPlayedGames: totalPool === 0 ? 0 : Math.ceil((row.payoutSum / totalPool) * 100)
         }))
         .sort(comparePlayerStatsByPlusMinusDesc)
+        .map((row, index) => ({ ...row, ordinal: index + 1 }))
     };
   };
 
@@ -7900,7 +7318,7 @@ const initStatisticsView = ({
     }
 
     const statistics = getPlayersStatistics();
-    const visibleColumns = isAdminView ? STATS_COLUMN_CONFIG.map((entry) => entry.key) : getVisibleColumnsForYear(state.selectedYear);
+    const shownColumns = getShownColumnsForYear(state.selectedYear);
 
     if (isAdminView) {
       const visibleInSelectedYear = getVisibleColumnsForYear(state.selectedYear);
@@ -7913,17 +7331,32 @@ const initStatisticsView = ({
     }
 
     if (!isAdminView) {
+      /* Ukryta kolumna musi zniknąć także z <colgroup>. Inaczej szerokości
+         z kolejnych <col> trafiają do niewłaściwych kolumn (przypisanie idzie
+         po pozycji), a --table-min liczy szerokość wszystkich 19 kolumn. */
+      const shownWidths = [];
       playersStatsHeaderCells.forEach((cell, index) => {
         const column = STATS_COLUMN_CONFIG[index];
         if (!column) {
           return;
         }
-        cell.style.display = visibleColumns.includes(column.key) ? "" : "none";
+        const isShown = shownColumns.includes(column);
+        cell.style.display = isShown ? "" : "none";
+        const col = playersStatsColumns[index];
+        if (col) {
+          col.style.display = isShown ? "" : "none";
+          if (isShown) {
+            shownWidths.push(col.style.width || "var(--col-text-md)");
+          }
+        }
       });
+      if (playersStatsTable && shownWidths.length) {
+        playersStatsTable.style.setProperty("--table-min", `calc(${shownWidths.join(" + ")})`);
+      }
     }
 
     status.textContent = `Wybrany rok: ${state.selectedYear}. ${countedGamesLabel}: ${statistics.gameCount}.`;
-    [["Liczba gier", statistics.gameCount], ["Łączna pula", statistics.totalPool]].forEach(([label, value]) => {
+    [["Liczba gier", statistics.gameCount], ["Łącznie żetonów", statistics.totalPool]].forEach(([label, value]) => {
       const tr = document.createElement("tr");
       const labelCell = document.createElement("td");
       labelCell.textContent = String(label);
@@ -7936,7 +7369,7 @@ const initStatisticsView = ({
     if (!statistics.playerRows.length) {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
-      td.colSpan = visibleColumns.length || STATS_COLUMN_CONFIG.length;
+      td.colSpan = shownColumns.length;
       td.textContent = emptyDataText;
       tr.appendChild(td);
       playersStatsBody.appendChild(tr);
@@ -7949,18 +7382,6 @@ const initStatisticsView = ({
       state.manualStatsByYear.set(yearKey, new Map());
     }
     const yearMap = state.manualStatsByYear.get(yearKey);
-
-    if (isAdminView) {
-      const activeVisibleColumns = new Set(getVisibleColumnsForYear(state.selectedYear));
-      const headerCheckboxes = playersStatsBody.closest("table")?.querySelectorAll(".stats-column-visibility-checkbox") ?? [];
-      headerCheckboxes.forEach((checkbox, index) => {
-        const column = STATS_COLUMN_CONFIG[index];
-        if (!column) {
-          return;
-        }
-        checkbox.checked = activeVisibleColumns.has(column.key);
-      });
-    }
 
     const rankingRows = buildRankingRowsFromStatistics(statistics.playerRows, yearMap, getDefaultManualFieldValue);
 
@@ -7979,11 +7400,7 @@ const initStatisticsView = ({
       const tr = document.createElement("tr");
       const manualEntry = yearMap.get(row.statsKey) ?? {};
 
-      STATS_COLUMN_CONFIG.forEach((column) => {
-        if (!visibleColumns.includes(column.key)) {
-          return;
-        }
-
+      shownColumns.forEach((column) => {
         const td = document.createElement("td");
         if (column.key === "result") {
           td.dataset.resultPlayer = row.statsKey;
@@ -8109,7 +7526,7 @@ const initStatisticsView = ({
     const headerCells = playersStatsBody.closest("table")?.querySelectorAll("thead th") ?? [];
     headerCells.forEach((cell, index) => {
       const column = STATS_COLUMN_CONFIG[index];
-      if (!column) {
+      if (!column || column.alwaysVisible) {
         return;
       }
       const checkbox = document.createElement("input");
@@ -8207,13 +7624,11 @@ const initStatisticsView = ({
     const statistics = getPlayersStatistics();
     const yearKey = String(state.selectedYear);
     const yearMap = state.manualStatsByYear.get(yearKey) ?? new Map();
-    const visibleColumns = isAdminView ? STATS_COLUMN_CONFIG.map((column) => column.key) : getVisibleColumnsForYear(state.selectedYear);
-    const headers = STATS_COLUMN_CONFIG.filter((column) => visibleColumns.includes(column.key)).map((column) => column.label);
+    const shownColumns = getShownColumnsForYear(state.selectedYear);
+    const headers = shownColumns.map((column) => column.label);
     const dataRows = statistics.playerRows.map((row) => {
       const manualEntry = yearMap.get(row.statsKey) ?? {};
-      return STATS_COLUMN_CONFIG
-        .filter((column) => visibleColumns.includes(column.key))
-        .map((column) => column.value(row, manualEntry, getDefaultManualFieldValue, getComputedResultValue));
+      return shownColumns.map((column) => column.value(row, manualEntry, getDefaultManualFieldValue, getComputedResultValue));
     });
 
     const sheetRows = [headers, ...dataRows];
@@ -8286,11 +7701,11 @@ const initStatisticsViews = () => {
   });
 };
 
-/* „Ranking graczy” — ten sam widok co „Statystyki”, ale liczony z gier
+/* „Bilans żetonów” — ten sam widok co „Statystyki”, ale liczony z gier
    zamkniętych przez graczy w zakładce „Gry użytkowników” (kolekcja UserGames),
    bez pośrednictwa weryfikacji administratora. */
 const RANKING_EMPTY_DATA_TEXT =
-  "Brak danych. Do rankingu liczone są wyłącznie gry użytkowników oznaczone jako CzyZamknięta.";
+  "Brak danych. Do bilansu żetonów liczone są wyłącznie gry użytkowników oznaczone jako CzyZamknięta.";
 
 const initRankingViews = () => {
   registerAdminRefreshHandler("adminRankingTab", async () => {});
@@ -8302,12 +7717,12 @@ const initRankingViews = () => {
     permissionKey: "rankingTab",
     yearsAccessField: "rankingYearsAccess",
     accessUpdatedEvent: "ranking-access-updated",
-    exportLabel: "Ranking",
+    exportLabel: "Bilans żetonów",
     emptyDataText: RANKING_EMPTY_DATA_TEXT,
     noYearsAdminText: "Brak lat. Rok pojawi się po dodaniu pierwszej gry użytkownika.",
-    noAssignedYearsText: "Brak przypisanych lat do podglądu rankingu.",
-    noAvailableYearsText: "Brak dostępnych lat rankingu dla Twojego konta.",
-    countedGamesLabel: "Gry zaliczone do rankingu",
+    noAssignedYearsText: "Brak przypisanych lat do podglądu bilansu żetonów.",
+    noAvailableYearsText: "Brak dostępnych lat bilansu żetonów dla Twojego konta.",
+    countedGamesLabel: "Gry zaliczone do bilansu żetonów",
     yearButtonsClassName: "admin-games-year-button"
   };
 
@@ -9000,7 +8415,6 @@ const initAdminGames = () => {
           },
           notesLabel: "Notatki po grze",
           clearButtonLabel: "Usuń",
-          clearToDefault: false,
           textareaPlaceholder: "Wpisz notatki po grze...",
           triggerButton: notesButton
         });
@@ -9013,7 +8427,7 @@ const initAdminGames = () => {
       const metrics = getGameSummaryMetrics(game.id);
       const mismatchWarning = document.createElement("p");
       mismatchWarning.className = "status-text status-text-danger";
-      mismatchWarning.textContent = "Nie zgadza się suma wypłat oraz wpisowych i rebuy/add-on";
+      mismatchWarning.textContent = "Nie zgadza się suma kolumny Koniec z sumą kolumn Start i Powroty";
 
       const poolInfo = document.createElement("p");
       poolInfo.className = "status-text";
@@ -9032,10 +8446,10 @@ const initAdminGames = () => {
         <thead>
           <tr>
             <th>Gracz</th>
-            <th>Wpisowe</th>
-            <th>Rebuy/Add-on</th>
-            <th>Wypłata</th>
-            <th>+/-</th>
+            <th>Start</th>
+            <th>Powroty</th>
+            <th>Koniec</th>
+            <th>Żetony na koniec</th>
             <th>% puli</th>
             <th>Punkty</th>
             <th>Mistrzostwo</th>
@@ -9489,7 +8903,7 @@ const initAdminGames = () => {
         games: state.games,
         additionalPayload: {
           isClosed: false,
-          preGameNotes: DEFAULT_GAME_NOTES_TEMPLATE,
+          preGameNotes: "",
           postGameNotes: "",
           createdAt: firebaseApp.firestore.FieldValue.serverTimestamp()
         }
@@ -9541,16 +8955,16 @@ const initAdminGames = () => {
   if (modalEntryFeeBulkButton) {
     modalEntryFeeBulkButton.addEventListener("click", async () => {
       if (!state.activeGameIdInModal) {
-        status.textContent = "Otwórz szczegóły gry, aby zbiorczo ustawić wpisowe.";
+        status.textContent = "Otwórz szczegóły gry, aby zbiorczo ustawić kolumnę Start.";
         return;
       }
-      const promptValue = window.prompt("Podaj wartość wpisowego dla wszystkich graczy.", "0");
+      const promptValue = window.prompt("Podaj wartość kolumny Start dla wszystkich graczy.", "0");
       if (promptValue === null) {
         return;
       }
       const normalized = sanitizeIntegerInput(promptValue);
       if (!normalized || normalized === "-") {
-        status.textContent = "Podaj poprawną wartość liczbową wpisowego.";
+        status.textContent = "Podaj poprawną wartość liczbową dla kolumny Start.";
         return;
       }
       const rows = state.detailsByGame.get(state.activeGameIdInModal) ?? [];
@@ -9559,7 +8973,7 @@ const initAdminGames = () => {
         .collection(gameDetailsCollectionName)
         .doc(row.id)
         .update({ entryFee: normalized })));
-      status.textContent = `Ustawiono wpisowe ${normalized} dla ${rows.length} wierszy.`;
+      status.textContent = `Ustawiono Start ${normalized} dla ${rows.length} wierszy.`;
     });
   }
 
@@ -10400,11 +9814,11 @@ const bootstrap = async () => {
     ["Gry do potwierdzenia (gracz)", initUserConfirmations],
     ["Gry użytkowników (bramka)", initUserGamesTab],
     ["Statystyki (bramka)", initStatisticsTab],
-    ["Ranking graczy (bramka)", initRankingTab],
+    ["Bilans żetonów (bramka)", initRankingTab],
     ["Regulamin (bramka)", initRulesTab],
     ["Gry użytkowników (gracz)", initPlayerUserGames],
     ["Statystyki", initStatisticsViews],
-    ["Ranking graczy", initRankingViews],
+    ["Bilans żetonów", initRankingViews],
     ["Najnowsza wiadomość", initLatestMessage],
     ["Regulamin (widok)", initRulesDisplay],
     ["Modal instrukcji", initInstructionModal],

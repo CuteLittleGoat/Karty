@@ -2,7 +2,8 @@
 
 - W widoku użytkownika (Main i Second) zewnętrzna zielona ramka głównej karty ma dokładnie 1 px na lewej i prawej krawędzi oraz jest rozciągnięta od 1 px od lewej krawędzi ekranu do 1 px od prawej.
 - Efekt uzyskano przez pełną szerokość kontenera `.page` w trybie użytkownika (`calc(100% - 2px)`, `padding-inline: 1px`) oraz wyłączenie wewnętrznej pseudo-ramki `.user-card::before`.
-- W obu modułach (`Main` i `Second`) czerwony przycisk akcji awaryjnej (`button.danger`) „Przycisnąć w razie kontroli celno-skarbowej” znajduje się w prawym górnym pasku (`.admin-toolbar`), więc jest widoczny zarówno dla użytkownika, jak i administratora.
+- W obu modułach (`Main` i `Second`) czerwony przycisk akcji awaryjnej (`button.danger`) znajduje się w prawym górnym pasku (`.admin-toolbar`), więc jest widoczny zarówno dla użytkownika, jak i administratora. W `Main` ma etykietę „Nie wciskać”, w `Second` — „Przycisnąć w razie kontroli celno-skarbowej”.
+- Nagłówek `Main` (`header.page-header`) nie ma tytułu tekstowego: zawiera tylko `.header-controls` (ikona `.header-icon` + `.admin-toolbar`), dosunięte do prawej przez `margin-left: auto`. Arkusz `Main/styles.css` nie definiuje stylów `h1` ani `.eyebrow` i nie ma tokenu `--fs-title`; krój `--font-title` (Cinzel) pozostaje w użyciu w innych elementach.
 - W obu modułach modal z GIF-em `Koza.gif` został zachowany, ale bez nagłówka tekstowego; obraz korzysta z klas `.customs-emergency-modal-body` i `.customs-emergency-image` (wycentrowanie, ograniczenie szerokości i wysokości, `object-fit: contain`, zaokrąglenie i obramowanie).
 ## System szerokości tabel (Main i Second)
 - Szerokości kolumn opisuje skala tokenów `--col-*` w `:root` obu arkuszy (10 w `Main`, 9 w `Second` — `Main` ma dodatkowo `--col-weight`); szczegóły i przypisanie kolumn są w `Kolumny.md`.
@@ -85,23 +86,24 @@
 
 - Tabela rebuy gracza w modalu (`#adminCalculatorRebuyTable`) ma `width: max-content` i kolumny o szerokości `--col-num-sm`, bo ich liczba jest zmienna.
 
-## Main — Kalkulator: nowe sekcje Organizacja i Żetony
-- Sidebar kalkulatora zawiera dodatkowe przyciski trybów: `Organizacja`, `Żetony cash1`, `Żetony cash2`, `Żetony tournament1`, `Żetony tournament2`.
-- Nowe tabele korzystają ze standardowego stylu `admin-data-table` i pól `admin-input` (spójność wizualna z resztą Main).
-- W `Organizacja` (`TABELA1`) drugi wiersz pozostawia kolumny `ORGANIZACJA` i `POT` bez pól wejściowych; aktywne pole edycji znajduje się tam wyłącznie w kolumnie `KALKULATOR`.
+## Main — Kalkulator: tryby i sekcje Żetony
+- Sidebar kalkulatora (`.admin-calculator-switch`) ma pięć przycisków `.admin-calculator-switch-button`: `Tournament1`, `Żetony niski nominał 1`, `Żetony niski nominał 2`, `Żetony wysoki nominał 1`, `Żetony wysoki nominał 2`. Dłuższe etykiety zawijają się na dwie linie wewnątrz przycisku.
+- Tabele żetonów korzystają ze standardowego stylu `admin-data-table` i pól `admin-input` (spójność wizualna z resztą Main).
 - Przyciski akcji w wierszach (`Dodaj`, `Usuń`) korzystają z istniejących klas `secondary` i `danger admin-row-delete`.
-- Puste wrappery sekcji kalkulatora (`.admin-calculator-table-wrap`) są ukrywane regułą `:empty`, dlatego niewykorzystane sloty pod `TABELA2` i `TABELAC` nie tworzą już zielonych pasów w UI.
+- Puste wrappery sekcji kalkulatora (`.admin-calculator-table-wrap`) są ukrywane regułą `:empty`, dlatego niewykorzystane sloty pod `TABELAC` nie tworzą zielonych pasów w UI.
 
 - W panelu `Finał` usunięto wizualizację stołu (`.poker-table-svg`); sekcja pokazuje `Tabela23` oraz `Tabela23A` z przyciskami pozycji `▲/▼`.
 - W module `Second`, w widoku użytkownika dla `#tournamentTab` na mobile (`max-width: 760px`), layout Tournament wymusza jedną kolumnę (`minmax(0,1fr)`), pełną szerokość sidebara i lokalne przewijanie szerokich tabel; etykiety przycisków sekcji pozostają widoczne bez przełączania na `Czat`.
 
-## Main — nagłówek tabeli statystyk i rankingu (checkbox widoczności kolumn)
-- Dotyczy `.admin-games-players-stats-table` w zakładkach `Statystyki` i `Ranking graczy`, wyłącznie w widoku administratora.
+## Main — nagłówek tabeli statystyk i bilansu żetonów (checkbox widoczności kolumn)
+- Dotyczy `.admin-games-players-stats-table` w zakładkach `Statystyki` i `Bilans żetonów`, wyłącznie w widoku administratora.
+- Pierwsza kolumna `Lp.` (token `--col-num-xs`) ma zwykły nagłówek tekstowy bez `.stats-column-header` i bez checkboxa.
 - Kontener `.stats-column-header`: `display: flex`, `align-items: center`, `justify-content: flex-start`, `flex-wrap: wrap`, `gap: 4px 10px`, `min-width: 0`.
 - Nazwa kolumny w `.stats-column-label`: `flex: 1 0 100%`, `min-width: 0`, `overflow-wrap: normal`, `word-break: normal` — zajmuje pełną szerokość, więc checkbox zawsze trafia do osobnej linii pod nazwą, przy lewej krawędzi komórki.
 - Checkbox `.stats-column-visibility-checkbox`: `flex: 0 0 auto`, `16 × 16 px`.
 - `.admin-games-players-stats-table th` ma `padding-inline: 12px` (domyślne w tabelach to `10px 8px`).
 - Kolumny `Waga1`–`Waga6` używają tokenu `--col-weight` (104 px) zamiast `--col-num-sm` (88 px), bo muszą pomieścić przycisk zbiorczej edycji wagi.
+- Pomiar w Chromium (okno 1600 px, font Rajdhani): każda z 19 kolumn ma szerokość swojego tokenu, żadna komórka nagłówka nie ucina zawartości, a nagłówki `Żetony na koniec`, `Wygrane żetony`, `Żetony na start` zawijają się na dwie linie między wyrazami.
 - Efekt mierzony w Chromium (okno 1600 px): zero komórek nagłówka ucinających zawartość, zero checkboxów wychodzących poza komórkę, minimalny odstęp między checkboxem a nazwą następnej kolumny 68 px, wysokość wiersza nagłówka 92 px.
 
 ## Main — lista kolejności potwierdzeń i import gier
@@ -129,6 +131,7 @@
 
 ## Main — okno notatek (`#summaryNotesModal`)
 - Karta ma klasy `modal-card modal-card-sm modal-card-wide summary-notes-modal-card`, a treść — `modal-body summary-notes-modal-body`.
+- Stopka ma dwa przyciski: `Zapisz` (`primary`) i `Usuń` (`danger`, `#summaryNotesClear`) — ten sam układ dla „Notatek do gry” i „Notatek po grze”.
 - `.summary-notes-editor`: `min-height: 180px`, `overflow: auto`, `overscroll-behavior: contain`, `white-space: pre-wrap`, `overflow-wrap: anywhere`. `overflow: auto` jest obowiązkowe — przy domyślnym `visible` tekst dłuższy od pola wylewał się poza nie i był obcinany przez `.modal-body { overflow: hidden }` bez żadnego paska przewijania.
 - W trybie poziomym telefonu `.summary-notes-modal-body` dostaje `flex: 1`, `min-height: 0` i `grid-template-rows: auto minmax(0, 1fr) auto`, a `.summary-notes-editor` `min-height: 0` — pole dopasowuje wysokość do okna zamiast trzymać sztywne 180 px. Pusty `.status-text` w tym modalu jest ukrywany (`:empty { display: none }`).
 

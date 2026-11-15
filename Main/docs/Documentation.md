@@ -11,7 +11,7 @@
 
 ## 2. Aktualny zakres funkcjonalny tej wersji
 - Service Worker obsługuje komunikat `SKIP_WAITING`, dzięki czemu nowy worker może szybciej przejąć kontrolę po aktualizacji.
-- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`, `../config/firebase-config.js`) z parametrem wersji (`?v=2026-09-21.1`) w celu twardego bustowania cache między release’ami.
+- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`, `../config/firebase-config.js`) z parametrem wersji (`?v=2026-11-15.1`) w celu twardego bustowania cache między release’ami.
   - `config/firebase-config.js` nie występuje w `APP_SHELL_ASSETS`, ale jako `request.destination === "script"` trafia w Service Workerze do strategii `staleWhileRevalidate`. Bez parametru wersji zmiana samej konfiguracji (np. dodanie klucza App Check) bez podbicia `APP_VERSION` byłaby serwowana z cache o jeden release wstecz. Parametr `?v=` eliminuje ten przypadek niezależnie od `APP_VERSION`.
   - Moduł `Second` nie ma Service Workera, więc jego `index.html` ładuje ten sam plik bez parametru wersji — podlega wyłącznie zwykłemu cache HTTP.
 - `Main/pwa-bootstrap.js` nasłuchuje `updatefound` i `controllerchange`; po instalacji nowego workera wymusza jego aktywację i wykonuje pojedynczy `window.location.reload()`, aby użytkownik pracował na spójnym zestawie assetów.
@@ -27,8 +27,10 @@
 - Widok **Najbliższa gra** wyświetla tylko gry otwarte z datą równą bieżącemu dniowi lub późniejszą; rekordy starsze niż dzisiejsza data są automatycznie ukrywane. Parser dat obsługuje formaty `YYYY-MM-DD`, `DD.MM.YYYY` i `DD-MM-YYYY`, a sortowanie jest rosnące po dacie (najbliższa gra na górze).
 - Modale `Szczegóły gry` (`#gameDetailsModal`, `#userGameDetailsModal`, `#playerUserGameDetailsModal`) mają:
   - linię metadanych (`#gameDetailsMeta`, `#userGameDetailsMeta`, `#playerUserGameDetailsMeta`) przeniesioną do nagłówka modalu jako pierwszy wiersz zamiast osobnego tytułu „Szczegóły gry”,
-  - nagłówek tekstowy `Rebuy/Add-on` (bez akcji zbiorczej),
-  - przycisk w każdej komórce `Rebuy/Add-on`, który pokazuje sumę rebuy danego gracza i otwiera modal `Rebuy gracza` z przyciskami `Dodaj Rebuy`/`Usuń Rebuy` oraz zamknięciem przez ikonę `×` w prawym górnym rogu,
+  - kolumny `LP | Gracz | Start | Powroty | Koniec | Żetony na koniec | Punkty | Mistrzostwo | (akcje)`; pola Firestore pod spodem pozostają bez zmian: `entryFee` (Start), `rebuy` (Powroty), `payout` (Koniec), a `Żetony na koniec` to wyliczane `payout - (entryFee + rebuy)`,
+  - nagłówek `Start` jest przyciskiem zbiorczym (`.game-entry-fee-bulk-button`): `window.prompt("Podaj wartość kolumny Start dla wszystkich graczy.")` wpisuje jedną wartość do pola `entryFee` każdego wiersza; komunikaty statusu też mówią o „kolumnie Start”,
+  - nagłówek tekstowy `Powroty` (bez akcji zbiorczej),
+  - przycisk w każdej komórce `Powroty`, który pokazuje sumę rebuy danego gracza i otwiera modal `Rebuy gracza` z przyciskami `Dodaj Rebuy`/`Usuń Rebuy` oraz zamknięciem przez ikonę `×` w prawym górnym rogu,
   - pola liczbowe (`entryFee`, `payout`, `points` oraz pola `RebuyN` w modalu rebuy) działają jako `type="text"` z hintami mobilnymi `inputMode="numeric"`, `pattern="[0-9]*"`, `autocomplete="off"`,
   - modal rebuy przechowuje osobno wartości i indeksy kolumn (`rebuyIndexes`, `rebuyNextIndex`), dzięki czemu kolumny `RebuyN` są numerowane niezależnie dla każdego gracza; po usunięciu ostatniej kolumny następne dodanie wraca do najbliższego wolnego numeru,
   - bez podświetlania potwierdzeń w samym modalu szczegółów; podświetlenie przeniesione do modala statusów z kolumny `IlośćPotwierdzonych`.
@@ -39,12 +41,12 @@
 - Potwierdzenia obecności i liczniki `potwierdzeni/zapisani` zostały przepięte na klucz logiczny gracza oparty o `playerId` (z fallbackiem do `playerName` dla starszych rekordów), co eliminuje konflikt przy duplikatach nazw.
 - Wiersze gier (`rows`) oraz wybór gracza w modalach szczegółów zapisują teraz jednocześnie `playerId` i `playerName`, dzięki czemu prezentacja pozostaje czytelna, a logika opiera się o identyfikator unikatowy.
 - Statystyki roczne i konfiguracja ręcznych wag (`admin_games_stats`) używają klucza gracza wyliczanego z `playerId` (fallback: `playerName`) oraz serializują `playerId` w rekordach manualnych; ten sam klucz jest używany zarówno w zakładce „Statystyki”, jak i w sekcji statystyk zakładki „Gry admina”.
-- Przyciski zbiorczej edycji wag (`.admin-weight-bulk-button`) wypełniają szerokość komórki nagłówka (`width: 100%`); szerokość kolumny wynika z tokenu `--col-num-xs` w `<colgroup>`.
+- Przyciski zbiorczej edycji wag (`.admin-weight-bulk-button`) wypełniają szerokość komórki nagłówka (`width: 100%`); szerokość kolumny wynika z tokenu `--col-weight` w `<colgroup>`.
 - W `Main/styles.css` kontener `.admin-table-scroll` ma przewijanie w obu osiach (`overflow: auto`) z widocznym stylowaniem suwaka i limitem wysokości `min(72vh, 760px)`.
 - W widoku gracza (`#statisticsTab`) desktopowa siatka `.admin-games-layout` ma trzy kolumny: `20ch` (`Lata`), `minmax(0, 1fr)` (`Statystyki`) i `34ch` (`Ranking`); poniżej 1180 px układ przechodzi na jedną kolumnę i ranking ląduje pod tabelą statystyk.
 - Dodatkowy breakpoint mobile-landscape (`@media (orientation: landscape) and (hover: none) and (pointer: coarse) and (max-height: 500px)`) wymusza układ jednokolumnowy także dla telefonów w poziomie.
 - W modalach szczegółów gry (`.game-details-modal-card`) obszar treści (`.modal-body`) działa jako kontener flex (`flex: 1; min-height: 0`), a sekcja tabeli (`.admin-table-scroll`) przejmuje przewijanie (`overflow: auto`, `-webkit-overflow-scrolling: touch`), dzięki czemu na desktopie i mobile działa pionowe i poziome przewijanie długiej listy graczy.
-- Kalkulator (tabele 2 i 9) przechowuje i serializuje `playerId` wraz z `playerName`; wybory na listach graczy działają po ID, co zabezpiecza scenariusz duplikatów nazw.
+- Kalkulator (Tabela2 trybu Tournament1) przechowuje i serializuje `playerId` wraz z `playerName`; wybory na listach graczy działają po ID, co zabezpiecza scenariusz duplikatów nazw.
 - Tabele `Gracze` (`.players-table`) i listy gier (`.admin-games-table`) deklarują kolumny w `<colgroup>` z tokenów; na mniejszych ekranach działają przez przewijanie poziome w `.admin-table-scroll`.
 - Tabele list `Gry użytkowników` używają klas `.admin-games-table` i `.admin-user-games-table` oraz mają o jedną kolumnę więcej (`Liczba miejsc`, token `--col-num-sm`); kolumna `Nazwa` jest kolumną elastyczną, więc to ona wchłania nadmiar miejsca.
 
@@ -66,21 +68,23 @@
 - Klasy CSS:
   - `.admin-only` / `.user-only` sterowane przez `body.is-admin`.
 - Widok użytkownika ma dwie zakładki najwyższego poziomu: `updatesTab` („Aktualności”) i `playerZoneTab` („Strefa Gracza”).
-- `AVAILABLE_PLAYER_TABS` definiuje uprawnienia nadawane w zakładce „Gracze”, w kolejności: `playerZoneTab` („Strefa Gracza”), `rulesTab` („Regulamin”), `nextGameTab`, `chatTab`, `confirmationsTab`, `userGamesTab`, `statsTab`, `rankingTab` („Ranking graczy”).
+- `AVAILABLE_PLAYER_TABS` definiuje uprawnienia nadawane w zakładce „Gracze”, w kolejności: `playerZoneTab` („Strefa Gracza”), `rulesTab` („Regulamin”), `nextGameTab`, `chatTab`, `confirmationsTab`, `userGamesTab`, `statsTab`, `rankingTab` („Bilans żetonów”).
 - `PLAYER_ZONE_SECTION_PERMISSION_MAP` mapuje identyfikator panelu sekcji na klucz uprawnienia; `playerZoneTab` jest nadrzędne — bez niego bramka Strefy Gracza nie przepuszcza do żadnej sekcji.
 - Panel administratora ma zakładki: `adminNewsTab`, `adminChatTab`, `adminRulesTab`, `adminNotesTab`, `adminPlayersTab`, `adminGamesTab`, `adminStatisticsTab`, `adminRankingTab`, `adminUserGamesTab`, `adminNextGameTab`, `adminConfirmationsTab`, `adminCalculatorTab`, `adminBackupTab`.
-- Header:
-  - przycisk instrukcji widoczny zawsze.
-  - czerwony przycisk `#customsEmergencyButton` został przeniesiony do prawego górnego paska (`.admin-toolbar`), dzięki czemu jest dostępny zarówno w widoku użytkownika, jak i administratora; otwiera modal `#customsEmergencyModal` z GIF-em `../Koza.gif`.
+- Header (`header.page-header`):
+  - zawiera wyłącznie `.header-controls`: ikonę `.header-icon` (`../Pliki/Ikona.png`) i pasek `.admin-toolbar` z dwoma przyciskami; nie ma tytułu tekstowego ani podtytułu,
+  - `.header-controls` ma `margin-left: auto`, więc ikona i przyciski stoją przy prawej krawędzi także bez tytułu po lewej,
+  - przycisk instrukcji widoczny zawsze w trybie administratora (w widoku gracza ukryty regułą CSS),
+  - czerwony przycisk `#customsEmergencyButton` z etykietą „Nie wciskać” stoi w `.admin-toolbar`, więc jest dostępny w widoku użytkownika i administratora; otwiera modal `#customsEmergencyModal` z GIF-em `../Koza.gif`.
 
-## 4.1. Modal „Kontrola celno-skarbowa”
+## 4.1. Modal przycisku „Nie wciskać”
 - Elementy DOM:
-  - `#customsEmergencyButton`
-  - `#customsEmergencyModal`
+  - `#customsEmergencyButton` (etykieta „Nie wciskać”)
+  - `#customsEmergencyModal` (`aria-label="Nie wciskać"`)
   - `#customsEmergencyClose`
 - Zachowanie:
   - przycisk jest widoczny w obu trybach (user/admin),
-  - modal nie zawiera już nagłówka tekstowego „Kontrola celno-skarbowa”,
+  - modal nie ma nagłówka tekstowego — zawiera tylko przycisk `×` i obraz,
   - modal otwiera się lokalnie po kliknięciu (bez zapisu do Firebase),
   - zamykanie: `×`, kliknięcie w overlay, `Escape`.
 - Style:
@@ -107,12 +111,12 @@
 ### 5.2. Aktualny przekrój schematu Firestore
 - `admin_notes` przechowuje osobne dokumenty modułowe (`main`, `second`) z polami: `module`, `text`, `updatedAt`, `updatedBy`.
 - `app_settings` zawiera m.in. dokument `player_access` i listę `players[]` z polami dostępowymi (`appEnabled`, `permissions`, `statsYearsAccess`, `rankingYearsAccess`, `pin`).
-  - `statsYearsAccess` i `rankingYearsAccess` to dwie **rozłączne** listy lat: pierwsza dotyczy zakładki „Statystyki” (lata z kolekcji `Tables`), druga zakładki „Ranking graczy” (lata z kolekcji `UserGames`). Odznaczenie odpowiedniego uprawnienia czyści powiązaną listę.
-- `admin_games_stats/{rok}` i `user_games_stats/{rok}` mają identyczny kształt (`rows[]` z wagami per gracz oraz `visibleColumns[]`), ale obsługują różne zakładki — odpowiednio „Statystyki” i „Ranking graczy”. Rozdzielenie jest celowe: zmiana wagi lub widoczności kolumny w jednej zakładce nie może wpływać na drugą.
+  - `statsYearsAccess` i `rankingYearsAccess` to dwie **rozłączne** listy lat: pierwsza dotyczy zakładki „Statystyki” (lata z kolekcji `Tables`), druga zakładki „Bilans żetonów” (lata z kolekcji `UserGames`). Odznaczenie odpowiedniego uprawnienia czyści powiązaną listę.
+- `admin_games_stats/{rok}` i `user_games_stats/{rok}` mają identyczny kształt (`rows[]` z wagami per gracz oraz `visibleColumns[]` — lista kluczy kolumn widocznych dla graczy; kolumna `ordinal` („Lp.”) nigdy do niej nie trafia), ale obsługują różne zakładki — odpowiednio „Statystyki” i „Bilans żetonów”. Rozdzielenie jest celowe: zmiana wagi lub widoczności kolumny w jednej zakładce nie może wpływać na drugą.
 - `Tables` i `UserGames` mają dokumenty gry oraz subkolekcje:
   - `rows` (wiersze graczy z polami turniejowymi jak `entryFee`, `rebuy`, `payout`, `points`, `championship`),
   - `confirmations` (potwierdzenia obecności graczy).
-- `calculators/{type}` zawiera stan kalkulatora oraz wersjonowane definicje, placeholdery i sesje robocze.
+- `calculators/{docId}` zawiera stan kalkulatora oraz wersjonowane definicje, placeholdery i sesje robocze. Aplikacja zapisuje i czyta pięć dokumentów: `tournament` (tryb `tournament1`), `chips-cash1`, `chips-cash2`, `chips-tournament1`, `chips-tournament2`.
 - `Nekrolog_*` to osobny zestaw kolekcji do konfiguracji, snapshotów i zleceń odświeżania.
 
 
@@ -161,19 +165,27 @@ i są potrzebne, aby odtworzyć działające App Check:
   *Essentials*, czyli w projekcie Google Cloud bez włączonych płatności).
 - Zmiana TTL dotyczy wyłącznie nowych tokenów; już wydane zachowują poprzednią ważność.
 
-## 6. Kalkulator Tournament — stabilność renderu Tabela2
-- W `initAdminCalculator` funkcja `renderTable2` iteruje po `table2Rows` z sygnaturą callbacka `(row, index)`, a kolumna `LP` jest wyliczana jako `index + 1`; eliminuje to błąd runtime podczas renderu Tournament i gwarantuje dokończenie sekwencji `renderTable1..renderTable5`.
+## 6. Kalkulator — tryby (`initAdminCalculator`)
+- Sidebar `.admin-calculator-switch` ma pięć przycisków trybu (`data-calculator-mode`):
 
-## 6. Kalkulator Cash — logika Tabela7/Tabela9
-- Funkcja `renderCashTable9` buduje wiersze `state.cash.table9Rows` z selektorem gracza, polami `Buy-In` i `Wypłata` oraz przyciskiem otwierającym modal `Rebuy`.
-- Pola `Buy-In` i `Wypłata` w `Tabela9` używają helpera `applyIntegerInputHints`, który ustawia `inputMode="numeric"`, `pattern="[0-9]*"` i `autocomplete="off"`; dzięki temu na urządzeniach mobilnych otwiera się klawiatura numeryczna bez zmiany mechaniki fokusu.
-- Modal `Rebuy gracza` korzysta z tego samego helpera dla każdego pola `RebuyX`, więc mobilne wpisy rebuy są spójne z pozostałymi polami liczbowymi aplikacji.
+| Etykieta w UI | Klucz trybu | Dokument `calculators/…` | Tabele |
+|---|---|---|---|
+| Tournament1 | `tournament1` | `tournament` | `Tabela1`–`Tabela5` |
+| Żetony niski nominał 1 | `chips-cash1` | `chips-cash1` | `TABELAA`, `TABELAB`, `TABELAC` |
+| Żetony niski nominał 2 | `chips-cash2` | `chips-cash2` | jw. |
+| Żetony wysoki nominał 1 | `chips-tournament1` | `chips-tournament1` | jw. |
+| Żetony wysoki nominał 2 | `chips-tournament2` | `chips-tournament2` | jw. |
 
-## 7. Kalkulator Cash — logika Tabela7/Tabela8
-- Funkcja `getCashMetrics` wylicza wartości dla widoku Cash na podstawie danych z `state.cash.table9Rows` i `state.cash.table8Row.rake`.
-- W `Tabela7` kolumna **Suma** jest liczona bezpośrednio z danych wejściowych: `suma Buy-In z Tabela9 + suma Rebuy z Tabela9`.
-- Wartość **Rake** w `Tabela8` jest obliczana jako: `(suma Buy-In + suma Rebuy) × (procent / 100)`.
-- Wartość **Pot** i sumy po potrąceniu procentu pozostają liczone jako wartości po odjęciu rake (`1 - procent/100`).
+- Klucze trybów są jednocześnie identyfikatorami dokumentów Firestore, dlatego tryby żetonów zachowują klucze `chips-cash*` / `chips-tournament*` niezależnie od etykiet w UI — zmiana klucza oznaczałaby utratę zapisanych danych.
+- Stałe: `TOURNAMENT_MODES = new Set(["tournament1"])`, `CHIPS_MODES` (cztery klucze żetonów), `ALL_CALCULATOR_MODES = [...TOURNAMENT_MODES, ...CHIPS_MODES]`. Kliknięcie przycisku z kluczem spoza `ALL_CALCULATOR_MODES` przełącza na `tournament1`.
+- Stan: `state.tournament1` (`createInitialState`) i po jednym `createInitialChipsState()` na tryb żetonów. `normalizeCalculatorModeState` / `serializeCalculatorModeState` mają gałąź dla `CHIPS_MODES` oraz gałąź domyślną dla Tournament1.
+- `render()`: dla `CHIPS_MODES` wywołuje `renderChipsTables`, w pozostałych przypadkach `renderTable1`…`renderTable5` i — gdy modal jest otwarty — `renderRebuyModal`.
+- Snapshot każdego trybu (`getCalculatorDocRef(mode).onSnapshot`) jest pomijany, gdy użytkownik edytuje jedną z sekcji `table1`, `table2`, `table3`, `table5`, `chips-aa`, `chips-ab`, `chips-ac` albo czeka zapis z debounce `admin-calculator-{tryb}` — to ochrona fokusu opisana w `Analizy/Wazne_Fokus`.
+
+## 6.1. Kalkulator Tournament1 — Tabela2 i modal rebuy
+- `renderTable2` iteruje po `table2Rows` z sygnaturą callbacka `(row, index)`, a kolumna `LP` jest wyliczana jako `index + 1`.
+- Modal `Rebuy gracza` kalkulatora (`#adminCalculatorRebuyModal`) obsługuje wyłącznie tryb Tournament1: `getModalModeState()` zwraca `state[state.rebuyModal.mode]`, gdy tryb należy do `TOURNAMENT_MODES`, a `getRebuyRowsForMode(modeState)` zwraca `modeState.table2Rows`.
+- Każde pole `RebuyX` korzysta z helpera `applyIntegerInputHints` (`inputMode="numeric"`, `pattern="[0-9]*"`, `autocomplete="off"`), więc na telefonie otwiera się klawiatura numeryczna.
 
 - W `Szczegóły gry` (admin i gry użytkowników) rebuy per gracz może być przechowywany jako tablica `rebuys` (wartości składowe) oraz pole sumaryczne `rebuy`; przy każdej zmianie modal aktualizuje oba pola, a dalsze obliczenia korzystają z pola sumarycznego `rebuy`.
 
@@ -262,9 +274,9 @@ Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-order-
 - Tytuł dokumentu (`<title>`) w `index.html` ustawiono na `Poker - rozgrywki`.
 - Manifest PWA ustawia nazwę instalowanej aplikacji na `Poker - rozgrywki` (`short_name`: `Poker`).
 - `start_url` w manifeście jest relatywny (`./index.html?...`), a `scope` ustawiony na `./`, co zapobiega błędom 404 dla hostingu pod prefiksem repozytorium.
-- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-09-21.1`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
+- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-11-15.1`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
 
-- W `initAdminCalculator` każdy wiersz rebuy (`table2Rows` i `table9Rows`) przechowuje parę `rebuys[]` + `rebuyIndexes[]`; dodawanie rebuy nadaje globalny numer `max+1` dla całego aktywnego trybu, a usunięcie rebuy wykonuje globalną kompaktację indeksów bez luk.
+- W `initAdminCalculator` każdy wiersz rebuy (`table2Rows`) przechowuje parę `rebuys[]` + `rebuyIndexes[]`; dodawanie rebuy nadaje globalny numer `max+1` dla całego aktywnego trybu, a usunięcie rebuy wykonuje globalną kompaktację indeksów bez luk.
 - Tabela5 buduje kolumny `RebuyX` i mapowanie wartości po posortowanych `rebuyIndexes`, zamiast po samym `flatMap` kolejności graczy, dzięki czemu semantyka numeru `RebuyX` pozostaje spójna po dodawaniu/usuwaniu kolumn u różnych graczy.
 
 ## Modale na telefonie trzymanym poziomo
@@ -296,22 +308,13 @@ Tabela „Szczegółów” po zwężeniu tokenów ma 896 px przy 869 px dostępn
 
 `.summary-notes-editor` ma `overflow: auto` (oraz `overscroll-behavior: contain`). Wcześniej pole miało domyślne `overflow: visible`, a jego kontener `.modal-body` — `overflow: hidden`. Tekst dłuższy od pola wylewał się poza nie i był obcinany bez żadnego paska przewijania: notatka pozostawała zapisana w Firestore, ale jej końcówka była niedostępna do odczytu (pomiar: pole 178 px wysokości przy treści wymagającej 445 px, czyli ok. 4–5 widocznych linii z 20 na telefonie w poziomie i ok. 13 z 20 w pionie).
 
-## Aktualizacja techniczna: Kalkulator (Organizacja + Żetony)
-- `Main/index.html`: w sidebarze kalkulatora dodano tryby `organization`, `chips-cash1`, `chips-cash2`, `chips-tournament1`, `chips-tournament2`.
-- `Main/app.js` (`initAdminCalculator`):
-  - rozszerzono listę trybów o `ALL_CALCULATOR_MODES`;
-  - dodano stany początkowe: `createInitialOrganizationState`, `createInitialChipsState`;
-  - dodano normalizację i serializację Firestore dla nowych trybów w `normalizeCalculatorModeState` i `serializeCalculatorModeState`;
-  - dodano renderery: `renderOrganizationTables`, `renderChipsTables`;
-  - dodano synchronizację wierszy `TABELAC` do `TABELAA` (`ensureChipsRows`);
-  - w `Organizacja -> TABELA2` przycisk `Dodaj` jest renderowany pod tabelą (`.admin-table-footer-actions`), a przycisk `Usuń` pozostaje w kolumnie akcji każdego wiersza;
-  - w `Żetony -> TABELAA` usunięto wiersz sumy z ciała tabeli; podsumowanie `Łącznie Stack` jest renderowane jako osobny tekst pod tabelą (`.admin-table-info`);
-  - w tabelach `TABELA2` (Organizacja) i `TABELAA` (Żetony) przyciski `Usuń` w wierszach są wyrównywane do prawej (`.admin-table-actions--row-end`);
-  - puste sloty kalkulatora `#adminCalculatorTable1..#adminCalculatorTable5` są automatycznie ukrywane w UI przez regułę CSS `.admin-calculator-table-wrap:empty { display: none; }`; dotyczy to wyłącznie pustych wrapperów (bez nagłówka i tabeli), więc np. puste pasy pod `TABELA2` i `TABELAC` nie są już renderowane wizualnie.
-  - wszystkie nowe pola edycyjne mają metadane fokusu (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`) i korzystają z `applyIntegerInputHints`.
-- `renderOrganizationTables` (`Main/app.js`): w `TABELA1` drugi wiersz pozostawia kolumny `ORGANIZACJA` i `POT` jako puste komórki `<td>` (bez readonly inputów), dzięki czemu tylko `KALKULATOR` ma pole edycyjne w tym wierszu.
-- Obliczenia pól wynikowych w nowych tabelach są zaokrąglane w górę (`Math.ceil` przez `formatNumber`).
-- Persist danych: nowe tryby zapisują się do `calculators/{docId}` analogicznie do istniejących trybów.
+## Kalkulator — tryby żetonów (`renderChipsTables`)
+- Cztery tryby żetonów (`Żetony niski nominał 1/2`, `Żetony wysoki nominał 1/2`) mają identyczny układ i logikę; różnią się wyłącznie dokumentem Firestore, do którego zapisują stan.
+- `ensureChipsRows` synchronizuje wiersze `TABELAC` z wierszami `TABELAA` (jeden wiersz `TABELAC` na każdy nominał).
+- `TABELAA`: przycisk `Dodaj` jest renderowany pod tabelą (`.admin-table-footer-actions`), a `Usuń` w kolumnie akcji każdego wiersza, wyrównany do prawej (`.admin-table-actions--row-end`). Suma `Łącznie Stack` jest osobnym tekstem pod tabelą (`.admin-table-info`), a nie wierszem tabeli.
+- Puste sloty kalkulatora `#adminCalculatorTable1..#adminCalculatorTable5` są ukrywane regułą `.admin-calculator-table-wrap:empty { display: none; }` — w trybach żetonów sloty 4 i 5 są puste.
+- Pola edycyjne mają metadane fokusu (`data-focus-target`, `data-section`, `data-table-id`, `data-row-id`, `data-column-key`) i korzystają z `applyIntegerInputHints`.
+- Obliczenia pól wynikowych są zaokrąglane w górę (`Math.ceil` przez `formatNumber`).
 
 ## Aktualizacja techniczna: separacja Gry admina od potwierdzeń i Najbliższej gry
 - `Main/app.js`:
@@ -322,16 +325,16 @@ Tabela „Szczegółów” po zwężeniu tokenów ma 896 px przy 869 px dostępn
 
 ## Zasięg flagi `isClosed`
 - Pole `isClosed` jest odczytywane w: `getActiveGamesForConfirmations` (zakładki `Gry do potwierdzenia`), `getCombinedOpenGames` (widok `Najbliższa gra`) oraz `getGamesForStatistics` w `initAdminGames` i `initStatisticsView`.
-- `getGamesForStatistics` zwraca `getGamesForSelectedYear().filter((game) => Boolean(game.isClosed))` i jest jedynym źródłem gier dla `getPlayersStatistics`. Dzięki temu filtr obejmuje **wyłącznie agregaty**: tabelę statystyk, ranking oraz pozycje `Gry zaliczone do statystyk` i `Łączna pula`.
+- `getGamesForStatistics` zwraca `getGamesForSelectedYear().filter((game) => Boolean(game.isClosed))` i jest jedynym źródłem gier dla `getPlayersStatistics`. Dzięki temu filtr obejmuje **wyłącznie agregaty**: tabelę statystyk, ranking oraz pozycje `Gry zaliczone do statystyk` i `Łącznie żetonów`.
 - Filtr **nie obejmuje** tabeli gier, panelu `Lata` ani podsumowań pod tabelą — inaczej gra znikałaby z listy w momencie odznaczenia checkboxa i nie dałoby się jej ponownie zaznaczyć.
 - W zakładce `Gry użytkowników` zaznaczenie `isClosed` dodatkowo wyzwala eksport gry do kolekcji gier admina (patrz sekcja o imporcie).
-- Ten sam filtr obowiązuje w zakładce `Ranking graczy`, tyle że po stronie kolekcji `UserGames`. Gra wchodzi do rankingu, gdy ma `isClosed === true` w `UserGames`; odznaczenie natychmiast ją wyklucza, bo agregat liczony jest na żywo (nie ma migawki podsumowania).
+- Ten sam filtr obowiązuje w zakładce `Bilans żetonów`, tyle że po stronie kolekcji `UserGames`. Gra wchodzi do bilansu, gdy ma `isClosed === true` w `UserGames`; odznaczenie natychmiast ją wyklucza, bo agregat liczony jest na żywo (nie ma migawki podsumowania).
 
-## Zakładka „Ranking graczy” (`initRankingViews`)
+## Zakładka „Bilans żetonów” (`initRankingViews`)
 - Zakładka jest czwartym i piątym wywołaniem tego samego silnika co „Statystyki” — funkcji `initStatisticsView`. Logika liczenia (`getPlayersStatistics`, `buildRankingRowsFromStatistics`, render tabel, eksport XLSX) nie jest duplikowana.
 - `initStatisticsView` przyjmuje parametry rozdzielające obie zakładki:
 
-| Parametr | „Statystyki” | „Ranking graczy” |
+| Parametr | „Statystyki” | „Bilans żetonów” |
 |---|---|---|
 | `gamesCollectionName` | `getGamesCollectionName()` → `Tables` | `getUserGamesCollectionName()` → `UserGames` |
 | `statsConfigCollectionName` | `admin_games_stats` | `user_games_stats` |
@@ -339,14 +342,60 @@ Tabela „Szczegółów” po zwężeniu tokenów ma 896 px przy 869 px dostępn
 | `permissionKey` | `statsTab` | `rankingTab` |
 | `yearsAccessField` | `statsYearsAccess` | `rankingYearsAccess` |
 | `accessUpdatedEvent` | `statistics-access-updated` | `ranking-access-updated` |
-| `exportLabel` | `Statystyki` | `Ranking` |
-| `countedGamesLabel` | `Gry zaliczone do statystyk` | `Gry zaliczone do rankingu` |
+| `exportLabel` | `Statystyki` | `Bilans żetonów` |
+| `countedGamesLabel` | `Gry zaliczone do statystyk` | `Gry zaliczone do bilansu żetonów` |
 
 - Pozostałe parametry (`emptyDataText`, `noYearsAdminText`, `noAssignedYearsText`, `noAvailableYearsText`) zmieniają wyłącznie komunikaty tekstowe.
+- Identyfikatory techniczne zakładki (`rankingTab`, `adminRankingTab`, `user_games_stats`, `rankingYearsAccess`, klucze `ranking*` w `sessionStorage`/`localStorage`, funkcje `initRankingViews`, `initRankingTab`) mają przedrostek `ranking` i nie są powiązane z etykietą „Bilans żetonów” widoczną w UI. Zmiana identyfikatorów unieważniłaby zapisane uprawnienia graczy i ustawienia kolumn.
 - Kontenery DOM administratora: `#adminRankingTab`, `#adminRankingYearsList`, `#adminRankingStatsBody`, `#adminRankingPlayersStatsBody`, `#adminRankingRankingBody`, `#adminRankingStatus`, `#adminRankingExport`, przyciski wag `.admin-ranking-weight-bulk-button`.
 - Kontenery DOM gracza: `#rankingTab`, `#rankingPinGate`, `#rankingContent`, `#rankingYearsList`, `#rankingStatsBody`, `#rankingPlayersStatsBody`, `#rankingRankingBody`, `#rankingStatus`, `#rankingExport`.
 - Klucze wybranego roku w `localStorage`: `adminRankingSelectedYear`, `userRankingSelectedYear`.
-- Cykl życia danych: gracz zamyka grę w `UserGames` → gra natychmiast wchodzi do „Rankingu graczy”; równolegle `importUserGameToAdminGames` tworzy kopię w `Tables` z `isClosed: false`, więc do „Statystyk” trafia dopiero po ręcznym zaznaczeniu `CzyZamknięta` przez administratora. Obie zakładki mogą więc pokazywać różne liczby i jest to zachowanie zamierzone.
+- Cykl życia danych: gracz zamyka grę w `UserGames` → gra natychmiast wchodzi do „Bilansu żetonów”; równolegle `importUserGameToAdminGames` tworzy kopię w `Tables` z `isClosed: false`, więc do „Statystyk” trafia dopiero po ręcznym zaznaczeniu `CzyZamknięta` przez administratora. Obie zakładki mogą więc pokazywać różne liczby i jest to zachowanie zamierzone.
+
+## Tabela graczy w „Statystykach” i „Bilansie żetonów” (`STATS_COLUMN_CONFIG`)
+- `STATS_COLUMN_CONFIG` opisuje 19 kolumn tabeli `.admin-games-players-stats-table` w obu zakładkach. Kolejność musi odpowiadać komórkom `<th>` w `index.html`, bo nagłówki (checkboxy widoczności, ukrywanie u gracza) są mapowane po indeksie.
+
+| Klucz | Etykieta | Źródło wartości | Token `<col>` |
+|---|---|---|---|
+| `ordinal` | Lp. | `row.ordinal` | `--col-num-xs` |
+| `playerName` | Gracz | nazwa gracza | `<col>` bez szerokości (elastyczna) |
+| `championshipCount` | Mistrzostwo | liczba zaznaczeń `championship` | `--col-flag` |
+| `weight1` | Waga1 | waga ręczna | `--col-weight` |
+| `meetingsCount` | Ilość Spotkań | liczba gier z wpisanym `entryFee` | `--col-num-sm` |
+| `weight2` | Waga2 | waga ręczna | `--col-weight` |
+| `participationPercent` | % udział | `meetingsCount / gameCount` | `--col-num-sm` |
+| `points` | Punkty | suma `points` | `--col-num-sm` |
+| `weight3` | Waga3 | waga ręczna | `--col-weight` |
+| `plusMinusSum` | Żetony na koniec | suma `payout - (entryFee + rebuy)` | `--col-num-sm` |
+| `weight4` | Waga4 | waga ręczna | `--col-weight` |
+| `payoutSum` | Wygrane żetony | suma `payout` | `--col-num-sm` |
+| `weight5` | Waga5 | waga ręczna | `--col-weight` |
+| `depositsSum` | Żetony na start | suma `entryFee + rebuy` | `--col-num-sm` |
+| `weight6` | Waga6 | waga ręczna | `--col-weight` |
+| `playedGamesPoolSum` | Suma z rozegranych gier | suma pul gier gracza | `--col-flag` |
+| `percentAllGames` | % Rozegranych gier | `payoutSum / playedGamesPoolSum` | `--col-flag` |
+| `percentPlayedGames` | % Wszystkich gier | `payoutSum / totalPool` | `--col-num-md` |
+| `result` | Wynik | `getComputedStatsResultValue` | `--col-num-sm` |
+
+- Tabela opisowa nad tabelą graczy (`#…StatsBody`) ma dwa wiersze: `Liczba gier` i `Łącznie żetonów` (`totalPool` — suma `entryFee + rebuy` wszystkich wierszy zamkniętych gier wybranego roku).
+- **Kolumna „Lp.”**: `getPlayersStatistics` sortuje graczy `comparePlayerStatsByPlusMinusDesc` (malejąco po `Żetony na koniec`, remis — alfabetycznie) i nadaje `ordinal = index + 1`. Ta sama numeracja trafia do eksportu XLSX.
+- Kolumna `ordinal` ma flagę `alwaysVisible: true`, co oznacza, że:
+  - `DEFAULT_VISIBLE_STATS_COLUMNS` jej nie zawiera, a zapisana w bazie lista `visibleColumns` nigdy jej nie obejmuje,
+  - w widoku administratora nagłówek nie dostaje checkboxa `.stats-column-visibility-checkbox`,
+  - gracz widzi ją zawsze, niezależnie od ustawień kolumn danego roku.
+- `getShownColumnsForYear(year)` zwraca kolumny faktycznie rysowane: administrator — wszystkie; gracz — kolumny `alwaysVisible` oraz zaznaczone w `visibleColumns`. Z tej listy korzystają render wierszy, `colSpan` komunikatu o braku danych i eksport XLSX (nagłówki = `label`).
+- Synchronizacja checkboxów widoczności w widoku administratora idzie przez mapę `adminColumnVisibilityCheckboxes` (klucz kolumny → checkbox), a nie po indeksie komórki.
+- W widoku gracza `renderStats` ukrywa (`display: none`) zarówno `<th>`, jak i odpowiadający mu `<col>` kolumn niewidocznych, a następnie przelicza `--table-min` tabeli jako sumę szerokości widocznych `<col>` (kolumna elastyczna liczona jako `--col-text-md`). Bez ukrycia `<col>` szerokości z `<colgroup>` przypisywały się po pozycji do niewłaściwych kolumn, a `--table-min` wymuszał szerokość wszystkich 19 kolumn.
+- Tabela statystyk w zakładce „Gry admina” (`#adminGamesPlayersStatsBody`) ma własny render w `initAdminGames` i nie korzysta z `STATS_COLUMN_CONFIG`; jej nagłówki (`(+/-)`, `Wypłata`, `Wpłaty`, `Łączna pula`) są niezależne od powyższych.
+
+## Notatki do gry (`preGameNotes`)
+- Nowa gra (`Gry admina` — `initAdminGames`, `Gry użytkowników` — `initUserGamesManager`) dostaje `preGameNotes: ""` oraz `postGameNotes: ""`.
+- `getPreGameNotes(game)` zwraca treść notatki, ale gdy po przycięciu jest ona równa stałej `UNTOUCHED_GAME_NOTES_TEMPLATE` (szablon `Rodzaj gry: / Przewidywani gracze: / Stack: / Wpisowe: / Rebuy: / Add-on: / Blindy: / Organizacja: / Podział puli:` zapisywany w starszych grach), zwraca pusty tekst. Firestore nie jest przy tym modyfikowany — dopiero zapis z okna notatek nadpisuje pole.
+- Okno notatek (`getSummaryNotesModalController`) dla „Notatek do gry” i „Notatek po grze” ma ten sam zestaw przycisków: `Zapisz` i `Usuń` (`#summaryNotesClear`), który zapisuje pusty tekst. Etykietę przycisku przekazuje parametr `clearButtonLabel` (domyślnie `Usuń`).
+
+## Podsumowania gier (`renderSummaries`)
+- W `Gry admina` i `Gry użytkowników` tabela podsumowania gry ma kolumny `Gracz | Start | Powroty | Koniec | Żetony na koniec | % puli | Punkty | Mistrzostwo` (pola: `entryFee`, `rebuy`, `payout`, `profit`, `poolSharePercent`, `points`, `championship`).
+- Ostrzeżenie o niezgodności (`.status-text-danger`) ma treść „Nie zgadza się suma kolumny Koniec z sumą kolumn Start i Powroty”.
 
 ## Bramki PIN sekcji Strefy Gracza (`createPlayerZoneSectionGate`)
 - Fabryka `createPlayerZoneSectionGate({ gateSelector, contentSelector, inputSelector, submitSelector, statusSelector, permissionKey, accessUpdatedEvent, getPinGateState, setPinGateState, setVerifiedPlayerId, getVerifiedPlayer, deniedText })` zwraca `{ init, updateVisibility, synchronizeAccessState }` i odtwarza zachowanie znane z `initStatisticsTab`.
@@ -385,7 +434,7 @@ Tabela „Szczegółów” po zwężeniu tokenów ma 896 px przy 869 px dostępn
 - Oba moduły mają globalną funkcję `runInitStep(name, initializer)`, która opakowuje pojedynczy krok inicjalizacji w `try/catch` i loguje błąd przez `console.error` z nazwą sekcji.
 - `bootstrap()` w `Main/app.js` przechodzi po tablicy par `[nazwa, funkcja]` i uruchamia każdy krok przez `runInitStep`; `resolveAdminMode()` też jest w `try/catch` z domyślnym `false`.
 - `bootstrap()` w `Second/app.js` używa tego samego mechanizmu dla modali oraz dla `setupAdminView` / `setupUserOnlyView`.
-- Skutek: wyjątek w jednej funkcji inicjalizującej nie przerywa pozostałych. Wcześniej `ReferenceError` w `initInstructionModal` blokował wykonanie `initCustomsEmergencyModal()` (kolejne wywołanie w ciągu), przez co przyciski `Instrukcja` i `Przycisnąć w razie kontroli celno-skarbowej` nie dostawały obsługi kliknięcia.
+- Skutek: wyjątek w jednej funkcji inicjalizującej nie przerywa pozostałych. Wcześniej `ReferenceError` w `initInstructionModal` blokował wykonanie `initCustomsEmergencyModal()` (kolejne wywołanie w ciągu), przez co przyciski `Instrukcja` i `Nie wciskać` (wtedy pod inną nazwą) nie dostawały obsługi kliknięcia.
 
 ## Pole `seatCount` (Liczba miejsc)
 - Pole tekstowe `seatCount` istnieje wyłącznie w dokumentach kolekcji gier użytkowników; nowe gry dostają `seatCount: ""`.
