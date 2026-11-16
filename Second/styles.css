@@ -125,16 +125,6 @@ body::before {
   margin-bottom: var(--gap-5);
 }
 
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: var(--fs-small);
-  font-weight: 600;
-  font-family: var(--font-panel);
-  color: var(--muted);
-  margin: 0 0 var(--gap-2);
-}
-
 h1 {
   margin: 0 0 var(--gap-2);
   font-size: var(--fs-title);
@@ -702,59 +692,6 @@ select:disabled,
   min-width: 200px;
 }
 
-.admin-chat {
-  display: grid;
-  gap: var(--gap-2);
-  padding: 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border2);
-  background: rgba(0, 0, 0, 0.32);
-}
-
-.admin-chat-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gap-2);
-  align-items: center;
-}
-
-.admin-chat-list {
-  display: grid;
-  gap: 10px;
-  max-height: 440px;
-  overflow: auto;
-}
-
-.admin-chat-item {
-  display: grid;
-  gap: 8px;
-  padding: 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border2);
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.admin-chat-meta {
-  font-size: var(--fs-small);
-  color: var(--muted);
-}
-
-.admin-chat-text {
-  margin: 0;
-  white-space: pre-wrap;
-}
-
-.admin-chat-item-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.admin-chat-delete {
-  padding: 8px 12px;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-}
-
 .players-table {
   min-width: 0;
 }
@@ -1065,74 +1002,6 @@ button.danger {
   line-height: 1.5;
 }
 
-.chat-content {
-  display: none;
-  gap: var(--gap-3);
-}
-
-.chat-content.is-visible {
-  display: grid;
-}
-
-.chat-messages {
-  display: grid;
-  gap: 10px;
-  max-height: 420px;
-  overflow: auto;
-  padding: 12px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border2);
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.chat-empty {
-  margin: 0;
-  white-space: pre-wrap;
-}
-
-.chat-form {
-  display: grid;
-  gap: 10px;
-  padding: 14px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border2);
-  background: rgba(0, 0, 0, 0.28);
-}
-
-.chat-form label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-family: var(--font-panel);
-  color: rgba(237, 235, 230, 0.85);
-}
-
-.chat-form textarea {
-  resize: vertical;
-  min-height: 86px;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.35);
-  color: var(--ink);
-  font-family: var(--font-text);
-  font-size: var(--fs-body);
-  line-height: 1.5;
-}
-
-.chat-form textarea:focus {
-  outline: none;
-  border-color: rgba(212, 175, 55, 0.55);
-  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.18), 0 0 12px rgba(43, 227, 139, 0.18);
-}
-
-.chat-form-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-}
-
 /* Margines wokół karty modala — wielkością steruje `--modal-gutter`,
    a `max()` z `env(safe-area-inset-*)` nie pozwala zejść poniżej strefy
    bezpiecznej na ekranach z wycięciem aparatu. */
@@ -1246,8 +1115,9 @@ body.modal-open {
 
 /* Szerokości kolumn deklaruje <colgroup> w renderach (tokeny --col-*).
    Tutaj zostaje wyłącznie wyrównanie treści. */
-.players-table th:nth-child(5),
-.players-table td:nth-child(5) {
+/* 6. kolumna = AKCJE (po LP, STATUS, NAZWA, PIN, UPRAWNIENIA) — tylko panel admina. */
+.players-table th:nth-child(6),
+.players-table td:nth-child(6) {
   text-align: right;
 }
 
@@ -1275,7 +1145,6 @@ body.modal-open {
   .admin-row-delete,
   .admin-pin-random,
   .admin-permissions-edit,
-  .admin-chat-delete,
   .group-position-button,
   .t-inline-add-button {
     min-height: 40px;
@@ -1376,20 +1245,15 @@ body.modal-open {
     padding: 8px 6px;
   }
 
-  /* Pola tekstowe (Aktualności, Regulamin, Czat, Notatki) mają na telefonie
+  /* Pola tekstowe (Aktualności, Regulamin, Notatki) mają na telefonie
      zajmować całą szerokość karty — bez dodatkowej ramki wokół pola. */
   .latest-message,
-  .chat-form,
   .admin-message-form,
   .admin-rules,
   .admin-backup {
     padding: 0;
     border: 0;
     background: none;
-  }
-
-  .chat-messages {
-    padding: 8px;
   }
 
 
@@ -1423,11 +1287,6 @@ body.modal-open {
 
   .icon-button {
     align-self: flex-end;
-  }
-
-  .chat-form-actions {
-    flex-direction: column;
-    align-items: stretch;
   }
 }
 
@@ -1603,8 +1462,7 @@ body.modal-open {
   .page:has(.user-card) #tournamentTab .admin-games-sidebar,
   .page:has(.user-card) #tournamentTab .admin-games-content,
   .page:has(.user-card) #tournamentTab .admin-games-section,
-  .page:has(.user-card) #tournamentTab #userTournamentDataMount,
-  .page:has(.user-card) #tournamentTab #userTournamentChatMount {
+  .page:has(.user-card) #tournamentTab #userTournamentDataMount {
     width: 100%;
     max-width: 100%;
     min-width: 0;

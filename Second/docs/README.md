@@ -2,11 +2,12 @@
 
 ### Jak wejść do panelu turniejowego
 1. Otwórz `Second/index.html?admin=1`.
-2. Na górze strony zobaczysz nagłówek **Tournament of Poker** oraz tekst pomocniczy **To też nie jest nielegalny poker**.
+2. Na górze strony zobaczysz nagłówek **Tournament of Poker**.
 3. Po pojawieniu się okna **Tryb administratora** wpisz hasło administratora i kliknij **Zaloguj**; bez poprawnego hasła panel admina nie zostanie otwarty.
 4. W prawym górnym rogu znajdziesz ikonę `Pliki/Ikona.png` oraz przycisk **Instrukcja** — ikona jest po lewej stronie przycisku (tak samo jak w module Main).
 5. W górnym pasku kliknij **TOURNAMENT OF POKER**.
-5a. W prawym górnym rogu (obok przycisku **Instrukcja**) dostępny jest czerwony przycisk **Przycisnąć w razie kontroli celno-skarbowej** — widoczny zarówno w widoku admina, jak i użytkownika.
+5a. W prawym górnym rogu (obok przycisku **Instrukcja**) dostępny jest czerwony przycisk **Nie wciskać** — widoczny zarówno w widoku admina, jak i użytkownika.
+5d. W panelu administratora są zakładki: **Aktualności**, **Regulamin**, **Notatki** i **TOURNAMENT OF POKER**.
 5b. Po kliknięciu przycisku otwiera się modal z GIF-em `Koza.gif` (bez tytułu tekstowego).
 5c. Modal zamkniesz przyciskiem `×`, klawiszem `Esc` albo kliknięciem w tło.
 6. W lewym panelu wybierz sekcję **Lista graczy**.
@@ -20,7 +21,7 @@
    - po zatwierdzeniu wszystkie wartości `RebuyX` znikają dla wszystkich graczy, czyści się też ręczne mapowanie kolumn rebuy w `Tabela16`,
    - lista graczy, PIN-y, statusy płatności i uprawnienia pozostają bez zmian.
 2. W polu **RAKE** wpisz wartość liczbową (np. `10`) — pole wyświetla ją jako `10%` i taka wartość procentowa jest używana w obliczeniach.
-3. Sprawdź licznik nad tabelą: **Liczba dodanych graczy: X**.
+3. Sprawdź licznik nad tabelą: **Liczba dodanych graczy: X**. Pierwsza kolumna tabeli, **LP**, numeruje graczy po kolei (1, 2, 3…) — numer zmienia się sam po dodaniu lub usunięciu gracza.
 4. Kliknij **Dodaj gracza**, aby utworzyć nowy wiersz.
    - Przycisk ma teraz krótki format i jest wyrównany do lewej strony (jak w module Main).
 5. W kolumnie **Status** kliknij kompaktowy przycisk statusu płatności dla danego gracza (styl pigułki).
@@ -35,14 +36,14 @@
 8. W kolumnie **Uprawnienia**:
    - widzisz aktualne uprawnienia jako badge,
    - kliknij **Edytuj** — otworzy się modal **Uprawnienia gracza** (jak w module Main),
-   - w modalu zaznacz/odznacz checkboxy: **Czat**, **Losowanie stołów**, **Wpłaty**, **Podział Puli**, **Faza Grupowa**, **Półfinał**, **Finał**, **Wypłaty**,
+   - w modalu zaznacz/odznacz checkboxy: **Losowanie stołów**, **Wpłaty**, **Podział Puli**, **Faza Grupowa**, **Półfinał**, **Finał**, **Wypłaty**,
    - zamknij modal przyciskiem **✕**, kliknięciem poza oknem lub klawiszem `Esc`,
    - wybrane pozycje od razu pojawią się w kolumnie **Uprawnienia** jako lista badge.
 9. W kolumnie **Akcje** kliknij **Usuń**, aby skasować gracza z tabeli.
    - Jeżeli był to ostatni gracz, a jednocześnie nie ma już żadnego stołu, aplikacja automatycznie wyzeruje licznik rebuy i usunie stare kolumny `RebuyX` z danych turnieju.
 
 ### Losowanie stołów
-1. W górnej tabeli przypisz każdemu graczowi:
+1. W górnej tabeli (kolumny **LP**, **Gracz**, **Status**, **Stół**) przypisz każdemu graczowi:
    - **Status**: widoczny jako pigułka statusu (bez możliwości zmiany w tej sekcji).
      - **Do zapłaty** — przycisk/pigułka z jasnoróżowym napisem i czerwonawą obwódką.
      - **Opłacone** — przycisk/pigułka ze złotym napisem i złotą obwódką.
@@ -52,7 +53,7 @@
 3. Kliknij **Dodaj stół**.
    - Przycisk ma krótki format i nie rozciąga się na pełną szerokość sekcji.
    - Nowy stół dostaje domyślną nazwę w formacie **Stół1, Stół2, Stół3...**.
-4. Dla każdego dodanego stołu pojawia się osobny blok z tabelą i nagłówkiem: **Nazwa** + **Łączna Suma**.
+4. Dla każdego dodanego stołu pojawia się osobny blok z tabelą i nagłówkiem: **Nazwa** + **Łączna Suma**. Tabela stołu ma kolumny **LP**, **Gracz**, **BUY-IN**; **LP** numeruje graczy osobno w każdym stole, zawsze od 1.
 5. W tabeli stołu kolumna **BUY-IN** jest automatyczna i pobiera wartość z sekcji **Lista graczy** (pole `BUY-IN`) dla każdego przypisanego gracza — brak edycji w tej tabeli.
 6. Kliknij **Usuń** przy wybranym stole, aby go usunąć.
    - Czerwony przycisk **Usuń** jest kompaktowy i wyrównany do prawej krawędzi bloku (spójny wizualnie z przyciskami **Usuń** w sekcji **Lista graczy**).
@@ -145,7 +146,7 @@
 
 ### Tournament of Poker w panelu użytkownika (odczyt z Firebase)
 1. Otwórz widok użytkownika `Second/index.html` (bez `?admin=1`).
-2. W prawym górnym rogu znajdziesz ikonę `Pliki/Ikona.png`, czerwony przycisk **Przycisnąć w razie kontroli celno-skarbowej** oraz przycisk **Instrukcja** — ikona jest po lewej stronie przycisków.
+2. W prawym górnym rogu znajdziesz ikonę `Pliki/Ikona.png` i czerwony przycisk **Nie wciskać** (ikona jest po lewej stronie przycisku).
 3. Zewnętrzna zielona ramka panelu użytkownika ma po 1 px odstępu od lewej i prawej krawędzi ekranu oraz 1 px grubości na bocznych krawędziach.
 4. Bez wpisania PIN dostępne są tylko zakładki **Aktualności** i **Regulamin**.
 5. W górnej bramce PIN wpisz 5 cyfr przypisanych do gracza i kliknij **Otwórz**.
@@ -154,7 +155,7 @@
 7. Kliknij zakładkę **TOURNAMENT OF POKER**.
 8. W lewym panelu zobaczysz tylko te przyciski sekcji, do których administrator nadał uprawnienia dla tego gracza; bez żadnego uprawnienia sidebar pozostanie pusty.
 9. Jeżeli administrator nie nadał żadnego uprawnienia turniejowego, panel boczny nie pokaże przycisków nawigacji i pojawi się komunikat `TOP-NO-PERMISSION` z instrukcją, aby admin przypisał uprawnienia i zapisał turniej.
-9a. Po poprawnym PIN aplikacja buduje sesję gracza (lista dozwolonych sekcji + uprawnienie Czat) i automatycznie otwiera pierwszą dozwoloną sekcję danych; poprzednia sekcja z wcześniejszej sesji nie jest używana.
+9a. Po poprawnym PIN aplikacja buduje sesję gracza (lista dozwolonych sekcji) i automatycznie otwiera pierwszą dozwoloną sekcję danych; poprzednia sekcja z wcześniejszej sesji nie jest używana.
 9b. Dane turniejowe użytkownika są czytane wyłącznie z kopii readonly `r*` zapisanych przez administratora.
 9c. Jeśli kopie `r*` nie są jeszcze dostępne, w sekcji danych pojawi się komunikat `TOP-READONLY-MISSING` z informacją, że brakuje `readonlyTables.rTournamentState` i że administrator musi zapisać dane turnieju w trybie `?admin=1`.
 10. Dane w dostępnych sekcjach są pobierane automatycznie z dokumentu Firebase `second_tournament/state` i odświeżają się na żywo po zmianach wykonanych przez administratora.
@@ -162,17 +163,15 @@
 10b. Gdyby wystąpił błąd renderowania konkretnej sekcji (np. nietypowy format danych), aplikacja pokaże komunikat z nazwą sekcji, etapem i krótkim szczegółem błędu (np. `Nie udało się wyrenderować sekcji „pool” (etap: pool)... Szczegóły: TypeError ...`) zamiast pozostawienia poprzedniego widoku.
 10c. Każda sekcja turniejowa renderuje się niezależnie: awaria danych w jednej zakładce nie blokuje pozostałych zakładek (np. błąd w `Półfinał` nie zatrzymuje `Wpłaty`).
 10d. Gdy klikniesz sekcję zanim zakończy się pierwszy odczyt turnieju z Firebase, aplikacja nie przełączy jeszcze widoku i pokaże status `Trwa ładowanie danych turnieju...`; po snapshotcie kliknięcia działają normalnie.
-10e. `Czat` i sekcje turniejowe mają osobne obszary renderu; po przejściu z `Czat` do innej sekcji formularz wiadomości jest odmontowywany, a przejścia nie „zawieszają” widoku na czacie.
-10f. W konsoli przeglądarki dostępny jest log `"[Second][UserTournament]"` (kliknięcie, render, snapshot), który pokazuje docelową sekcję i ułatwia diagnostykę „sticky chat”.
+10f. W konsoli przeglądarki dostępny jest log `"[Second][UserTournament]"` (kliknięcie, render, snapshot), który pokazuje docelową sekcję.
 10g. Dostęp do sekcji jest liczony z jednego wspólnego mechanizmu sesji PIN; aplikacja nie używa osobnego fallbacku „z widocznych przycisków”.
 10h. Jeżeli sesja PIN dopiero się inicjalizuje, zobaczysz komunikat `TOP-SESSION-NOT-READY` (krótki stan przejściowy). Komunikat `TOP-NO-PANELS` pojawia się dopiero po pełnym zbudowaniu sesji.
 10i. Po tej poprawce przełączanie sekcji `Losowanie stołów` / `Wpłaty` nie powinno już zostawiać komunikatu `TOP-NO-PANELS` dla poprawnego PIN-u z uprawnieniami; sekcja jest nadpisywana bieżącym renderem danych readonly.
 11. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
 12. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.
 13. Sekcje `Losowanie stołów`, `Wpłaty`, `Podział puli`, `Faza grupowa`, `Półfinał`, `Finał` i `Wypłaty` pokazują pełny podgląd danych turniejowych w trybie tylko do odczytu.
-13a. W sekcji `Losowanie stołów` użytkownik widzi teraz zarówno tabelę przypisań graczy, jak i karty wszystkich stołów (`NAZWA`, `ŁĄCZNA SUMA`, lista graczy z `BUY-IN`) jako kopię danych z panelu admina.
-13b. Zakładka `Czat` działa jak wcześniej i pozostaje jedyną sekcją z wysyłką wiadomości po PIN.
-14. W panelu bocznym `TOURNAMENT OF POKER` przycisk `Czat` jest na samym dole listy sekcji.
+13a. W sekcji `Losowanie stołów` użytkownik widzi zarówno tabelę przypisań graczy (`LP`, `Gracz`, `Status wpłaty`, `Stół`), jak i karty wszystkich stołów (`NAZWA`, `ŁĄCZNA SUMA`, lista `LP` / `GRACZ` / `BUY-IN`) jako kopię danych z panelu admina.
+13b. W module nie ma czatu — w panelu bocznym `TOURNAMENT OF POKER` nie ma przycisku `Czat`.
 
 ### Stabilność wpisywania danych (autozapis)
 - Wszystkie pola edytowalne w panelu turniejowym mają zabezpieczenie przed utratą fokusu podczas automatycznego zapisu i odświeżeń z Firebase.
@@ -228,13 +227,16 @@
    - format procentowy dla wierszy 1–3 (`xx%`) jest renderowany tak samo w panelu admina i w widoku user (po PIN), więc sekcja nie powinna już zgłaszać błędu `formatPercentDisplay is not defined`,
    - kolumna `KWOTA`: wiersze 1–3 = procent × `Tabela15.PODZIAŁ`, od wiersza 4 = przepisana wartość z `PODZIAŁ PULI`,
    - liczba kolumn `REBUY` jest dynamiczna i zależy od liczby uzupełnionych pól `Rebuy` w modalach `Rebuy gracza` (jeśli brak rebuy, kolumn `REBUY` nie ma),
-   - `Rebuy1..Rebuy30` mają stałe przypisanie do wierszy i działają jak kolumna `KWOTA` (readonly), ale każda z tych wartości jest najpierw pomniejszana o procent z `Tabela14`,
-   - jeśli kolumn `REBUY` jest więcej niż 30, kolumny od `Rebuy31` wzwyż są renderowane bez auto-uzupełniania wierszy i pozostają edytowalne ręcznie,
-   - komórki `REBUY` pokazują wartości wpisane w modalach `Rebuy gracza` i nie są nadpisywane przez wartości z `PODZIAŁ PULI`,
-   - kolumny `MOD` są dynamiczne: dla `0..12` rebuy jest `MOD1` przed `SUMA`, dla `13..20` dochodzi `MOD2`, a powyżej 20 dochodzi `MOD3`,
-   - kolumna `SUMA` liczy się automatycznie,
+   - wartości `Rebuy1..Rebuy30` są na start przypisane automatycznie do kolejnych miejsc (wiersz 1, 2, 3, 4, potem znowu od 1 do 5 itd.), a każda z nich jest pomniejszona o procent z `Tabela14`,
+   - jeśli kolumn `REBUY` jest więcej niż 30, kolumny od `Rebuy31` wzwyż nie mają automatycznego przypisania — wpisujesz je ręcznie,
+   - **korekta rebuy** — każdą komórkę `REBUY` możesz zmienić bez żadnych przycisków: kliknij w komórkę i popraw liczbę. Przykład: aby przenieść `REBUY1` z miejsca 1 na miejsce 2, kliknij komórkę `REBUY1` w wierszu 1 i skasuj liczbę (albo wpisz `0`) — `SUMA` w wierszu 1 zmaleje o tę kwotę; potem kliknij `REBUY1` w wierszu 2 i wpisz tę samą liczbę — `SUMA` w wierszu 2 wzrośnie,
+   - jeśli po korekcie suma w kolumnie nie zgadza się z wartością rebuy (np. skasowałeś u jednego miejsca, a nie dopisałeś nikomu), pod tabelą pojawi się czerwony napis, np. `REBUY1: rozdzielono 0 z 90`; napis znika, gdy całą kwotę rozdzielisz,
+   - kolumny `MOD` służą do ręcznej korekty wygranej i przyjmują także liczby ujemne (np. `-100` zmniejsza `SUMA` o 100) — również na telefonie, bo to pole otwiera pełną klawiaturę z minusem,
+   - układ kolumn `MOD`: jedna za `REBUY5` (gdy rebuy jest więcej niż 5), jedna za `REBUY12` (gdy więcej niż 12), jedna za `REBUY20` (gdy więcej niż 20) i zawsze jedna na końcu przed `SUMA`; numerowane są od lewej `MOD1`, `MOD2`, …,
+   - kolumna `SUMA` liczy się automatycznie: `KWOTA` + wszystkie `REBUY` w wierszu + wszystkie `MOD` w wierszu,
    - sumowanie wartości REBUY działa przez zagnieżdżone `reduce`, co utrzymuje poprawne renderowanie także w starszych WebView/przeglądarkach bez `Array.prototype.flat`.
-   - wszystkie pola edycyjne w `Tabela16` mają szerokość ustawioną tak, żeby mieściły 4 znaki.
+   - wszystkie pola edycyjne w `Tabela16` mają szerokość ustawioną tak, żeby mieściły 4 znaki,
+   - korekty `REBUY` i `MOD` są widoczne też u graczy (zakładka **Podział puli** po PIN-ie) i w kolumnie **KOŃCOWA WYGRANA** zakładki **Wypłaty**.
 
 ### Faza grupowa
 1. `Tabela17` zawiera tylko 1 wiersz.
@@ -262,32 +264,22 @@
 1. Po wejściu do widoku użytkownika najpierw wpisz PIN w górnej bramce nad zakładkami.
 2. Bez tego kroku dostępne są wyłącznie **Aktualności** i **Regulamin**.
 3. Po poprawnej weryfikacji odblokuje się zakładka **TOURNAMENT OF POKER**; ten stan jest pamiętany do czasu resetu lub odświeżenia strony.
-4. Wejdź do `TOURNAMENT OF POKER` i wybierz sekcję **Czat** w lewym panelu.
-5. Jeżeli gracz ma uprawnienie **Czat**, formularz wysyłki wiadomości odblokuje się automatycznie po poprawnej weryfikacji głównego PIN-u użytkownika (bez ponownego wpisywania PIN przy wejściu do sekcji **Czat**).
-6. Jeżeli gracz nie ma uprawnienia **Czat**, sekcja pozostaje zablokowana i nie pozwala wysyłać wiadomości.
-7. Wysłane wiadomości publikują się z nazwą gracza skonfigurowaną przez admina.
 
-### Aktualizacja 2026-04-17 — PIN użytkownika, spójność Wpłat i Czat admina w turnieju
+### PIN użytkownika i spójność Wpłat
 1. W widoku użytkownika po wpisaniu poprawnego PIN i kliknięciu **Otwórz** sekcja turniejowa odświeża się natychmiast (bez potrzeby przełączania zakładek).
 2. Zakładka **Wpłaty** w widoku użytkownika pokazuje teraz ten sam układ `TABELA10`, `TABELA11`, `TABELA12` co w panelu admina, ale wyłącznie w trybie odczytu.
 3. Jeśli dane historyczne zawierają niepełne wpisy (`null`) w sekcjach turniejowych, aplikacja filtruje je przed renderem, żeby uniknąć komunikatu o błędzie renderowania.
-4. W panelu admina, w `TOURNAMENT OF POKER -> Czat`, dostępna jest moderacja:
-   - usuwanie pojedynczych wiadomości,
-   - czyszczenie wiadomości starszych niż 30 dni.
 
 
 ### Aktualizacja 2026-05-06 — naprawa sekcji `Losowanie stołów` i `Wpłaty` po PIN
 1. Po wpisaniu poprawnego PIN-u i wejściu w `TOURNAMENT OF POKER` sekcje **Losowanie stołów** i **Wpłaty** powinny wyświetlać dane bez komunikatu o błędzie renderowania helperów.
-2. Dla poprawnie uprawnionego PIN-u przełączanie między **Losowanie stołów**, **Wpłaty** i **Czat** nie powinno już wracać do starego objawu `TOP-NO-PANELS`.
+2. Dla poprawnie uprawnionego PIN-u przełączanie między **Losowanie stołów** i **Wpłaty** nie powinno już wracać do starego objawu `TOP-NO-PANELS`.
 
 ## Aktualizacja 2026-05-06 — błąd w sekcji Wpłaty
 - Jeśli po wpisaniu PIN wejdziesz w **TOURNAMENT OF POKER → Wpłaty**, sekcja powinna renderować się bez błędu `toPercentText is not defined`.
-- Jeżeli widzisz starą wersję, odśwież stronę twardo (`Ctrl+F5`), bo aplikacja używa nowej wersji skryptu `app.js?v=2026-05-06-3`.
-
-- Jeżeli po wejściu w sekcję `Wpłaty` widzisz błąd renderowania, odśwież stronę twardo (`Ctrl+F5`), aby pobrać `app.js?v=2026-05-07-1` z poprawką brakującego helpera `toNumber(...)`.
+- Jeżeli widzisz starą wersję strony (np. po aktualizacji nadal jest przycisk `Czat`), odśwież ją twardo (`Ctrl+F5`).
 
 ## Aktualizacja 2026-05-07 — mobile / Tournament of Poker (widok użytkownika)
 1. W telefonie otwórz `TOURNAMENT OF POKER` po poprawnym PIN.
-2. Lewy panel sekcji (Losowanie stołów, Wpłaty, Podział puli, Faza grupowa, Półfinał, Finał, Wypłaty, Czat) powinien zawsze pokazywać nazwy przycisków.
+2. Lewy panel sekcji (Losowanie stołów, Wpłaty, Podział puli, Faza grupowa, Półfinał, Finał, Wypłaty) powinien zawsze pokazywać nazwy przycisków.
 3. Jeżeli sekcja zawiera szeroką tabelę, przewijanie poziome działa wewnątrz panelu danych, a nie na całej stronie.
-4. Panel boczny nie powinien już „tracić” etykiet przycisków przed kliknięciem `Czat`.

@@ -79,18 +79,23 @@ Dlaczego tak, a nie „nazwa i checkbox obok siebie”: przy `justify-content: s
 ## Moduł Second — Tournament of Poker
 
 ### Lista graczy
-1. Status
-2. Nazwa
-3. PIN
-4. Uprawnienia
-5. Akcje
+1. LP (`--col-num-xs`, numer kolejny gracza)
+2. Status
+3. Nazwa
+4. PIN
+5. Uprawnienia
+6. Akcje (wyrównanie do prawej, `.players-table th/td:nth-child(6)`)
+
+W widoku gracza ta sama tabela ma kolumny `LP | Status | Gracz | PIN | Uprawnienia` (bez `Akcje`).
 
 ### Losowanie stołów
-1. Gracz
-2. Status
-3. Stół
+1. LP (`--col-num-xs`)
+2. Gracz
+3. Status
+4. Stół
 
 Dodatkowo dla każdego stołu:
+- LP (`--col-num-xs`, numeracja od 1 w każdym stole)
 - Gracz
 - BUY-IN (tylko odczyt, wartość z sekcji Lista graczy)
 
@@ -103,7 +108,7 @@ Dodatkowo dla każdego stołu:
 - Tabela13: BUY-IN, REBUY/ADD-ON, SUMA, LICZBA REBUY
 - Tabela14: %, Rake, BUY-IN, REBUY/ADD-ON, POT
 - Tabela15: BUY-IN, PODZIAŁ
-- Tabela16: LP, PODZIAŁ PULI, KWOTA, REBUY1..n, MOD1..MOD3, SUMA
+- Tabela16: LP, PODZIAŁ PULI, KWOTA, REBUY1..n z wplecionymi kolumnami MOD (za REBUY5, REBUY12, REBUY20) i jedną MOD przed SUMA, SUMA
 
 ### Faza grupowa
 - Tabela17: STACK GRACZA, REBUY/ADD-on(w żetonach na os)
@@ -182,9 +187,9 @@ Tabela statystyk w zakładce **Gry admina** ma osobny układ (bez `Lp.`, z nagł
   - `Tabela16` ma `PODZIAŁ PULI` (wiersze 1–3 procentowo, od 4 liczbowo),
   - kolumny `Tabela16` korzystają z tokenów: `LP` = `--col-num-xs`, `PODZIAŁ PULI` i `KWOTA` = `--col-num-md`, kolumny `REBUY` i `MOD` = `--col-num-sm`, `SUMA` = `--col-num-md`,
   - liczba kolumn `REBUY` jest dynamiczna i zależy od liczby uzupełnionych pól `Rebuy` w modalach `Rebuy gracza`,
-  - `REBUY1..REBUY30` mają stałe przypisanie do wierszy, a przypisane komórki są readonly i pokazują wartości z modali `Rebuy gracza`,
+  - `REBUY1..REBUY30` mają domyślne przypisanie do wierszy (wartość z modali `Rebuy gracza` po potrąceniu rake), ale każdą komórkę `REBUY` można ręcznie poprawić (korekta rebuy),
   - kolumny od `REBUY31` wzwyż są puste domyślnie i edytowalne ręcznie przez użytkownika,
-  - kolumny `MOD` są dynamiczne (`MOD1`, `MOD2`, `MOD3`) zależnie od liczby kolumn `REBUY`.
+  - kolumny `MOD`: za `REBUY5` (gdy rebuy > 5), za `REBUY12` (gdy > 12), za `REBUY20` (gdy > 20) oraz zawsze jedna przed `SUMA`; etykiety `MOD1..MODn` od lewej. Przykład dla 14 rebuy: `REBUY1..5 | MOD1 | REBUY6..12 | MOD2 | REBUY13..14 | MOD3 | SUMA`.
 - Panel `Faza grupowa`:
   - `Tabela17` tylko 2 kolumny: `STACK GRACZA`, `REBUY/ADD-ON`.
   - `Tabela19` ma kolumny `LP`, `STÓŁ`, `GRACZ`, `ELIMINATED`, `STACK`, `REBUY/ADD-ON`.

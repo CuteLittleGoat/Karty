@@ -46,11 +46,12 @@ Warstwa prezentacji tabel opiera się na skali tokenów w `Second/styles.css`; p
 `Second/styles.css` zawiera wyłącznie reguły dla klas, które ten moduł faktycznie renderuje. Nie ma w nim stylów kalkulatora, statystyk graczy, rankingu, potwierdzeń ani szczegółów gry — te elementy istnieją tylko w module `Main`.
 
 ## Nagłówek i przycisk instrukcji
-- Tekst nagłówka modułu ustawiono na: eyebrow `To też nie jest nielegalny poker` oraz tytuł `Tournament of Poker`; tytuł karty przeglądarki brzmi `Tournament of Poker - Panel i Widok Użytkownika`.
+- Nagłówek modułu (`.header-intro`) zawiera wyłącznie tytuł `<h1>Tournament of Poker</h1>` — bez podtytułu; arkusz nie definiuje klasy `.eyebrow`. Tytuł karty przeglądarki brzmi `Tournament of Poker - Panel i Widok Użytkownika`.
+- `Second/index.html` ładuje `styles.css?v=2026-11-16.1` i `app.js?v=2026-11-16.1` (parametr wersji wymusza pobranie nowej wersji zamiast kopii z pamięci przeglądarki; moduł nie ma Service Workera).
 - W `Second/index.html` sekcja `.header-controls` zawiera ikonę `<img class="header-icon" src="../Pliki/Ikona.png">` oraz przycisk `#secondInstructionButton` w tej samej linii.
 - Ikona i układ są celowo spójne z modułem Main (ta sama grafika i ten sam wzorzec pozycjonowania: ikona po lewej, przycisk po prawej).
 - Styl `.header-icon` w `Second/styles.css` używa `width: min(110px, 100%)` oraz `height: auto`, a `.header-controls` pracuje w układzie poziomym (`display: flex; align-items: center; justify-content: flex-end`).
-- W nagłówku modułu (pasek `.admin-toolbar`) znajduje się czerwony przycisk `#secondCustomsEmergencyButton`, który jest widoczny zarówno w widoku admina, jak i użytkownika, i otwiera modal `#secondCustomsEmergencyModal` z GIF-em `../Koza.gif`.
+- W nagłówku modułu (pasek `.admin-toolbar`) znajduje się czerwony przycisk `#secondCustomsEmergencyButton` z etykietą „Nie wciskać” (`aria-label` modala: „Nie wciskać”), który jest widoczny zarówno w widoku admina, jak i użytkownika, i otwiera modal `#secondCustomsEmergencyModal` z GIF-em `../Koza.gif`.
 - Modal nie ma tytułu tekstowego, zamyka się przez `#secondCustomsEmergencyClose`, kliknięcie overlay i klawisz `Escape`; otwarcie/zamknięcie steruje klasą `modal-open` na `body`.
 
 
@@ -76,7 +77,7 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 ### Edycja uprawnień gracza (modal)
 - Zamiast `window.prompt` używany jest dedykowany modal: `#secondPlayerPermissionsModal` w `Second/index.html`.
 - Inicjalizacja i obsługa: `initSecondPlayerPermissionsModal(...)` w `Second/app.js`.
-- Aktualna lista uprawnień (`SECOND_AVAILABLE_PLAYER_PERMISSIONS`): `Czat`, `Losowanie stołów`, `Wpłaty`, `Podział Puli`, `Faza Grupowa`, `Półfinał`, `Finał`, `Wypłaty`.
+- Aktualna lista uprawnień (`SECOND_AVAILABLE_PLAYER_PERMISSIONS`): `Losowanie stołów`, `Wpłaty`, `Podział Puli`, `Faza Grupowa`, `Półfinał`, `Finał`, `Wypłaty`. `SECOND_TOURNAMENT_PERMISSION_MAP` mapuje klucze sekcji (`draw`, `payments`, `pool`, `group`, `semi`, `final`, `payouts`) na te etykiety.
 - Każdy checkbox aktualizuje `player.permissions` jako tablicę unikalnych etykiet i natychmiast zapisuje zmiany do `second_tournament/state`.
 - Modal wspiera trzy sposoby zamknięcia: przycisk `✕`, kliknięcie w overlay i klawisz `Escape`.
 - Widok tabeli graczy renderuje wybrane uprawnienia jako badge (`.permission-badge`) w kolumnie `Uprawnienia`.
@@ -106,14 +107,15 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 - Nad siatką metadanych renderowany jest destrukcyjny przycisk `Wyzeruj Rebuy` (`data-role="reset-all-rebuy"`), osadzony w `.admin-table-actions`.
 - Pole `RAKE` działa w formacie procentowym zgodnym z modułem Main: użytkownik wpisuje wartość liczbową, a pole renderuje `wartość%`; obliczenia używają ułamka dziesiętnego (`10` => `0.10`).
 - Nad tabelą renderowany licznik: `Liczba dodanych graczy: X`.
-- Tabela `players-table` ma kolumny:
+- Tabela `players-table` ma kolumny (tokeny `xs`, `tsm`, `tmd`, `tmd`, `tlg`, `act`):
+  0. `LP` — numer kolejny gracza na liście (`index + 1`), tylko do odczytu,
   1. `Status` (przycisk `.payment-status-toggle` z ukrytym checkboxem sterującym statusem płatności; wariant kompaktowy dopasowany wysokością do pól formularza):
      - zaznaczenie ustawia `assignments[playerId].status = "Opłacone"`,
      - odznaczenie ustawia `assignments[playerId].status = "Do zapłaty"`,
   2. `Nazwa` (input tekstowy),
   3. `PIN` (input 5-cyfrowy + przycisk `Losuj`; kolumna ma token `--col-text-md`, żeby pole i przycisk zmieściły się obok siebie),
   4. `Uprawnienia` (badge + przycisk `Edytuj`),
-  5. `Akcje` (przycisk `Usuń`).
+  5. `Akcje` (przycisk `Usuń`; wyrównanie do prawej regułą `.players-table th/td:nth-child(6)`).
 
 ### Obsługa PIN
 - PIN jest filtrowany do cyfr i skracany do 5 znaków.
@@ -125,29 +127,30 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
   - poprawny (unikalny) PIN czyści stan walidacji (`setCustomValidity("")`) i zapisuje się standardowo.
 
 ### Obsługa uprawnień
-- `normalizeTournamentPermissions(value)` wspiera dane jako string CSV lub tablicę.
+- `normalizeTournamentPermissions(value)` wspiera dane jako string CSV lub tablicę i zwraca wyłącznie etykiety obecne w `SECOND_TOURNAMENT_PERMISSION_MAP`. Nieznane wpisy zapisane wcześniej w `players[].permissions` (np. `Czat`) nie są wyświetlane ani uwzględniane w dostępie, a przy kolejnej edycji uprawnień gracza znikają z bazy.
 - Widok pokazuje uprawnienia jako badge.
 - Przycisk `Edytuj` otwiera modal checkboxów i zapisuje listę uprawnień do pola `permissions`; komunikat o testowych uprawnieniach został usunięty z HTML modala.
 
 ### Usuwanie gracza
 - `delete-player` usuwa rekord gracza z `players` oraz czyści powiązane dane (`assignments`, `group.playerStacks`, `group.eliminated`, `group.eliminatedWins`, `group.survivorStacks`, `semi`).
 - Dodatkowo `delete-player` usuwa trwały wpis `payments.table12Rebuys[playerId]` przez `FieldValue.delete()` oraz sprawdza, czy po operacji nie został pusty układ `0 graczy i 0 stołów`.
-- Jeśli po usunięciu gracza stan turnieju spełnia warunek `players.length === 0 && tables.length === 0`, aplikacja automatycznie resetuje `payments.table12Rebuys` i `pool.rebuyValues`, bez usuwania dokumentu `second_tournament/state`.
+- Jeśli po usunięciu gracza stan turnieju spełnia warunek `players.length === 0 && tables.length === 0`, aplikacja automatycznie resetuje `payments.table12Rebuys` i `pool.rebuyCells`, bez usuwania dokumentu `second_tournament/state`.
 
 ### Globalny reset Rebuy (Lista graczy)
 - Kliknięcie przycisku `Wyzeruj Rebuy` uruchamia `resetAllTable12Rebuys()`.
 - Operacja wymaga potwierdzenia `window.confirm` z ostrzeżeniem o nieodwracalności.
 - Po zatwierdzeniu funkcja:
   - czyści `payments.table12Rebuys = {}` (usuwa wszystkie `RebuyX`),
-  - czyści `pool.rebuyValues = {}` (usuwa ręczne wpisy powiązane z kolumnami Rebuy w `Tabela16`),
+  - czyści `pool.rebuyCells = {}` (usuwa ręczne wpisy powiązane z kolumnami Rebuy w `Tabela16`),
   - zamyka aktywny modal `Rebuy gracza` (jeśli był otwarty) i resetuje draft modalu.
-- Zapis do Firebase wykonuje `saveState({ deletedPaths: ["payments.table12Rebuys", "pool.rebuyValues"] })`, więc stare ścieżki są najpierw usuwane przez `FieldValue.delete()`, a następnie utrwalany jest nowy stan dokumentu.
+- Zapis do Firebase wykonuje `saveState({ deletedPaths: ["payments.table12Rebuys", "pool.rebuyCells"] })`, więc stare ścieżki są najpierw usuwane przez `FieldValue.delete()`, a następnie utrwalany jest nowy stan dokumentu.
 - Po sukcesie ustawiany jest komunikat statusu: `Wyzerowano wszystkie Rebuy.`
 - W trakcie operacji aktywna jest flaga `globalRebuyResetInProgress`, która blokuje wieloklik i czasowo wyłącza przycisk resetu.
 
 ### Losowanie stołów — status i wybór stołu
 - Usunięto górny, zbiorczy blok z polami `Nazwa` i `Łączna Suma` nad tabelą przypisań.
-- Bloki pojedynczych stołów (tworzone po `Dodaj stół`) mają nagłówek `Nazwa` + `Łączna Suma` i tabelę `Gracz/BUY-IN`; nowy stół otrzymuje nazwę `Stół${n}` (numerowanie od 1).
+- Tabela przypisań ma kolumny `LP | GRACZ | STATUS | STÓŁ` (tokeny `xs`, `tmd`, `tsm`, `tsm`); `LP` numeruje graczy w kolejności listy `players[]`.
+- Bloki pojedynczych stołów (tworzone po `Dodaj stół`) mają nagłówek `Nazwa` + `Łączna Suma` i tabelę `LP | GRACZ | BUY-IN` (tokeny `xs`, `tmd`, `md`); `LP` numeruje graczy osobno w każdym stole, od 1. Nowy stół otrzymuje nazwę `Stół${n}` (numerowanie od 1).
 - Kolumna `BUY-IN` w bloku stołu jest tylko do odczytu i pokazuje wartość z metadanych turnieju (`buyIn`) dla każdego przypisanego gracza.
 - Sekcja `draw` (`Losowanie stołów`) renderuje status gracza jako nieedytowalną pigułkę `.payment-status-label` (bez przycisku zmiany).
 - Zmiana statusu płatności odbywa się w sekcji `players` przez checkbox `data-role="player-payment-status"`.
@@ -156,7 +159,7 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
   - `Opłacone` ma klasę `.payment-status-label.is-paid` (złoty napis + złota obwódka + glow).
 - Wybór stołu (`assign-table`) oraz półfinałowe przypisanie do stołu (`semi-assign-table`) zapisują się na zdarzeniu `change`, bez wymuszonego zapisu na `input`, co eliminuje znikanie rozwijanych list podczas wyboru.
 - Handler `click` wykonuje logikę wyłącznie dla ról-akcji (`add-player`, `delete-player`, `add-table`, itp.). Kontrolki formularza (`checkbox`, `select`, `input`) nie uruchamiają już globalnego `render()` przez `click`, dzięki czemu przełączenie statusu działa stabilnie na desktopie i mobile (tap).
-- `delete-table` dodatkowo usuwa `payments.table12Rebuys[playerId]` dla wszystkich graczy przypisanych do usuwanego stołu, od razu renumeruje globalne indeksy `RebuyX` bez luk (`1..N`) i przemapowuje `pool.rebuyValues` według mapy `stary indeks -> nowy indeks`.
+- `delete-table` dodatkowo usuwa `payments.table12Rebuys[playerId]` dla wszystkich graczy przypisanych do usuwanego stołu, od razu renumeruje globalne indeksy `RebuyX` bez luk (`1..N`) i przemapowuje `pool.rebuyCells` według mapy `stary indeks -> nowy indeks`.
 - Jeśli po `delete-table` otwarty jest modal `Rebuy gracza` dla gracza z usuwanego stołu, modal zostaje zamknięty przed zapisem stanu.
 
 ### Faza grupowa
@@ -192,7 +195,7 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 
 
 ### Ochrona fokusu i edycji podczas autozapisu
-- Dodano mechanizm przechwytywania i odtwarzania fokusu (`getTournamentEditableFocusState`, `restoreTournamentEditableFocusState`) oparty o `data-role` oraz identyfikatory (`data-player-id`, `data-table-id`, `data-id`).
+- Mechanizm przechwytywania i odtwarzania fokusu (`getTournamentEditableFocusState`, `restoreTournamentEditableFocusState`) jest oparty o `data-role` oraz identyfikatory (`data-player-id`, `data-table-id`, `data-id`, `data-col-index`, `data-mod-key`). Dwa ostatnie rozróżniają komórki tego samego wiersza `Tabela16` (kolumny `REBUYn` i `MOD`) — bez nich kursor po zapisie wracał do pierwszej komórki wiersza.
 - Funkcja `render()` odtwarza fokus po każdym przebudowaniu `#adminTournamentRoot`, dzięki czemu wpisywanie nie przerywa się przy lokalnym re-renderze.
 - Dodano lokalną blokadę synchronizacji snapshotów podczas aktywnej edycji:
   - `hasActiveEdit` — flaga aktywnego pola,
@@ -216,7 +219,7 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 - Stan lokalny użytkownika jest normalizowany przez `normalizeTournamentState`, która wymusza bezpieczne typy (`players`, `tables`, `finalPlayers` jako tablice; `assignments`, `payments`, `pool`, `group`, `semi`, `final`, `payouts` jako obiekty), dzięki czemu brakujące lub starsze pola nie psują renderu UI.
 - Przed zapisem turnieju administrator generuje pełną kopię readonly modelu tabel (`buildTournamentReadonlyCopies`) i zapisuje ją do `readonlyTables` (`rTournamentState` + komplet kluczy `r*`: `rTABELA10`, `rTABELA11`, `rTABELA12`, `rTABELA13`, `rTABELA14`, `rTABELA15`, `rTABELA16`, `rTABELA17`, `rTABELA18`, `rTABELA19`, `rTABELA19A`, `rTABELA19B`, `rTABELA21`, `rTABELA22`, `rTABELA22A`, `rTABELA23`, `rTABELA23A`).
 - Widok użytkownika sekcji turniejowych (`players`, `draw`, `payments`, `pool`, `group`, `semi`, `final`, `payouts`) czyta wyłącznie `readonlyTables.rTournamentState` i nie renderuje modeli edycyjnych admina.
-- Sekcja `draw` w user-view renderuje pełną kopię widoku danych: tabelę przypisań (`Gracz`, `Status wpłaty`, `Stół`) oraz karty każdego stołu (`NAZWA`, `ŁĄCZNA SUMA`, tabela graczy z `BUY-IN`) w trybie readonly.
+- Sekcja `draw` w user-view renderuje pełną kopię widoku danych: tabelę przypisań (`LP`, `Gracz`, `Status wpłaty`, `Stół`) oraz karty każdego stołu (`NAZWA`, `ŁĄCZNA SUMA`, tabela `LP`/`GRACZ`/`BUY-IN`) w trybie readonly. Sekcja `players` w user-view ma kolumny `LP`, `Status`, `Gracz`, `PIN`, `Uprawnienia`.
 - Jeżeli `readonlyTables.rTournamentState` nie istnieje, widok usera pokazuje komunikat diagnostyczny `TOP-READONLY-MISSING` (z nazwą brakującego klucza i instrukcją naprawy w panelu admina) i nie przechodzi na źródłowe tabele admina.
 - Do czasu pierwszego snapshotu obowiązuje flaga gotowości danych (`isUserTournamentLoaded`): przycisk otwierania PIN użytkownika jest zablokowany, a UI pokazuje komunikat ładowania zamiast walidacji PIN na pustym stanie.
 
@@ -225,7 +228,7 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 - Stan tej weryfikacji jest przechowywany w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`), więc użytkownik wpisuje PIN tylko raz do resetu lub odświeżenia strony.
 - Po wejściu do `TOURNAMENT OF POKER` przyciski `data-tournament-target` są filtrowane per gracz; bez odpowiednich uprawnień nie renderują się przyciski nawigacji do paneli.
 - Użytkownik może przełączać dostępne sekcje przez przyciski `data-tournament-target`.
-- Po poprawnym PIN tworzony jest jawny kontrakt sesji użytkownika (`userTournamentSession`): `playerId`, `allowedSections`, `chatAllowed`, `readonly`, `isVerified`; to jedyne źródło prawdy o dostępie do sekcji.
+- Po poprawnym PIN tworzony jest jawny kontrakt sesji użytkownika (`userTournamentSession`): `playerId`, `allowedSections`, `readonly`, `isVerified`; to jedyne źródło prawdy o dostępie do sekcji.
 - W `renderUserTournament()`, `navigateToUserTournamentSection()` i renderze sidebaru działa jeden wspólny resolver `resolveUserTournamentAccessState()` (jedno źródło prawdy dostępu): zwraca `isVerified`, `allowedTargets`, `sessionReady`, `reasonCode` i `playerId`.
 - `TOP-NO-PANELS` jest pokazywany dopiero po `sessionReady === true`; gdy sesja jeszcze się inicjalizuje widoczny jest komunikat `TOP-SESSION-NOT-READY`.
 - Komunikaty dostępu mają kody diagnostyczne:
@@ -249,13 +252,9 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
   - `draw`: read-only tabela przypisań graczy + readonly karty stołów (`NAZWA`, `ŁĄCZNA SUMA`, lista `GRACZ`/`BUY-IN`),
   - `payments`: read-only `Tabela10`, `Tabela11`, `Tabela12` (układ i semantyka zgodna z panelem admina, bez akcji edycyjnych),
   - `payouts`: tabela miejsc i wygranych zależna od flag `payouts.showInitial` / `payouts.showFinal`.
-- `chatTab` pozostaje jedyną sekcją z możliwością wpisywania danych po stronie użytkownika.
-- Widok ma dwa niezależne mount pointy: `#userTournamentDataMount` (sekcje readonly) i `#userTournamentChatMount` (czat). Przełączenie sekcji pokazuje tylko jeden mount, co eliminuje efekt „sticky chat”.
-- Render użytkownika najpierw przełącza aktywny mount (`#userTournamentDataMount` / `#userTournamentChatMount`), a dopiero później waliduje obecność `readonlyTables.rTournamentState`; dzięki temu komunikat o braku kopii `r*` nie zostawia już widoku „przyklejonego” do czatu.
+- Wszystkie sekcje użytkownika są tylko do odczytu; całość renderuje się w jednym kontenerze `#userTournamentDataMount`.
 - Render admina sekcji turniejowych jest osłonięty globalnym `try/catch`; w przypadku wyjątku (np. niespójne dane `pool`) UI pokazuje komunikat błędu zamiast poprzedniej sekcji, co usuwa efekt „Podział puli pokazuje poprzednią zakładkę”.
-- Po wyjściu z `chatTab` wykonywany jest twardy reset referencji runtime czatu (`chatInput`, `chatSendButton`, `chatMessages`, statusy PIN), dzięki czemu kolejne sekcje zawsze renderują własny DOM i nie dziedziczą aktywnego formularza czatu.
 - Render sekcji posiada token wersji (`userTournamentRenderToken`): gdy pojawi się opóźniony render z wcześniejszego stanu, jest przerywany jako „stale token”, co chroni przed asynchronicznym nadpisaniem widoku.
-- W sidebarze `TOURNAMENT OF POKER` przycisk `Czat` jest renderowany jako ostatni przycisk na liście.
 
 ### Ręczne odświeżanie
 - Przycisk `#userPanelRefresh` dla aktywnej zakładki `tournamentTab` wykonuje `get({ source: "server" })` dla `second_tournament/state`, co wymusza pobranie najnowszych danych z Firestore.
@@ -264,8 +263,8 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 
 ### Kluczowe rozszerzenia stanu
 - `payments.table12Rebuys` – przechowuje per-gracz listę rebuy jako `values[]` oraz globalne indeksy kolumn `indexes[]`.
-- `pool.rebuyValues` – przechowuje wpisy edytowalnych (nieprzypisanych) komórek REBUY w `Tabela16`.
-- `pool.mods[]` – wiersze `Tabela16` (split/mod/suma).
+- `pool.rebuyCells` – ręczne wartości komórek REBUY w `Tabela16`: `{ [idWiersza]: { [indeksKolumny]: "tekst" | null } }`. `null` oznacza wpis skasowany (zapis `set(..., { merge: true })` nie usuwa kluczy mapy, więc usunięcie zapisuje się jako `null`). Przy pierwszym odczycie stanu bez tego pola `normalizeTournamentState` przejmuje z dawnego `pool.rebuyValues` wyłącznie kolumny `REBUY31+` — wpisy z kolumn 1–30 nie były nigdy wyświetlane ani liczone.
+- `pool.mods[]` – wiersze `Tabela16`: `id`, `split`, `modR5`, `mod1`, `mod2`, `mod3`.
 - Wspólny helper `toDigitsNumber` działa na poziomie modułu i jest używany przez renderowanie wszystkich sekcji `Tournament of Poker` (m.in. sortowanie finału, wypłaty i przeliczenia liczbowe), dzięki czemu kliknięcie w przyciski sidebaru nie kończy się błędem zasięgu funkcji.
 
 ### Automatyczne przeliczenia
@@ -296,7 +295,7 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 - `Dodaj Rebuy` aktualizuje najpierw tylko lokalny draft i główny stan UI; zapis pustej kolumny do Firestore nie jest wykonywany od razu.
 - Usunięcie kolumny wykonuje globalną kompaktację (`index > removedIndex => index-1`) we wszystkich wpisach graczy.
 - Usunięcie stołu korzysta z pełnej renumeracji globalnej pozostałych kolumn (`oldIndex` sort rosnąco -> `newIndex = 1..N`), dzięki czemu znikają luki po indeksach należących do usuniętego stołu.
-- Po kompaktacji rebuy wykonywane jest też przenumerowanie `pool.rebuyValues` (kolumny `data-col-index`), aby ręczne wpisy w `Tabela16` pozostały przypisane do właściwych kolumn `RebuyX`.
+- Po kompaktacji rebuy wykonywane jest też przenumerowanie `pool.rebuyCells` (kolumny `data-col-index`), aby ręczne wpisy w `Tabela16` pozostały przypisane do właściwych kolumn `RebuyX`.
 - Gdy zapis do Firestore nie powiedzie się, modal pokazuje lokalny komunikat błędu i nie utrwala lokalnej zmiany dla przycisku `Dodaj Rebuy`.
 - Komunikat diagnostyczny zawiera szczegóły błędu (`error.code` i `error.message`), aby ustalić przyczynę problemu przy `Dodaj Rebuy` / `Usuń Rebuy`.
 - Podczas zapisu akcji rebuy używany jest lokalny lock (`table12RebuyActionInProgress`), który chwilowo blokuje przyciski modalu i zapobiega wielokrotnemu wywołaniu tej samej operacji.
@@ -316,11 +315,29 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
   - wiersze 4+: wartość bezpośrednia z `PODZIAŁ PULI`.
 - Liczba kolumn `REBUY` w `Tabela16` jest dynamiczna i równa liczbie uzupełnionych pól `Rebuy` w modalach `Rebuy gracza` (`Tabela12` → `REBUY`).
 - Jeśli w modalach `Rebuy gracza` nie ma żadnej uzupełnionej wartości, `Tabela16` nie renderuje żadnej kolumny `REBUY`.
-- Komórki `REBUY1..REBUY30` są automatycznie przypisane do wierszy przez mapę biznesową i są readonly (jak `KWOTA`) z wartościami z modali `Rebuy gracza` pomniejszonymi o procent z `Tabela14` (`wartość * (1 - rakePercent)`).
-- Komórki od `REBUY31` wzwyż są renderowane dynamicznie, pozostają puste domyślnie (bez auto-przypisania do wiersza) i są edytowalne przez użytkownika (wartości ręczne są trzymane w `pool.rebuyValues`).
+- Wspólne helpery modułu (używane przez panel admina, widok gracza i sekcję `Wypłaty`):
+  - `POOL_REBUY_ROW_MAPPING` — mapa auto-przypisania `REBUY1..REBUY30` do wierszy w grupach 4, 5, 6, 7, 8 (`1,2,3,4 | 1..5 | 1..6 | 1..7 | 1..8`), `POOL_AUTO_REBUY_COLUMNS = 30`,
+  - `buildPoolRebuyMatrix(rows, columnValues, rebuyCells)` — macierz tekstów komórek `[wiersz][kolumna]`,
+  - `isPoolRebuyColumnManual(rows, rebuyCells, colIdx)` — kolumna jest ręczna, gdy którykolwiek bieżący wiersz ma w niej wpis (`hasPoolRebuyCell`: wartość różna od `undefined` i `null`) albo gdy `colIdx >= 30`,
+  - `getPoolRebuyCorrectionMismatches(rows, columnValues, rebuyCells, matrix)` — ręczne kolumny `REBUY1..REBUY30`, w których zaokrąglona suma wierszy różni się od zaokrąglonej wartości rebuy,
+  - `getPoolTable16Columns(rebuyColumns)` — kolejność komórek za `KWOTA` (REBUYn i MOD) z etykietami `MOD1..MODn`,
+  - `getPoolModSum(row)` — suma `modR5 + mod1 + mod2 + mod3` (`POOL_MOD_KEYS`),
+  - `signedDigitsOnly(value)` — sanitizacja pola MOD: opcjonalny minus na początku + cyfry.
+- Wartość kolumny `REBUYn` to wpis z modali `Rebuy gracza` pomniejszony o procent z `Tabela14` (`wartość * (1 - rakePercent)`).
+- Komórka niebędąca w kolumnie ręcznej pokazuje wartość automatyczną (`Math.round`) w wierszu z `POOL_REBUY_ROW_MAPPING`, a w pozostałych wierszach jest pusta. W kolumnie ręcznej każda komórka pokazuje wyłącznie swój wpis z `pool.rebuyCells`.
+- **Korekta REBUY (panel admina).** Wszystkie komórki `REBUYn` są edytowalnymi polami (`data-role="pool-rebuy-value"`, `data-col-index`, `type="text"`, `inputmode="numeric"`, `pattern="[0-9]*"`, sanitizacja `digitsOnly`, metadane fokusu `data-focus-target`/`data-section="second-tournament-pool-rebuy"`/`data-row-id`/`data-column-key="rebuyN"`). Pierwsza zmiana w kolumnie `1..30` najpierw utrwala w `pool.rebuyCells` bieżący rozkład wszystkich wierszy tej kolumny (z `lastPoolRebuyMatrix`, czyli ostatnio wyrenderowanej macierzy), a dopiero potem zapisuje edytowaną komórkę — od tej chwili kolumna jest ręczna, więc późniejsze dodanie wiersza ani przenumerowanie rebuy nie zdubluje wartości. Puste pole liczy się jako `0`; można też wpisać `0`.
+- Pod `Tabela16` (nad przyciskami `Dodaj`/`Usuń`) renderuje się ostrzeżenie `.builder-info.t-warning`, po jednej linii na kolumnę z niezgodnością: `REBUYn: rozdzielono X z Y`. Dotyczy wyłącznie kolumn `1..30`, w których dokonano korekty.
+- Komunikat `Rebuy do rozdysponowania X` (nad `Tabela16`) = suma wartości kolumn `REBUY31+` minus suma wpisów w tych kolumnach.
 - `Tabela16` używa klasy `.tournament-pool-table16`; `<colgroup>` buduje się z tej samej pętli co nagłówki (`tColsAuto`), więc zmienna liczba kolumn `REBUY` i `MOD` nie rozjeżdża szerokości. Pola `.admin-input` wypełniają komórkę.
-- Kolumny `MOD` są dynamiczne względem liczby kolumn `REBUY`: dla `0..12` widoczne jest `MOD1`, dla `13..20` widoczne są `MOD1` i `MOD2`, a dla `>20` widoczne są `MOD1`, `MOD2`, `MOD3`.
-- `SUMA` = `KWOTA + suma REBUY w wierszu + MOD1 + MOD2 + MOD3` (z uwzględnieniem widocznych kolumn MOD).
+- Kolumny `MOD` (`getPoolTable16Columns`):
+  - za `REBUY5` — klucz `modR5`, gdy kolumn `REBUY` jest więcej niż 5,
+  - za `REBUY12` — klucz `mod1`, gdy więcej niż 12,
+  - za `REBUY20` — klucz `mod2`, gdy więcej niż 20,
+  - zawsze jedna przed `SUMA` — klucz `mod1` (≤ 12 rebuy), `mod2` (13–20) albo `mod3` (> 20).
+  Etykiety są numerowane od lewej: `MOD1`, `MOD2`, … (np. przy 14 rebuy: `MOD1` za `REBUY5`, `MOD2` za `REBUY12`, `MOD3` przed `SUMA`).
+- Pole MOD (`data-role="pool-mod"`, `data-mod-key`) ma `type="text"` bez `inputmode`, żeby na telefonie była dostępna klawiatura z minusem; wartość jest sanitizowana przez `signedDigitsOnly` (np. `-100`).
+- `SUMA` = `KWOTA + suma komórek REBUY w wierszu + modR5 + mod1 + mod2 + mod3`.
+- Widok gracza (`pool`) używa tych samych helperów i układu kolumn (nagłówki `R1..Rn`, `MOD1..MODn`, wartości tylko do odczytu); sekcja `Wypłaty` (admin i gracz) liczy `KOŃCOWA WYGRANA` z tej samej macierzy, więc korekty REBUY i MOD są w niej uwzględnione.
 - Obliczanie sumy wszystkich komórek `REBUY` używa zagnieżdżonego `reduce` (bez `Array.prototype.flat`), co utrzymuje zgodność renderu sekcji `Podział puli` ze starszymi środowiskami WebView/przeglądarkami.
 
 ### Faza grupowa
@@ -339,22 +356,17 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 - Lista przycisków panelu (`.player-zone-sections-list`, używana w `#adminTournamentTab` i w widoku użytkownika) ma `grid-auto-rows: 1fr`, a jej przyciski `min-height: var(--admin-games-panel-item-height)` przy `height: 100%`. Sztywna wysokość wiersza (41 px) nie mieściła dwuliniowej etykiety „Losowanie stołów” — tekst wychodził ok. 3 px poza ramkę przycisku. `1fr` wyrównuje wszystkie wiersze do najwyższego, więc lista pozostaje równa (56 px na desktopie). Reguła jest bliźniacza do tej w module Main.
 
 
-### PIN użytkownika, czat i uprawnienia
+### PIN użytkownika i uprawnienia
 - Główna bramka PIN użytkownika korzysta z kontrolek `#userPlayerPinInput`, `#userPlayerPinOpenButton`, `#userPlayerPinStatus`; po poprawnej weryfikacji odsłania zakładkę `TOURNAMENT OF POKER`.
 - Weryfikacja głównego PIN porównuje 5-cyfrową wartość z `players[].pin` w stanie `second_tournament/state` i zapisuje sesję w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`).
 - Nawigacja wewnątrz `TOURNAMENT OF POKER` filtruje przyciski zgodnie z mapą `SECOND_TOURNAMENT_PERMISSION_MAP`; każdy przycisk panelu wymaga przypisanego uprawnienia z mapy `SECOND_TOURNAMENT_PERMISSION_MAP`, więc bez żadnego uprawnienia sidebar nie pokazuje żadnej nawigacji.
-- Sekcja czatu jest renderowana wewnątrz panelu Tournament (`data-tournament-target="chatTab"`) i używa kontrolek `#chatPinInput`, `#chatPinOpenButton`, `#chatPinStatus`.
-- Po poprawnej weryfikacji głównego PIN-u użytkownika aplikacja automatycznie preautoryzuje czat dla tego samego gracza, jeżeli ma on uprawnienie `Czat` (brak drugiego wymuszonego wpisywania PIN przy wejściu do `chatTab`).
-- Weryfikacja PIN czatu nadal działa jako fallback techniczny i dodatkowa ścieżka odblokowania (np. gdy otworzono zakładkę `Czat` bez wcześniejszej weryfikacji głównej sesji).
-- Dostęp do wysyłki wiadomości jest nadawany tylko graczom z uprawnieniem `Czat` (pole `players[].permissions`).
-- Stan weryfikacji sesji czatu jest zapisywany w `sessionStorage` (`secondChatPinVerified`, `secondChatPlayerId`), dzięki czemu użytkownik wpisuje PIN do czatu raz na sesję przeglądarki.
-- Wysyłka wiadomości do `second_chat_messages` zapisuje `authorName` z `players[].name` zweryfikowanego gracza.
+- Moduł nie ma czatu: ani panel administratora, ani `TOURNAMENT OF POKER` nie mają zakładki „Czat”, a kod nie czyta ani nie zapisuje kolekcji `second_chat_messages`. Wiadomości zapisane w niej wcześniej pozostają w bazie bez zmian.
 
 ### Modal „Rebuy gracza” — zapis i odświeżanie
 - Tabela modala używa identyfikatora `#adminCalculatorRebuyTable`, ma `width: max-content` i kolumny o szerokości `--col-num-sm` (spójność z Main).
 - Zmiana w polu rebuy jest od razu sanityzowana do cyfr i aktualizuje lokalny stan/draft oraz `Tabela12`; zapis do Firebase wykonywany jest przy zamknięciu modalu z niezapisanymi zmianami albo przy operacji `Usuń Rebuy`.
 - `saveState()` zapisuje ostatni błąd w `saveState.lastError`, a moduł loguje błędy do konsoli (`[Second] saveState error`, `[Second][Table12Rebuy] ...`) dla szybszej diagnostyki.
-- Automatyczny reset rebuy po stanie `0 graczy i 0 stołów` działa przez czyszczenie pól wewnątrz dokumentu (`payments.table12Rebuys`, `pool.rebuyValues`), więc nie koliduje z ochroną przed usunięciem ostatniego dokumentu z kolekcji Firebase.
+- Automatyczny reset rebuy po stanie `0 graczy i 0 stołów` działa przez czyszczenie pól wewnątrz dokumentu (`payments.table12Rebuys`, `pool.rebuyCells`), więc nie koliduje z ochroną przed usunięciem ostatniego dokumentu z kolekcji Firebase.
 - Zamknięcie modala (`X`, klik poza modalem, ESC) zamyka okno bez dodatkowych opóźnień, jak w Main.
 
 
@@ -388,28 +400,15 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
   - `TABELA10`, `TABELA11`, `TABELA12`
 - Dane pochodzą z tych samych wyliczeń co pozostałe sekcje użytkownika, ale bez elementów edycyjnych.
 
-### 5. Czat w Tournament of Poker (admin)
-- Sekcja `chatTab` w `setupAdminTournament()` renderuje panel moderacyjny wiadomości czatu turniejowego.
-- Dodano:
-  - `cleanupTournamentChatMessages()` — batch delete wiadomości z `expireAt <= now`,
-  - `deleteTournamentChatMessage(messageId)` — usuwanie pojedynczej wiadomości,
-  - snapshot `tournamentChatQuery` dla live-sync i statusu.
-- Dodane role akcji kliknięć:
-  - `tournament-chat-cleanup`,
-  - `tournament-chat-delete-message`.
-
 
 ## Aktualizacja techniczna 2026-05-06 (user-view Tournament helper scope)
 - W `setupUserView(root)` dodano lokalne helpery `percentInputToDecimal(value)` oraz `formatCellNumber(value)`, aby sekcje user `draw` i `payments` korzystały z tych samych obliczeń/formatu bez błędów zakresu (`ReferenceError`).
 - Dzięki temu render sekcji użytkownika nie zależy od lokalnych helperów z funkcji admina i nie przerywa się na brakujących definicjach.
-- Po zmianie podniesiono cache-buster skryptu w `Second/index.html` do `app.js?v=2026-05-06-2`.
 
 ## 2026-05-06 — Naprawa widoku użytkownika (Wpłaty)
 - W `setupUserView(root)` dodano lokalny helper `toPercentText`, aby render sekcji `Wpłaty` miał dostęp do tego samego formatowania procentów i nie zgłaszał błędu `ReferenceError: toPercentText is not defined`.
-- W `Second/index.html` podbito cache-buster skryptu do `app.js?v=2026-05-06-3`.
 
 - W `setupUserView(root)` dodano lokalny helper `toNumber(value)`, ponieważ sekcje user (`payments`, `pool`, `group`, `payouts`) korzystają z niego pośrednio przez `toPercentText(...)` i bez tej definicji pojawiał się `ReferenceError: toNumber is not defined`.
-- W `Second/index.html` podbito cache-buster do `app.js?v=2026-05-07-1`, aby wymusić pobranie nowej wersji skryptu bez cache.
 
 ## Aktualizacja techniczna 2026-05-07 — fix mobile sidebar labels (user Tournament)
 - Dodano dedykowane reguły `@media (max-width: 760px)` ograniczone do selektora `body:not(.is-admin) #tournamentTab`.

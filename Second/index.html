@@ -10,19 +10,18 @@
       href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:wght@600&family=Inter:wght@400;500;600;700&family=Rajdhani:wght@600&display=swap&subset=latin-ext"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=2026-11-16.1" />
   </head>
   <body>
     <div class="page">
       <header class="page-header">
         <div class="header-intro">
-          <p class="eyebrow">To też nie jest nielegalny poker</p>
           <h1>Tournament of Poker</h1>
         </div>
         <div class="header-controls">
           <img class="header-icon" src="../Pliki/Ikona.png" alt="Ikona" />
           <div class="admin-toolbar">
-            <button id="secondCustomsEmergencyButton" class="danger" type="button">Przycisnąć w razie kontroli celno-skarbowej</button>
+            <button id="secondCustomsEmergencyButton" class="danger" type="button">Nie wciskać</button>
             <button id="secondInstructionButton" class="secondary" type="button">Instrukcja</button>
             <span id="secondAdminPasswordBypassNote" class="admin-password-bypass-note" hidden></span>
           </div>
@@ -46,7 +45,6 @@
 
         <div class="admin-panel-tabs" role="tablist" aria-label="Zakładki panelu administratora">
           <button class="admin-panel-tab is-active" type="button" data-target="adminNewsTab">Aktualności</button>
-          <button class="admin-panel-tab" type="button" data-target="adminChatTab">Czat</button>
           <button class="admin-panel-tab" type="button" data-target="adminRulesTab">Regulamin</button>
           <button class="admin-panel-tab" type="button" data-target="adminNotesTab">Notatki</button>
           <button class="admin-panel-tab" type="button" data-target="adminTournamentTab">TOURNAMENT OF POKER</button>
@@ -74,20 +72,6 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <div id="adminChatTab" class="admin-panel-content" role="tabpanel">
-          <section class="admin-chat">
-            <div class="card-header">
-              <h3>Czat</h3>
-              <p>Moderuj wiadomości i usuwaj wpisy starsze niż 30 dni.</p>
-            </div>
-            <div class="admin-chat-actions">
-              <button id="adminChatCleanup" class="danger" type="button">Usuń starsze niż 30 dni</button>
-              <span id="adminChatStatus" class="status-text" aria-live="polite">Ładowanie wiadomości czatu...</span>
-            </div>
-            <div id="adminChatList" class="admin-chat-list"></div>
-          </section>
         </div>
 
         <div id="adminRulesTab" class="admin-panel-content" role="tabpanel">
@@ -142,7 +126,6 @@
                 <button class="admin-games-year-button" type="button" data-tournament-target="semi">Półfinał</button>
                 <button class="admin-games-year-button" type="button" data-tournament-target="final">Finał</button>
                 <button class="admin-games-year-button" type="button" data-tournament-target="payouts">Wypłaty</button>
-                <button class="admin-games-year-button" type="button" data-tournament-target="chatTab">Czat</button>
               </div>
             </aside>
             <section class="admin-games-content">
@@ -219,7 +202,6 @@
                   <button class="admin-games-year-button" type="button" data-tournament-target="semi">Półfinał</button>
                   <button class="admin-games-year-button" type="button" data-tournament-target="final">Finał</button>
                   <button class="admin-games-year-button" type="button" data-tournament-target="payouts">Wypłaty</button>
-                  <button class="admin-games-year-button" type="button" data-tournament-target="chatTab">Czat</button>
                   <p id="userTournamentSectionsStatus" class="status-text" aria-live="polite"></p>
                 </div>
               </aside>
@@ -228,7 +210,6 @@
                   <div id="userTournamentDataMount">
                     <p class="builder-info" data-tournament-text>Strona w budowie</p>
                   </div>
-                  <div id="userTournamentChatMount" hidden></div>
                 </div>
               </section>
             </div>
@@ -239,7 +220,7 @@
 
 
     <div id="secondCustomsEmergencyModal" class="modal-overlay" aria-hidden="true">
-      <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-label="Kontrola celno-skarbowa">
+      <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-label="Nie wciskać">
         <div class="modal-header">
           <button id="secondCustomsEmergencyClose" class="icon-button" type="button" aria-label="Zamknij okno">
             ×
@@ -285,6 +266,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
-    <script src="app.js?v=2026-05-07-1" type="module"></script>
+    <script src="app.js?v=2026-11-16.1" type="module"></script>
   </body>
 </html>

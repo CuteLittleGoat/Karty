@@ -2,7 +2,7 @@
 
 - W widoku użytkownika (Main i Second) zewnętrzna zielona ramka głównej karty ma dokładnie 1 px na lewej i prawej krawędzi oraz jest rozciągnięta od 1 px od lewej krawędzi ekranu do 1 px od prawej.
 - Efekt uzyskano przez pełną szerokość kontenera `.page` w trybie użytkownika (`calc(100% - 2px)`, `padding-inline: 1px`) oraz wyłączenie wewnętrznej pseudo-ramki `.user-card::before`.
-- W obu modułach (`Main` i `Second`) czerwony przycisk akcji awaryjnej (`button.danger`) znajduje się w prawym górnym pasku (`.admin-toolbar`), więc jest widoczny zarówno dla użytkownika, jak i administratora. W `Main` ma etykietę „Nie wciskać”, w `Second` — „Przycisnąć w razie kontroli celno-skarbowej”.
+- W obu modułach (`Main` i `Second`) czerwony przycisk akcji awaryjnej (`button.danger`) z etykietą „Nie wciskać” znajduje się w prawym górnym pasku (`.admin-toolbar`), więc jest widoczny zarówno dla użytkownika, jak i administratora.
 - Nagłówek `Main` (`header.page-header`) nie ma tytułu tekstowego: zawiera tylko `.header-controls` (ikona `.header-icon` + `.admin-toolbar`), dosunięte do prawej przez `margin-left: auto`. Arkusz `Main/styles.css` nie definiuje stylów `h1` ani `.eyebrow` i nie ma tokenu `--fs-title`; krój `--font-title` (Cinzel) pozostaje w użyciu w innych elementach.
 - W obu modułach modal z GIF-em `Koza.gif` został zachowany, ale bez nagłówka tekstowego; obraz korzysta z klas `.customs-emergency-modal-body` i `.customs-emergency-image` (wycentrowanie, ograniczenie szerokości i wysokości, `object-fit: contain`, zaokrąglenie i obramowanie).
 ## System szerokości tabel (Main i Second)
@@ -21,7 +21,7 @@
 - `max-width: 560px` — układ kartowy `is-table-stacked`.
 - `pointer: coarse` — przyciski wierszowe, zakładki i przyciski akcji mają co najmniej 40 px wysokości.
 - `.user-tab-content` i `.admin-panel-content` mają `max-width: var(--content-max)` (1680 px) i są wyśrodkowane; karta nadal sięga krawędzi ekranu, ograniczana jest tylko treść w środku. Ograniczenie musi siedzieć na kontenerze — nałożone na elementy siatki wyłącza ich rozciąganie i zwęża panele do szerokości własnej treści.
-- Na mobile (`max-width: 720px`) pola tekstowe (`Aktualności`, `Regulamin`, `Czat`, `Notatki`, `Kopia zapasowa`) zajmują pełną szerokość karty: kontenery `.latest-message`, `.chat-form`, `.admin-message-form`, `.admin-rules` i `.admin-backup` tracą własny padding, ramkę i tło.
+- Na mobile (`max-width: 720px`) pola tekstowe (`Aktualności`, `Regulamin`, `Czat`, `Notatki`, `Kopia zapasowa`) zajmują pełną szerokość karty: kontenery `.latest-message`, `.chat-form`, `.admin-message-form`, `.admin-rules` i `.admin-backup` tracą własny padding, ramkę i tło (`Czat`/`.chat-form` i `Kopia zapasowa` występują tylko w `Main`).
 - Przycisk `Instrukcja` jest widoczny wyłącznie dla administratora (`body:not(.is-admin) #adminInstructionButton` w `Main`, `.page:has(.user-card) #secondInstructionButton` w `Second`).
 - W układzie kartowym (`is-table-stacked`) komórka ma `width: 100%`, etykieta zawija się w swojej kolumnie (`minmax(0, 11ch)`), a tabela traci `min-width`, żeby karty nie przewijały się w bok.
 - Przyciski menu bocznego (`.player-zone-button`) mają `font-size: clamp(11px, 1.1vw, 14px)`.
@@ -32,16 +32,17 @@
 - Dzięki temu panel administratora respektuje `width: min(1720px, 100%)`, a widok użytkownika zachowuje ramkę 1 px od krawędzi ekranu.
 
 ## Moduł Second — Tournament of Poker
-- W nagłówku modułu `Second` tytuł główny brzmi **Tournament of Poker**, a po prawej stronie widoczna jest ta sama ikona `Pliki/Ikona.png` co w module `Main`, ustawiona po lewej stronie przycisku **Instrukcja** (układ poziomy w `.header-controls`).
+- W nagłówku modułu `Second` jest wyłącznie tytuł główny **Tournament of Poker** (`h1`, bez podtytułu — arkusz `Second/styles.css` nie ma klasy `.eyebrow`), a po prawej stronie widoczna jest ta sama ikona `Pliki/Ikona.png` co w module `Main`, ustawiona po lewej stronie przycisku **Instrukcja** (układ poziomy w `.header-controls`).
 - Sekcja `Lista graczy` ma układ metadanych w siatce `.t-section-grid` oraz tabelę `players-table`.
 - W sekcji `Lista graczy` nad siatką metadanych dodano czerwony przycisk destrukcyjny **Wyzeruj Rebuy** (wariant `button.danger`) do globalnego resetu wszystkich wpisów `RebuyX`.
 - W polu `RAKE` zastosowano format procentowy jak w module Main: użytkownik wpisuje liczbę, a kontrolka wyświetla wartość z dopisanym `%` (np. `12%`) bez dodatkowego pomocniczego `<small>`.
 - Kolumna `PIN` używa kontrolki `.pin-control`: pole wejściowe wypełnia komórkę, a obok niego stoi przycisk `Losuj` (`.admin-pin-random`). Kolumna ma token `--col-text-md`, żeby pole i przycisk zmieściły się obok siebie.
 - Kolumna `Uprawnienia` prezentuje bieżące uprawnienia jako badge (`.permissions-tags`, `.permission-badge`) i zawiera przycisk `Edytuj` (`.admin-permissions-edit`).
 - Przycisk `Edytuj` w kolumnie `Uprawnienia` otwiera modal `Uprawnienia gracza` (`#secondPlayerPermissionsModal`) o wyglądzie spójnym z modalami modułu Main (nagłówek, przycisk zamknięcia `✕`, overlay, karta `modal-card-sm`).
-- W modalu lista `.permissions-list` zawiera uprawnienia `Czat`, `Losowanie stołów`, `Wpłaty`, `Podział Puli`, `Faza Grupowa`, `Półfinał`, `Finał`, `Wypłaty`; zaznaczenie opcji steruje widocznością odpowiednich paneli użytkownika.
+- W modalu lista `.permissions-list` zawiera uprawnienia `Losowanie stołów`, `Wpłaty`, `Podział Puli`, `Faza Grupowa`, `Półfinał`, `Finał`, `Wypłaty`; zaznaczenie opcji steruje widocznością odpowiednich paneli użytkownika.
 - W widoku użytkownika modułu `Second` nad zakładkami działa dodatkowa bramka `.pin-gate.user-access-pin-gate`; po poprawnym PIN odblokowuje wejście do `TOURNAMENT OF POKER` bez zmiany layoutu całej karty.
-- W panelu bocznym `TOURNAMENT OF POKER` (admin i user) przycisk `Czat` jest umieszczony jako ostatni element listy sekcji.
+- Moduł `Second` nie ma czatu: arkusz nie zawiera stylów `.admin-chat*` ani `.chat-*`, a panel boczny `TOURNAMENT OF POKER` kończy się przyciskiem `Wypłaty`.
+- Pierwsza kolumna tabel `Lista graczy` (`players-table`), tabeli przypisań w `Losowanie stołów` i tabel w kartach stołów to `LP` (token `--col-num-xs`), wyrównana jak pozostałe kolumny liczbowe. Kolumna `AKCJE` w `players-table` jest wyrównana do prawej regułą `.players-table th/td:nth-child(6)`.
 - Ostatnia kolumna `Akcje` zawiera przycisk `Usuń` (`.admin-row-delete`) wyrównany do prawej strony.
 - W sekcji `Losowanie stołów` przycisk usuwania stołu ma klasy `.admin-row-delete.draw-table-delete`: zachowuje kompaktowy rozmiar i jest dosunięty do prawej krawędzi bloku stołu (`justify-self: end`).
 - Nad tabelą prezentowany jest licznik liczby graczy (tekst informacyjny `.builder-info`).
@@ -78,9 +79,10 @@
 - W modalu `Rebuy gracza` (Second) pod nagłówkiem renderowany jest komunikat statusu `.builder-info` dla błędów zapisu (pokazywany warunkowo tylko przy problemach z zapisem).
 - W module Second nagłówki tabel są prezentowane uppercase, z wyjątkiem dynamicznych nagłówków stołów w `Tabela18`.
 - Ostrzeżenia walidacyjne i dystrybucji rebuy w module Second używają czerwonego stylu (`.t-warning`).
-- W panelu `Podział puli` (Second) tabela `Tabela16` renderuje dynamiczną liczbę kolumn `REBUY` (równą liczbie uzupełnionych pól `Rebuy` w modalach graczy), przypisane komórki `REBUY1..REBUY30` są readonly i wyświetlają wartości z tych modali.
+- W panelu `Podział puli` (Second) tabela `Tabela16` renderuje dynamiczną liczbę kolumn `REBUY` (równą liczbie uzupełnionych pól `Rebuy` w modalach graczy). Wszystkie komórki `REBUY` są edytowalnymi polami `.admin-input` (korekta rebuy), a pola `MOD` przyjmują liczby ujemne.
+- Ostrzeżenie o niezgodnej sumie po korekcie REBUY (`REBUYn: rozdzielono X z Y`) to `.builder-info.t-warning` (czerwony tekst) pod `Tabela16`, nad przyciskami `Dodaj`/`Usuń`; kilka kolumn = kilka linii oddzielonych `<br>`.
 - `Tabela16` (`.tournament-pool-table16`) buduje `<colgroup>` z tej samej pętli co nagłówki, więc liczba kolumn `REBUY` i `MOD` nie rozjeżdża szerokości; pola `.admin-input` wypełniają komórkę.
-- Pozycjonowanie kolumn `MOD1..MOD3` w `Tabela16` jest dynamiczne i zależne od liczby widocznych kolumn `REBUY`.
+- Pozycjonowanie kolumn `MOD` w `Tabela16` jest dynamiczne: za `REBUY5` (gdy rebuy > 5), za `REBUY12` (gdy > 12), za `REBUY20` (gdy > 20) i zawsze jedna przed `SUMA`; etykiety `MOD1..MODn` numerowane od lewej.
 - W obu modułach (`Main`, `Second`) kontener `.player-zone-layout` rozszerza sekcję z ciemno-zielonymi panelami na pełną szerokość wnętrza karty (1 px luzu od lewej i prawej krawędzi zewnętrznej ramki).
 - Przyciski nawigacyjne sekcji `Strefa Gracza` (`.player-zone-button`) skalują font przez `clamp(11px, 1.1vw, 14px)`, więc pozostają czytelne także na tablecie.
 
@@ -93,7 +95,7 @@
 - Puste wrappery sekcji kalkulatora (`.admin-calculator-table-wrap`) są ukrywane regułą `:empty`, dlatego niewykorzystane sloty pod `TABELAC` nie tworzą zielonych pasów w UI.
 
 - W panelu `Finał` usunięto wizualizację stołu (`.poker-table-svg`); sekcja pokazuje `Tabela23` oraz `Tabela23A` z przyciskami pozycji `▲/▼`.
-- W module `Second`, w widoku użytkownika dla `#tournamentTab` na mobile (`max-width: 760px`), layout Tournament wymusza jedną kolumnę (`minmax(0,1fr)`), pełną szerokość sidebara i lokalne przewijanie szerokich tabel; etykiety przycisków sekcji pozostają widoczne bez przełączania na `Czat`.
+- W module `Second`, w widoku użytkownika dla `#tournamentTab` na mobile (`max-width: 760px`), layout Tournament wymusza jedną kolumnę (`minmax(0,1fr)`), pełną szerokość sidebara i lokalne przewijanie szerokich tabel; etykiety przycisków sekcji pozostają zawsze widoczne.
 
 ## Main — nagłówek tabeli statystyk i bilansu żetonów (checkbox widoczności kolumn)
 - Dotyczy `.admin-games-players-stats-table` w zakładkach `Statystyki` i `Bilans żetonów`, wyłącznie w widoku administratora.
