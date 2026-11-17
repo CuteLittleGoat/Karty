@@ -3158,6 +3158,7 @@ const setupUserView = (root) => {
           const showFinal = !!readonlyTournamentState.payouts?.showFinal;
           const splitRows = Array.isArray(readonlyTournamentState.pool?.mods) ? readonlyTournamentState.pool.mods.filter((row) => row && typeof row === "object") : [];
           const splitValues = splitRows.map((row, idx) => idx < 3 ? percentInputToDecimal(getPoolSplitValueForCalculation(row.split, idx)) : toNumber(row.split));
+          const sumFrom4th = splitValues.slice(3).reduce((sum, value) => sum + value, 0);
           const rebuyMatrix = buildPoolRebuyMatrix(splitRows, userAdjustedRebuyValues, readonlyTournamentState.pool?.rebuyCells);
           const buyInValue = toNumber(readonlyTournamentState.payments?.table11?.buyIn);
           const table15Split = buyInValue - sumFrom4th;
