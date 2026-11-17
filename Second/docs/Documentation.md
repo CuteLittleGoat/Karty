@@ -47,7 +47,7 @@ Warstwa prezentacji tabel opiera się na skali tokenów w `Second/styles.css`; p
 
 ## Nagłówek i przycisk instrukcji
 - Nagłówek modułu (`.header-intro`) zawiera wyłącznie tytuł `<h1>Tournament of Poker</h1>` — bez podtytułu; arkusz nie definiuje klasy `.eyebrow`. Tytuł karty przeglądarki brzmi `Tournament of Poker - Panel i Widok Użytkownika`.
-- `Second/index.html` ładuje `styles.css?v=2026-11-16.1` i `app.js?v=2026-11-16.1` (parametr wersji wymusza pobranie nowej wersji zamiast kopii z pamięci przeglądarki; moduł nie ma Service Workera).
+- `Second/index.html` ładuje `styles.css?v=2026-11-17.1` i `app.js?v=2026-11-17.1` (parametr wersji wymusza pobranie nowej wersji zamiast kopii z pamięci przeglądarki; moduł nie ma Service Workera).
 - W `Second/index.html` sekcja `.header-controls` zawiera ikonę `<img class="header-icon" src="../Pliki/Ikona.png">` oraz przycisk `#secondInstructionButton` w tej samej linii.
 - Ikona i układ są celowo spójne z modułem Main (ta sama grafika i ten sam wzorzec pozycjonowania: ikona po lewej, przycisk po prawej).
 - Styl `.header-icon` w `Second/styles.css` używa `width: min(110px, 100%)` oraz `height: auto`, a `.header-controls` pracuje w układzie poziomym (`display: flex; align-items: center; justify-content: flex-end`).
@@ -186,7 +186,7 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 - `Tabela23` pobiera `STACK` bezpośrednio z wartości wpisanych w `Tabela FINAŁOWA` (`semi.assignments[playerId].finalStack`) i sortuje finalistów malejąco po tym polu; `STACK` w `Tabela23` pozostaje readonly.
 - `Tabela24` korzysta z kolejek eliminacji: miejsca od końca zajmują kolejno gracze z `group.eliminatedOrder`, następnie `semi.eliminatedOrder`, a następnie `final.eliminatedOrder` (czyli `Tabela23A`).
 - Liczba wierszy `Tabela24` jest zawsze równa liczbie graczy w `players[]`.
-- Kolumny `POCZĄTKOWA WYGRANA` i `KOŃCOWA WYGRANA` są readonly i pobierają odpowiednio `KWOTA` oraz `SUMA` z tego samego miejsca w `Tabela16`; jeśli miejsc w `Tabela24` jest więcej niż wierszy w `Tabela16`, reszta otrzymuje `0`.
+- Kolumny `POCZĄTKOWA WYGRANA` i `KOŃCOWA WYGRANA` są readonly i mają dokładnie te same wartości co odpowiednio `KWOTA` i `SUMA` z tego samego miejsca w `Tabela16` (miejsce N ↔ wiersz N). Panel admina i widok gracza liczą je tą samą funkcją co `Tabela16` — `computePoolTable16(...)` z bazą `Tabela14.BUY-IN` — a `getPayoutDefaultsFromTable16(rowSums)` zamienia wynik na `{ amount, total }` zaokrąglone `Math.round`. Jeśli miejsc w `Tabela24` jest więcej niż wierszy w `Tabela16`, `buildPlacementRowsFromQueues` wpisuje reszcie `0`.
 - Checkboxy `data-role="toggle-payout-initial"` i `data-role="toggle-payout-final"` sterują realną widocznością kolumn w tabeli administratora i użytkownika, a ich stan jest utrwalany w `payouts.showInitial` / `payouts.showFinal`.
 
 ### Stabilność UI przy błędach Firebase
@@ -224,7 +224,9 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 - Do czasu pierwszego snapshotu obowiązuje flaga gotowości danych (`isUserTournamentLoaded`): przycisk otwierania PIN użytkownika jest zablokowany, a UI pokazuje komunikat ładowania zamiast walidacji PIN na pustym stanie.
 
 ### Render sekcji użytkownika
-- Zakładka `TOURNAMENT OF POKER` jest ukryta do czasu poprawnej weryfikacji głównego PIN-u użytkownika (`#userPlayerPinInput`, `#userPlayerPinOpenButton`).
+- Wszystkie zakładki gracza — `Aktualności`, `Regulamin` i `TOURNAMENT OF POKER` (przyciski `.tab-button` z `data-requires-player-pin="true"`) — są ukryte do czasu poprawnej weryfikacji głównego PIN-u (`#userPlayerPinInput`, `#userPlayerPinOpenButton`). Przed weryfikacją `updateProtectedTabsVisibility()` nadaje `.user-card` klasę `is-pin-locked`, która ukrywa pasek zakładek z przyciskiem `Odśwież` (`.user-panel`) oraz treść zakładek (`.user-tab-content`); widoczna zostaje tylko bramka PIN z tekstem „Wpisz PIN gracza, aby zobaczyć Aktualności, Regulamin i Tournament of Poker.”. To samo dotyczy podglądu widoku gracza w panelu administratora (`#userPreviewMount`).
+- PIN odblokowuje dowolny gracz z `players[]` (bez osobnego uprawnienia do `Aktualności` / `Regulaminu`). Po poprawnej weryfikacji `verifyUserPin()` ustawia aktywną zakładkę `updatesTab` (`Aktualności`).
+- Blokada jest wizualna: dokumenty `second_admin_messages/admin_messages` i `second_app_settings/rules` są pobierane w tle jak dotąd (reguły Firestore pozwalają je czytać), a ukryta jest jedynie ich prezentacja.
 - Stan tej weryfikacji jest przechowywany w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`), więc użytkownik wpisuje PIN tylko raz do resetu lub odświeżenia strony.
 - Po wejściu do `TOURNAMENT OF POKER` przyciski `data-tournament-target` są filtrowane per gracz; bez odpowiednich uprawnień nie renderują się przyciski nawigacji do paneli.
 - Użytkownik może przełączać dostępne sekcje przez przyciski `data-tournament-target`.
@@ -322,6 +324,8 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
   - `getPoolRebuyCorrectionMismatches(rows, columnValues, rebuyCells, matrix)` — ręczne kolumny `REBUY1..REBUY30`, w których zaokrąglona suma wierszy różni się od zaokrąglonej wartości rebuy,
   - `getPoolTable16Columns(rebuyColumns)` — kolejność komórek za `KWOTA` (REBUYn i MOD) z etykietami `MOD1..MODn`,
   - `getPoolModSum(row)` — suma `modR5 + mod1 + mod2 + mod3` (`POOL_MOD_KEYS`),
+  - `computePoolTable16({ rows, buyIn, rebuyColumnValues, rebuyCells })` — jedno źródło wyliczeń `Tabela16`: zwraca `splitValues`, `sumFrom4th`, `table15Split` (= `buyIn − suma PODZIAŁ PULI od wiersza 4`), macierz REBUY i `rowSums[i] = { amount: KWOTA, total: SUMA }`; używają go `Podział puli` i `Wypłaty` w panelu admina (`buyIn = table11.buyIn`) i w widoku gracza (`buyIn = readonly payments.table11.buyIn`, a gdy brak — wyliczone `userTable11.buyIn`; helpery `getUserPoolRows()` / `getUserPoolBuyIn()`),
+  - `getPayoutDefaultsFromTable16(rowSums)` — wartości `POCZĄTKOWA WYGRANA` / `KOŃCOWA WYGRANA` dla `Tabela24`,
   - `signedDigitsOnly(value)` — sanitizacja pola MOD: opcjonalny minus na początku + cyfry.
 - Wartość kolumny `REBUYn` to wpis z modali `Rebuy gracza` pomniejszony o procent z `Tabela14` (`wartość * (1 - rakePercent)`).
 - Komórka niebędąca w kolumnie ręcznej pokazuje wartość automatyczną (`Math.round`) w wierszu z `POOL_REBUY_ROW_MAPPING`, a w pozostałych wierszach jest pusta. W kolumnie ręcznej każda komórka pokazuje wyłącznie swój wpis z `pool.rebuyCells`.
@@ -337,7 +341,7 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
   Etykiety są numerowane od lewej: `MOD1`, `MOD2`, … (np. przy 14 rebuy: `MOD1` za `REBUY5`, `MOD2` za `REBUY12`, `MOD3` przed `SUMA`).
 - Pole MOD (`data-role="pool-mod"`, `data-mod-key`) ma `type="text"` bez `inputmode`, żeby na telefonie była dostępna klawiatura z minusem; wartość jest sanitizowana przez `signedDigitsOnly` (np. `-100`).
 - `SUMA` = `KWOTA + suma komórek REBUY w wierszu + modR5 + mod1 + mod2 + mod3`.
-- Widok gracza (`pool`) używa tych samych helperów i układu kolumn (nagłówki `R1..Rn`, `MOD1..MODn`, wartości tylko do odczytu); sekcja `Wypłaty` (admin i gracz) liczy `KOŃCOWA WYGRANA` z tej samej macierzy, więc korekty REBUY i MOD są w niej uwzględnione.
+- Widok gracza (`pool`) używa tych samych helperów i układu kolumn (nagłówki `R1..Rn`, `MOD1..MODn`, wartości tylko do odczytu); sekcja `Wypłaty` (admin i gracz) bierze `POCZĄTKOWA WYGRANA` i `KOŃCOWA WYGRANA` z tych samych wyliczeń (`computePoolTable16`), więc korekty REBUY i MOD są w niej uwzględnione.
 - Obliczanie sumy wszystkich komórek `REBUY` używa zagnieżdżonego `reduce` (bez `Array.prototype.flat`), co utrzymuje zgodność renderu sekcji `Podział puli` ze starszymi środowiskami WebView/przeglądarkami.
 
 ### Faza grupowa
@@ -357,7 +361,7 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 
 
 ### PIN użytkownika i uprawnienia
-- Główna bramka PIN użytkownika korzysta z kontrolek `#userPlayerPinInput`, `#userPlayerPinOpenButton`, `#userPlayerPinStatus`; po poprawnej weryfikacji odsłania zakładkę `TOURNAMENT OF POKER`.
+- Główna bramka PIN użytkownika korzysta z kontrolek `#userPlayerPinInput`, `#userPlayerPinOpenButton`, `#userPlayerPinStatus`; po poprawnej weryfikacji odsłania zakładki `Aktualności`, `Regulamin` i `TOURNAMENT OF POKER`.
 - Weryfikacja głównego PIN porównuje 5-cyfrową wartość z `players[].pin` w stanie `second_tournament/state` i zapisuje sesję w `sessionStorage` (`secondUserPinVerified`, `secondUserPlayerId`).
 - Nawigacja wewnątrz `TOURNAMENT OF POKER` filtruje przyciski zgodnie z mapą `SECOND_TOURNAMENT_PERMISSION_MAP`; każdy przycisk panelu wymaga przypisanego uprawnienia z mapy `SECOND_TOURNAMENT_PERMISSION_MAP`, więc bez żadnego uprawnienia sidebar nie pokazuje żadnej nawigacji.
 - Moduł nie ma czatu: ani panel administratora, ani `TOURNAMENT OF POKER` nie mają zakładki „Czat”, a kod nie czyta ani nie zapisuje kolekcji `second_chat_messages`. Wiadomości zapisane w niej wcześniej pozostają w bazie bez zmian.
@@ -402,7 +406,7 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 
 
 ## Aktualizacja techniczna 2026-05-06 (user-view Tournament helper scope)
-- W `setupUserView(root)` dodano lokalne helpery `percentInputToDecimal(value)` oraz `formatCellNumber(value)`, aby sekcje user `draw` i `payments` korzystały z tych samych obliczeń/formatu bez błędów zakresu (`ReferenceError`).
+- `percentInputToDecimal(value)` jest helperem modułu (procent `10` → `0.1`; zapisany dawniej ułamek ≤ 1 bez zmian), wspólnym dla panelu admina, widoku gracza i `computePoolTable16`. `setupUserView(root)` ma własny helper `formatCellNumber(value)`, żeby sekcje gracza nie zależały od helperów z funkcji admina.
 - Dzięki temu render sekcji użytkownika nie zależy od lokalnych helperów z funkcji admina i nie przerywa się na brakujących definicjach.
 
 ## 2026-05-06 — Naprawa widoku użytkownika (Wpłaty)

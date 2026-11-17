@@ -925,6 +925,14 @@ button.danger {
   display: none;
 }
 
+/* Widok gracza przed wpisaniem PIN-u: widać tylko bramkę PIN — bez zakładek,
+   przycisku „Odśwież” i treści zakładek. Klasę przełącza
+   updateProtectedTabsVisibility() w Second/app.js. */
+.user-card.is-pin-locked .user-panel,
+.user-card.is-pin-locked .user-tab-content {
+  display: none;
+}
+
 .pin-card {
   display: grid;
   gap: var(--gap-2);

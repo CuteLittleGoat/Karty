@@ -1010,6 +1010,32 @@ const getPoolTable16Columns = (rebuyColumns) => {
 
 const getPoolModSum = (row) => POOL_MOD_KEYS.reduce((sum, key) => sum + parsePoolNumber(row?.[key]), 0);
 
+/* Jedno źródło wyliczeń Tabeli16 dla „Podziału puli” i „Wypłat” (panel admina
+   i widok gracza). `buyIn` = Tabela14.BUY-IN (po potrąceniu rake).
+   Zwraca m.in. `rowSums[i] = { amount: KWOTA, total: SUMA }` dla wiersza i. */
+const computePoolTable16 = ({ rows, buyIn, rebuyColumnValues, rebuyCells }) => {
+  const splitValues = rows.map((row, idx) => (idx < 3
+    ? percentInputToDecimal(getPoolSplitValueForCalculation(row.split, idx))
+    : parsePoolNumber(row.split)));
+  const sumFrom4th = splitValues.slice(3).reduce((sum, value) => sum + value, 0);
+  const table15Split = buyIn - sumFrom4th;
+  const matrix = buildPoolRebuyMatrix(rows, rebuyColumnValues, rebuyCells);
+  const rowSums = rows.map((row, idx) => {
+    const amount = idx < 3 ? (splitValues[idx] || 0) * table15Split : splitValues[idx] || 0;
+    const rebuySum = matrix[idx].reduce((sum, value) => sum + parsePoolNumber(value), 0);
+    return { amount, total: amount + rebuySum + getPoolModSum(row) };
+  });
+  return { splitValues, sumFrom4th, table15Split, matrix, rowSums };
+};
+
+/* Domyślne wartości kolumn „Początkowa wygrana” (= KWOTA) i „Końcowa wygrana”
+   (= SUMA) w Tabeli24 — miejsce N bierze wiersz N Tabeli16. Miejsca bez wiersza
+   w Tabeli16 dostają "0" w buildPlacementRowsFromQueues. */
+const getPayoutDefaultsFromTable16 = (rowSums) => rowSums.map(({ amount, total }) => ({
+  amount: String(Math.round(amount)),
+  total: String(Math.round(total))
+}));
+
 const getPoolSplitValueForCalculation = (splitValue, index) => {
   const normalizedValue = String(splitValue ?? "").trim();
   return normalizedValue || getPoolDefaultSplitValue(index);
@@ -1019,6 +1045,19 @@ const getPoolSplitDisplay = (row, index) => {
   return index < 3 ? formatPercentDisplay(value) : digitsOnly(value);
 };
 const toDigitsNumber = (value) => Number(digitsOnly(value));
+/* Procent wpisany przez użytkownika → ułamek (`10` → `0.1`). Wartości zapisane
+   dawniej jako ułamek dziesiętny ≤ 1 (np. `0.5`) są przyjmowane bez zmian. */
+const percentInputToDecimal = (value) => {
+  const normalized = String(value ?? "").replace(",", ".").trim();
+  if (!normalized) return 0;
+  if (/^\d+(\.\d+)?$/.test(normalized) && normalized.includes(".")) {
+    const parsedLegacy = Number(normalized);
+    if (Number.isFinite(parsedLegacy) && parsedLegacy <= 1) {
+      return parsedLegacy;
+    }
+  }
+  return toDigitsNumber(normalized) / 100;
+};
 const getAlternatingTableGroupClass = (rows, getTableKey) => {
   let previousTableKey = Symbol("initial");
   let groupIndex = -1;
@@ -1553,17 +1592,6 @@ const setupAdminTournament = (rootCard) => {
     const parsed = Number(normalized);
     return Number.isFinite(parsed) ? parsed : 0;
   };
-  const percentInputToDecimal = (value) => {
-    const normalized = String(value ?? "").replace(",", ".").trim();
-    if (!normalized) return 0;
-    if (/^\d+(\.\d+)?$/.test(normalized) && normalized.includes(".")) {
-      const parsedLegacy = Number(normalized);
-      if (Number.isFinite(parsedLegacy) && parsedLegacy <= 1) {
-        return parsedLegacy;
-      }
-    }
-    return toDigitsNumber(normalized) / 100;
-  };
   const formatCellNumber = (value) => {
     if (!Number.isFinite(value)) return "";
     return String(Math.round(value));
@@ -2045,15 +2073,16 @@ const setupAdminTournament = (rootCard) => {
         tournamentState.pool.mods.push({ id: crypto.randomUUID(), split: "", modR5: "", mod1: "", mod2: "", mod3: "" });
       }
       const splitRows = tournamentState.pool.mods;
-      const splitValues = splitRows.map((row, idx) => idx < 3 ? percentInputToDecimal(getPoolSplitValueForCalculation(row.split, idx)) : toNumber(row.split));
-      const sumFrom4th = splitValues.slice(3).reduce((sum, value) => sum + value, 0);
       const table15BuyIn = table11.buyIn;
-      const table15Split = table15BuyIn - sumFrom4th;
-
       const rebuyColumns = allRebuyValues.length;
       tournamentState.pool.rebuyCells = asObject(tournamentState.pool.rebuyCells);
       const rebuyCells = tournamentState.pool.rebuyCells;
-      const rebuyMatrix = buildPoolRebuyMatrix(splitRows, adjustedRebuyValues, rebuyCells);
+      const { table15Split, matrix: rebuyMatrix, rowSums } = computePoolTable16({
+        rows: splitRows,
+        buyIn: table15BuyIn,
+        rebuyColumnValues: adjustedRebuyValues,
+        rebuyCells
+      });
       lastPoolRebuyMatrix = { rowIds: splitRows.map((row) => row.id), matrix: rebuyMatrix };
       const overflow = adjustedRebuyValues.slice(POOL_AUTO_REBUY_COLUMNS).reduce((sum, value) => sum + value, 0);
       const manualOverflowSum = rebuyMatrix.reduce((sum, rowValues) => sum + rowValues.slice(POOL_AUTO_REBUY_COLUMNS).reduce((rowSum, value) => rowSum + toNumber(value), 0), 0);
@@ -2062,16 +2091,6 @@ const setupAdminTournament = (rootCard) => {
       const correctionWarning = correctionMismatches.length
         ? `<p class="builder-info t-warning">${correctionMismatches.map(({ column, distributed, expected }) => `REBUY${column}: rozdzielono ${formatCellNumber(distributed)} z ${formatCellNumber(expected)}`).join("<br>")}</p>`
         : "";
-
-      const rowSums = splitRows.map((row, idx) => {
-        const split = splitValues[idx] || 0;
-        const amount = idx < 3 ? split * table15Split : split;
-        const rebuySumRow = rebuyMatrix[idx].reduce((sum, value) => sum + toNumber(value), 0);
-        return {
-          amount,
-          total: amount + rebuySumRow + getPoolModSum(row)
-        };
-      });
 
       const table16Columns = getPoolTable16Columns(rebuyColumns);
       const renderModInput = (row, modKey) => `<td><input class="admin-input" data-role="pool-mod" data-mod-key="${modKey}" data-id="${row.id}" type="text" autocomplete="off" value="${esc(row[modKey] || "")}" data-focus-target="1" data-section="second-tournament-pool-mod" data-row-id="${row.id}" data-column-key="${modKey}"></td>`;
@@ -2131,19 +2150,13 @@ const setupAdminTournament = (rootCard) => {
       while (tournamentState.pool.mods.length < 3) {
         tournamentState.pool.mods.push({ id: crypto.randomUUID(), split: "", modR5: "", mod1: "", mod2: "", mod3: "" });
       }
-      const payoutSplitRows = tournamentState.pool.mods;
-      const payoutSplitValues = payoutSplitRows.map((row, idx) => idx < 3 ? percentInputToDecimal(getPoolSplitValueForCalculation(row.split, idx)) : toNumber(row.split));
-      const payoutSumFrom4th = payoutSplitValues.slice(3).reduce((sum, value) => sum + value, 0);
-      const payoutTable15Split = table11.pot - payoutSumFrom4th;
-      const payoutMatrix = buildPoolRebuyMatrix(payoutSplitRows, adjustedRebuyValues, tournamentState.pool.rebuyCells);
-      const payoutDefaults = payoutSplitRows.map((row, idx) => {
-        const amount = idx < 3 ? (payoutSplitValues[idx] || 0) * payoutTable15Split : payoutSplitValues[idx] || 0;
-        const rebuySumRow = payoutMatrix[idx].reduce((sum, value) => sum + toNumber(value), 0);
-        return {
-          amount: String(formatCellNumber(amount)),
-          total: String(formatCellNumber(amount + rebuySumRow + getPoolModSum(row)))
-        };
+      const { rowSums: payoutRowSums } = computePoolTable16({
+        rows: tournamentState.pool.mods,
+        buyIn: table11.buyIn,
+        rebuyColumnValues: adjustedRebuyValues,
+        rebuyCells: tournamentState.pool.rebuyCells
       });
+      const payoutDefaults = getPayoutDefaultsFromTable16(payoutRowSums);
       const initialHeader = tournamentState.payouts.showInitial ? "<th>POCZĄTKOWA WYGRANA</th>" : "";
       const finalHeader = tournamentState.payouts.showFinal ? "<th>KOŃCOWA WYGRANA</th>" : "";
       const payoutRowsState = buildPlacementRowsFromQueues({
@@ -2518,17 +2531,6 @@ const setupUserView = (root) => {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
-  const percentInputToDecimal = (value) => {
-    const normalized = String(value ?? "").replace(",", ".").trim();
-    if (!normalized) return 0;
-    if (/^\d+(\.\d+)?$/.test(normalized) && normalized.includes(".")) {
-      const parsedLegacy = Number(normalized);
-      if (Number.isFinite(parsedLegacy) && parsedLegacy <= 1) {
-        return parsedLegacy;
-      }
-    }
-    return toDigitsNumber(normalized) / 100;
-  };
   const toNumber = (value) => {
     const normalized = String(value ?? "").replace(",", ".").trim();
     if (!normalized) return 0;
@@ -2715,6 +2717,9 @@ const setupUserView = (root) => {
 
   const updateProtectedTabsVisibility = () => {
     const isVerified = userTournamentSession.isVerified;
+    /* Wszystkie zakładki gracza (Aktualności, Regulamin, Tournament of Poker)
+       wymagają PIN-u — bez niego widać wyłącznie bramkę PIN. */
+    root.classList.toggle("is-pin-locked", !isVerified);
 
     if (userPinGate) {
       userPinGate.classList.toggle("is-hidden", isVerified);
@@ -2852,6 +2857,13 @@ const setupUserView = (root) => {
         dataMount.innerHTML = `<div class="admin-table-scroll"><table ${tAttr(["xs", "tmd", "tsm", "tsm"], "t-fluid")}>${tCols(["xs", "tmd", "tsm", "tsm"], "t-fluid")}<thead><tr><th>LP</th><th>Gracz</th><th>Status wpłaty</th><th>Stół</th></tr></thead><tbody>${drawRowsMarkup || '<tr><td colspan="4">Brak przypisań.</td></tr>'}</tbody></table></div><div class="semi-tables">${drawPerTableMarkup || "<p>Brak stołów.</p>"}</div>`;
         return;
       }
+
+      /* Wiersze i baza Tabeli16 w widoku gracza — wspólne dla „Podziału puli”
+         i „Wypłat”, żeby obie zakładki pokazywały te same KWOTA i SUMA. */
+      const getUserPoolRows = () => (Array.isArray(readonlyTournamentState.pool?.mods)
+        ? readonlyTournamentState.pool.mods.filter((row) => row && typeof row === "object")
+        : []);
+      const getUserPoolBuyIn = (userTable11) => toNumber(readonlyTournamentState.payments?.table11?.buyIn) || userTable11.buyIn;
 
       const buildUserBaseViewModel = () => {
         const safeUserPlayers = Array.isArray(readonlyTournamentState.players)
@@ -3079,19 +3091,16 @@ const setupUserView = (root) => {
       if (userTournamentSection === "pool") {
         try {
           const { userAllRebuyValues, userAdjustedRebuyValues, userTable10, userTable11 } = buildUserBaseViewModel();
-          const splitRows = Array.isArray(readonlyTournamentState.pool?.mods) ? readonlyTournamentState.pool.mods.filter((row) => row && typeof row === "object") : [];
-          const splitValues = splitRows.map((row, idx) => idx < 3 ? percentInputToDecimal(getPoolSplitValueForCalculation(row.split, idx)) : toNumber(row.split));
-          const sumFrom4th = splitValues.slice(3).reduce((sum, value) => sum + value, 0);
-          const table15BuyIn = toNumber(readonlyTournamentState.payments?.table11?.buyIn) || userTable11.buyIn;
-          const table15Split = table15BuyIn - sumFrom4th;
+          const splitRows = getUserPoolRows();
+          const table15BuyIn = getUserPoolBuyIn(userTable11);
           const rebuyColumns = userAllRebuyValues.length;
-          const rebuyMatrix = buildPoolRebuyMatrix(splitRows, userAdjustedRebuyValues, readonlyTournamentState.pool?.rebuyCells);
-          const table16Columns = getPoolTable16Columns(rebuyColumns);
-          const rowSums = splitRows.map((row, idx) => {
-            const amount = idx < 3 ? (splitValues[idx] || 0) * table15Split : splitValues[idx] || 0;
-            const rebuySum = rebuyMatrix[idx].reduce((sum, value) => sum + toNumber(value), 0);
-            return { amount, total: amount + rebuySum + getPoolModSum(row) };
+          const { table15Split, matrix: rebuyMatrix, rowSums } = computePoolTable16({
+            rows: splitRows,
+            buyIn: table15BuyIn,
+            rebuyColumnValues: userAdjustedRebuyValues,
+            rebuyCells: readonlyTournamentState.pool?.rebuyCells
           });
+          const table16Columns = getPoolTable16Columns(rebuyColumns);
           const renderTable16Header = () => ["<th>LP</th>", "<th>PODZIAŁ</th>", "<th>WYGRANA</th>"]
             .concat(table16Columns.map((column) => (column.type === "rebuy" ? `<th data-rebuy-column>R${column.colIdx + 1}</th>` : `<th>${column.label}</th>`)))
             .concat("<th>SUMA</th>")
@@ -3153,20 +3162,17 @@ const setupUserView = (root) => {
 
       if (userTournamentSection === "payouts") {
         try {
-          const { safeUserPlayers, userAllRebuyValues, userAdjustedRebuyValues } = buildAdvancedViewModel();
+          const { safeUserPlayers, userAdjustedRebuyValues } = buildAdvancedViewModel();
           const showInitial = !!readonlyTournamentState.payouts?.showInitial;
           const showFinal = !!readonlyTournamentState.payouts?.showFinal;
-          const splitRows = Array.isArray(readonlyTournamentState.pool?.mods) ? readonlyTournamentState.pool.mods.filter((row) => row && typeof row === "object") : [];
-          const splitValues = splitRows.map((row, idx) => idx < 3 ? percentInputToDecimal(getPoolSplitValueForCalculation(row.split, idx)) : toNumber(row.split));
-          const sumFrom4th = splitValues.slice(3).reduce((sum, value) => sum + value, 0);
-          const rebuyMatrix = buildPoolRebuyMatrix(splitRows, userAdjustedRebuyValues, readonlyTournamentState.pool?.rebuyCells);
-          const buyInValue = toNumber(readonlyTournamentState.payments?.table11?.buyIn);
-          const table15Split = buyInValue - sumFrom4th;
-          const payoutDefaults = splitRows.map((row, idx) => {
-            const amount = idx < 3 ? (splitValues[idx] || 0) * table15Split : splitValues[idx] || 0;
-            const rebuySumRow = rebuyMatrix[idx].reduce((sum, value) => sum + toNumber(value), 0);
-            return { amount, total: amount + rebuySumRow + getPoolModSum(row) };
+          const { userTable11 } = buildUserBaseViewModel();
+          const { rowSums: payoutRowSums } = computePoolTable16({
+            rows: getUserPoolRows(),
+            buyIn: getUserPoolBuyIn(userTable11),
+            rebuyColumnValues: userAdjustedRebuyValues,
+            rebuyCells: readonlyTournamentState.pool?.rebuyCells
           });
+          const payoutDefaults = getPayoutDefaultsFromTable16(payoutRowSums);
           const userGroupRowsQueue = syncOrderedPlayerIds(
             readonlyTournamentState.group?.eliminatedOrder,
             (readonlyTournamentState.players || []).filter((player) => readonlyTournamentState.group?.eliminated?.[player.id]).map((player) => ({ playerId: player.id, playerName: player.name || "-" }))
@@ -3243,7 +3249,7 @@ const setupUserView = (root) => {
       if (button.dataset.requiresPlayerPin === "true" && !getSecondUserPinGateState()) {
         setActiveUserTab("updatesTab");
         if (userPinStatus) {
-          userPinStatus.textContent = "Najpierw wpisz PIN gracza, aby odblokować dodatkowe zakładki.";
+          userPinStatus.textContent = "Najpierw wpisz PIN gracza, aby odblokować zakładki.";
         }
         return;
       }
@@ -3293,6 +3299,7 @@ const setupUserView = (root) => {
     setSecondUserPinGateState(true);
     setSecondUserVerifiedPlayerId(matchedPlayer.id);
     applyUserTournamentSession(matchedPlayer);
+    setActiveUserTab("updatesTab");
     if (userPinStatus) {
       userPinStatus.textContent = `PIN poprawny. Witaj ${matchedPlayer.name || "graczu"}.`;
     }
@@ -3424,7 +3431,7 @@ const setupUserView = (root) => {
         setSecondUserVerifiedPlayerId("");
         applyUserTournamentSession(null);
         if (userPinStatus) {
-          userPinStatus.textContent = "Wpisz PIN gracza, aby odblokować dodatkowe zakładki.";
+          userPinStatus.textContent = "Wpisz PIN gracza, aby odblokować zakładki.";
         }
       } else {
         applyUserTournamentSession(verifiedUserPlayer, { preserveSection: true });
@@ -3449,7 +3456,7 @@ const setupUserView = (root) => {
     const verifiedPlayer = getVerifiedUserPlayer();
     userPinStatus.textContent = `PIN poprawny. Witaj ${verifiedPlayer?.name || "graczu"}.`;
   } else if (userPinStatus) {
-    userPinStatus.textContent = "Wpisz PIN gracza, aby odblokować dodatkowe zakładki.";
+    userPinStatus.textContent = "Wpisz PIN gracza, aby odblokować zakładki.";
   }
   updateProtectedTabsVisibility();
 };

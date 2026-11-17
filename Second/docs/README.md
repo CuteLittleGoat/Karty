@@ -138,8 +138,9 @@
   - potem od końca gracze z `Tabela22A`,
   - potem od końca gracze z `Tabela23A`.
 - Kolumny wygranych są tylko do odczytu.
-  - `POCZĄTKOWA WYGRANA` pobiera `KWOTA` z tego samego miejsca w `Tabela16`,
-  - `KOŃCOWA WYGRANA` pobiera `SUMA` z tego samego miejsca w `Tabela16`,
+  - `POCZĄTKOWA WYGRANA` pokazuje dokładnie tę samą liczbę co `KWOTA` w tym samym wierszu `Tabela16` (1. miejsce = 1. wiersz, 2. miejsce = 2. wiersz itd.),
+  - `KOŃCOWA WYGRANA` pokazuje dokładnie tę samą liczbę co `SUMA` w tym samym wierszu `Tabela16`,
+  - jeśli zmienisz coś w `Podział puli` (procent podziału, korektę REBUY, MOD), te same zmiany od razu widać w `Wypłatach`,
   - jeśli w `Tabela24` jest więcej miejsc niż wierszy w `Tabela16`, dalsze miejsca pokazują `0`.
 
 
@@ -148,10 +149,11 @@
 1. Otwórz widok użytkownika `Second/index.html` (bez `?admin=1`).
 2. W prawym górnym rogu znajdziesz ikonę `Pliki/Ikona.png` i czerwony przycisk **Nie wciskać** (ikona jest po lewej stronie przycisku).
 3. Zewnętrzna zielona ramka panelu użytkownika ma po 1 px odstępu od lewej i prawej krawędzi ekranu oraz 1 px grubości na bocznych krawędziach.
-4. Bez wpisania PIN dostępne są tylko zakładki **Aktualności** i **Regulamin**.
+4. Bez wpisania PIN nie widać żadnej zakładki — na stronie jest tylko tytuł, przycisk **Nie wciskać** i okienko **Wpisz PIN gracza, aby zobaczyć Aktualności, Regulamin i Tournament of Poker.** Nie ma też przycisku **Odśwież**.
 5. W górnej bramce PIN wpisz 5 cyfr przypisanych do gracza i kliknij **Otwórz**.
 5a. Jeżeli dane turnieju są jeszcze pobierane, przycisk **Otwórz** jest tymczasowo zablokowany, a pod polem PIN zobaczysz komunikat `Trwa ładowanie danych turnieju...`.
-6. Po poprawnym PIN aplikacja odblokuje zakładkę **TOURNAMENT OF POKER** do czasu resetu/odświeżenia strony.
+6. Po poprawnym PIN pojawiają się zakładki **Aktualności**, **Regulamin** i **TOURNAMENT OF POKER** oraz przycisk **Odśwież**, a od razu otwiera się zakładka **Aktualności**. Wystarczy PIN dowolnego gracza z listy. Odblokowanie trwa do zamknięcia karty przeglądarki — zwykłe odświeżenie strony nie wymaga ponownego wpisywania PIN-u.
+6a. Błędny PIN pokazuje komunikat **Błędny PIN.** i nie odblokowuje niczego.
 7. Kliknij zakładkę **TOURNAMENT OF POKER**.
 8. W lewym panelu zobaczysz tylko te przyciski sekcji, do których administrator nadał uprawnienia dla tego gracza; bez żadnego uprawnienia sidebar pozostanie pusty.
 9. Jeżeli administrator nie nadał żadnego uprawnienia turniejowego, panel boczny nie pokaże przycisków nawigacji i pojawi się komunikat `TOP-NO-PERMISSION` z instrukcją, aby admin przypisał uprawnienia i zapisał turniej.
@@ -168,7 +170,7 @@
 10h. Jeżeli sesja PIN dopiero się inicjalizuje, zobaczysz komunikat `TOP-SESSION-NOT-READY` (krótki stan przejściowy). Komunikat `TOP-NO-PANELS` pojawia się dopiero po pełnym zbudowaniu sesji.
 10i. Po tej poprawce przełączanie sekcji `Losowanie stołów` / `Wpłaty` nie powinno już zostawiać komunikatu `TOP-NO-PANELS` dla poprawnego PIN-u z uprawnieniami; sekcja jest nadpisywana bieżącym renderem danych readonly.
 11. Kliknij **Odśwież** w prawym górnym rogu panelu użytkownika, aby wymusić pobranie najnowszego stanu turnieju z serwera.
-12. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; gdy administrator nie doda jeszcze kwot, w komórkach widoczny jest znak `—`.
+12. Zakładka **Wypłaty** pokazuje tabelę miejsc i wygranych zsynchronizowaną z danymi turnieju; miejsca, dla których nie ma wiersza w `Tabela16`, mają wartość `0`.
 13. Sekcje `Losowanie stołów`, `Wpłaty`, `Podział puli`, `Faza grupowa`, `Półfinał`, `Finał` i `Wypłaty` pokazują pełny podgląd danych turniejowych w trybie tylko do odczytu.
 13a. W sekcji `Losowanie stołów` użytkownik widzi zarówno tabelę przypisań graczy (`LP`, `Gracz`, `Status wpłaty`, `Stół`), jak i karty wszystkich stołów (`NAZWA`, `ŁĄCZNA SUMA`, lista `LP` / `GRACZ` / `BUY-IN`) jako kopię danych z panelu admina.
 13b. W module nie ma czatu — w panelu bocznym `TOURNAMENT OF POKER` nie ma przycisku `Czat`.
@@ -261,9 +263,10 @@
 
 
 ## Odblokowanie dostępu PIN-em (widok użytkownika)
-1. Po wejściu do widoku użytkownika najpierw wpisz PIN w górnej bramce nad zakładkami.
-2. Bez tego kroku dostępne są wyłącznie **Aktualności** i **Regulamin**.
-3. Po poprawnej weryfikacji odblokuje się zakładka **TOURNAMENT OF POKER**; ten stan jest pamiętany do czasu resetu lub odświeżenia strony.
+1. Po wejściu do widoku użytkownika wpisz 5-cyfrowy PIN gracza w okienku i kliknij **Otwórz** (albo naciśnij Enter).
+2. Bez tego kroku nie widać żadnej zakładki — także **Aktualności** i **Regulamin** są ukryte.
+3. Po poprawnej weryfikacji pojawiają się zakładki **Aktualności**, **Regulamin** i **TOURNAMENT OF POKER**, a otwiera się **Aktualności**; ten stan jest pamiętany do zamknięcia karty przeglądarki.
+4. Administrator w panelu `?admin=1` widzi pod panelem podgląd widoku gracza — on także zaczyna od okienka PIN.
 
 ### PIN użytkownika i spójność Wpłat
 1. W widoku użytkownika po wpisaniu poprawnego PIN i kliknięciu **Otwórz** sekcja turniejowa odświeża się natychmiast (bez potrzeby przełączania zakładek).
