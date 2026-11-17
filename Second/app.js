@@ -702,7 +702,7 @@ const createTournamentDefaultState = () => ({
   },
   pool: {
     splits: [{ id: crypto.randomUUID(), split: "" }],
-    mods: [{ id: crypto.randomUUID(), modR5: "", mod1: "", mod2: "", mod3: "" }],
+    mods: [createPoolModRow()],
     rebuyCells: {}
   },
   group: {
@@ -758,19 +758,21 @@ const normalizeTournamentState = (value) => {
   }
   if (!Array.isArray(state.pool?.mods) || !state.pool.mods.length) {
     state.pool = state.pool || {};
-    state.pool.mods = [{ id: crypto.randomUUID(), modR5: "", mod1: "", mod2: "", mod3: "" }];
+    state.pool.mods = [createPoolModRow()];
   }
   state.pool.mods = state.pool.mods.map((row) => {
     if (row && typeof row === "object") {
+      /* Klucze dawnego układu kolumn MOD (`mod`, `mod1`–`mod3`, `modR5`) są
+         odrzucane — ich wartości nie są już wyświetlane ani liczone, a przy
+         najbliższym zapisie turnieju znikają z bazy (pool.mods zapisuje się
+         w całości). */
+      const { mod, mod1, mod2, mod3, modR5, ...rest } = row;
       return {
-        ...row,
-        modR5: row.modR5 ?? "",
-        mod1: row.mod1 ?? row.mod ?? "",
-        mod2: row.mod2 ?? "",
-        mod3: row.mod3 ?? ""
+        ...rest,
+        ...Object.fromEntries(POOL_MOD_KEYS.map((key) => [key, rest[key] ?? ""]))
       };
     }
-    return { id: crypto.randomUUID(), split: "", modR5: "", mod1: "", mod2: "", mod3: "" };
+    return createPoolModRow();
   });
   state.group = state.group || {};
   state.group.playerStacks = state.group.playerStacks || {};
@@ -929,7 +931,23 @@ const POOL_REBUY_ROW_MAPPING = [
   1, 2, 3, 4, 5, 6, 7, 8
 ];
 const POOL_AUTO_REBUY_COLUMNS = POOL_REBUY_ROW_MAPPING.length;
-const POOL_MOD_KEYS = ["modR5", "mod1", "mod2", "mod3"];
+/* Kolumny MOD Tabeli16 mają stałe miejsca i nazwy: MOD1 za REBUY4, MOD2 za
+   REBUY9, MOD3 za REBUY15, MOD4 za REBUY22, MOD5 za REBUY30 (granice grup
+   POOL_REBUY_ROW_MAPPING) oraz MOD6 zawsze przed SUMA. */
+const POOL_MOD_SLOTS = [
+  { key: "modAfterR4", label: "MOD1", afterColumn: 4 },
+  { key: "modAfterR9", label: "MOD2", afterColumn: 9 },
+  { key: "modAfterR15", label: "MOD3", afterColumn: 15 },
+  { key: "modAfterR22", label: "MOD4", afterColumn: 22 },
+  { key: "modAfterR30", label: "MOD5", afterColumn: 30 },
+  { key: "modEnd", label: "MOD6", afterColumn: null }
+];
+const POOL_MOD_KEYS = POOL_MOD_SLOTS.map((slot) => slot.key);
+const createPoolModRow = () => ({
+  id: crypto.randomUUID(),
+  split: "",
+  ...Object.fromEntries(POOL_MOD_KEYS.map((key) => [key, ""]))
+});
 
 const parsePoolNumber = (value) => {
   const parsed = Number(String(value ?? "").replace(",", ".").trim());
@@ -985,30 +1003,27 @@ const getPoolRebuyCorrectionMismatches = (rows, columnValues, rebuyCells, matrix
   return mismatches;
 };
 
-/* Układ kolumn MOD: za REBUY5 (gdy rebuy > 5), za REBUY12 (gdy > 12),
-   za REBUY20 (gdy > 20) oraz zawsze jedna przed SUMA. Zwraca kolejność komórek
-   za kolumną KWOTA; MOD-y są numerowane od lewej (MOD1, MOD2, …). */
+/* Kolejność komórek Tabeli16 za kolumną KWOTA: REBUYn i MOD. Kolumna MOD
+   pojawia się dopiero wtedy, gdy istnieje kolumna REBUY, za którą stoi
+   (np. MOD2 od 9 rebuy); MOD6 jest zawsze przed SUMA. */
 const getPoolTable16Columns = (rebuyColumns) => {
-  const inline = [];
-  if (rebuyColumns > 5) inline.push({ afterColumn: 5, key: "modR5" });
-  if (rebuyColumns > 12) inline.push({ afterColumn: 12, key: "mod1" });
-  if (rebuyColumns > 20) inline.push({ afterColumn: 20, key: "mod2" });
-  const trailingKey = rebuyColumns > 20 ? "mod3" : rebuyColumns > 12 ? "mod2" : "mod1";
   const columns = [];
-  let modNumber = 0;
   for (let colIdx = 0; colIdx < rebuyColumns; colIdx += 1) {
     columns.push({ type: "rebuy", colIdx });
-    inline.filter((entry) => entry.afterColumn === colIdx + 1).forEach((entry) => {
-      modNumber += 1;
-      columns.push({ type: "mod", key: entry.key, label: `MOD${modNumber}` });
+    POOL_MOD_SLOTS.filter((slot) => slot.afterColumn === colIdx + 1).forEach((slot) => {
+      columns.push({ type: "mod", key: slot.key, label: slot.label });
     });
   }
-  modNumber += 1;
-  columns.push({ type: "mod", key: trailingKey, label: `MOD${modNumber}` });
+  const endSlot = POOL_MOD_SLOTS.find((slot) => slot.afterColumn === null);
+  columns.push({ type: "mod", key: endSlot.key, label: endSlot.label });
   return columns;
 };
 
-const getPoolModSum = (row) => POOL_MOD_KEYS.reduce((sum, key) => sum + parsePoolNumber(row?.[key]), 0);
+/* Suma MOD-ów wiersza — wyłącznie kolumn widocznych przy danej liczbie
+   rebuy, żeby SUMA zawsze wynikała z tego, co widać w tabeli. */
+const getPoolModSum = (row, rebuyColumns) => getPoolTable16Columns(rebuyColumns)
+  .filter((column) => column.type === "mod")
+  .reduce((sum, column) => sum + parsePoolNumber(row?.[column.key]), 0);
 
 /* Jedno źródło wyliczeń Tabeli16 dla „Podziału puli” i „Wypłat” (panel admina
    i widok gracza). `buyIn` = Tabela14.BUY-IN (po potrąceniu rake).
@@ -1023,7 +1038,7 @@ const computePoolTable16 = ({ rows, buyIn, rebuyColumnValues, rebuyCells }) => {
   const rowSums = rows.map((row, idx) => {
     const amount = idx < 3 ? (splitValues[idx] || 0) * table15Split : splitValues[idx] || 0;
     const rebuySum = matrix[idx].reduce((sum, value) => sum + parsePoolNumber(value), 0);
-    return { amount, total: amount + rebuySum + getPoolModSum(row) };
+    return { amount, total: amount + rebuySum + getPoolModSum(row, rebuyColumnValues.length) };
   });
   return { splitValues, sumFrom4th, table15Split, matrix, rowSums };
 };
@@ -2070,7 +2085,7 @@ const setupAdminTournament = (rootCard) => {
     if (activeSection === "pool") {
       tournamentState.pool.mods = Array.isArray(tournamentState.pool.mods) ? tournamentState.pool.mods : [];
       while (tournamentState.pool.mods.length < 3) {
-        tournamentState.pool.mods.push({ id: crypto.randomUUID(), split: "", modR5: "", mod1: "", mod2: "", mod3: "" });
+        tournamentState.pool.mods.push(createPoolModRow());
       }
       const splitRows = tournamentState.pool.mods;
       const table15BuyIn = table11.buyIn;
@@ -2148,7 +2163,7 @@ const setupAdminTournament = (rootCard) => {
     if (activeSection === "payouts") {
       tournamentState.pool.mods = Array.isArray(tournamentState.pool.mods) ? tournamentState.pool.mods : [];
       while (tournamentState.pool.mods.length < 3) {
-        tournamentState.pool.mods.push({ id: crypto.randomUUID(), split: "", modR5: "", mod1: "", mod2: "", mod3: "" });
+        tournamentState.pool.mods.push(createPoolModRow());
       }
       const { rowSums: payoutRowSums } = computePoolTable16({
         rows: tournamentState.pool.mods,
@@ -2241,7 +2256,7 @@ const setupAdminTournament = (rootCard) => {
     }
     if (role === "pool-split") tournamentState.pool.mods = tournamentState.pool.mods.map((row) => row.id === target.dataset.id ? { ...row, split: target.value } : row);
     if (role === "pool-mod") {
-      const modKey = target.dataset.modKey || "mod1";
+      const modKey = POOL_MOD_KEYS.includes(target.dataset.modKey) ? target.dataset.modKey : "modEnd";
       tournamentState.pool.mods = tournamentState.pool.mods.map((row) => row.id === target.dataset.id ? { ...row, [modKey]: target.value } : row);
     }
     if (role === "pool-rebuy-value") {
@@ -2457,7 +2472,7 @@ const setupAdminTournament = (rootCard) => {
       openTable12RebuyModal(target.dataset.playerId || "");
       return;
     }
-    if (role === "add-pool-mod-row") tournamentState.pool.mods.push({ id: crypto.randomUUID(), split: "", modR5: "", mod1: "", mod2: "", mod3: "" });
+    if (role === "add-pool-mod-row") tournamentState.pool.mods.push(createPoolModRow());
     if (role === "remove-pool-mod-row" && tournamentState.pool.mods.length > 1) tournamentState.pool.mods = tournamentState.pool.mods.slice(0, -1);
     if (role === "add-semi-table") tournamentState.semi.customTables.push({ id: crypto.randomUUID(), name: `Stół${tournamentState.semi.customTables.length + 1}` });
     if (role === "remove-semi-table") {

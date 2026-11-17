@@ -82,7 +82,7 @@
 - W panelu `Podział puli` (Second) tabela `Tabela16` renderuje dynamiczną liczbę kolumn `REBUY` (równą liczbie uzupełnionych pól `Rebuy` w modalach graczy). Wszystkie komórki `REBUY` są edytowalnymi polami `.admin-input` (korekta rebuy), a pola `MOD` przyjmują liczby ujemne.
 - Ostrzeżenie o niezgodnej sumie po korekcie REBUY (`REBUYn: rozdzielono X z Y`) to `.builder-info.t-warning` (czerwony tekst) pod `Tabela16`, nad przyciskami `Dodaj`/`Usuń`; kilka kolumn = kilka linii oddzielonych `<br>`.
 - `Tabela16` (`.tournament-pool-table16`) buduje `<colgroup>` z tej samej pętli co nagłówki, więc liczba kolumn `REBUY` i `MOD` nie rozjeżdża szerokości; pola `.admin-input` wypełniają komórkę.
-- Pozycjonowanie kolumn `MOD` w `Tabela16` jest dynamiczne: za `REBUY5` (gdy rebuy > 5), za `REBUY12` (gdy > 12), za `REBUY20` (gdy > 20) i zawsze jedna przed `SUMA`; etykiety `MOD1..MODn` numerowane od lewej.
+- Kolumny `MOD` w `Tabela16` mają stałe nazwy i miejsca: `MOD1` za `REBUY4`, `MOD2` za `REBUY9`, `MOD3` za `REBUY15`, `MOD4` za `REBUY22`, `MOD5` za `REBUY30`, `MOD6` przed `SUMA`; `MOD1`–`MOD5` są renderowane dopiero, gdy istnieje kolumna `REBUY`, za którą stoją. Wygląd komórek MOD bez zmian (`.admin-input`, token `--col-num-sm`).
 - W obu modułach (`Main`, `Second`) kontener `.player-zone-layout` rozszerza sekcję z ciemno-zielonymi panelami na pełną szerokość wnętrza karty (1 px luzu od lewej i prawej krawędzi zewnętrznej ramki).
 - Przyciski nawigacyjne sekcji `Strefa Gracza` (`.player-zone-button`) skalują font przez `clamp(11px, 1.1vw, 14px)`, więc pozostają czytelne także na tablecie.
 

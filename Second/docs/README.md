@@ -234,8 +234,9 @@
    - **korekta rebuy** — każdą komórkę `REBUY` możesz zmienić bez żadnych przycisków: kliknij w komórkę i popraw liczbę. Przykład: aby przenieść `REBUY1` z miejsca 1 na miejsce 2, kliknij komórkę `REBUY1` w wierszu 1 i skasuj liczbę (albo wpisz `0`) — `SUMA` w wierszu 1 zmaleje o tę kwotę; potem kliknij `REBUY1` w wierszu 2 i wpisz tę samą liczbę — `SUMA` w wierszu 2 wzrośnie,
    - jeśli po korekcie suma w kolumnie nie zgadza się z wartością rebuy (np. skasowałeś u jednego miejsca, a nie dopisałeś nikomu), pod tabelą pojawi się czerwony napis, np. `REBUY1: rozdzielono 0 z 90`; napis znika, gdy całą kwotę rozdzielisz,
    - kolumny `MOD` służą do ręcznej korekty wygranej i przyjmują także liczby ujemne (np. `-100` zmniejsza `SUMA` o 100) — również na telefonie, bo to pole otwiera pełną klawiaturę z minusem,
-   - układ kolumn `MOD`: jedna za `REBUY5` (gdy rebuy jest więcej niż 5), jedna za `REBUY12` (gdy więcej niż 12), jedna za `REBUY20` (gdy więcej niż 20) i zawsze jedna na końcu przed `SUMA`; numerowane są od lewej `MOD1`, `MOD2`, …,
-   - kolumna `SUMA` liczy się automatycznie: `KWOTA` + wszystkie `REBUY` w wierszu + wszystkie `MOD` w wierszu,
+   - układ kolumn `MOD` jest stały: `MOD1` za `REBUY4`, `MOD2` za `REBUY9`, `MOD3` za `REBUY15`, `MOD4` za `REBUY22`, `MOD5` za `REBUY30` i `MOD6` zawsze tuż przed `SUMA`,
+   - kolumna `MOD1`–`MOD5` pojawia się dopiero wtedy, gdy jest już kolumna `REBUY`, za którą stoi — np. przy 7 rebuy widać `REBUY1–4 | MOD1 | REBUY5–7 | MOD6 | SUMA`, a `MOD2` dojdzie, gdy będzie 9 rebuy,
+   - kolumna `SUMA` liczy się automatycznie: `KWOTA` + wszystkie `REBUY` w wierszu + wszystkie widoczne `MOD` w wierszu; liczba wpisana w kolumnę `MOD`, która zniknie (bo usunięto rebuy), przestaje się liczyć do `SUMA`, ale wróci, gdy kolumna znów się pojawi,
    - sumowanie wartości REBUY działa przez zagnieżdżone `reduce`, co utrzymuje poprawne renderowanie także w starszych WebView/przeglądarkach bez `Array.prototype.flat`.
    - wszystkie pola edycyjne w `Tabela16` mają szerokość ustawioną tak, żeby mieściły 4 znaki,
    - korekty `REBUY` i `MOD` są widoczne też u graczy (zakładka **Podział puli** po PIN-ie) i w kolumnie **KOŃCOWA WYGRANA** zakładki **Wypłaty**.

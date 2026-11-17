@@ -108,7 +108,7 @@ Dodatkowo dla każdego stołu:
 - Tabela13: BUY-IN, REBUY/ADD-ON, SUMA, LICZBA REBUY
 - Tabela14: %, Rake, BUY-IN, REBUY/ADD-ON, POT
 - Tabela15: BUY-IN, PODZIAŁ
-- Tabela16: LP, PODZIAŁ PULI, KWOTA, REBUY1..n z wplecionymi kolumnami MOD (za REBUY5, REBUY12, REBUY20) i jedną MOD przed SUMA, SUMA
+- Tabela16: LP, PODZIAŁ PULI, KWOTA, REBUY1..n z wplecionymi kolumnami MOD1 (za REBUY4), MOD2 (za REBUY9), MOD3 (za REBUY15), MOD4 (za REBUY22), MOD5 (za REBUY30), MOD6 (przed SUMA), SUMA
 
 ### Faza grupowa
 - Tabela17: STACK GRACZA, REBUY/ADD-on(w żetonach na os)
@@ -189,7 +189,7 @@ Tabela statystyk w zakładce **Gry admina** ma osobny układ (bez `Lp.`, z nagł
   - liczba kolumn `REBUY` jest dynamiczna i zależy od liczby uzupełnionych pól `Rebuy` w modalach `Rebuy gracza`,
   - `REBUY1..REBUY30` mają domyślne przypisanie do wierszy (wartość z modali `Rebuy gracza` po potrąceniu rake), ale każdą komórkę `REBUY` można ręcznie poprawić (korekta rebuy),
   - kolumny od `REBUY31` wzwyż są puste domyślnie i edytowalne ręcznie przez użytkownika,
-  - kolumny `MOD`: za `REBUY5` (gdy rebuy > 5), za `REBUY12` (gdy > 12), za `REBUY20` (gdy > 20) oraz zawsze jedna przed `SUMA`; etykiety `MOD1..MODn` od lewej. Przykład dla 14 rebuy: `REBUY1..5 | MOD1 | REBUY6..12 | MOD2 | REBUY13..14 | MOD3 | SUMA`.
+  - kolumny `MOD` mają stałe nazwy i miejsca: `MOD1` za `REBUY4`, `MOD2` za `REBUY9`, `MOD3` za `REBUY15`, `MOD4` za `REBUY22`, `MOD5` za `REBUY30`, `MOD6` zawsze przed `SUMA`; `MOD1`–`MOD5` pojawiają się dopiero, gdy istnieje kolumna `REBUY`, za którą stoją. Przykład dla 14 rebuy: `REBUY1..4 | MOD1 | REBUY5..9 | MOD2 | REBUY10..14 | MOD6 | SUMA`.
 - Panel `Faza grupowa`:
   - `Tabela17` tylko 2 kolumny: `STACK GRACZA`, `REBUY/ADD-ON`.
   - `Tabela19` ma kolumny `LP`, `STÓŁ`, `GRACZ`, `ELIMINATED`, `STACK`, `REBUY/ADD-ON`.

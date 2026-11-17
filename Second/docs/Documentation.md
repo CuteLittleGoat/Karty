@@ -47,7 +47,7 @@ Warstwa prezentacji tabel opiera się na skali tokenów w `Second/styles.css`; p
 
 ## Nagłówek i przycisk instrukcji
 - Nagłówek modułu (`.header-intro`) zawiera wyłącznie tytuł `<h1>Tournament of Poker</h1>` — bez podtytułu; arkusz nie definiuje klasy `.eyebrow`. Tytuł karty przeglądarki brzmi `Tournament of Poker - Panel i Widok Użytkownika`.
-- `Second/index.html` ładuje `styles.css?v=2026-11-17.1` i `app.js?v=2026-11-17.1` (parametr wersji wymusza pobranie nowej wersji zamiast kopii z pamięci przeglądarki; moduł nie ma Service Workera).
+- `Second/index.html` ładuje `styles.css?v=2026-11-17.2` i `app.js?v=2026-11-17.2` (parametr wersji wymusza pobranie nowej wersji zamiast kopii z pamięci przeglądarki; moduł nie ma Service Workera).
 - W `Second/index.html` sekcja `.header-controls` zawiera ikonę `<img class="header-icon" src="../Pliki/Ikona.png">` oraz przycisk `#secondInstructionButton` w tej samej linii.
 - Ikona i układ są celowo spójne z modułem Main (ta sama grafika i ten sam wzorzec pozycjonowania: ikona po lewej, przycisk po prawej).
 - Styl `.header-icon` w `Second/styles.css` używa `width: min(110px, 100%)` oraz `height: auto`, a `.header-controls` pracuje w układzie poziomym (`display: flex; align-items: center; justify-content: flex-end`).
@@ -266,7 +266,7 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 ### Kluczowe rozszerzenia stanu
 - `payments.table12Rebuys` – przechowuje per-gracz listę rebuy jako `values[]` oraz globalne indeksy kolumn `indexes[]`.
 - `pool.rebuyCells` – ręczne wartości komórek REBUY w `Tabela16`: `{ [idWiersza]: { [indeksKolumny]: "tekst" | null } }`. `null` oznacza wpis skasowany (zapis `set(..., { merge: true })` nie usuwa kluczy mapy, więc usunięcie zapisuje się jako `null`). Przy pierwszym odczycie stanu bez tego pola `normalizeTournamentState` przejmuje z dawnego `pool.rebuyValues` wyłącznie kolumny `REBUY31+` — wpisy z kolumn 1–30 nie były nigdy wyświetlane ani liczone.
-- `pool.mods[]` – wiersze `Tabela16`: `id`, `split`, `modR5`, `mod1`, `mod2`, `mod3`.
+- `pool.mods[]` – wiersze `Tabela16`: `id`, `split` oraz sześć pól MOD `modAfterR4`, `modAfterR9`, `modAfterR15`, `modAfterR22`, `modAfterR30`, `modEnd` (`createPoolModRow()` tworzy pusty wiersz). `normalizeTournamentState` odrzuca klucze dawnego układu MOD (`mod`, `mod1`, `mod2`, `mod3`, `modR5`) — ich wartości nie są wyświetlane ani liczone, a przy najbliższym zapisie turnieju znikają z bazy, bo `pool.mods` jest tablicą zapisywaną w całości.
 - Wspólny helper `toDigitsNumber` działa na poziomie modułu i jest używany przez renderowanie wszystkich sekcji `Tournament of Poker` (m.in. sortowanie finału, wypłaty i przeliczenia liczbowe), dzięki czemu kliknięcie w przyciski sidebaru nie kończy się błędem zasięgu funkcji.
 
 ### Automatyczne przeliczenia
@@ -322,8 +322,9 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
   - `buildPoolRebuyMatrix(rows, columnValues, rebuyCells)` — macierz tekstów komórek `[wiersz][kolumna]`,
   - `isPoolRebuyColumnManual(rows, rebuyCells, colIdx)` — kolumna jest ręczna, gdy którykolwiek bieżący wiersz ma w niej wpis (`hasPoolRebuyCell`: wartość różna od `undefined` i `null`) albo gdy `colIdx >= 30`,
   - `getPoolRebuyCorrectionMismatches(rows, columnValues, rebuyCells, matrix)` — ręczne kolumny `REBUY1..REBUY30`, w których zaokrąglona suma wierszy różni się od zaokrąglonej wartości rebuy,
-  - `getPoolTable16Columns(rebuyColumns)` — kolejność komórek za `KWOTA` (REBUYn i MOD) z etykietami `MOD1..MODn`,
-  - `getPoolModSum(row)` — suma `modR5 + mod1 + mod2 + mod3` (`POOL_MOD_KEYS`),
+  - `POOL_MOD_SLOTS` — sześć kolumn MOD o stałych nazwach i miejscach (`key`, `label`, `afterColumn`), `POOL_MOD_KEYS` — lista ich kluczy,
+  - `getPoolTable16Columns(rebuyColumns)` — kolejność komórek za `KWOTA` (REBUYn i MOD),
+  - `getPoolModSum(row, rebuyColumns)` — suma pól MOD wiersza, liczona wyłącznie z kolumn MOD widocznych przy danej liczbie rebuy,
   - `computePoolTable16({ rows, buyIn, rebuyColumnValues, rebuyCells })` — jedno źródło wyliczeń `Tabela16`: zwraca `splitValues`, `sumFrom4th`, `table15Split` (= `buyIn − suma PODZIAŁ PULI od wiersza 4`), macierz REBUY i `rowSums[i] = { amount: KWOTA, total: SUMA }`; używają go `Podział puli` i `Wypłaty` w panelu admina (`buyIn = table11.buyIn`) i w widoku gracza (`buyIn = readonly payments.table11.buyIn`, a gdy brak — wyliczone `userTable11.buyIn`; helpery `getUserPoolRows()` / `getUserPoolBuyIn()`),
   - `getPayoutDefaultsFromTable16(rowSums)` — wartości `POCZĄTKOWA WYGRANA` / `KOŃCOWA WYGRANA` dla `Tabela24`,
   - `signedDigitsOnly(value)` — sanitizacja pola MOD: opcjonalny minus na początku + cyfry.
@@ -333,15 +334,21 @@ Moduł `Second` nie ma manifestu PWA ani Service Workera, więc trybu pełnoekra
 - Pod `Tabela16` (nad przyciskami `Dodaj`/`Usuń`) renderuje się ostrzeżenie `.builder-info.t-warning`, po jednej linii na kolumnę z niezgodnością: `REBUYn: rozdzielono X z Y`. Dotyczy wyłącznie kolumn `1..30`, w których dokonano korekty.
 - Komunikat `Rebuy do rozdysponowania X` (nad `Tabela16`) = suma wartości kolumn `REBUY31+` minus suma wpisów w tych kolumnach.
 - `Tabela16` używa klasy `.tournament-pool-table16`; `<colgroup>` buduje się z tej samej pętli co nagłówki (`tColsAuto`), więc zmienna liczba kolumn `REBUY` i `MOD` nie rozjeżdża szerokości. Pola `.admin-input` wypełniają komórkę.
-- Kolumny `MOD` (`getPoolTable16Columns`):
-  - za `REBUY5` — klucz `modR5`, gdy kolumn `REBUY` jest więcej niż 5,
-  - za `REBUY12` — klucz `mod1`, gdy więcej niż 12,
-  - za `REBUY20` — klucz `mod2`, gdy więcej niż 20,
-  - zawsze jedna przed `SUMA` — klucz `mod1` (≤ 12 rebuy), `mod2` (13–20) albo `mod3` (> 20).
-  Etykiety są numerowane od lewej: `MOD1`, `MOD2`, … (np. przy 14 rebuy: `MOD1` za `REBUY5`, `MOD2` za `REBUY12`, `MOD3` przed `SUMA`).
+- Kolumny `MOD` (`POOL_MOD_SLOTS`, `getPoolTable16Columns`) mają stałe nazwy i miejsca — granice grup `POOL_REBUY_ROW_MAPPING`:
+
+| Etykieta | Klucz | Miejsce | Widoczna, gdy |
+|---|---|---|---|
+| `MOD1` | `modAfterR4` | za `REBUY4` | jest co najmniej 4 rebuy |
+| `MOD2` | `modAfterR9` | za `REBUY9` | co najmniej 9 rebuy |
+| `MOD3` | `modAfterR15` | za `REBUY15` | co najmniej 15 rebuy |
+| `MOD4` | `modAfterR22` | za `REBUY22` | co najmniej 22 rebuy |
+| `MOD5` | `modAfterR30` | za `REBUY30` | co najmniej 30 rebuy |
+| `MOD6` | `modEnd` | przed `SUMA` | zawsze |
+
+  Przykład przy 7 rebuy: `REBUY1..4 | MOD1 | REBUY5..7 | MOD6 | SUMA`. Przy dokładnie 4, 9, 15, 22 lub 30 rebuy kolumna MOD stojąca za ostatnim REBUY sąsiaduje z `MOD6`.
 - Pole MOD (`data-role="pool-mod"`, `data-mod-key`) ma `type="text"` bez `inputmode`, żeby na telefonie była dostępna klawiatura z minusem; wartość jest sanitizowana przez `signedDigitsOnly` (np. `-100`).
-- `SUMA` = `KWOTA + suma komórek REBUY w wierszu + modR5 + mod1 + mod2 + mod3`.
-- Widok gracza (`pool`) używa tych samych helperów i układu kolumn (nagłówki `R1..Rn`, `MOD1..MODn`, wartości tylko do odczytu); sekcja `Wypłaty` (admin i gracz) bierze `POCZĄTKOWA WYGRANA` i `KOŃCOWA WYGRANA` z tych samych wyliczeń (`computePoolTable16`), więc korekty REBUY i MOD są w niej uwzględnione.
+- `SUMA` = `KWOTA + suma komórek REBUY w wierszu + suma widocznych kolumn MOD` (`getPoolModSum`). Wartość wpisana w kolumnę MOD, która zniknęła po usunięciu rebuy, zostaje zapisana w wierszu, ale nie wpływa na `SUMA`, dopóki kolumna znów się nie pojawi.
+- Widok gracza (`pool`) używa tych samych helperów i układu kolumn (nagłówki `R1..Rn`, `MOD1..MOD6` w tych samych miejscach, wartości tylko do odczytu); sekcja `Wypłaty` (admin i gracz) bierze `POCZĄTKOWA WYGRANA` i `KOŃCOWA WYGRANA` z tych samych wyliczeń (`computePoolTable16`), więc korekty REBUY i MOD są w niej uwzględnione.
 - Obliczanie sumy wszystkich komórek `REBUY` używa zagnieżdżonego `reduce` (bez `Array.prototype.flat`), co utrzymuje zgodność renderu sekcji `Podział puli` ze starszymi środowiskami WebView/przeglądarkami.
 
 ### Faza grupowa
