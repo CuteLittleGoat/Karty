@@ -4,6 +4,8 @@
 1. Otwórz `Second/index.html?admin=1`.
 2. Na górze strony zobaczysz nagłówek **Tournament of Poker**.
 3. Po pojawieniu się okna **Tryb administratora** wpisz hasło administratora i kliknij **Zaloguj**; bez poprawnego hasła panel admina nie zostanie otwarty.
+3a. Moduł Second ma **własne hasło administratora** — inne niż hasło do modułu Main. Hasło z modułu Main tutaj nie zadziała (pojawi się komunikat „Błędne hasło administratora. Spróbuj ponownie.”).
+3b. Jeśli w oknie pojawi się komunikat „Nie udało się odczytać hasła administratora. Sprawdź konfigurację i spróbuj ponownie.”, hasło do modułu Second nie zostało jeszcze ustawione albo nie da się go w tej chwili pobrać — sprawdź połączenie z internetem i spróbuj ponownie; jeśli komunikat wraca, hasło trzeba ustawić.
 4. W prawym górnym rogu znajdziesz ikonę `Pliki/Ikona.png` oraz przycisk **Instrukcja** — ikona jest po lewej stronie przycisku (tak samo jak w module Main).
 5. W górnym pasku kliknij **TOURNAMENT OF POKER**.
 5a. W prawym górnym rogu (obok przycisku **Instrukcja**) dostępny jest czerwony przycisk **Nie wciskać** — widoczny zarówno w widoku admina, jak i użytkownika.

@@ -47,7 +47,7 @@ Warstwa prezentacji tabel opiera się na skali tokenów w `Second/styles.css`; p
 
 ## Nagłówek i przycisk instrukcji
 - Nagłówek modułu (`.header-intro`) zawiera wyłącznie tytuł `<h1>Tournament of Poker</h1>` — bez podtytułu; arkusz nie definiuje klasy `.eyebrow`. Tytuł karty przeglądarki brzmi `Tournament of Poker - Panel i Widok Użytkownika`.
-- `Second/index.html` ładuje `styles.css?v=2026-11-17.2` i `app.js?v=2026-11-17.2` (parametr wersji wymusza pobranie nowej wersji zamiast kopii z pamięci przeglądarki; moduł nie ma Service Workera).
+- `Second/index.html` ładuje `styles.css?v=2026-11-22.1` i `app.js?v=2026-11-22.1` (parametr wersji wymusza pobranie nowej wersji zamiast kopii z pamięci przeglądarki; moduł nie ma Service Workera).
 - W `Second/index.html` sekcja `.header-controls` zawiera ikonę `<img class="header-icon" src="../Pliki/Ikona.png">` oraz przycisk `#secondInstructionButton` w tej samej linii.
 - Ikona i układ są celowo spójne z modułem Main (ta sama grafika i ten sam wzorzec pozycjonowania: ikona po lewej, przycisk po prawej).
 - Styl `.header-icon` w `Second/styles.css` używa `width: min(110px, 100%)` oraz `height: auto`, a `.header-controls` pracuje w układzie poziomym (`display: flex; align-items: center; justify-content: flex-end`).
@@ -56,7 +56,14 @@ Warstwa prezentacji tabel opiera się na skali tokenów w `Second/styles.css`; p
 
 
 ## Dostęp administratora
-- Tryb administratora wymaga hasła tak jak w module Main: wejście przez `Second/index.html?admin=1` uruchamia `resolveAdminMode()`, odczytuje hash z `admin_security/credentials.passwordHash` albo fallback `window.firebaseConfig.adminPasswordHash` / `window.firebaseConfig.adminPassword`, a następnie waliduje wpis przez `requestAdminPassword()` i `isAdminPasswordValid()`.
+- Tryb administratora wymaga hasła: wejście przez `Second/index.html?admin=1` uruchamia `resolveAdminMode()`, które pobiera zapisany skrót przez `getAdminPasswordHash()`, pokazuje modal `requestAdminPassword()` i sprawdza wpis przez `isAdminPasswordValid()`.
+- Moduł Second ma **własne** hasło administratora, niezależne od modułu Main:
+  - stałe w `Second/app.js`: `ADMIN_SECURITY_COLLECTION = "admin_security"`, `ADMIN_SECURITY_DOCUMENT = "credentials2"`, `ADMIN_SECURITY_PASSWORD_FIELD = "passwordHash"`,
+  - `getAdminPasswordHash()` wykonuje `db.collection("admin_security").doc("credentials2").get()` i zwraca `passwordHash` po `trim()`; brak dokumentu albo puste pole rzuca `PASSWORD_NOT_CONFIGURED`, brak Firebase — `FIREBASE_UNAVAILABLE`,
+  - moduł Main czyta dokument `admin_security/credentials` — Second nigdy go nie odczytuje, więc hasło Main nie otwiera panelu Second (i odwrotnie).
+- Fallback (gdy odczyt z Firestore się nie powiedzie): `window.firebaseConfig.secondAdminPasswordHash`, a gdy go brak — `window.firebaseConfig.secondAdminPassword` (oba z `config/firebase-config.js`, po `trim()`). Klucze są osobne od kluczy Main (`adminPasswordHash` / `adminPassword`), żeby przy braku dokumentu `credentials2` nie dało się wejść hasłem Main. Obecny `config/firebase-config.js` nie definiuje żadnego z tych kluczy, więc przy braku `credentials2` modal pokazuje komunikat „Nie udało się odczytać hasła administratora. Sprawdź konfigurację i spróbuj ponownie.”
+- `isAdminPasswordValid(candidatePassword, storedHash)` akceptuje wpis, gdy jest identyczny z zapisaną wartością (hasło zapisane jawnym tekstem) albo gdy skrót SHA-256 wpisu (`getSha256Hex()`, Web Crypto `crypto.subtle.digest`, zapis szesnastkowy małymi literami) równa się `storedHash.toLowerCase()`. Wpis z modalu jest przycinany (`trim()`) przed porównaniem.
+- Reguły Firestore: `match /admin_security/{docId}` ma `allow read: if true; allow write: if false;` — reguła z wieloznacznikiem `{docId}` obejmuje zarówno `credentials`, jak i `credentials2`. Aplikacja tylko odczytuje tę kolekcję; hasło ustawia się ręcznie w Firebase Console.
 - Flaga `TEMPORARILY_DISABLE_ADMIN_PASSWORD` ma wartość `false`, więc panel admina nie omija modalu hasła; dawny komunikat obejścia hasła `#secondAdminPasswordBypassNote` pozostaje ukryty.
 
 ## Tournament of Poker (admin)

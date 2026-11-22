@@ -65,6 +65,13 @@
 
 ## 4. Widoki i uprawnienia
 - Tryb administratora włączany parametrem `?admin=1`.
+- Hasło administratora modułu Main:
+  - `resolveAdminMode()` (wywoływane w `bootstrap()`) pobiera zapisany skrót przez `getAdminPasswordHash()`, pokazuje modal `requestAdminPassword()` i sprawdza wpis przez `isAdminPasswordValid()`; `TEMPORARILY_DISABLE_ADMIN_PASSWORD = false`, więc modal jest zawsze wymagany,
+  - stałe w `Main/app.js`: `ADMIN_SECURITY_COLLECTION = "admin_security"`, `ADMIN_SECURITY_DOCUMENT = "credentials"`, `ADMIN_SECURITY_PASSWORD_FIELD = "passwordHash"`,
+  - `getAdminPasswordHash()` wykonuje `db.collection("admin_security").doc("credentials").get()` i zwraca `passwordHash` po `trim()`; brak dokumentu albo puste pole rzuca `PASSWORD_NOT_CONFIGURED`, brak Firebase — `FIREBASE_UNAVAILABLE`,
+  - fallback przy nieudanym odczycie: `window.firebaseConfig.adminPasswordHash`, a gdy go brak — `window.firebaseConfig.adminPassword` (z `config/firebase-config.js`, po `trim()`); obecna konfiguracja nie definiuje żadnego z nich,
+  - `isAdminPasswordValid()` akceptuje wpis identyczny z zapisaną wartością albo taki, którego skrót SHA-256 (`getSha256Hex()`, Web Crypto, szesnastkowo małymi literami) równa się `storedHash.toLowerCase()`; wpis z modalu jest przycinany (`trim()`),
+  - moduł Second ma osobne hasło w dokumencie `admin_security/credentials2` (i osobne klucze fallbacku `secondAdminPasswordHash` / `secondAdminPassword`) — hasło Main nie otwiera panelu Second i odwrotnie.
 - Klasy CSS:
   - `.admin-only` / `.user-only` sterowane przez `body.is-admin`.
 - Widok użytkownika ma dwie zakładki najwyższego poziomu: `updatesTab` („Aktualności”) i `playerZoneTab` („Strefa Gracza”).
@@ -97,8 +104,8 @@
 
 ### 5.1. Aktualny stan Firestore Rules
 - Obecny zestaw rules ma reguły `allow read, write: if true;` dla kolekcji aplikacyjnych, więc odczyt i zapis są globalnie otwarte na poziomie reguł Firestore.
-- Dotyczy to m.in. kolekcji:
-  - `admin_security`,
+- Wyjątek: `admin_security` ma `allow read: if true; allow write: if false;` — reguła `match /admin_security/{docId}` obejmuje oba dokumenty z hasłami (`credentials` dla Main i `credentials2` dla Second); zapis jest możliwy tylko z Firebase Console.
+- Globalnie otwarte są m.in. kolekcje:
   - `admin_messages`,
   - `app_settings`,
   - `admin_notes`,
@@ -495,7 +502,7 @@ Tabela „Szczegółów” po zwężeniu tokenów ma 896 px przy 869 px dostępn
 ### Przywracanie
 - Tryb **uzupełniający**: `set` na każdym dokumencie z pliku, bez kasowania czegokolwiek. Dokumenty powstałe po zrobieniu kopii zostają nietknięte.
 - Zabezpieczenia: walidacja `format`/`documents`, podgląd (data pliku, liczba dokumentów), potwierdzenie przez wpisanie słowa `PRZYWROC` oraz **automatyczne pobranie kopii bezpieczeństwa obecnego stanu przed pierwszym zapisem**.
-- `RESTORE_SKIPPED_COLLECTIONS` zawiera `admin_security` — zapis do tej kolekcji jest zablokowany regułami, więc przywracanie ją pomija i raportuje liczbę pominiętych dokumentów. Hasło administratora odtwarza się ręcznie z pliku w Firebase Console.
+- `RESTORE_SKIPPED_COLLECTIONS` zawiera `admin_security` — zapis do tej kolekcji jest zablokowany regułami, więc przywracanie ją pomija (oba dokumenty: `credentials` modułu Main i `credentials2` modułu Second) i raportuje liczbę pominiętych dokumentów. Kopia (`BACKUP_COLLECTION_SCHEMA` z wpisem `admin_security`) eksportuje wszystkie dokumenty tej kolekcji, więc zawiera oba hasła. Hasła administratorów odtwarza się ręcznie z pliku w Firebase Console.
 - Odfiltrowywane są też wpisy o nieparzystej liczbie segmentów ścieżki (czyli nie będące dokumentami).
 - Zapisy idą przez `commitBatchedOperations` (paczki po 400 operacji).
 
@@ -503,7 +510,7 @@ Tabela „Szczegółów” po zwężeniu tokenów ma 896 px przy 869 px dostępn
 - `app_settings/backup_state` przechowuje `lastBackupAt` i `lastRestoreAt` (`serverTimestamp`), odczytywane przez `onSnapshot`, więc informacja jest wspólna dla wszystkich urządzeń. Formatowanie przez `formatImportRefreshedAt`.
 
 ### Reguły Firestore
-- Obowiązujący zestaw reguł w Firebase Console zawiera `match /admin_security/{docId}` z `allow read: if true; allow write: if false;`. Aplikacja tę kolekcję wyłącznie odczytuje (`Main/app.js` i `Second/app.js` wykonują na niej tylko `.get()`), więc blokada zapisu nie wymaga żadnych zmian w kodzie.
+- Obowiązujący zestaw reguł w Firebase Console zawiera `match /admin_security/{docId}` z `allow read: if true; allow write: if false;`. Aplikacja tę kolekcję wyłącznie odczytuje (`Main/app.js` wykonuje `.get()` na `credentials`, `Second/app.js` na `credentials2`), więc blokada zapisu nie wymaga żadnych zmian w kodzie.
 
 ### Ograniczenia
 - Rozwiązanie jest świadomie klienckie: wbudowany eksport i import Firestore oraz automatyczne kopie wymagają płatnego planu Blaze, a projekt działa na planie darmowym Spark.

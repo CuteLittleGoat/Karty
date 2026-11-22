@@ -13,7 +13,7 @@ Instrukcja jest podzielona na dwie części:
 
 1. Otwórz plik `Main/index.html` w przeglądarce.
 2. Na górze ekranu, w prawym górnym rogu, zobaczysz ikonę `Pliki/Ikona.png` i przyciski (ikona po lewej stronie przycisków, w tej samej linii). Nagłówek nie ma tytułu tekstowego.
-3. Jeśli otworzysz moduł z parametrem `?admin=1`, najpierw pojawi się okno logowania administratora z polem hasła.
+3. Jeśli otworzysz moduł z parametrem `?admin=1`, najpierw pojawi się okno logowania administratora z polem hasła. Wpisz hasło i kliknij **Zaloguj** (albo naciśnij `Enter`). Moduł Main ma własne hasło administratora — inne niż hasło do modułu Second; hasło z modułu Second tutaj nie zadziała.
 4. Po poprawnym wpisaniu hasła zobaczysz dwa główne obszary:
    - **Panel Administratora** (duża karta z wieloma zakładkami),
    - **Panel użytkownika** (zakładki: Aktualności, Regulamin, Strefa Gracza).
@@ -733,7 +733,7 @@ W zakładce znajdziesz dwa przyciski, informację o dacie ich ostatniego użycia
 4. Przeglądarka zapisze plik `Karty_Backup_[data]_[godzina].json`, na przykład `Karty_Backup_2026-09-07_14-32-05.json`.
 5. Obok przycisku pojawi się data ostatniej kopii — widoczna także na innych urządzeniach.
 
-> **Gdzie trzymać plik.** Zawiera on **wszystkie** dane, w tym PIN-y graczy i zapis hasła administratora. Trzymaj go w miejscu prywatnym i nie wrzucaj do repozytorium ani na publiczny dysk.
+> **Gdzie trzymać plik.** Zawiera on **wszystkie** dane, w tym PIN-y graczy i zapis haseł administratora obu modułów (Main i Second). Trzymaj go w miejscu prywatnym i nie wrzucaj do repozytorium ani na publiczny dysk.
 
 > **Rób kopie z komputera.** Na telefonie, zwłaszcza w aplikacji zainstalowanej na ekranie głównym, pobieranie plików bywa zawodne.
 
@@ -748,4 +748,4 @@ W zakładce znajdziesz dwa przyciski, informację o dacie ich ostatniego użycia
 ### 21.3. Co dokładnie robi przywracanie
 - **Dopisuje i nadpisuje** dokumenty z pliku, ale **nie kasuje** rzeczy, które powstały po zrobieniu kopii. Dlatego nadaje się przede wszystkim do odzyskania przypadkowo skasowanych danych.
 - Jeśli chcesz cofnąć bazę dokładnie do stanu z pliku (usuwając też to, co powstało później), trzeba to zrobić ręcznie w Firebase Console — aplikacja celowo niczego nie kasuje.
-- **Hasło administratora jest pomijane.** Kopia je zawiera, ale zapis do tej części bazy jest zablokowany, żeby nikt z zewnątrz nie mógł go podmienić. Jeśli kiedyś trzeba je odtworzyć, znajdziesz je w pliku w sekcji `admin_security` i wpisujesz ręcznie w Firebase Console. Po przywracaniu aplikacja poinformuje, ile dokumentów pominięto.
+- **Hasła administratora są pomijane** (zarówno hasło modułu Main, jak i modułu Second). Kopia je zawiera, ale zapis do tej części bazy jest zablokowany, żeby nikt z zewnątrz nie mógł ich podmienić. Jeśli kiedyś trzeba je odtworzyć, znajdziesz je w pliku w sekcji `admin_security` (`credentials` — hasło Main, `credentials2` — hasło Second) i wpisujesz ręcznie w Firebase Console. Po przywracaniu aplikacja poinformuje, ile dokumentów pominięto.

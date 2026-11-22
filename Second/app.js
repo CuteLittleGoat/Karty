@@ -260,7 +260,9 @@ const getFirebaseApp = () => {
 };
 
 const ADMIN_SECURITY_COLLECTION = "admin_security";
-const ADMIN_SECURITY_DOCUMENT = "credentials";
+/* Moduł Second ma własne hasło administratora: dokument "credentials2".
+   Moduł Main czyta dokument "credentials" — hasła obu modułów są niezależne. */
+const ADMIN_SECURITY_DOCUMENT = "credentials2";
 const ADMIN_SECURITY_PASSWORD_FIELD = "passwordHash";
 const ADMIN_NOTES_COLLECTION = "admin_notes";
 const SECOND_ADMIN_NOTES_DOCUMENT = "second";
@@ -440,12 +442,14 @@ const resolveAdminMode = async () => {
     return true;
   }
 
+  /* Zapasowe hasło z config/firebase-config.js ma osobne klucze dla modułu Second,
+     żeby przy braku dokumentu "credentials2" nie dało się wejść hasłem modułu Main. */
   const getFallbackCredential = () => {
-    const fallbackCredential = typeof window.firebaseConfig?.adminPasswordHash === "string"
-      ? window.firebaseConfig.adminPasswordHash.trim()
+    const fallbackCredential = typeof window.firebaseConfig?.secondAdminPasswordHash === "string"
+      ? window.firebaseConfig.secondAdminPasswordHash.trim()
       : "";
-    const fallbackPassword = typeof window.firebaseConfig?.adminPassword === "string"
-      ? window.firebaseConfig.adminPassword.trim()
+    const fallbackPassword = typeof window.firebaseConfig?.secondAdminPassword === "string"
+      ? window.firebaseConfig.secondAdminPassword.trim()
       : "";
     return fallbackCredential || fallbackPassword;
   };
