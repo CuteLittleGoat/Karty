@@ -11,7 +11,7 @@
 
 ## 2. Aktualny zakres funkcjonalny tej wersji
 - Service Worker obsługuje komunikat `SKIP_WAITING`, dzięki czemu nowy worker może szybciej przejąć kontrolę po aktualizacji.
-- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`, `../config/firebase-config.js`) z parametrem wersji (`?v=2026-11-15.1`) w celu twardego bustowania cache między release’ami.
+- `Main/index.html` ładuje krytyczne pliki (`pwa-config.js`, `styles.css`, `pwa-bootstrap.js`, `app.js`, `../config/firebase-config.js`) z parametrem wersji (`?v=2026-11-23.1`) w celu twardego bustowania cache między release’ami.
   - `config/firebase-config.js` nie występuje w `APP_SHELL_ASSETS`, ale jako `request.destination === "script"` trafia w Service Workerze do strategii `staleWhileRevalidate`. Bez parametru wersji zmiana samej konfiguracji (np. dodanie klucza App Check) bez podbicia `APP_VERSION` byłaby serwowana z cache o jeden release wstecz. Parametr `?v=` eliminuje ten przypadek niezależnie od `APP_VERSION`.
   - Moduł `Second` nie ma Service Workera, więc jego `index.html` ładuje ten sam plik bez parametru wersji — podlega wyłącznie zwykłemu cache HTTP.
 - `Main/pwa-bootstrap.js` nasłuchuje `updatefound` i `controllerchange`; po instalacji nowego workera wymusza jego aktywację i wykonuje pojedynczy `window.location.reload()`, aby użytkownik pracował na spójnym zestawie assetów.
@@ -281,7 +281,7 @@ Tabele z klasą `is-table-stacked` (`confirmations-table`, `confirmations-order-
 - Tytuł dokumentu (`<title>`) w `index.html` ustawiono na `Poker - rozgrywki`.
 - Manifest PWA ustawia nazwę instalowanej aplikacji na `Poker - rozgrywki` (`short_name`: `Poker`).
 - `start_url` w manifeście jest relatywny (`./index.html?...`), a `scope` ustawiony na `./`, co zapobiega błędom 404 dla hostingu pod prefiksem repozytorium.
-- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-11-15.1`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
+- Service Worker używa wersjonowanego cache (`karty-main-pwa-2026-11-23.1`) i osobnych strategii cache dla HTML/JS/CSS/statycznych zasobów, aby ograniczyć ryzyko niespójnych wersji po deployu.
 
 - W `initAdminCalculator` każdy wiersz rebuy (`table2Rows`) przechowuje parę `rebuys[]` + `rebuyIndexes[]`; dodawanie rebuy nadaje globalny numer `max+1` dla całego aktywnego trybu, a usunięcie rebuy wykonuje globalną kompaktację indeksów bez luk.
 - Tabela5 buduje kolumny `RebuyX` i mapowanie wartości po posortowanych `rebuyIndexes`, zamiast po samym `flatMap` kolejności graczy, dzięki czemu semantyka numeru `RebuyX` pozostaje spójna po dodawaniu/usuwaniu kolumn u różnych graczy.
@@ -502,7 +502,7 @@ Tabela „Szczegółów” po zwężeniu tokenów ma 896 px przy 869 px dostępn
 ### Przywracanie
 - Tryb **uzupełniający**: `set` na każdym dokumencie z pliku, bez kasowania czegokolwiek. Dokumenty powstałe po zrobieniu kopii zostają nietknięte.
 - Zabezpieczenia: walidacja `format`/`documents`, podgląd (data pliku, liczba dokumentów), potwierdzenie przez wpisanie słowa `PRZYWROC` oraz **automatyczne pobranie kopii bezpieczeństwa obecnego stanu przed pierwszym zapisem**.
-- `RESTORE_SKIPPED_COLLECTIONS` zawiera `admin_security` — zapis do tej kolekcji jest zablokowany regułami, więc przywracanie ją pomija (oba dokumenty: `credentials` modułu Main i `credentials2` modułu Second) i raportuje liczbę pominiętych dokumentów. Kopia (`BACKUP_COLLECTION_SCHEMA` z wpisem `admin_security`) eksportuje wszystkie dokumenty tej kolekcji, więc zawiera oba hasła. Hasła administratorów odtwarza się ręcznie z pliku w Firebase Console.
+- `RESTORE_SKIPPED_COLLECTIONS` zawiera `admin_security` — zapis do tej kolekcji jest zablokowany regułami, więc przywracanie ją pomija (oba dokumenty: `credentials` modułu Main i `credentials2` modułu Second) i raportuje liczbę pominiętych dokumentów: okno potwierdzenia (`window.prompt`) pokazuje „Zostanie zapisanych: N (pominięte: M, w tym hasła administratora modułów Main i Second)”, a po zakończeniu `#adminBackupStatus` pokazuje „Przywrócono N dokumentów. Pominięto M (hasła administratora modułów Main i Second ustawia się ręcznie w Firebase Console).”. Sekcja „HASŁA ADMINISTRATORA” w `BACKUP_INSTRUCTIONS_TEXT` wskazuje, który dokument (`credentials` / `credentials2`) należy do którego modułu. Kopia (`BACKUP_COLLECTION_SCHEMA` z wpisem `admin_security`) eksportuje wszystkie dokumenty tej kolekcji, więc zawiera oba hasła. Hasła administratorów odtwarza się ręcznie z pliku w Firebase Console.
 - Odfiltrowywane są też wpisy o nieparzystej liczbie segmentów ścieżki (czyli nie będące dokumentami).
 - Zapisy idą przez `commitBatchedOperations` (paczki po 400 operacji).
 

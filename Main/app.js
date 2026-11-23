@@ -9217,7 +9217,8 @@ const BACKUP_INSTRUCTIONS_TEXT = `JAK ZROBIĆ KOPIĘ ZAPASOWĄ DANYCH
 
 GDZIE TRZYMAĆ PLIK
 
-Plik zawiera WSZYSTKIE dane aplikacji, w tym PIN-y graczy oraz zapis hasła administratora.
+Plik zawiera WSZYSTKIE dane aplikacji, w tym PIN-y graczy oraz zapis haseł administratora
+obu modułów (Main i Second).
 Trzymaj go w miejscu prywatnym (dysk komputera, prywatny dysk w chmurze).
 Nie wysyłaj go nikomu i nie wrzucaj do repozytorium ani na żaden publicznie dostępny dysk.
 
@@ -9248,13 +9249,15 @@ Jeżeli chcesz cofnąć bazę dokładnie do stanu z pliku (czyli usunąć równi
 co powstało później), trzeba to zrobić ręcznie w Firebase Console — aplikacja
 celowo nie kasuje danych podczas przywracania.
 
-HASŁO ADMINISTRATORA
+HASŁA ADMINISTRATORA
 
-Kopia zawiera zapis hasła administratora, ale przywracanie go pomija.
-Dostęp do zapisu hasła jest zablokowany po stronie bazy, żeby nikt z zewnątrz
-nie mógł go podmienić. Jeżeli kiedykolwiek trzeba będzie odtworzyć hasło,
+Kopia zawiera zapis haseł administratora obu modułów, ale przywracanie je pomija.
+Dostęp do zapisu haseł jest zablokowany po stronie bazy, żeby nikt z zewnątrz
+nie mógł ich podmienić. Jeżeli kiedykolwiek trzeba będzie odtworzyć hasło,
 znajdziesz je w pliku kopii w sekcji "admin_security" i wpisujesz je ręcznie
-w Firebase Console.
+w Firebase Console:
+- dokument "credentials" — hasło administratora modułu Main,
+- dokument "credentials2" — hasło administratora modułu Second.
 
 CZEGO KOPIA NIE OBEJMUJE
 
@@ -9396,7 +9399,7 @@ const initAdminBackup = () => {
       const createdLabel = parsed.createdAt ? new Date(parsed.createdAt).toLocaleString("pl-PL") : "nieznana";
 
       const confirmationText = window.prompt(
-        `Plik z dnia: ${createdLabel}\nDokumentów w pliku: ${parsed.documents.length}\nZostanie zapisanych: ${restorable.length}${skippedCount ? ` (pominięte: ${skippedCount}, w tym hasło administratora)` : ""}\n\nPrzywracanie nadpisze dokumenty o tych samych identyfikatorach.\nNajpierw pobrana zostanie kopia bezpieczeństwa obecnego stanu.\n\nAby potwierdzić, wpisz: PRZYWROC`,
+        `Plik z dnia: ${createdLabel}\nDokumentów w pliku: ${parsed.documents.length}\nZostanie zapisanych: ${restorable.length}${skippedCount ? ` (pominięte: ${skippedCount}, w tym hasła administratora modułów Main i Second)` : ""}\n\nPrzywracanie nadpisze dokumenty o tych samych identyfikatorach.\nNajpierw pobrana zostanie kopia bezpieczeństwa obecnego stanu.\n\nAby potwierdzić, wpisz: PRZYWROC`,
         ""
       );
 
@@ -9420,7 +9423,7 @@ const initAdminBackup = () => {
 
       await stateRef.set({ lastRestoreAt: firebaseApp.firestore.FieldValue.serverTimestamp() }, { merge: true });
       status.textContent = skippedCount
-        ? `Przywrócono ${restorable.length} dokumentów. Pominięto ${skippedCount} (hasło administratora ustawia się ręcznie w Firebase Console).`
+        ? `Przywrócono ${restorable.length} dokumentów. Pominięto ${skippedCount} (hasła administratora modułów Main i Second ustawia się ręcznie w Firebase Console).`
         : `Przywrócono ${restorable.length} dokumentów.`;
     } catch (error) {
       status.textContent = "Przywracanie nie powiodło się. Obecny stan bazy został wcześniej pobrany jako kopia bezpieczeństwa.";

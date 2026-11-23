@@ -741,11 +741,11 @@ W zakładce znajdziesz dwa przyciski, informację o dacie ich ostatniego użycia
 1. Zamknij aplikację w innych oknach i na innych urządzeniach — przywracanie zapisuje dużo danych naraz i wszystkim otwartym oknom będzie odświeżać się ekran.
 2. Kliknij **Przywróć z pliku** i wskaż plik `Karty_Backup_...json`.
 3. Aplikacja **najpierw pobierze kopię bezpieczeństwa obecnego stanu** (drugi plik na dysku). Dzięki temu zły import da się cofnąć.
-4. Zobaczysz podsumowanie: z kiedy jest plik i ile dokumentów zawiera.
+4. Zobaczysz podsumowanie: z kiedy jest plik, ile dokumentów zawiera i ile zostanie zapisanych. Dopisek „pominięte: …, w tym hasła administratora modułów Main i Second” oznacza, że hasła obu modułów nie zostaną nadpisane (patrz 21.3).
 5. Aby potwierdzić, wpisz słowo `PRZYWROC` (bez polskich znaków).
 6. Poczekaj na komunikat o zakończeniu i nie zamykaj karty w trakcie.
 
 ### 21.3. Co dokładnie robi przywracanie
 - **Dopisuje i nadpisuje** dokumenty z pliku, ale **nie kasuje** rzeczy, które powstały po zrobieniu kopii. Dlatego nadaje się przede wszystkim do odzyskania przypadkowo skasowanych danych.
 - Jeśli chcesz cofnąć bazę dokładnie do stanu z pliku (usuwając też to, co powstało później), trzeba to zrobić ręcznie w Firebase Console — aplikacja celowo niczego nie kasuje.
-- **Hasła administratora są pomijane** (zarówno hasło modułu Main, jak i modułu Second). Kopia je zawiera, ale zapis do tej części bazy jest zablokowany, żeby nikt z zewnątrz nie mógł ich podmienić. Jeśli kiedyś trzeba je odtworzyć, znajdziesz je w pliku w sekcji `admin_security` (`credentials` — hasło Main, `credentials2` — hasło Second) i wpisujesz ręcznie w Firebase Console. Po przywracaniu aplikacja poinformuje, ile dokumentów pominięto.
+- **Hasła administratora są pomijane** (zarówno hasło modułu Main, jak i modułu Second). Kopia je zawiera, ale zapis do tej części bazy jest zablokowany, żeby nikt z zewnątrz nie mógł ich podmienić. Jeśli kiedyś trzeba je odtworzyć, znajdziesz je w pliku w sekcji `admin_security` (`credentials` — hasło Main, `credentials2` — hasło Second) i wpisujesz ręcznie w Firebase Console. Po przywracaniu aplikacja poinformuje, ile dokumentów pominięto („Pominięto … (hasła administratora modułów Main i Second ustawia się ręcznie w Firebase Console)”).
